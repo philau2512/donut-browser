@@ -23,6 +23,7 @@ import {
 import { ProxyAssignmentDialog } from "@/components/proxy";
 import {
   CommercialTrialModal,
+  ConfirmationDialog,
   DeleteConfirmationDialog,
   PermissionDialog,
   WindowResizeWarningDialog,
@@ -448,7 +449,7 @@ export function HomeDialogs({
         profile={currentProfileForCookieManagement}
       />
 
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         isOpen={pendingBulkAction !== null}
         onClose={() => {
           setPendingBulkAction(null);

@@ -2,6 +2,7 @@ export { AppUpdateToast } from "./app-update-toast";
 export { BandwidthMiniChart } from "./bandwidth-mini-chart";
 export { CloseConfirmDialog } from "./close-confirm-dialog";
 export { CommercialTrialModal } from "./commercial-trial-modal";
+export { ConfirmationDialog } from "./confirmation-dialog";
 export { UnifiedToast } from "./custom-toast";
 export { DeleteConfirmationDialog } from "./delete-confirmation-dialog";
 export { FlagIcon } from "./flag-icon";

@@ -4,15 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { RippleButton } from "@/components/ui/ripple";
+import { ConfirmationDialog } from "./confirmation-dialog";
 
 export function CloseConfirmDialog() {
   const { t, i18n } = useTranslation();
@@ -66,31 +58,15 @@ export function CloseConfirmDialog() {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("closeConfirm.title")}</DialogTitle>
-          <DialogDescription>{t("closeConfirm.description")}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <RippleButton
-            variant="outline"
-            onClick={() => {
-              void handleMinimize();
-            }}
-          >
-            {t("closeConfirm.minimize")}
-          </RippleButton>
-          <RippleButton
-            variant="destructive"
-            onClick={() => {
-              void handleQuit();
-            }}
-          >
-            {t("closeConfirm.quit")}
-          </RippleButton>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmationDialog
+      isOpen={isOpen}
+      onClose={handleMinimize}
+      onConfirm={handleQuit}
+      title={t("closeConfirm.title")}
+      description={t("closeConfirm.description")}
+      cancelButtonText={t("closeConfirm.minimize")}
+      confirmButtonText={t("closeConfirm.quit")}
+      confirmButtonVariant="destructive"
+    />
   );
 }

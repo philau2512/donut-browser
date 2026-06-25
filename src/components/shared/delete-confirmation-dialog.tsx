@@ -1,16 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { RippleButton } from "@/components/ui/ripple";
-import { LoadingButton } from "./loading-button";
+import { ConfirmationDialog } from "./confirmation-dialog";
 
 interface DeleteConfirmationDialogProps {
   isOpen: boolean;
@@ -43,57 +34,41 @@ export function DeleteConfirmationDialog({
   profiles = [],
 }: DeleteConfirmationDialogProps) {
   const { t } = useTranslation();
-  const handleConfirm = async () => {
-    await onConfirm();
-  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-          {profileIds && profileIds.length > 0 && (
-            <div className="mt-4">
-              <p className="mb-2 text-sm font-medium">
-                {t("deleteDialog.profilesToDelete")}
-              </p>
-              <div className="max-h-32 overflow-y-auto rounded-md bg-muted p-3">
-                <ul className="space-y-1">
-                  {profileIds.map((id) => {
-                    const profile = profiles.find((p) => p.id === id);
-                    const displayName = profile ? profile.name : id;
-                    return (
-                      <li
-                        key={id}
-                        className="truncate text-sm text-muted-foreground"
-                      >
-                        • {displayName}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </div>
-          )}
-        </DialogHeader>
-        <DialogFooter>
-          <RippleButton
-            variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-          >
-            {t("common.buttons.cancel")}
-          </RippleButton>
-          <LoadingButton
-            variant={confirmButtonVariant}
-            onClick={() => void handleConfirm()}
-            isLoading={isLoading}
-          >
-            {confirmButtonText ?? t("common.buttons.delete")}
-          </LoadingButton>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmationDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      onConfirm={onConfirm}
+      title={title}
+      description={description}
+      confirmButtonText={confirmButtonText ?? t("common.buttons.delete")}
+      confirmButtonVariant={confirmButtonVariant}
+      isLoading={isLoading}
+    >
+      {profileIds && profileIds.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 text-sm font-medium">
+            {t("deleteDialog.profilesToDelete")}
+          </p>
+          <div className="max-h-32 overflow-y-auto rounded-md bg-muted p-3">
+            <ul className="space-y-1">
+              {profileIds.map((id) => {
+                const profile = profiles.find((p) => p.id === id);
+                const displayName = profile ? profile.name : id;
+                return (
+                  <li
+                    key={id}
+                    className="truncate text-sm text-muted-foreground"
+                  >
+                    • {displayName}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      )}
+    </ConfirmationDialog>
   );
 }
