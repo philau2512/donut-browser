@@ -1,8 +1,7 @@
-﻿"use client";
+"use client";
 
 import {
   type ColumnDef,
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   type RowSelectionState,
@@ -18,7 +17,6 @@ import { GoPlus } from "react-icons/go";
 import {
   LuChevronDown,
   LuChevronUp,
-  LuExternalLink,
   LuPencil,
   LuPuzzle,
   LuRefreshCw,
@@ -49,26 +47,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { FadingScrollArea } from "@/components/ui/fading-scroll-area";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ProBadge } from "@/components/ui/pro-badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
@@ -76,9 +55,12 @@ import {
 } from "@/components/ui/tooltip";
 import { parseBackendError, translateBackendError } from "@/lib/backend-errors";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
-import { cn } from "@/lib/utils";
 import type { Extension, ExtensionGroup } from "@/types";
 import { RippleButton } from "../ui/ripple";
+import { EditExtensionDialog } from "./sub-components/edit-extension-dialog";
+import { EditGroupDialog } from "./sub-components/edit-group-dialog";
+import { ExtensionGroupTab } from "./sub-components/extension-group-tab";
+import { ExtensionListTab } from "./sub-components/extension-list-tab";
 
 type SyncStatus = "disabled" | "syncing" | "synced" | "error" | "waiting";
 
@@ -1227,263 +1209,38 @@ export function ExtensionManagementDialog({
                 value="extensions"
                 className="mt-4 min-h-0 flex-1 flex-col data-[state=active]:flex"
               >
-                <div className="flex min-h-0 flex-1 flex-col gap-4">
-                  <Input
-                    id="ext-file-input"
-                    type="file"
-                    accept=".xpi,.crx,.zip"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                    disabled={limitedMode}
-                  />
-
-                  {/* Upload form */}
-                  {showUploadForm && pendingFile && (
-                    <div className="space-y-3 rounded-md border p-3">
-                      <div className="text-sm text-muted-foreground">
-                        {t("extensions.selectedFile")}:{" "}
-                        <span className="font-medium text-foreground">
-                          {pendingFile.name}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Input
-                          value={extensionName}
-                          onChange={(e) => {
-                            setExtensionName(e.target.value);
-                          }}
-                          placeholder={t("extensions.namePlaceholder")}
-                          className="flex-1"
-                        />
-                        <RippleButton
-                          size="sm"
-                          onClick={() => void handleUpload()}
-                          disabled={isUploading || !extensionName.trim()}
-                        >
-                          {isUploading
-                            ? t("common.buttons.loading")
-                            : t("common.buttons.add")}
-                        </RippleButton>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setShowUploadForm(false);
-                            setPendingFile(null);
-                            setExtensionName("");
-                          }}
-                        >
-                          {t("common.buttons.cancel")}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Extensions list */}
-                  {isLoading ? (
-                    <div className="text-sm text-muted-foreground">
-                      {t("common.buttons.loading")}
-                    </div>
-                  ) : extensions.length === 0 ? (
-                    <div className="text-sm text-muted-foreground">
-                      {t("extensions.empty")}
-                    </div>
-                  ) : (
-                    <FadingScrollArea
-                      className={cn(
-                        "min-h-0 flex-1",
-                        selectedExtensions.length > 0 && "pb-16",
-                      )}
-                      style={
-                        {
-                          "--scroll-fade-top-offset": "32px",
-                        } as React.CSSProperties
-                      }
-                    >
-                      <Table
-                        className="w-full table-fixed"
-                        containerClassName="overflow-visible"
-                      >
-                        <TableHeader className="sticky top-0 z-10 bg-background">
-                          {extTable.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                              {headerGroup.headers.map((header) => (
-                                <TableHead
-                                  key={header.id}
-                                  style={{
-                                    width:
-                                      header.column.id === "name"
-                                        ? undefined
-                                        : `${header.column.getSize()}px`,
-                                  }}
-                                  className={cn(
-                                    header.column.id === "name" && "max-w-0",
-                                  )}
-                                >
-                                  {header.isPlaceholder
-                                    ? null
-                                    : flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext(),
-                                      )}
-                                </TableHead>
-                              ))}
-                            </TableRow>
-                          ))}
-                        </TableHeader>
-                        <TableBody>
-                          {extTable.getRowModel().rows.map((row) => (
-                            <TableRow
-                              key={row.id}
-                              data-state={row.getIsSelected() && "selected"}
-                            >
-                              {row.getVisibleCells().map((cell) => (
-                                <TableCell
-                                  key={cell.id}
-                                  style={{
-                                    width:
-                                      cell.column.id === "name"
-                                        ? undefined
-                                        : `${cell.column.getSize()}px`,
-                                  }}
-                                  className={cn(
-                                    cell.column.id === "name" && "max-w-0",
-                                  )}
-                                >
-                                  {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext(),
-                                  )}
-                                </TableCell>
-                              ))}
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </FadingScrollArea>
-                  )}
-                </div>
+                <ExtensionListTab
+                  extensions={extensions}
+                  isLoading={isLoading}
+                  limitedMode={limitedMode}
+                  selectedExtensions={selectedExtensions}
+                  extTable={extTable}
+                  showUploadForm={showUploadForm}
+                  setShowUploadForm={setShowUploadForm}
+                  pendingFile={pendingFile}
+                  setPendingFile={setPendingFile}
+                  extensionName={extensionName}
+                  setExtensionName={setExtensionName}
+                  isUploading={isUploading}
+                  handleFileSelect={handleFileSelect}
+                  handleUpload={handleUpload}
+                />
               </AnimatedTabsContent>
 
               <AnimatedTabsContent
                 value="groups"
                 className="mt-4 min-h-0 flex-1 flex-col data-[state=active]:flex"
               >
-                <div className="flex min-h-0 flex-1 flex-col gap-4">
-                  {/* Create group form */}
-                  {showCreateGroup && (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={newGroupName}
-                        onChange={(e) => {
-                          setNewGroupName(e.target.value);
-                        }}
-                        placeholder={t("extensions.groupNamePlaceholder")}
-                        className="flex-1"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") void handleCreateGroup();
-                        }}
-                      />
-                      <RippleButton
-                        size="sm"
-                        onClick={() => void handleCreateGroup()}
-                        disabled={!newGroupName.trim()}
-                      >
-                        {t("common.buttons.create")}
-                      </RippleButton>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setShowCreateGroup(false);
-                          setNewGroupName("");
-                        }}
-                      >
-                        {t("common.buttons.cancel")}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Groups list */}
-                  {extensionGroups.length === 0 ? (
-                    <div className="text-sm text-muted-foreground">
-                      {t("extensions.noGroups")}
-                    </div>
-                  ) : (
-                    <FadingScrollArea
-                      className={cn(
-                        "min-h-0 flex-1",
-                        selectedGroups.length > 0 && "pb-16",
-                      )}
-                      style={
-                        {
-                          "--scroll-fade-top-offset": "32px",
-                        } as React.CSSProperties
-                      }
-                    >
-                      <Table
-                        className="w-full table-fixed"
-                        containerClassName="overflow-visible"
-                      >
-                        <TableHeader className="sticky top-0 z-10 bg-background">
-                          {groupTable.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                              {headerGroup.headers.map((header) => (
-                                <TableHead
-                                  key={header.id}
-                                  style={{
-                                    width:
-                                      header.column.id === "name"
-                                        ? undefined
-                                        : `${header.column.getSize()}px`,
-                                  }}
-                                  className={cn(
-                                    header.column.id === "name" && "max-w-0",
-                                  )}
-                                >
-                                  {header.isPlaceholder
-                                    ? null
-                                    : flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext(),
-                                      )}
-                                </TableHead>
-                              ))}
-                            </TableRow>
-                          ))}
-                        </TableHeader>
-                        <TableBody>
-                          {groupTable.getRowModel().rows.map((row) => (
-                            <TableRow
-                              key={row.id}
-                              data-state={row.getIsSelected() && "selected"}
-                            >
-                              {row.getVisibleCells().map((cell) => (
-                                <TableCell
-                                  key={cell.id}
-                                  style={{
-                                    width:
-                                      cell.column.id === "name"
-                                        ? undefined
-                                        : `${cell.column.getSize()}px`,
-                                  }}
-                                  className={cn(
-                                    cell.column.id === "name" && "max-w-0",
-                                  )}
-                                >
-                                  {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext(),
-                                  )}
-                                </TableCell>
-                              ))}
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </FadingScrollArea>
-                  )}
-                </div>
+                <ExtensionGroupTab
+                  extensionGroups={extensionGroups}
+                  selectedGroups={selectedGroups}
+                  groupTable={groupTable}
+                  showCreateGroup={showCreateGroup}
+                  setShowCreateGroup={setShowCreateGroup}
+                  newGroupName={newGroupName}
+                  setNewGroupName={setNewGroupName}
+                  handleCreateGroup={handleCreateGroup}
+                />
               </AnimatedTabsContent>
             </AnimatedTabs>
           </div>
@@ -1499,290 +1256,38 @@ export function ExtensionManagementDialog({
       </Dialog>
 
       {/* Group editing dialog */}
-      <Dialog
-        open={editingGroup !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingGroup(null);
-            setEditGroupName("");
-            setEditGroupExtensionIds([]);
-          }
+      <EditGroupDialog
+        editingGroup={editingGroup}
+        onClose={() => {
+          setEditingGroup(null);
+          setEditGroupName("");
+          setEditGroupExtensionIds([]);
         }}
-      >
-        <DialogContent className="flex max-h-[90vh] max-w-lg flex-col">
-          <DialogHeader>
-            <DialogTitle>{t("extensions.editGroup")}</DialogTitle>
-            <DialogDescription>
-              {t("extensions.editGroupDescription")}
-            </DialogDescription>
-          </DialogHeader>
+        editGroupName={editGroupName}
+        setEditGroupName={setEditGroupName}
+        extensions={extensions}
+        editGroupExtensionIds={editGroupExtensionIds}
+        setEditGroupExtensionIds={setEditGroupExtensionIds}
+        handleSaveGroupEdits={handleSaveGroupEdits}
+        renderExtensionIcon={renderExtensionIcon}
+        renderCompatIcons={renderCompatIcons}
+      />
 
-          <ScrollArea className="-mx-6 flex-1 overflow-y-auto px-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t("common.labels.name")}</Label>
-                <Input
-                  value={editGroupName}
-                  onChange={(e) => {
-                    setEditGroupName(e.target.value);
-                  }}
-                  placeholder={t("extensions.groupNamePlaceholder")}
-                />
-              </div>
-
-              {extensions.filter((e) => !editGroupExtensionIds.includes(e.id))
-                .length > 0 && (
-                <div className="space-y-2">
-                  <Label>{t("extensions.addToGroup")}</Label>
-                  <Select
-                    value=""
-                    onValueChange={(extId) => {
-                      setEditGroupExtensionIds((prev) => [...prev, extId]);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("extensions.addToGroup")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {extensions
-                        .filter((e) => !editGroupExtensionIds.includes(e.id))
-                        .map((ext) => (
-                          <SelectItem key={ext.id} value={ext.id}>
-                            <div className="flex items-center gap-2">
-                              {renderExtensionIcon(ext, "sm")}
-                              {ext.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label>{t("extensions.groupExtensions")}</Label>
-                {editGroupExtensionIds.length === 0 ? (
-                  <div className="py-2 text-sm text-muted-foreground">
-                    {t("extensions.noExtensionsInGroup")}
-                  </div>
-                ) : (
-                  <div className="max-h-[min(40vh,320px)] space-y-1 overflow-y-auto">
-                    {editGroupExtensionIds.map((extId) => {
-                      const ext = extensions.find((e) => e.id === extId);
-                      if (!ext) return null;
-                      return (
-                        <div
-                          key={extId}
-                          className="flex items-center gap-2 rounded-md border px-2 py-1.5"
-                        >
-                          {renderExtensionIcon(ext, "sm")}
-                          <span className="min-w-0 flex-1 truncate text-sm">
-                            {ext.name}
-                          </span>
-                          {renderCompatIcons(ext.browser_compatibility)}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="size-6 shrink-0 p-0"
-                            onClick={() => {
-                              setEditGroupExtensionIds((prev) =>
-                                prev.filter((id) => id !== extId),
-                              );
-                            }}
-                          >
-                            <LuTrash2 className="size-3" />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </ScrollArea>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditingGroup(null);
-                setEditGroupName("");
-                setEditGroupExtensionIds([]);
-              }}
-            >
-              {t("common.buttons.cancel")}
-            </Button>
-            <RippleButton
-              onClick={() => void handleSaveGroupEdits()}
-              disabled={!editGroupName.trim()}
-            >
-              {t("common.buttons.save")}
-            </RippleButton>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Extension editing dialog */}
-      <Dialog
-        open={editingExtension !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingExtension(null);
-            setEditExtensionName("");
-            setPendingUpdateFile(null);
-          }
+      <EditExtensionDialog
+        editingExtension={editingExtension}
+        onClose={() => {
+          setEditingExtension(null);
+          setEditExtensionName("");
+          setPendingUpdateFile(null);
         }}
-      >
-        <DialogContent className="flex max-h-[90vh] max-w-lg flex-col">
-          <DialogHeader>
-            <DialogTitle>{t("extensions.editExtension")}</DialogTitle>
-            <DialogDescription>
-              {t("extensions.editExtensionDescription")}
-            </DialogDescription>
-          </DialogHeader>
-
-          <ScrollArea className="-mx-6 flex-1 overflow-y-auto px-6">
-            {editingExtension && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t("common.labels.name")}</Label>
-                  <Input
-                    value={editExtensionName}
-                    onChange={(e) => {
-                      setEditExtensionName(e.target.value);
-                    }}
-                    placeholder={t("extensions.namePlaceholder")}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") void handleUpdateExtension();
-                    }}
-                  />
-                </div>
-
-                {/* Metadata from manifest.json */}
-                <div className="space-y-2 rounded-md border p-3">
-                  <Label className="text-xs tracking-wide text-muted-foreground uppercase">
-                    {t("extensions.metadata")}
-                  </Label>
-                  <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
-                    {editingExtension.version && (
-                      <>
-                        <span className="text-muted-foreground">
-                          {t("extensions.version")}
-                        </span>
-                        <span>{editingExtension.version}</span>
-                      </>
-                    )}
-                    {editingExtension.author && (
-                      <>
-                        <span className="text-muted-foreground">
-                          {t("extensions.author")}
-                        </span>
-                        <span>{editingExtension.author}</span>
-                      </>
-                    )}
-                    {editingExtension.description && (
-                      <>
-                        <span className="text-muted-foreground">
-                          {t("common.labels.description")}
-                        </span>
-                        <span className="line-clamp-3">
-                          {editingExtension.description}
-                        </span>
-                      </>
-                    )}
-                    <span className="text-muted-foreground">
-                      {t("extensions.compatibility.label")}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {renderCompatIcons(
-                        editingExtension.browser_compatibility,
-                      )}
-                    </div>
-                    <span className="text-muted-foreground">
-                      {t("common.labels.type")}
-                    </span>
-                    <span>.{editingExtension.file_type}</span>
-                    {editingExtension.homepage_url && (
-                      <>
-                        <span className="text-muted-foreground">
-                          {t("extensions.homepage")}
-                        </span>
-                        <a
-                          href={editingExtension.homepage_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex min-w-0 items-center gap-1 text-primary hover:underline"
-                        >
-                          <span className="truncate">
-                            {editingExtension.homepage_url}
-                          </span>
-                          <LuExternalLink className="size-3 shrink-0" />
-                        </a>
-                      </>
-                    )}
-                    {!editingExtension.version &&
-                      !editingExtension.author &&
-                      !editingExtension.description &&
-                      !editingExtension.homepage_url && (
-                        <span className="col-span-2 text-xs text-muted-foreground">
-                          {t("extensions.noMetadata")}
-                        </span>
-                      )}
-                  </div>
-                </div>
-
-                {/* Re-upload */}
-                <div className="space-y-2">
-                  <Label>{t("extensions.reupload")}</Label>
-                  <div className="flex items-center gap-2">
-                    <RippleButton
-                      size="sm"
-                      variant="outline"
-                      onClick={() =>
-                        document.getElementById("ext-edit-file-input")?.click()
-                      }
-                    >
-                      <LuUpload className="mr-1 size-3" />
-                      {t("extensions.selectFile")}
-                    </RippleButton>
-                    <input
-                      id="ext-edit-file-input"
-                      type="file"
-                      accept=".xpi,.crx,.zip"
-                      className="hidden"
-                      onChange={handleEditFileSelect}
-                    />
-                    {pendingUpdateFile && (
-                      <span className="max-w-[200px] truncate text-xs text-muted-foreground">
-                        {pendingUpdateFile.name}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </ScrollArea>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditingExtension(null);
-                setEditExtensionName("");
-                setPendingUpdateFile(null);
-              }}
-            >
-              {t("common.buttons.cancel")}
-            </Button>
-            <RippleButton
-              onClick={() => void handleUpdateExtension()}
-              disabled={!editExtensionName.trim()}
-            >
-              {t("common.buttons.save")}
-            </RippleButton>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        editExtensionName={editExtensionName}
+        setEditExtensionName={setEditExtensionName}
+        pendingUpdateFile={pendingUpdateFile}
+        setPendingUpdateFile={setPendingUpdateFile}
+        handleEditFileSelect={handleEditFileSelect}
+        handleUpdateExtension={handleUpdateExtension}
+        renderCompatIcons={renderCompatIcons}
+      />
 
       {/* Delete extension confirmation */}
       <DeleteConfirmationDialog
