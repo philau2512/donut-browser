@@ -245,7 +245,10 @@
       "cantModifyRunning": "No se puede modificar un perfil en ejecución",
       "cantModifyLaunching": "No se puede modificar el perfil mientras se inicia",
       "cantModifyStopping": "No se puede modificar el perfil mientras se detiene",
-      "cantModifyUpdating": "No se puede modificar el perfil mientras se actualiza el navegador"
+      "cantModifyUpdating": "No se puede modificar el perfil mientras se actualiza el navegador",
+      "lastOpen": "Última apertura",
+      "message": "Mensaje",
+      "changeProxy": "Cambiar proxy"
     },
     "actions": {
       "launch": "Iniciar",
@@ -308,7 +311,16 @@
       "copyCookies": "Copiar cookies",
       "runSelected": "Ejecutar seleccionados",
       "stopSelected": "Detener seleccionados",
-      "proRequired": "Se requiere el plan Pro para ejecución/parada masiva"
+      "proRequired": "Se requiere el plan Pro para ejecución/parada masiva",
+      "startCount": "Iniciar {{count}} perfiles",
+      "start": "Iniciar perfiles",
+      "stopCount": "Detener {{count}} perfiles",
+      "stop": "Detener perfiles",
+      "automation": "Automatización",
+      "updateMultiple": "Actualizar múltiples",
+      "proxy": "Proxy",
+      "exportCookies": "Exportar cookies",
+      "moreAction": "Más acciones"
     },
     "passwordProtectedBadge": "Protegido por Contraseña",
     "launchHook": {
@@ -331,6 +343,23 @@
       "nameDesc": "Nombre (Z–A)",
       "newest": "Más recientes primero",
       "oldest": "Más antiguos primero"
+    },
+    "status": {
+      "ready": "Listo",
+      "running": "Ejecutando",
+      "launching": "Iniciando",
+      "stopping": "Deteniendo",
+      "noStatus": "Sin estado"
+    },
+    "menu": {
+      "rename": "Renombrar",
+      "edit": "Editar configuración",
+      "copyCookies": "Copiar cookies",
+      "manageCookies": "Administrar cookies",
+      "clone": "Clonar perfil",
+      "assignGroup": "Asignar a grupo",
+      "assignExtension": "Asignar extensión",
+      "configureCamoufox": "Configurar Camoufox"
     }
   },
   "createProfile": {
@@ -1502,7 +1531,14 @@
     "noneOption": "Ninguno",
     "noValidProfiles": "No hay perfiles válidos seleccionados.",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "Error al asignar proxy/VPN a los perfiles"
+    "failedFallback": "Error al asignar proxy/VPN a los perfiles",
+    "changeProxyTitle": "Cambiar proxy",
+    "bulkChangeDescription": "Actualizar la configuración de proxy para {{count}} perfil(es) seleccionado(s)",
+    "pleaseSelectProxy": "Por favor, seleccione una configuración de proxy",
+    "pleaseInputProxy": "Por favor, introduzca una lista de proxies",
+    "invalidJson": "Contenido de cadena JSON no válido",
+    "successClear": "Configuración de proxy/VPN borrada con éxito",
+    "withoutProxyWarning": "Todos los perfiles seleccionados se cambiarán al modo Sin Proxy después de enviar."
   },
   "groupAssignment": {
     "title": "Asignar grupo",

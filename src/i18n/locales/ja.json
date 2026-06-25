@@ -245,7 +245,10 @@
       "cantModifyRunning": "実行中のプロファイルは変更できません",
       "cantModifyLaunching": "起動中はプロファイルを変更できません",
       "cantModifyStopping": "停止中はプロファイルを変更できません",
-      "cantModifyUpdating": "ブラウザの更新中はプロファイルを変更できません"
+      "cantModifyUpdating": "ブラウザの更新中はプロファイルを変更できません",
+      "lastOpen": "最終起動",
+      "message": "メッセージ",
+      "changeProxy": "プロキシ変更"
     },
     "actions": {
       "launch": "起動",
@@ -308,7 +311,16 @@
       "copyCookies": "Cookieをコピー",
       "runSelected": "選択を実行",
       "stopSelected": "選択を停止",
-      "proRequired": "一括実行・停止には Pro プランが必要です"
+      "proRequired": "一括実行・停止には Pro プランが必要です",
+      "startCount": "{{count}} 個のプロファイルを開始",
+      "start": "プロファイルを開始",
+      "stopCount": "{{count}} 個のプロファイルを停止",
+      "stop": "プロファイルを停止",
+      "automation": "自動化",
+      "updateMultiple": "複数更新",
+      "proxy": "プロキシ",
+      "exportCookies": "クッキーをエクスポート",
+      "moreAction": "その他のアクション"
     },
     "passwordProtectedBadge": "パスワード保護",
     "launchHook": {
@@ -331,6 +343,23 @@
       "nameDesc": "名前 (Z→A)",
       "newest": "新しい順",
       "oldest": "古い順"
+    },
+    "status": {
+      "ready": "準備完了",
+      "running": "実行中",
+      "launching": "起動中",
+      "stopping": "停止中",
+      "noStatus": "ステータスなし"
+    },
+    "menu": {
+      "rename": "名前変更",
+      "edit": "設定を編集",
+      "copyCookies": "クッキーをコピー",
+      "manageCookies": "クッキーを管理",
+      "clone": "プロファイルを複製",
+      "assignGroup": "グループに割り当て",
+      "assignExtension": "拡張機能を割り当て",
+      "configureCamoufox": "Camoufoxを設定"
     }
   },
   "createProfile": {
@@ -1502,7 +1531,14 @@
     "noneOption": "なし",
     "noValidProfiles": "有効なプロファイルが選択されていません。",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "プロファイルへのプロキシ/VPN の割り当てに失敗しました"
+    "failedFallback": "プロファイルへのプロキシ/VPN の割り当てに失敗しました",
+    "changeProxyTitle": "プロキシ変更",
+    "bulkChangeDescription": "選択された {{count}} 個のプロファイルのプロキシ設定を更新",
+    "pleaseSelectProxy": "プロキシ設定を選択してください",
+    "pleaseInputProxy": "プロキシのリストを入力してください",
+    "invalidJson": "無効なJSON文字列の内容",
+    "successClear": "プロキシ/VPN設定が正常にクリアされました",
+    "withoutProxyWarning": "送信後、選択したすべてのプロファイルがプロキシなしモードに切り替わります。"
   },
   "groupAssignment": {
     "title": "グループを割り当てる",

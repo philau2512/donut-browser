@@ -245,7 +245,10 @@
       "cantModifyRunning": "Không thể chỉnh sửa profile đang chạy",
       "cantModifyLaunching": "Không thể chỉnh sửa profile khi đang khởi chạy",
       "cantModifyStopping": "Không thể chỉnh sửa profile khi đang dừng",
-      "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật"
+      "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật",
+      "lastOpen": "Lần mở cuối",
+      "message": "Thông báo",
+      "changeProxy": "Đổi Proxy"
     },
     "actions": {
       "launch": "Khởi chạy",
@@ -308,7 +311,16 @@
       "copyCookies": "Sao chép Cookie",
       "runSelected": "Chạy mục đã chọn",
       "stopSelected": "Dừng mục đã chọn",
-      "proRequired": "Cần gói Pro để chạy/dừng hàng loạt"
+      "proRequired": "Cần gói Pro để chạy/dừng hàng loạt",
+      "startCount": "Khởi động {{count}} Hồ sơ",
+      "start": "Khởi động hồ sơ",
+      "stopCount": "Dừng {{count}} Hồ sơ",
+      "stop": "Dừng hồ sơ",
+      "automation": "Tự động hóa",
+      "updateMultiple": "Cập nhật hàng loạt",
+      "proxy": "Proxy",
+      "exportCookies": "Xuất cookie",
+      "moreAction": "Hành động khác"
     },
     "passwordProtectedBadge": "Được bảo vệ bằng mật khẩu",
     "launchHook": {
@@ -331,6 +343,23 @@
       "nameDesc": "Tên (Z–A)",
       "newest": "Mới nhất trước",
       "oldest": "Cũ nhất trước"
+    },
+    "status": {
+      "ready": "Sẵn sàng",
+      "running": "Đang chạy",
+      "launching": "Đang khởi động",
+      "stopping": "Đang dừng",
+      "noStatus": "Không có trạng thái"
+    },
+    "menu": {
+      "rename": "Đổi tên",
+      "edit": "Chỉnh sửa cài đặt",
+      "copyCookies": "Sao chép Cookie",
+      "manageCookies": "Quản lý Cookie",
+      "clone": "Nhân bản hồ sơ",
+      "assignGroup": "Gán vào Nhóm",
+      "assignExtension": "Gán Tiện ích",
+      "configureCamoufox": "Cấu hình Camoufox"
     }
   },
   "createProfile": {
@@ -1502,7 +1531,14 @@
     "noneOption": "Không có",
     "noValidProfiles": "Chưa chọn profile hợp lệ nào.",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "Gán proxy/VPN cho profile thất bại"
+    "failedFallback": "Gán proxy/VPN cho profile thất bại",
+    "changeProxyTitle": "Thay đổi proxy",
+    "bulkChangeDescription": "Cập nhật cài đặt proxy cho {{count}} hồ sơ đã chọn",
+    "pleaseSelectProxy": "Vui lòng chọn một cấu hình proxy",
+    "pleaseInputProxy": "Vui lòng nhập danh sách proxy",
+    "invalidJson": "Nội dung chuỗi JSON không hợp lệ",
+    "successClear": "Đã xóa cài đặt proxy/VPN thành công",
+    "withoutProxyWarning": "Tất cả các hồ sơ được chọn sẽ chuyển sang chế độ Không proxy sau khi xác nhận."
   },
   "groupAssignment": {
     "title": "Gán nhóm",

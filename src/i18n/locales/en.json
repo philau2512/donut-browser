@@ -245,7 +245,10 @@
       "cantModifyRunning": "Can't modify running profile",
       "cantModifyLaunching": "Can't modify profile while launching",
       "cantModifyStopping": "Can't modify profile while stopping",
-      "cantModifyUpdating": "Can't modify profile while browser is updating"
+      "cantModifyUpdating": "Can't modify profile while browser is updating",
+      "lastOpen": "Last Open",
+      "message": "Message",
+      "changeProxy": "Change Proxy"
     },
     "actions": {
       "launch": "Launch",
@@ -308,7 +311,16 @@
       "copyCookies": "Copy Cookies",
       "runSelected": "Run selected",
       "stopSelected": "Stop selected",
-      "proRequired": "Pro plan required for bulk run/stop"
+      "proRequired": "Pro plan required for bulk run/stop",
+      "startCount": "Start {{count}} Profiles",
+      "start": "Start Profiles",
+      "stopCount": "Stop {{count}} Profiles",
+      "stop": "Stop Profiles",
+      "automation": "Automation",
+      "updateMultiple": "Update Multiple",
+      "proxy": "Proxy",
+      "exportCookies": "Export cookies",
+      "moreAction": "More action"
     },
     "passwordProtectedBadge": "Password Protected",
     "launchHook": {
@@ -331,6 +343,23 @@
       "nameDesc": "Name (Z–A)",
       "newest": "Newest first",
       "oldest": "Oldest first"
+    },
+    "status": {
+      "ready": "Ready",
+      "running": "Running",
+      "launching": "Launching",
+      "stopping": "Stopping",
+      "noStatus": "No Status"
+    },
+    "menu": {
+      "rename": "Rename",
+      "edit": "Edit Settings",
+      "copyCookies": "Copy Cookies",
+      "manageCookies": "Manage Cookies",
+      "clone": "Clone Profile",
+      "assignGroup": "Assign to Group",
+      "assignExtension": "Assign Extension",
+      "configureCamoufox": "Configure Camoufox"
     }
   },
   "createProfile": {
@@ -1502,7 +1531,14 @@
     "noneOption": "None",
     "noValidProfiles": "No valid profiles selected.",
     "vpnGroupHeading": "VPNs",
-    "failedFallback": "Failed to assign proxy/VPN to profiles"
+    "failedFallback": "Failed to assign proxy/VPN to profiles",
+    "changeProxyTitle": "Change proxy",
+    "bulkChangeDescription": "Update proxy settings for {{count}} selected profile(s)",
+    "pleaseSelectProxy": "Please select a proxy configuration",
+    "pleaseInputProxy": "Please input a list of proxies",
+    "invalidJson": "Invalid JSON string content",
+    "successClear": "Successfully cleared proxy/VPN settings",
+    "withoutProxyWarning": "All selected profiles will be switched to No Proxy mode after submit."
   },
   "groupAssignment": {
     "title": "Assign Group",

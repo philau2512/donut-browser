@@ -245,7 +245,10 @@
       "cantModifyRunning": "无法修改正在运行的配置文件",
       "cantModifyLaunching": "启动期间无法修改配置文件",
       "cantModifyStopping": "停止期间无法修改配置文件",
-      "cantModifyUpdating": "浏览器更新期间无法修改配置文件"
+      "cantModifyUpdating": "浏览器更新期间无法修改配置文件",
+      "lastOpen": "上次打开",
+      "message": "消息",
+      "changeProxy": "更改代理"
     },
     "actions": {
       "launch": "启动",
@@ -308,7 +311,16 @@
       "copyCookies": "复制 Cookie",
       "runSelected": "运行所选",
       "stopSelected": "停止所选",
-      "proRequired": "批量运行/停止需要 Pro 套餐"
+      "proRequired": "批量运行/停止需要 Pro 套餐",
+      "startCount": "启动 {{count}} 个配置",
+      "start": "启动配置",
+      "stopCount": "停止 {{count}} 个配置",
+      "stop": "停止配置",
+      "automation": "自动化",
+      "updateMultiple": "批量更新",
+      "proxy": "代理",
+      "exportCookies": "导出 Cookie",
+      "moreAction": "更多操作"
     },
     "passwordProtectedBadge": "密码保护",
     "launchHook": {
@@ -331,6 +343,23 @@
       "nameDesc": "名称 (Z–A)",
       "newest": "最新优先",
       "oldest": "最早优先"
+    },
+    "status": {
+      "ready": "准备就绪",
+      "running": "运行中",
+      "launching": "启动中",
+      "stopping": "停止中",
+      "noStatus": "无状态"
+    },
+    "menu": {
+      "rename": "重命名",
+      "edit": "编辑设置",
+      "copyCookies": "复制 Cookie",
+      "manageCookies": "管理 Cookie",
+      "clone": "克隆配置",
+      "assignGroup": "分配给分组",
+      "assignExtension": "分配扩展",
+      "configureCamoufox": "配置 Camoufox"
     }
   },
   "createProfile": {
@@ -1502,7 +1531,14 @@
     "noneOption": "无",
     "noValidProfiles": "未选择有效的配置文件。",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "为配置文件分配代理/VPN 失败"
+    "failedFallback": "为配置文件分配代理/VPN 失败",
+    "changeProxyTitle": "修改代理",
+    "bulkChangeDescription": "更新选中的 {{count}} 个配置的代理设置",
+    "pleaseSelectProxy": "请选择代理配置",
+    "pleaseInputProxy": "请输入代理列表",
+    "invalidJson": "无效的 JSON 字符串",
+    "successClear": "成功清除代理/VPN设置",
+    "withoutProxyWarning": "提交后，所有选中的配置将切换到“无代理”模式。"
   },
   "groupAssignment": {
     "title": "分配分组",

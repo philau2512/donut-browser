@@ -245,7 +245,10 @@
       "cantModifyRunning": "Impossible de modifier un profil en cours d'exécution",
       "cantModifyLaunching": "Impossible de modifier le profil pendant le lancement",
       "cantModifyStopping": "Impossible de modifier le profil pendant l'arrêt",
-      "cantModifyUpdating": "Impossible de modifier le profil pendant la mise à jour du navigateur"
+      "cantModifyUpdating": "Impossible de modifier le profil pendant la mise à jour du navigateur",
+      "lastOpen": "Dernière ouverture",
+      "message": "Message",
+      "changeProxy": "Modifier le proxy"
     },
     "actions": {
       "launch": "Lancer",
@@ -308,7 +311,16 @@
       "copyCookies": "Copier les cookies",
       "runSelected": "Lancer la sélection",
       "stopSelected": "Arrêter la sélection",
-      "proRequired": "Plan Pro requis pour le lancement/arrêt groupé"
+      "proRequired": "Plan Pro requis pour le lancement/arrêt groupé",
+      "startCount": "Démarrer {{count}} profils",
+      "start": "Démarrer les profils",
+      "stopCount": "Arrêter {{count}} profils",
+      "stop": "Arrêter les profils",
+      "automation": "Automatisation",
+      "updateMultiple": "Mettre à jour plusieurs",
+      "proxy": "Proxy",
+      "exportCookies": "Exporter les cookies",
+      "moreAction": "Plus d'actions"
     },
     "passwordProtectedBadge": "Protégé par mot de passe",
     "launchHook": {
@@ -331,6 +343,23 @@
       "nameDesc": "Nom (Z–A)",
       "newest": "Plus récents d’abord",
       "oldest": "Plus anciens d’abord"
+    },
+    "status": {
+      "ready": "Prêt",
+      "running": "En cours",
+      "launching": "Lancement",
+      "stopping": "Arrêt en cours",
+      "noStatus": "Aucun statut"
+    },
+    "menu": {
+      "rename": "Renommer",
+      "edit": "Modifier les paramètres",
+      "copyCookies": "Copier les cookies",
+      "manageCookies": "Gérer les cookies",
+      "clone": "Cloner le profil",
+      "assignGroup": "Assigner au groupe",
+      "assignExtension": "Assigner l'extension",
+      "configureCamoufox": "Configurer Camoufox"
     }
   },
   "createProfile": {
@@ -1502,7 +1531,14 @@
     "noneOption": "Aucun",
     "noValidProfiles": "Aucun profil valide sélectionné.",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "Échec de l'assignation du proxy/VPN aux profils"
+    "failedFallback": "Échec de l'assignation du proxy/VPN aux profils",
+    "changeProxyTitle": "Modifier le proxy",
+    "bulkChangeDescription": "Mettre à jour les paramètres de proxy pour {{count}} profil(s) sélectionné(s)",
+    "pleaseSelectProxy": "Veuillez sélectionner une configuration de proxy",
+    "pleaseInputProxy": "Veuillez saisir une liste de proxys",
+    "invalidJson": "Contenu JSON invalide",
+    "successClear": "Paramètres de proxy/VPN effacés avec succès",
+    "withoutProxyWarning": "Tous les profils sélectionnés passeront en mode Sans proxy après soumission."
   },
   "groupAssignment": {
     "title": "Assigner un groupe",

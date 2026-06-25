@@ -18,19 +18,18 @@ import type { Dispatch, SetStateAction } from "react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { FaApple, FaLinux, FaWindows } from "react-icons/fa";
-import { FiWifi } from "react-icons/fi";
+import { FiMoreVertical, FiWifi } from "react-icons/fi";
 import {
   LuCheck,
   LuChevronDown,
   LuChevronUp,
   LuCookie,
   LuInfo,
-  LuLock,
   LuPlay,
+  LuPlus,
   LuPuzzle,
   LuSquare,
   LuTrash2,
-  LuTriangleAlert,
   LuUsers,
 } from "react-icons/lu";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
@@ -44,25 +43,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ProBadge } from "@/components/ui/pro-badge";
+import { PopoverTrigger } from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -89,7 +75,7 @@ import {
   getProfileIcon,
   isCrossOsProfile,
 } from "@/lib/browser-utils";
-import { formatRelativeTime } from "@/lib/flag-utils";
+import { formatRelativeTime, getFlagIconClass } from "@/lib/flag-utils";
 import { cn } from "@/lib/utils";
 import type {
   BrowserProfile,
@@ -101,17 +87,9 @@ import type {
   TrafficSnapshot,
   VpnConfig,
 } from "@/types";
-import { BandwidthMiniChart } from "./bandwidth-mini-chart";
-import {
-  DataTableActionBar,
-  DataTableActionBarAction,
-  DataTableActionBarSelection,
-} from "./data-table-action-bar";
 import MultipleSelector, { type Option } from "./multiple-selector";
-import { ProxyCheckButton } from "./proxy-check-button";
 import { TrafficDetailsDialog } from "./traffic-details-dialog";
 import { Input } from "./ui/input";
-import { RippleButton } from "./ui/ripple";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -213,6 +191,8 @@ interface TableMeta {
   onCloneProfile?: (profile: BrowserProfile) => void;
   onCopyCookiesToProfile?: (profile: BrowserProfile) => void;
   onOpenCookieManagement?: (profile: BrowserProfile) => void;
+  onBulkProxyAssignment?: (profileIds: string[]) => void;
+  onDeleteProfile?: (profile: BrowserProfile) => void;
 
   // Traffic snapshots (lightweight real-time data)
   trafficSnapshots: Record<string, TrafficSnapshot>;
@@ -256,7 +236,7 @@ interface SyncStatusDot {
   encrypted: boolean;
 }
 
-function getProfileSyncStatusDot(
+function _getProfileSyncStatusDot(
   profile: BrowserProfile,
   liveStatus:
     | "syncing"
@@ -325,190 +305,6 @@ function getProfileSyncStatusDot(
     default:
       return null;
   }
-}
-
-// Inline extension-group dropdown for the Ext column. Matches the
-// proxy column's Popover-style picker — no nested dialog.
-function ExtCell({
-  profile,
-  meta,
-}: {
-  profile: BrowserProfile;
-  meta: TableMeta;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [isSaving, setIsSaving] = React.useState(false);
-  const groupId = profile.extension_group_id ?? null;
-  const group = groupId
-    ? meta.extensionGroups.find((g) => g.id === groupId)
-    : undefined;
-  const label = group?.name ?? meta.t("profiles.table.extDefault");
-
-  const onPick = async (nextId: string | null) => {
-    setIsSaving(true);
-    try {
-      await invoke("assign_extension_group_to_profile", {
-        profileId: profile.id,
-        extensionGroupId: nextId,
-      });
-    } catch (err) {
-      console.error("Failed to assign extension group:", err);
-    } finally {
-      setIsSaving(false);
-      setOpen(false);
-    }
-  };
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          disabled={isSaving}
-          className="flex h-7 w-full items-center gap-1.5 rounded px-1.5 text-left text-xs text-muted-foreground transition-colors duration-100 hover:bg-accent/50 hover:text-foreground disabled:opacity-50"
-        >
-          <LuPuzzle className="size-3 shrink-0" />
-          <span className="flex-1 truncate" title={label}>
-            {label}
-          </span>
-          <LuChevronDown className="size-3 shrink-0 text-muted-foreground" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-0" align="start">
-        <Command>
-          <CommandInput placeholder={meta.t("profiles.table.extSearch")} />
-          <CommandList>
-            <CommandEmpty>{meta.t("profiles.table.extEmpty")}</CommandEmpty>
-            <CommandGroup>
-              <CommandItem
-                value="__default__"
-                onSelect={() => {
-                  void onPick(null);
-                }}
-              >
-                {groupId === null && <LuCheck className="mr-2 size-3.5" />}
-                <span className={groupId === null ? "" : "ml-5"}>
-                  {meta.t("profiles.table.extDefault")}
-                </span>
-              </CommandItem>
-              {meta.extensionGroups.map((g) => (
-                <CommandItem
-                  key={g.id}
-                  value={g.name}
-                  onSelect={() => {
-                    void onPick(g.id);
-                  }}
-                >
-                  {groupId === g.id && <LuCheck className="mr-2 size-3.5" />}
-                  <span className={groupId === g.id ? "" : "ml-5"}>
-                    {g.name}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-// Inline DNS blocklist dropdown — same Popover/Command pattern as Ext.
-function DnsCell({
-  profile,
-  meta,
-}: {
-  profile: BrowserProfile;
-  meta: TableMeta;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [isSaving, setIsSaving] = React.useState(false);
-  const level = profile.dns_blocklist ?? null;
-  // Backend levels are: light, normal, pro, pro_plus, ultimate (+ null).
-  // Keep the list ordered from least to most restrictive.
-  const LEVELS: { value: string; labelKey: string }[] = [
-    { value: "light", labelKey: "dnsBlocklist.light" },
-    { value: "normal", labelKey: "dnsBlocklist.normal" },
-    { value: "pro", labelKey: "dnsBlocklist.pro" },
-    { value: "pro_plus", labelKey: "dnsBlocklist.proPlus" },
-    { value: "ultimate", labelKey: "dnsBlocklist.ultimate" },
-  ];
-  const currentLabel =
-    level === null
-      ? null
-      : (LEVELS.find((l) => l.value === level)?.labelKey ?? null);
-
-  const onPick = async (nextLevel: string | null) => {
-    setIsSaving(true);
-    try {
-      await invoke("update_profile_dns_blocklist", {
-        profileId: profile.id,
-        dnsBlocklist: nextLevel,
-      });
-    } catch (err) {
-      console.error("Failed to update DNS blocklist:", err);
-    } finally {
-      setIsSaving(false);
-      setOpen(false);
-    }
-  };
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          data-onborda="dns-blocklist"
-          disabled={isSaving}
-          className="flex h-7 w-full items-center gap-1.5 rounded px-1.5 text-left text-xs text-muted-foreground transition-colors duration-100 hover:bg-accent/50 hover:text-foreground disabled:opacity-50"
-          title={
-            level
-              ? meta.t("profiles.table.dnsLevel", { level })
-              : meta.t("dnsBlocklist.none")
-          }
-        >
-          <FiWifi className="size-3 shrink-0" />
-          <span className="flex-1 truncate text-[11px] tracking-wide">
-            {currentLabel ? meta.t(currentLabel) : "—"}
-          </span>
-          <LuChevronDown className="size-3 shrink-0 text-muted-foreground" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-48 p-0" align="start">
-        <Command>
-          <CommandList>
-            <CommandGroup>
-              <CommandItem
-                value="__none__"
-                onSelect={() => {
-                  void onPick(null);
-                }}
-              >
-                {level === null && <LuCheck className="mr-2 size-3.5" />}
-                <span className={level === null ? "" : "ml-5"}>
-                  {meta.t("dnsBlocklist.none")}
-                </span>
-              </CommandItem>
-              {LEVELS.map((l) => (
-                <CommandItem
-                  key={l.value}
-                  value={l.value}
-                  onSelect={() => {
-                    void onPick(l.value);
-                  }}
-                >
-                  {level === l.value && <LuCheck className="mr-2 size-3.5" />}
-                  <span className={level === l.value ? "" : "ml-5"}>
-                    {meta.t(l.labelKey)}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
 }
 
 const TagsCell = React.memo<{
@@ -1329,7 +1125,7 @@ export function ProfilesDataTable({
   const [openProxySelectorFor, setOpenProxySelectorFor] = React.useState<
     string | null
   >(null);
-  const [checkingProfileId, setCheckingProfileId] = React.useState<
+  const [checkingProfileId, _setCheckingProfileId] = React.useState<
     string | null
   >(null);
   const [proxyCheckResults, setProxyCheckResults] = React.useState<
@@ -2073,161 +1869,19 @@ export function ProfilesDataTable({
         cell: ({ row, table }) => {
           const meta = table.options.meta as TableMeta;
           const profile = row.original;
-          const browser = profile.browser;
-          const IconComponent = getProfileIcon(profile);
-          const isCrossOs = isCrossOsProfile(profile);
-
           const isSelected = meta.isProfileSelected(profile.id);
-          const isRunning =
-            meta.isClient && meta.runningProfiles.has(profile.id);
-          const isLaunching = meta.launchingProfiles.has(profile.id);
-          const isStopping = meta.stoppingProfiles.has(profile.id);
-          const isDisabled = isRunning || isLaunching || isStopping;
-
-          // Cross-OS profiles: show OS icon when checkboxes aren't visible, show checkbox when they are
-          if (isCrossOs && !meta.showCheckboxes && !isSelected) {
-            const resolvedOs =
-              profile.host_os ||
-              profile.camoufox_config?.os ||
-              profile.wayfern_config?.os;
-            const osName = resolvedOs
-              ? getOSDisplayName(resolvedOs)
-              : "another OS";
-            const crossOsTooltip = t("crossOs.viewOnly", { os: osName });
-            const OsIcon =
-              resolvedOs === "macos"
-                ? FaApple
-                : resolvedOs === "windows"
-                  ? FaWindows
-                  : FaLinux;
-            return (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex size-4 items-center justify-center">
-                    <button
-                      type="button"
-                      className="flex cursor-pointer items-center justify-center border-none p-0"
-                      onClick={() => {
-                        meta.handleIconClick(profile.id);
-                      }}
-                      aria-label={t("common.aria.selectProfile")}
-                    >
-                      <span className="group size-4">
-                        <OsIcon className="size-4 text-muted-foreground group-hover:hidden" />
-                        <span className="peer pointer-events-none hidden size-4 shrink-0 items-center justify-center rounded-[4px] border border-input shadow-xs transition-shadow duration-150 outline-none group-hover:block dark:bg-input/30 dark:data-[state=checked]:bg-primary" />
-                      </span>
-                    </button>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{crossOsTooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            );
-          }
-
-          // Cross-OS profiles with checkboxes visible: show checkbox (selectable for bulk delete)
-          if (isCrossOs && (meta.showCheckboxes || isSelected)) {
-            const resolvedOs =
-              profile.host_os ||
-              profile.camoufox_config?.os ||
-              profile.wayfern_config?.os;
-            const osName = resolvedOs
-              ? getOSDisplayName(resolvedOs)
-              : "another OS";
-            const crossOsTooltip = t("crossOs.viewOnly", { os: osName });
-            return (
-              <NonHoverableTooltip
-                content={<p>{crossOsTooltip}</p>}
-                sideOffset={4}
-                horizontalOffset={8}
-              >
-                <span className="flex size-4 items-center justify-center">
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={(value) => {
-                      meta.handleCheckboxChange(profile.id, !!value);
-                    }}
-                    aria-label={t("common.aria.selectRow")}
-                    className="size-4"
-                  />
-                </span>
-              </NonHoverableTooltip>
-            );
-          }
-
-          if (isDisabled) {
-            const tooltipMessage = isRunning
-              ? t("profiles.table.cantModifyRunning")
-              : isLaunching
-                ? t("profiles.table.cantModifyLaunching")
-                : isStopping
-                  ? t("profiles.table.cantModifyStopping")
-                  : t("profiles.table.cantModifyUpdating");
-
-            return (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex size-4 cursor-not-allowed items-center justify-center">
-                    {IconComponent && (
-                      <IconComponent className="size-4 opacity-50" />
-                    )}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{tooltipMessage}</p>
-                </TooltipContent>
-              </Tooltip>
-            );
-          }
-
-          const browserName = getBrowserDisplayName(browser);
-
-          if (meta.showCheckboxes || isSelected) {
-            return (
-              <NonHoverableTooltip
-                content={<p>{browserName}</p>}
-                sideOffset={4}
-                horizontalOffset={8}
-              >
-                <span className="flex size-4 items-center justify-center">
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={(value) => {
-                      meta.handleCheckboxChange(profile.id, !!value);
-                    }}
-                    aria-label={t("common.aria.selectRow")}
-                    className="size-4"
-                  />
-                </span>
-              </NonHoverableTooltip>
-            );
-          }
 
           return (
-            <NonHoverableTooltip
-              content={<p>{browserName}</p>}
-              sideOffset={4}
-              horizontalOffset={8}
-            >
-              <span className="relative flex size-4 items-center justify-center">
-                <button
-                  type="button"
-                  className="flex cursor-pointer items-center justify-center border-none p-0"
-                  onClick={() => {
-                    meta.handleIconClick(profile.id);
-                  }}
-                  aria-label={t("common.aria.selectProfile")}
-                >
-                  <span className="group size-4">
-                    {IconComponent && (
-                      <IconComponent className="size-4 group-hover:hidden" />
-                    )}
-                    <span className="peer pointer-events-none hidden size-4 shrink-0 items-center justify-center rounded-[4px] border border-input shadow-xs transition-shadow duration-150 outline-none group-hover:block dark:bg-input/30 dark:data-[state=checked]:bg-primary" />
-                  </span>
-                </button>
-              </span>
-            </NonHoverableTooltip>
+            <span className="flex size-4 items-center justify-center">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(value) => {
+                  meta.handleCheckboxChange(profile.id, !!value);
+                }}
+                aria-label={t("common.aria.selectRow")}
+                className="size-4"
+              />
+            </span>
           );
         },
         enableSorting: false,
@@ -2235,184 +1889,8 @@ export function ProfilesDataTable({
         size: 28,
       },
       {
-        id: "actions",
-        size: 48,
-        cell: ({ row, table }) => {
-          const meta = table.options.meta as TableMeta;
-          const profile = row.original;
-          const isRunning =
-            meta.isClient && meta.runningProfiles.has(profile.id);
-          const isLaunching = meta.launchingProfiles.has(profile.id);
-          const isStopping = meta.stoppingProfiles.has(profile.id);
-          const isLockedByAnother = meta.isProfileLockedByAnother(profile.id);
-          const isSyncing = meta.syncStatuses[profile.id]?.status === "syncing";
-          const canLaunch =
-            meta.browserState.canLaunchProfile(profile) &&
-            !isLockedByAnother &&
-            !isSyncing;
-          const lockEmail = meta.getProfileLockEmail(profile.id);
-          const tooltipContent = isLockedByAnother
-            ? meta.t("sync.team.cannotLaunchLocked", { email: lockEmail })
-            : meta.browserState.getLaunchTooltipContent(profile);
-
-          const handleProfileStop = async (profile: BrowserProfile) => {
-            meta.setStoppingProfiles((prev: Set<string>) =>
-              new Set(prev).add(profile.id),
-            );
-            try {
-              await meta.onKillProfile(profile);
-            } catch (error) {
-              meta.setStoppingProfiles((prev: Set<string>) => {
-                const next = new Set(prev);
-                next.delete(profile.id);
-                return next;
-              });
-              throw error;
-            }
-          };
-
-          const handleProfileLaunch = async (profile: BrowserProfile) => {
-            meta.setLaunchingProfiles((prev: Set<string>) =>
-              new Set(prev).add(profile.id),
-            );
-            try {
-              await meta.onLaunchProfile(profile);
-            } finally {
-              // Always clear launching state — the running state is tracked
-              // separately via profile-running-changed events
-              meta.setLaunchingProfiles((prev: Set<string>) => {
-                const next = new Set(prev);
-                next.delete(profile.id);
-                return next;
-              });
-            }
-          };
-
-          const syncInfo = meta.getProfileSyncInfo(profile.id);
-          const isLeader = syncInfo?.isLeader === true;
-          const isFollower = syncInfo?.isLeader === false;
-          const isDesynced = isFollower && syncInfo.failedAtUrl != null;
-          const stopTooltip = isLeader
-            ? meta.t("profiles.synchronizer.stopLeader")
-            : isFollower
-              ? meta.t("profiles.synchronizer.stopFollower", {
-                  leaderName: syncInfo.session.leader_profile_name ?? "",
-                })
-              : tooltipContent;
-
-          const handleStop = async () => {
-            if (isLeader && syncInfo) {
-              // Stop leader: invoke stop_sync_session which kills leader + all followers
-              try {
-                await invoke("stop_sync_session", {
-                  sessionId: syncInfo.session.id,
-                });
-              } catch (error) {
-                console.error("Failed to stop sync session:", error);
-              }
-            } else if (isFollower && syncInfo) {
-              // Stop follower: remove from session
-              try {
-                await invoke("remove_sync_follower", {
-                  sessionId: syncInfo.session.id,
-                  followerProfileId: profile.id,
-                });
-              } catch (error) {
-                console.error("Failed to remove sync follower:", error);
-              }
-            } else {
-              await handleProfileStop(profile);
-            }
-          };
-
-          const buttonVariant = isRunning
-            ? isFollower
-              ? "secondary"
-              : "destructive"
-            : "default";
-
-          return (
-            <div className="flex items-center gap-2">
-              {isDesynced && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <LuTriangleAlert className="size-4 text-warning" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {meta.t("profiles.synchronizer.desyncedTooltip", {
-                      url: syncInfo?.failedAtUrl ?? "",
-                    })}
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex">
-                    <RippleButton
-                      variant={buttonVariant}
-                      size="sm"
-                      disabled={!canLaunch || isLaunching || isStopping}
-                      aria-label={
-                        isRunning
-                          ? meta.t("profiles.actions.stop")
-                          : meta.t("profiles.actions.launch")
-                      }
-                      className={cn(
-                        "grid size-7 place-items-center p-0",
-                        !canLaunch && "cursor-not-allowed opacity-50",
-                        canLaunch && "cursor-pointer",
-                        isFollower && "border-accent",
-                        isRunning &&
-                          "bg-destructive/10 text-destructive hover:bg-destructive/20",
-                      )}
-                      onClick={() =>
-                        isRunning
-                          ? void handleStop()
-                          : void handleProfileLaunch(profile)
-                      }
-                    >
-                      {isLaunching || isStopping ? (
-                        <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-                      ) : isRunning ? (
-                        <LuSquare className="size-3.5 fill-current" />
-                      ) : (
-                        <LuPlay className="size-3.5 fill-current" />
-                      )}
-                    </RippleButton>
-                  </span>
-                </TooltipTrigger>
-                {(stopTooltip || tooltipContent) && (
-                  <TooltipContent>
-                    {isRunning ? stopTooltip : tooltipContent}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </div>
-          );
-        },
-      },
-      {
-        // Hidden, sort-only column so profiles can be sorted by creation date
-        // without showing a Created column in the table (issue #454). Kept
-        // hidden via columnVisibility; sorting still works on hidden columns.
-        id: "created_at",
-        accessorFn: (row) => row.created_at ?? 0,
-        enableSorting: true,
-        enableHiding: true,
-        sortingFn: "basic",
-        header: () => null,
-        cell: () => null,
-      },
-      {
         accessorKey: "name",
-        // The only column without a fixed width: table-fixed hands it all
-        // remaining space as the window grows or shrinks.
         meta: { flexWidth: true },
-        // The Name header doubles as the sort control: clicking opens a menu to
-        // sort by name (A–Z / Z–A) or by creation date (newest / oldest), so
-        // creation-date sorting needs no visible column.
         header: ({ table }) => {
           const meta = table.options.meta as TableMeta;
           const sort = table.getState().sorting[0];
@@ -2423,7 +1901,7 @@ export function ProfilesDataTable({
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-auto cursor-pointer justify-start p-0 text-left font-semibold"
+                  className="h-auto cursor-pointer justify-start p-0 text-left font-semibold hover:bg-transparent"
                 >
                   {meta.t("common.labels.name")}
                   {isActive("name", false) ? (
@@ -2529,64 +2007,115 @@ export function ProfilesDataTable({
             );
           }
 
-          const display = (
-            <OverflowTooltipText
-              text={name}
-              className="text-left leading-none font-medium"
-            />
-          );
+          // Browser icon
+          const BrowserIcon = getProfileIcon(profile);
 
-          const isCrossOs = isCrossOsProfile(profile);
-          const isCrossOsBlocked = isCrossOs;
-          const isRunning =
-            meta.isClient && meta.runningProfiles.has(profile.id);
-          const isLaunching = meta.launchingProfiles.has(profile.id);
-          const isStopping = meta.stoppingProfiles.has(profile.id);
-          const isDisabled =
-            isRunning || isLaunching || isStopping || isCrossOsBlocked;
-          const lockedEmail = meta.getProfileLockEmail(profile.id);
-          const isLocked = meta.isProfileLockedByAnother(profile.id);
+          // OS icon
+          const resolvedOs =
+            profile.host_os ||
+            profile.camoufox_config?.os ||
+            profile.wayfern_config?.os;
+          const OsIcon =
+            resolvedOs === "macos"
+              ? FaApple
+              : resolvedOs === "windows"
+                ? FaWindows
+                : FaLinux;
+
+          // Chromium/Firefox version major
+          const versionMajor = profile.version
+            ? profile.version.split(".")[0]
+            : "142";
+
+          // Flag info
+          const effectiveProxyId = profile.proxy_id;
+          const effectiveProxy = effectiveProxyId
+            ? meta.storedProxies.find((p) => p.id === effectiveProxyId)
+            : null;
+          const countryCode = effectiveProxy?.geo_country;
 
           return (
-            <div className="flex max-w-full min-w-0 items-center gap-1.5 overflow-hidden">
+            <div className="flex max-w-full min-w-0 items-center gap-3 overflow-hidden py-0.5">
               <button
                 type="button"
                 className={cn(
-                  "mr-auto h-6 max-w-full min-w-0 overflow-hidden rounded border-none bg-transparent px-2 py-1 text-left",
-                  isDisabled
-                    ? "cursor-not-allowed opacity-60"
-                    : "cursor-pointer hover:bg-accent/50",
+                  "h-6 max-w-[200px] truncate rounded border-none bg-transparent px-2 py-1 text-left shrink-0",
+                  "cursor-pointer hover:bg-accent/50 text-sm font-medium",
                 )}
                 onClick={() => {
-                  if (isDisabled) return;
                   meta.setProfileToRename(profile);
                   meta.setNewProfileName(profile.name);
                   meta.setRenameError(null);
                 }}
-                onKeyDown={(e) => {
-                  if (isDisabled) return;
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    meta.setProfileToRename(profile);
-                    meta.setNewProfileName(profile.name);
-                    meta.setRenameError(null);
-                  }
-                }}
               >
-                {display}
+                <OverflowTooltipText text={name} className="text-left" />
               </button>
-              {isLocked && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <LuLock className="size-3 text-muted-foreground" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {meta.t("sync.team.profileLocked", { email: lockedEmail })}
-                  </TooltipContent>
-                </Tooltip>
-              )}
+
+              <div className="flex items-center gap-1.5 shrink-0 bg-secondary/50 border border-border px-2 py-0.5 rounded-md text-[10px] text-muted-foreground select-none">
+                {/* Browser icon */}
+                {BrowserIcon && (
+                  <BrowserIcon className="size-3 text-foreground" />
+                )}
+
+                {/* OS and version */}
+                <div className="flex flex-col items-center justify-center leading-none size-4 select-none">
+                  {OsIcon && <OsIcon className="size-2.5 text-foreground" />}
+                  <span className="text-[7px] mt-0.5 scale-90">
+                    {versionMajor}
+                  </span>
+                </div>
+
+                {/* Dotted connector */}
+                <span className="w-3 border-t border-dashed border-muted-foreground/30 mx-0.5" />
+
+                {/* Flag icon */}
+                {countryCode ? (
+                  <button
+                    type="button"
+                    className="size-3 cursor-pointer hover:opacity-80 transition-opacity border-none p-0 bg-transparent flex items-center justify-center shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      meta.onBulkProxyAssignment?.([profile.id]);
+                    }}
+                    title={countryCode}
+                  >
+                    <span
+                      className={cn(
+                        "size-3 rounded-xs shrink-0 inline-block",
+                        getFlagIconClass(countryCode),
+                      )}
+                    />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="size-3 hover:text-foreground flex items-center justify-center cursor-pointer transition-colors border-none p-0 bg-transparent text-muted-foreground/40"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      meta.onBulkProxyAssignment?.([profile.id]);
+                    }}
+                    title={meta.t("profiles.table.changeProxy")}
+                  >
+                    <FiWifi className="size-3" />
+                  </button>
+                )}
+
+                {/* Dotted connector */}
+                <span className="w-3 border-t border-dashed border-muted-foreground/30 mx-0.5" />
+
+                {/* Quick proxy change button */}
+                <button
+                  type="button"
+                  className="size-3.5 hover:bg-accent hover:text-foreground rounded flex items-center justify-center cursor-pointer transition-colors border-none p-0 bg-transparent text-muted-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    meta.onBulkProxyAssignment?.([profile.id]);
+                  }}
+                  title={meta.t("profiles.table.changeProxy")}
+                >
+                  <LuPlus className="size-2.5" />
+                </button>
+              </div>
             </div>
           );
         },
@@ -2656,345 +2185,280 @@ export function ProfilesDataTable({
         },
       },
       {
-        id: "proxy",
+        id: "last_open",
         size: 110,
         header: ({ table }) => {
           const meta = table.options.meta as TableMeta;
-          return meta.t("profiles.table.proxy");
+          return meta.t("profiles.table.lastOpen");
         },
-        cell: ({ row, table }) => {
-          const meta = table.options.meta as TableMeta;
+        cell: ({ row }) => {
           const profile = row.original;
-          const isCrossOs = isCrossOsProfile(profile);
-          const isCrossOsBlocked = isCrossOs;
-          const isRunning =
-            meta.isClient && meta.runningProfiles.has(profile.id);
-          const isLaunching = meta.launchingProfiles.has(profile.id);
-          const isStopping = meta.stoppingProfiles.has(profile.id);
-          const isDisabled =
-            isRunning || isLaunching || isStopping || isCrossOsBlocked;
-
-          const hasProxyOverride = Object.hasOwn(
-            meta.proxyOverrides,
-            profile.id,
-          );
-          const effectiveProxyId = hasProxyOverride
-            ? meta.proxyOverrides[profile.id]
-            : (profile.proxy_id ?? null);
-          const effectiveProxy = effectiveProxyId
-            ? (meta.storedProxies.find((p) => p.id === effectiveProxyId) ??
-              null)
-            : null;
-
-          const hasVpnOverride = Object.hasOwn(meta.vpnOverrides, profile.id);
-          const effectiveVpnId = hasVpnOverride
-            ? meta.vpnOverrides[profile.id]
-            : (profile.vpn_id ?? null);
-          const effectiveVpn = effectiveVpnId
-            ? (meta.vpnConfigs.find((v) => v.id === effectiveVpnId) ?? null)
-            : null;
-
-          const hasAssignment = Boolean(effectiveProxy || effectiveVpn);
-          const displayName = effectiveVpn
-            ? effectiveVpn.name
-            : effectiveProxy
-              ? effectiveProxy.name
-              : meta.t("profiles.table.notSelected");
-          const vpnBadge = effectiveVpn ? "WG" : null;
-          const isSelectorOpen = meta.openProxySelectorFor === profile.id;
-          const selectedId = effectiveVpnId ?? effectiveProxyId ?? null;
-
-          // When profile is running, show bandwidth chart instead of proxy selector
-          if (isRunning && meta.trafficSnapshots) {
-            const snapshot = meta.trafficSnapshots[profile.id];
-            const bandwidthData = snapshot?.recent_bandwidth
-              ? [...snapshot.recent_bandwidth]
-              : [];
-            const currentBandwidth =
-              (snapshot?.current_bytes_sent ?? 0) +
-              (snapshot?.current_bytes_received ?? 0);
-
+          if (!profile.last_launch)
             return (
-              <div className="min-w-0 overflow-hidden">
-                <BandwidthMiniChart
-                  key={`${profile.id}-${snapshot?.last_update ?? 0}-${bandwidthData.length}`}
-                  data={bandwidthData}
-                  currentBandwidth={currentBandwidth}
-                  onClick={() => meta.onOpenTrafficDialog?.(profile.id)}
-                />
-              </div>
+              <span className="text-muted-foreground/50 text-xs">---</span>
             );
-          }
-
           return (
-            <div className="flex min-w-0 items-center gap-2 overflow-hidden">
-              <Popover
-                open={isSelectorOpen}
-                onOpenChange={(open) => {
-                  meta.setOpenProxySelectorFor(open ? profile.id : null);
-                }}
-              >
-                <ProxyCellTrigger
-                  displayName={displayName}
-                  hasAssignment={hasAssignment}
-                  vpnBadge={vpnBadge}
-                  isDisabled={isDisabled}
-                />
-
-                {!isDisabled && (
-                  <PopoverContent
-                    className="w-[240px] p-0"
-                    align="end"
-                    sideOffset={8}
-                  >
-                    <Command>
-                      <CommandInput
-                        placeholder={
-                          meta.canCreateLocationProxy
-                            ? t("createProfile.proxy.searchWithCountries")
-                            : t("createProfile.proxy.search")
-                        }
-                        onFocus={() => {
-                          if (meta.canCreateLocationProxy)
-                            void meta.loadCountries();
-                        }}
-                      />
-                      <CommandList>
-                        <CommandEmpty>
-                          {t("createProfile.proxy.notFound")}
-                        </CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value="__none__"
-                            onSelect={() =>
-                              void meta.handleProxySelection(profile.id, null)
-                            }
-                          >
-                            <LuCheck
-                              className={cn(
-                                "mr-2 size-4",
-                                selectedId === null
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            {t("common.labels.none")}
-                          </CommandItem>
-                          {meta.storedProxies
-                            .filter(
-                              (proxy: StoredProxy) =>
-                                !proxy.is_cloud_managed &&
-                                !proxy.is_cloud_derived,
-                            )
-                            .map((proxy: StoredProxy) => (
-                              <CommandItem
-                                key={proxy.id}
-                                value={proxy.name}
-                                onSelect={() =>
-                                  void meta.handleProxySelection(
-                                    profile.id,
-                                    proxy.id,
-                                  )
-                                }
-                              >
-                                <LuCheck
-                                  className={cn(
-                                    "mr-2 size-4",
-                                    effectiveProxyId === proxy.id &&
-                                      !effectiveVpn
-                                      ? "opacity-100"
-                                      : "opacity-0",
-                                  )}
-                                />
-                                {proxy.name}
-                              </CommandItem>
-                            ))}
-                        </CommandGroup>
-                        {meta.vpnConfigs.length > 0 && (
-                          <CommandGroup heading={t("profileTable.vpnsHeading")}>
-                            {meta.vpnConfigs.map((vpn) => (
-                              <CommandItem
-                                key={vpn.id}
-                                value={`vpn-${vpn.name}`}
-                                onSelect={() =>
-                                  void meta.handleVpnSelection(
-                                    profile.id,
-                                    vpn.id,
-                                  )
-                                }
-                              >
-                                <LuCheck
-                                  className={cn(
-                                    "mr-2 size-4",
-                                    effectiveVpnId === vpn.id
-                                      ? "opacity-100"
-                                      : "opacity-0",
-                                  )}
-                                />
-                                <Badge
-                                  variant="outline"
-                                  className="mr-1 px-1 py-0 text-[10px] leading-tight"
-                                >
-                                  WG
-                                </Badge>
-                                {vpn.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        )}
-                        {meta.canCreateLocationProxy &&
-                          meta.countries.length > 0 && (
-                            <CommandGroup
-                              heading={t("profileTable.createByCountryHeading")}
-                            >
-                              {meta.countries
-                                .filter(
-                                  (c) =>
-                                    !meta.storedProxies.some(
-                                      (p) =>
-                                        p.is_cloud_derived &&
-                                        p.geo_country === c.code,
-                                    ),
-                                )
-                                .map((country) => (
-                                  <CommandItem
-                                    key={`country-${country.code}`}
-                                    value={`create-${country.name}`}
-                                    onSelect={() =>
-                                      void meta.handleCreateCountryProxy(
-                                        profile.id,
-                                        country,
-                                      )
-                                    }
-                                  >
-                                    <span className="mr-2 size-4" />+{" "}
-                                    {country.name}
-                                  </CommandItem>
-                                ))}
-                            </CommandGroup>
-                          )}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                )}
-              </Popover>
-              {effectiveProxy && !effectiveVpn && !isDisabled && (
-                <ProxyCheckButton
-                  proxy={effectiveProxy}
-                  profileId={profile.id}
-                  checkingProfileId={meta.checkingProfileId}
-                  cachedResult={meta.proxyCheckResults[effectiveProxy.id]}
-                  setCheckingProfileId={setCheckingProfileId}
-                  onCheckComplete={(result) => {
-                    setProxyCheckResults((prev) => ({
-                      ...prev,
-                      [effectiveProxy.id]: result,
-                    }));
-                  }}
-                  onCheckFailed={(result) => {
-                    setProxyCheckResults((prev) => ({
-                      ...prev,
-                      [effectiveProxy.id]: result,
-                    }));
-                  }}
-                />
-              )}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="opacity-70 text-[10px]">⏱</span>
+              <span>{formatRelativeTime(profile.last_launch)}</span>
             </div>
           );
         },
       },
       {
-        id: "ext",
-        size: 95,
+        id: "status",
+        size: 90,
         header: ({ table }) => {
           const meta = table.options.meta as TableMeta;
-          return meta.t("profiles.table.ext");
+          return meta.t("profiles.table.status");
         },
         cell: ({ row, table }) => {
           const meta = table.options.meta as TableMeta;
           const profile = row.original;
-          return <ExtCell profile={profile} meta={meta} />;
-        },
-      },
-      {
-        id: "dns",
-        size: 95,
-        header: ({ table }) => {
-          const meta = table.options.meta as TableMeta;
-          return meta.t("profiles.table.dns");
-        },
-        cell: ({ row, table }) => {
-          const meta = table.options.meta as TableMeta;
-          const profile = row.original;
-          return <DnsCell profile={profile} meta={meta} />;
-        },
-      },
-      {
-        id: "sync",
-        header: "",
-        size: 28,
-        cell: ({ row, table }) => {
-          const profile = row.original;
-          const meta = table.options.meta as TableMeta;
-          const syncEntry = meta.syncStatuses[profile.id];
-          const liveStatus = syncEntry?.status as
-            | "syncing"
-            | "waiting"
-            | "synced"
-            | "error"
-            | "disabled"
-            | undefined;
+          const isRunning =
+            meta.isClient && meta.runningProfiles.has(profile.id);
+          const isLaunching = meta.launchingProfiles.has(profile.id);
+          const isStopping = meta.stoppingProfiles.has(profile.id);
 
-          const dot = getProfileSyncStatusDot(
-            profile,
-            liveStatus,
-            meta.t,
-            syncEntry?.error,
-          );
-          if (!dot) return null;
+          let statusText = meta.t("profiles.status.ready");
+          let statusStyle =
+            "bg-success/15 text-success border border-success/30";
+
+          if (isRunning) {
+            statusText = meta.t("profiles.status.running");
+            statusStyle =
+              "bg-blue-500/15 text-blue-500 border border-blue-500/30";
+          } else if (isLaunching) {
+            statusText = meta.t("profiles.status.launching");
+            statusStyle =
+              "bg-warning/15 text-warning border border-warning/30 animate-pulse";
+          } else if (isStopping) {
+            statusText = meta.t("profiles.status.stopping");
+            statusStyle =
+              "bg-destructive/15 text-destructive border border-destructive/30";
+          } else if (!profile.last_launch) {
+            statusText = meta.t("profiles.status.noStatus");
+            statusStyle = "bg-muted text-muted-foreground border border-border";
+          }
 
           return (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="flex h-9 w-full items-center justify-center">
-                  {dot.encrypted ? (
-                    <LuLock
-                      className={`size-3 ${dot.color.replace("bg-", "text-")}${dot.animate ? " animate-pulse" : ""}`}
-                    />
-                  ) : (
-                    <span
-                      className={`size-2 rounded-full ${dot.color}${dot.animate ? " animate-pulse" : ""}`}
-                    />
-                  )}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>{dot.tooltip}</TooltipContent>
-            </Tooltip>
+            <Badge
+              className={cn(
+                "px-2 py-0.5 rounded-sm text-[10px] font-medium shadow-none select-none",
+                statusStyle,
+              )}
+            >
+              {statusText}
+            </Badge>
           );
         },
       },
       {
-        id: "settings",
-        size: 32,
+        id: "message",
+        size: 100,
+        header: ({ table }) => {
+          const meta = table.options.meta as TableMeta;
+          return meta.t("profiles.table.message");
+        },
         cell: ({ row, table }) => {
           const meta = table.options.meta as TableMeta;
           const profile = row.original;
+          const isRunning =
+            meta.isClient && meta.runningProfiles.has(profile.id);
+          const isLaunching = meta.launchingProfiles.has(profile.id);
+          const isStopping = meta.stoppingProfiles.has(profile.id);
+
+          let msg = "Ready";
+          if (isRunning) msg = "Running";
+          else if (isLaunching) msg = "Launching...";
+          else if (isStopping) msg = "Stopping...";
 
           return (
-            <div className="flex h-9 w-full items-center justify-end">
+            <span className="text-xs text-muted-foreground truncate max-w-full block">
+              {msg}
+            </span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        size: 110,
+        header: ({ table }) => {
+          const meta = table.options.meta as TableMeta;
+          return meta.t("profiles.table.actions");
+        },
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as TableMeta;
+          const profile = row.original;
+          const isRunning =
+            meta.isClient && meta.runningProfiles.has(profile.id);
+          const isLaunching = meta.launchingProfiles.has(profile.id);
+          const isStopping = meta.stoppingProfiles.has(profile.id);
+          const isLockedByAnother = meta.isProfileLockedByAnother(profile.id);
+          const isSyncing = meta.syncStatuses[profile.id]?.status === "syncing";
+          const canLaunch =
+            meta.browserState.canLaunchProfile(profile) &&
+            !isLockedByAnother &&
+            !isSyncing;
+
+          const handleProfileStop = async (profile: BrowserProfile) => {
+            meta.setStoppingProfiles((prev) => new Set(prev).add(profile.id));
+            try {
+              await meta.onKillProfile(profile);
+            } catch (error) {
+              meta.setStoppingProfiles((prev) => {
+                const next = new Set(prev);
+                next.delete(profile.id);
+                return next;
+              });
+              throw error;
+            }
+          };
+
+          const handleProfileLaunch = async (profile: BrowserProfile) => {
+            meta.setLaunchingProfiles((prev) => new Set(prev).add(profile.id));
+            try {
+              await meta.onLaunchProfile(profile);
+            } catch (error) {
+              meta.setLaunchingProfiles((prev) => {
+                const next = new Set(prev);
+                next.delete(profile.id);
+                return next;
+              });
+              throw error;
+            }
+          };
+
+          const handleStop = async () => {
+            const syncInfo = meta.getProfileSyncInfo(profile.id);
+            if (syncInfo?.isLeader) {
+              await invoke("stop_sync_session", {
+                sessionId: syncInfo.session.id,
+              });
+            } else if (syncInfo?.isLeader === false) {
+              await invoke("remove_sync_follower", {
+                sessionId: syncInfo.session.id,
+                followerProfileId: profile.id,
+              });
+            } else {
+              await handleProfileStop(profile);
+            }
+          };
+
+          return (
+            <div className="flex items-center justify-end gap-1.5 w-full">
               <Button
-                variant="ghost"
-                className="size-7 p-0"
-                disabled={!meta.isClient}
-                onClick={() => {
-                  setProfileForInfoDialog(profile);
-                }}
+                size="sm"
+                variant={isRunning ? "destructive" : "default"}
+                disabled={!canLaunch || isLaunching || isStopping}
+                onClick={() =>
+                  isRunning
+                    ? void handleStop()
+                    : void handleProfileLaunch(profile)
+                }
+                className={cn(
+                  "h-7 px-3 text-xs font-semibold gap-1 shrink-0 shadow-none cursor-pointer",
+                  isRunning
+                    ? "bg-orange-600 hover:bg-orange-700 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white",
+                )}
               >
-                <span className="sr-only">
-                  {t("profiles.aria.profileInfo")}
-                </span>
-                <LuInfo className="size-4" />
+                {isLaunching || isStopping ? (
+                  <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                ) : isRunning ? (
+                  <>
+                    <LuSquare className="size-3 fill-current" />
+                    {meta.t("profiles.actions.stop")}
+                  </>
+                ) : (
+                  <>
+                    <LuPlay className="size-3 fill-current" />
+                    {meta.t("profiles.actions.launch")}
+                  </>
+                )}
               </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 p-0 hover:bg-accent cursor-pointer shrink-0"
+                  >
+                    <span className="sr-only">Menu</span>
+                    <FiMoreVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      meta.setProfileToRename(profile);
+                      meta.setNewProfileName(profile.name);
+                      meta.setRenameError(null);
+                    }}
+                  >
+                    {meta.t("profiles.menu.rename")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setProfileForInfoDialog(profile)}
+                  >
+                    {meta.t("profiles.menu.edit")}
+                  </DropdownMenuItem>
+                  {meta.onCopyCookiesToProfile && (
+                    <DropdownMenuItem
+                      onClick={() => meta.onCopyCookiesToProfile?.(profile)}
+                    >
+                      {meta.t("profiles.menu.copyCookies")}
+                    </DropdownMenuItem>
+                  )}
+                  {meta.onOpenCookieManagement && (
+                    <DropdownMenuItem
+                      onClick={() => meta.onOpenCookieManagement?.(profile)}
+                    >
+                      {meta.t("profiles.menu.manageCookies")}
+                    </DropdownMenuItem>
+                  )}
+                  {meta.onCloneProfile && (
+                    <DropdownMenuItem
+                      onClick={() => meta.onCloneProfile?.(profile)}
+                    >
+                      {meta.t("profiles.menu.clone")}
+                    </DropdownMenuItem>
+                  )}
+                  {meta.onAssignProfilesToGroup && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        meta.onAssignProfilesToGroup?.([profile.id])
+                      }
+                    >
+                      {meta.t("profiles.menu.assignGroup")}
+                    </DropdownMenuItem>
+                  )}
+                  {meta.onAssignExtensionGroup && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        meta.onAssignExtensionGroup?.([profile.id])
+                      }
+                    >
+                      {meta.t("profiles.menu.assignExtension")}
+                    </DropdownMenuItem>
+                  )}
+                  {meta.onConfigureCamoufox &&
+                    profile.browser === "camoufox" && (
+                      <DropdownMenuItem
+                        onClick={() => meta.onConfigureCamoufox?.(profile)}
+                      >
+                        {meta.t("profiles.menu.configureCamoufox")}
+                      </DropdownMenuItem>
+                    )}
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => meta.onDeleteProfile?.(profile)}
+                  >
+                    {meta.t("common.buttons.delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           );
         },
@@ -3106,18 +2570,155 @@ export function ProfilesDataTable({
       ? totalSize - virtualRows[virtualRows.length - 1].end
       : 0;
 
+  const selectedCount = selectedProfiles.length;
+
   return (
     <>
       <div className="relative flex min-h-0 flex-1 flex-col">
+        {/* Bulk Actions Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 pb-3 pt-1 border-b border-border mb-3 select-none">
+          <Button
+            size="sm"
+            disabled={selectedCount === 0}
+            onClick={bulkActionsUnlocked && onBulkRun ? onBulkRun : undefined}
+            className={cn(
+              "h-8 text-xs font-semibold gap-1.5 cursor-pointer shrink-0 shadow-none text-white",
+              selectedCount > 0
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
+            )}
+          >
+            <LuPlay className="size-3.5 fill-current" />
+            {selectedCount > 0
+              ? t("profiles.actionBar.startCount", { count: selectedCount })
+              : t("profiles.actionBar.start")}
+          </Button>
+
+          <Button
+            size="sm"
+            disabled={selectedCount === 0}
+            onClick={bulkActionsUnlocked && onBulkStop ? onBulkStop : undefined}
+            className={cn(
+              "h-8 text-xs font-semibold gap-1.5 cursor-pointer shrink-0 shadow-none text-white",
+              selectedCount > 0
+                ? "bg-orange-600 hover:bg-orange-700"
+                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
+            )}
+          >
+            <LuSquare className="size-3.5 fill-current" />
+            {selectedCount > 0
+              ? t("profiles.actionBar.stopCount", { count: selectedCount })
+              : t("profiles.actionBar.stop")}
+          </Button>
+
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={selectedCount === 0}
+            onClick={onBulkDelete}
+            className="h-8 text-xs font-semibold gap-1.5 cursor-pointer shrink-0 shadow-none"
+          >
+            <LuTrash2 className="size-3.5" />
+            {t("common.buttons.delete")}
+          </Button>
+
+          <Button
+            size="sm"
+            disabled={selectedCount === 0 || !bulkActionsUnlocked}
+            className={cn(
+              "h-8 text-xs font-semibold gap-1.5 shrink-0 shadow-none text-white",
+              selectedCount > 0 && bulkActionsUnlocked
+                ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
+            )}
+          >
+            <LuPlay className="size-3.5" />
+            {t("profiles.actionBar.automation")}
+          </Button>
+
+          <Button
+            size="sm"
+            disabled={selectedCount === 0}
+            onClick={onBulkProxyAssignment}
+            className={cn(
+              "h-8 text-xs font-semibold gap-1.5 shrink-0 shadow-none text-white",
+              selectedCount > 0
+                ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
+            )}
+          >
+            <LuInfo className="size-3.5" />
+            {t("profiles.actionBar.updateMultiple")}
+          </Button>
+
+          <Button
+            size="sm"
+            disabled={selectedCount === 0}
+            onClick={onBulkProxyAssignment}
+            className={cn(
+              "h-8 text-xs font-semibold gap-1.5 shrink-0 shadow-none text-white",
+              selectedCount > 0
+                ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
+            )}
+          >
+            <FiWifi className="size-3.5" />
+            {t("profiles.actionBar.proxy")}
+          </Button>
+
+          <Button
+            size="sm"
+            disabled={selectedCount === 0}
+            onClick={onBulkCopyCookies}
+            className={cn(
+              "h-8 text-xs font-semibold gap-1.5 shrink-0 shadow-none text-white",
+              selectedCount > 0
+                ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
+            )}
+          >
+            <LuCookie className="size-3.5" />
+            {t("profiles.actionBar.exportCookies")}
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={selectedCount === 0}
+                className="h-8 text-xs font-semibold gap-1.5 border border-border cursor-pointer shrink-0"
+              >
+                {t("profiles.actionBar.moreAction")}
+                <LuChevronDown className="size-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {onBulkGroupAssignment && (
+                <DropdownMenuItem
+                  onClick={onBulkGroupAssignment}
+                  className="cursor-pointer"
+                >
+                  <LuUsers className="mr-2 size-4" />
+                  {t("profiles.actionBar.assignToGroup")}
+                </DropdownMenuItem>
+              )}
+              {onBulkExtensionGroupAssignment && (
+                <DropdownMenuItem
+                  onClick={onBulkExtensionGroupAssignment}
+                  className="cursor-pointer"
+                >
+                  <LuPuzzle className="mr-2 size-4" />
+                  {t("profiles.actionBar.assignExtensionGroup")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         <div
           ref={scrollParentRef}
-          className={cn(
-            "scroll-fade relative min-h-0 flex-1 overflow-auto",
-            // Clearance for the floating selection action bar (bottom-6 +
-            // ~46px tall) so the last rows can scroll out from behind it.
-            // Same predicate DataTableActionBar uses for its visibility.
-            table.getFilteredSelectedRowModel().rows.length > 0 && "pb-20",
-          )}
+          className={cn("scroll-fade relative min-h-0 flex-1 overflow-auto")}
           style={
             {
               // Sticky table header is 32px tall (h-8); shift the top
@@ -3303,94 +2904,7 @@ export function ProfilesDataTable({
             />
           );
         })()}
-      <DataTableActionBar table={table}>
-        <DataTableActionBarSelection table={table} />
-        {onBulkRun && (
-          <span className="relative inline-flex">
-            <DataTableActionBarAction
-              tooltip={
-                bulkActionsUnlocked
-                  ? t("profiles.actionBar.runSelected")
-                  : t("profiles.actionBar.proRequired")
-              }
-              onClick={bulkActionsUnlocked ? onBulkRun : undefined}
-              disabled={!bulkActionsUnlocked}
-              size="icon"
-            >
-              <LuPlay className="fill-current" />
-            </DataTableActionBarAction>
-            {!bulkActionsUnlocked && (
-              <ProBadge className="pointer-events-none absolute -top-2 -right-2" />
-            )}
-          </span>
-        )}
-        {onBulkStop && (
-          <span className="relative inline-flex">
-            <DataTableActionBarAction
-              tooltip={
-                bulkActionsUnlocked
-                  ? t("profiles.actionBar.stopSelected")
-                  : t("profiles.actionBar.proRequired")
-              }
-              onClick={bulkActionsUnlocked ? onBulkStop : undefined}
-              disabled={!bulkActionsUnlocked}
-              size="icon"
-            >
-              <LuSquare className="fill-current" />
-            </DataTableActionBarAction>
-            {!bulkActionsUnlocked && (
-              <ProBadge className="pointer-events-none absolute -top-2 -right-2" />
-            )}
-          </span>
-        )}
-        {onBulkGroupAssignment && (
-          <DataTableActionBarAction
-            tooltip={t("profiles.actionBar.assignToGroup")}
-            onClick={onBulkGroupAssignment}
-            size="icon"
-          >
-            <LuUsers />
-          </DataTableActionBarAction>
-        )}
-        {onBulkProxyAssignment && (
-          <DataTableActionBarAction
-            tooltip={t("profiles.actionBar.assignProxy")}
-            onClick={onBulkProxyAssignment}
-            size="icon"
-          >
-            <FiWifi />
-          </DataTableActionBarAction>
-        )}
-        {onBulkExtensionGroupAssignment && (
-          <DataTableActionBarAction
-            tooltip={t("profiles.actionBar.assignExtensionGroup")}
-            onClick={onBulkExtensionGroupAssignment}
-            size="icon"
-          >
-            <LuPuzzle />
-          </DataTableActionBarAction>
-        )}
-        {onBulkCopyCookies && (
-          <DataTableActionBarAction
-            tooltip={t("profiles.actionBar.copyCookies")}
-            onClick={onBulkCopyCookies}
-            size="icon"
-          >
-            <LuCookie />
-          </DataTableActionBarAction>
-        )}
-        {onBulkDelete && (
-          <DataTableActionBarAction
-            tooltip={t("common.buttons.delete")}
-            onClick={onBulkDelete}
-            size="icon"
-            variant="destructive"
-            className="border-destructive bg-destructive/50 hover:bg-destructive/70"
-          >
-            <LuTrash2 />
-          </DataTableActionBarAction>
-        )}
-      </DataTableActionBar>
+
       {trafficDialogProfile && (
         <TrafficDetailsDialog
           isOpen={trafficDialogProfile !== null}

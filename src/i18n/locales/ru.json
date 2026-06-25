@@ -245,7 +245,10 @@
       "cantModifyRunning": "Нельзя изменить запущенный профиль",
       "cantModifyLaunching": "Нельзя изменить профиль во время запуска",
       "cantModifyStopping": "Нельзя изменить профиль во время остановки",
-      "cantModifyUpdating": "Нельзя изменить профиль во время обновления браузера"
+      "cantModifyUpdating": "Нельзя изменить профиль во время обновления браузера",
+      "lastOpen": "Последний запуск",
+      "message": "Сообщение",
+      "changeProxy": "Изменить прокси"
     },
     "actions": {
       "launch": "Запустить",
@@ -308,7 +311,16 @@
       "copyCookies": "Копировать cookies",
       "runSelected": "Запустить выбранные",
       "stopSelected": "Остановить выбранные",
-      "proRequired": "Для массового запуска/остановки требуется план Pro"
+      "proRequired": "Для массового запуска/остановки требуется план Pro",
+      "startCount": "Запустить {{count}} профилей",
+      "start": "Запустить профили",
+      "stopCount": "Остановить {{count}} профилей",
+      "stop": "Остановить профили",
+      "automation": "Автоматизация",
+      "updateMultiple": "Обновить несколько",
+      "proxy": "Прокси",
+      "exportCookies": "Экспорт файлов cookie",
+      "moreAction": "Другие действия"
     },
     "passwordProtectedBadge": "Защищено паролем",
     "launchHook": {
@@ -331,6 +343,23 @@
       "nameDesc": "Имя (Я–А)",
       "newest": "Сначала новые",
       "oldest": "Сначала старые"
+    },
+    "status": {
+      "ready": "Готов",
+      "running": "Запущен",
+      "launching": "Запуск...",
+      "stopping": "Остановка...",
+      "noStatus": "Нет статуса"
+    },
+    "menu": {
+      "rename": "Переименовать",
+      "edit": "Редактировать настройки",
+      "copyCookies": "Копировать файлы cookie",
+      "manageCookies": "Управление файлами cookie",
+      "clone": "Клонировать профиль",
+      "assignGroup": "Назначить в группу",
+      "assignExtension": "Назначить расширение",
+      "configureCamoufox": "Настроить Camoufox"
     }
   },
   "createProfile": {
@@ -1502,7 +1531,14 @@
     "noneOption": "Нет",
     "noValidProfiles": "Нет выбранных допустимых профилей.",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "Не удалось назначить прокси/VPN профилям"
+    "failedFallback": "Не удалось назначить прокси/VPN профилям",
+    "changeProxyTitle": "Изменить прокси",
+    "bulkChangeDescription": "Обновить настройки прокси для {{count}} выбранных профилей",
+    "pleaseSelectProxy": "Пожалуйста, выберите конфигурацию прокси",
+    "pleaseInputProxy": "Пожалуйста, введите список прокси",
+    "invalidJson": "Недопустимый JSON",
+    "successClear": "Настройки прокси/VPN успешно очищены",
+    "withoutProxyWarning": "Все выбранные профили будут переведены в режим Без прокси после отправки."
   },
   "groupAssignment": {
     "title": "Назначить группу",
