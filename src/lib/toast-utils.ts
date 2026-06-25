@@ -1,7 +1,7 @@
-import { invoke } from "@tauri-apps/api/core";
+﻿import { invoke } from "@tauri-apps/api/core";
 import React from "react";
 import { type ExternalToast, toast as sonnerToast } from "sonner";
-import { UnifiedToast } from "@/components/custom-toast";
+import { UnifiedToast } from "@/components/shared";
 import i18n from "@/i18n";
 
 interface BaseToastProps {

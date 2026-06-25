@@ -9,7 +9,7 @@ import { RxCross2 } from "react-icons/rx";
 import { useControlledState } from "@/hooks/use-controlled-state";
 import { getStrictContext } from "@/lib/get-strict-context";
 import { cn } from "@/lib/utils";
-import { WindowDragArea } from "../window-drag-area";
+import { WindowDragArea } from "../app-shell/window-drag-area";
 
 type DialogContextType = {
   isOpen: boolean;

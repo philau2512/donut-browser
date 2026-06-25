@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AppUpdateToast } from "@/components/app-update-toast";
+import { AppUpdateToast } from "@/components/shared";
 import { showToast } from "@/lib/toast-utils";
 import type { AppUpdateInfo, AppUpdateProgress } from "@/types";
 

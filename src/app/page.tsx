@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -6,46 +6,69 @@ import { getCurrent } from "@tauri-apps/plugin-deep-link";
 import { useOnborda } from "onborda";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AccountPage } from "@/components/account-page";
-import { CamoufoxConfigDialog } from "@/components/camoufox-config-dialog";
-import { CamoufoxDeprecationDialog } from "@/components/camoufox-deprecation-dialog";
-import { CloneProfileDialog } from "@/components/clone-profile-dialog";
-import { CloseConfirmDialog } from "@/components/close-confirm-dialog";
-import { CommandPalette } from "@/components/command-palette";
-import { CommercialTrialModal } from "@/components/commercial-trial-modal";
-import { CookieCopyDialog } from "@/components/cookie-copy-dialog";
-import { CookieManagementDialog } from "@/components/cookie-management-dialog";
-import { CreateProfileDialog } from "@/components/create-profile-dialog";
-import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
-import { DeviceCodeVerifyDialog } from "@/components/device-code-verify-dialog";
-import { ExtensionGroupAssignmentDialog } from "@/components/extension-group-assignment-dialog";
-import { ExtensionManagementDialog } from "@/components/extension-management-dialog";
-import { GroupAssignmentDialog } from "@/components/group-assignment-dialog";
-import { GroupManagementDialog } from "@/components/group-management-dialog";
-import HomeHeader from "@/components/home-header";
-import { ImportProfileDialog } from "@/components/import-profile-dialog";
-import { IntegrationsDialog } from "@/components/integrations-dialog";
-import { ONBOARDING_TOUR } from "@/components/onboarding-provider";
-import { PermissionDialog } from "@/components/permission-dialog";
-import { ProfilesDataTable } from "@/components/profile-data-table";
+// Cookie
+import { CookieCopyDialog, CookieManagementDialog } from "@/components/cookie";
+// Extension
+import { ExtensionManagementDialog } from "@/components/extension";
+// Group
 import {
-  type PasswordDialogMode,
+  ExtensionGroupAssignmentDialog,
+  GroupAssignmentDialog,
+  GroupManagementDialog,
+} from "@/components/group";
+// Home
+import { HomeHeader, ProfilesDataTable } from "@/components/home";
+import type { AppPage } from "@/components/navigation";
+// Navigation
+import { CommandPalette, RailNav } from "@/components/navigation";
+// Onboarding
+import {
+  ONBOARDING_TOUR,
+  ThankYouDialog,
+  WelcomeDialog,
+} from "@/components/onboarding";
+import type { PasswordDialogMode } from "@/components/profile";
+// Profile
+import {
+  CloneProfileDialog,
+  CreateProfileDialog,
+  ImportProfileDialog,
   ProfilePasswordDialog,
-} from "@/components/profile-password-dialog";
-import { ProfileSelectorDialog } from "@/components/profile-selector-dialog";
-import { ProfileSyncDialog } from "@/components/profile-sync-dialog";
-import { ProxyAssignmentDialog } from "@/components/proxy-assignment-dialog";
-import { ProxyManagementDialog } from "@/components/proxy-management-dialog";
-import { type AppPage, RailNav } from "@/components/rail-nav";
-import { SettingsDialog } from "@/components/settings-dialog";
-import { ShortcutsPage } from "@/components/shortcuts-page";
-import { SyncAllDialog } from "@/components/sync-all-dialog";
-import { SyncConfigDialog } from "@/components/sync-config-dialog";
-import { SyncFollowerDialog } from "@/components/sync-follower-dialog";
-import { ThankYouDialog } from "@/components/thank-you-dialog";
-import { WayfernTermsDialog } from "@/components/wayfern-terms-dialog";
-import { WelcomeDialog } from "@/components/welcome-dialog";
-import { WindowResizeWarningDialog } from "@/components/window-resize-warning-dialog";
+  ProfileSelectorDialog,
+  ProfileSyncDialog,
+} from "@/components/profile";
+import {
+  CamoufoxConfigDialog,
+  CamoufoxDeprecationDialog,
+  WayfernTermsDialog,
+} from "@/components/profile/camoufox";
+// Proxy
+import {
+  ProxyAssignmentDialog,
+  ProxyManagementDialog,
+} from "@/components/proxy";
+// Settings
+import {
+  IntegrationsDialog,
+  SettingsDialog,
+  ShortcutsPage,
+} from "@/components/settings";
+// Shared
+import {
+  CloseConfirmDialog,
+  CommercialTrialModal,
+  DeleteConfirmationDialog,
+  PermissionDialog,
+  WindowResizeWarningDialog,
+} from "@/components/shared";
+// Sync
+import {
+  AccountPage,
+  DeviceCodeVerifyDialog,
+  SyncAllDialog,
+  SyncConfigDialog,
+  SyncFollowerDialog,
+} from "@/components/sync";
 import { useAppUpdateNotifications } from "@/hooks/use-app-update-notifications";
 import { useCloudAuth } from "@/hooks/use-cloud-auth";
 import { useCommercialTrial } from "@/hooks/use-commercial-trial";
