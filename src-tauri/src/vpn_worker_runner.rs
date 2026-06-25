@@ -1,5 +1,5 @@
-use crate::proxy_runner::find_sidecar_executable;
-use crate::proxy_storage::is_process_running;
+use crate::proxy::proxy_runner::find_sidecar_executable;
+use crate::proxy::proxy_storage::is_process_running;
 use crate::vpn_worker_storage::{
   delete_vpn_worker_config, find_vpn_worker_by_vpn_id, generate_vpn_worker_id,
   get_vpn_worker_config, list_vpn_worker_configs, save_vpn_worker_config, vpn_worker_config_path,

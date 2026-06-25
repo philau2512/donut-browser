@@ -100,9 +100,9 @@
       "biome check --fix"
     ],
     "src-tauri/**/*.rs": [
-      "bash -c 'cd src-tauri && cargo fmt --all'",
-      "bash -c 'cd src-tauri && cargo clippy --all-targets --all-features -- -D warnings -D clippy::all'",
-      "bash -c 'cd src-tauri && cargo test --lib'"
+      "node -e \"require('child_process').execSync('cargo fmt --all', { cwd: 'src-tauri', stdio: 'inherit' })\"",
+      "node -e \"require('child_process').execSync('cargo clippy --all-targets --all-features -- -D warnings -D clippy::all', { cwd: 'src-tauri', stdio: 'inherit' })\"",
+      "node -e \"require('child_process').execSync('cargo test --lib', { cwd: 'src-tauri', stdio: 'inherit' })\""
     ],
     "**/*.{rs,ts,tsx,js,jsx,md}": [
       "typos"

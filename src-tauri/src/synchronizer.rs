@@ -171,9 +171,13 @@ impl SynchronizerManager {
     );
 
     // Launch leader first so it gets focus
-    crate::browser_runner::launch_browser_profile(app_handle.clone(), leader.clone(), None)
-      .await
-      .map_err(|e| format!("Failed to launch leader: {e}"))?;
+    crate::browser::browser_runner::launch_browser_profile(
+      app_handle.clone(),
+      leader.clone(),
+      None,
+    )
+    .await
+    .map_err(|e| format!("Failed to launch leader: {e}"))?;
 
     // Launch followers in parallel batches of MAX_CONCURRENT_LAUNCHES
     for chunk in follower_profiles.chunks(MAX_CONCURRENT_LAUNCHES) {
@@ -182,7 +186,7 @@ impl SynchronizerManager {
         let ah = app_handle.clone();
         let fp = fp.clone();
         set.spawn(async move {
-          crate::browser_runner::launch_browser_profile(ah, fp.clone(), None)
+          crate::browser::browser_runner::launch_browser_profile(ah, fp.clone(), None)
             .await
             .map_err(|e| (fp.name.clone(), e.to_string()))
         });
@@ -193,18 +197,27 @@ impl SynchronizerManager {
           Ok(Err((name, e))) => {
             log::error!("Failed to launch follower '{name}': {e}");
             // Kill leader and all already-launched followers
-            let _ =
-              crate::browser_runner::kill_browser_profile(app_handle.clone(), leader.clone()).await;
+            let _ = crate::browser::browser_runner::kill_browser_profile(
+              app_handle.clone(),
+              leader.clone(),
+            )
+            .await;
             for fp in &follower_profiles {
-              let _ =
-                crate::browser_runner::kill_browser_profile(app_handle.clone(), fp.clone()).await;
+              let _ = crate::browser::browser_runner::kill_browser_profile(
+                app_handle.clone(),
+                fp.clone(),
+              )
+              .await;
             }
             return Err(format!("Failed to launch follower '{name}': {e}"));
           }
           Err(e) => {
             log::error!("Launch task panicked: {e}");
-            let _ =
-              crate::browser_runner::kill_browser_profile(app_handle.clone(), leader.clone()).await;
+            let _ = crate::browser::browser_runner::kill_browser_profile(
+              app_handle.clone(),
+              leader.clone(),
+            )
+            .await;
             return Err(format!("Launch task panicked: {e}"));
           }
         }
@@ -283,7 +296,7 @@ impl SynchronizerManager {
         // Kill all profiles on error (leader + followers)
         for pid in &all_profile_ids {
           if let Ok(p) = Self::get_profile(pid) {
-            let _ = crate::browser_runner::kill_browser_profile(ah.clone(), p).await;
+            let _ = crate::browser::browser_runner::kill_browser_profile(ah.clone(), p).await;
           }
         }
       }
@@ -634,7 +647,7 @@ impl SynchronizerManager {
 
     for fid in follower_ids {
       if let Ok(fp) = Self::get_profile(&fid) {
-        let _ = crate::browser_runner::kill_browser_profile(app_handle.clone(), fp).await;
+        let _ = crate::browser::browser_runner::kill_browser_profile(app_handle.clone(), fp).await;
       }
     }
 
@@ -845,13 +858,14 @@ impl SynchronizerManager {
     // Kill followers
     for fid in session.followers.keys() {
       if let Ok(fp) = Self::get_profile(fid) {
-        let _ = crate::browser_runner::kill_browser_profile(app_handle.clone(), fp).await;
+        let _ = crate::browser::browser_runner::kill_browser_profile(app_handle.clone(), fp).await;
       }
     }
 
     // Kill leader
     if let Ok(leader) = Self::get_profile(&session.leader_profile_id) {
-      let _ = crate::browser_runner::kill_browser_profile(app_handle.clone(), leader).await;
+      let _ =
+        crate::browser::browser_runner::kill_browser_profile(app_handle.clone(), leader).await;
     }
 
     let _ = app_handle.emit("sync-session-ended", session_id);
@@ -875,7 +889,7 @@ impl SynchronizerManager {
 
     // Kill the follower browser
     if let Ok(fp) = Self::get_profile(follower_profile_id) {
-      let _ = crate::browser_runner::kill_browser_profile(app_handle.clone(), fp).await;
+      let _ = crate::browser::browser_runner::kill_browser_profile(app_handle.clone(), fp).await;
     }
 
     // Emit updated session info
@@ -926,7 +940,7 @@ impl SynchronizerManager {
       if attempt > 0 {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
       }
-      let port = crate::wayfern_manager::WayfernManager::instance()
+      let port = crate::browser::wayfern_manager::WayfernManager::instance()
         .get_cdp_port(&profile_path_str)
         .await;
       if let Some(p) = port {

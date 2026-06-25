@@ -14,56 +14,40 @@ static PENDING_URLS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 // to the confirmation dialog.
 static QUIT_CONFIRMED: AtomicBool = AtomicBool::new(false);
 
-mod api_client;
-mod api_server;
-mod app_auto_updater;
+pub mod api;
+pub use api::{api_client, api_server, cloud_auth};
+pub mod updater;
+pub use updater::{app_auto_updater, auto_updater, geoip_downloader, version_updater};
 pub mod app_dirs;
-mod auto_updater;
-mod browser;
-mod browser_runner;
-mod browser_version_manager;
-pub mod camoufox;
-mod camoufox_manager;
+pub mod browser;
 mod default_browser;
 pub mod dns_blocklist;
-mod downloaded_browsers_registry;
-mod downloader;
-mod ephemeral_dirs;
 mod extension_manager;
 mod extraction;
-mod geoip_downloader;
 mod group_manager;
 mod human_typing;
 mod ip_utils;
-mod platform_browser;
 mod profile;
 mod profile_importer;
-mod proxy_manager;
-pub mod proxy_runner;
-pub mod proxy_server;
-pub mod proxy_storage;
+pub mod proxy;
+pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic_stats};
 mod settings_manager;
-pub mod socks5_local;
 pub mod sync;
 mod synchronizer;
-pub mod traffic_stats;
-mod wayfern_manager;
-mod wayfern_terms;
+
 // mod theme_detector; // removed: theme detection handled in webview via CSS prefers-color-scheme
-pub mod cloud_auth;
 mod commercial_license;
 mod cookie_manager;
 pub mod events;
-mod mcp_integrations;
-mod mcp_server;
+pub mod mcp;
+pub use mcp::{mcp_integrations, mcp_server};
 mod tag_manager;
 mod team_lock;
-mod version_updater;
 pub mod vpn;
 pub mod vpn_worker_runner;
 pub mod vpn_worker_storage;
 
-use browser_runner::{
+use browser::browser_runner::{
   check_browser_exists, kill_browser_profile, launch_browser_profile, open_url_with_profile,
 };
 
@@ -80,18 +64,18 @@ use profile::password::{
   set_profile_password, unlock_profile, verify_profile_password,
 };
 
-use browser_version_manager::{
+use browser::browser_version_manager::{
   fetch_browser_versions_cached_first, fetch_browser_versions_with_count,
   fetch_browser_versions_with_count_cached_first, get_supported_browsers,
   is_browser_supported_on_platform,
 };
 
-use downloaded_browsers_registry::{
+use browser::downloaded_browsers_registry::{
   check_missing_binaries, ensure_active_browsers_downloaded, ensure_all_binaries_exist,
   get_downloaded_browser_versions,
 };
 
-use downloader::{cancel_download, download_browser};
+use browser::downloader::{cancel_download, download_browser};
 
 use settings_manager::{
   complete_onboarding, dismiss_window_resize_warning, get_app_settings, get_onboarding_completed,
@@ -112,17 +96,16 @@ use sync::{
 use tag_manager::get_all_tags;
 
 use default_browser::{is_default_browser, set_as_default_browser};
-
-use version_updater::{
+use updater::version_updater::{
   clear_all_version_cache_and_refetch, get_version_update_status, get_version_updater,
   trigger_manual_version_update,
 };
 
-use auto_updater::{
+use updater::auto_updater::{
   check_for_browser_updates, complete_browser_update_with_auto_update, dismiss_update_notification,
 };
 
-use app_auto_updater::{
+use updater::app_auto_updater::{
   check_for_app_updates, check_for_app_updates_manual, download_and_prepare_app_update,
   restart_application,
 };
@@ -141,11 +124,11 @@ use group_manager::{
   get_groups_with_profile_counts, get_profile_groups, update_profile_group,
 };
 
-use geoip_downloader::{check_missing_geoip_database, GeoIPDownloader};
+use updater::geoip_downloader::{check_missing_geoip_database, GeoIPDownloader};
 
-use browser_version_manager::get_browser_release_types;
+use browser::browser_version_manager::get_browser_release_types;
 
-use api_server::{get_api_server_status, start_api_server, stop_api_server};
+use api::api_server::{get_api_server_status, start_api_server, stop_api_server};
 
 // Trait to extend WebviewWindow with transparent titlebar functionality
 pub trait WindowExt {
@@ -252,9 +235,9 @@ async fn create_stored_proxy(
   app_handle: tauri::AppHandle,
   name: String,
   proxy_settings: Option<crate::browser::ProxySettings>,
-) -> Result<crate::proxy_manager::StoredProxy, String> {
+) -> Result<crate::proxy::proxy_manager::StoredProxy, String> {
   if let Some(settings) = proxy_settings {
-    crate::proxy_manager::PROXY_MANAGER
+    crate::proxy::proxy_manager::PROXY_MANAGER
       .create_stored_proxy(&app_handle, name, settings)
       .map_err(|e| format!("Failed to create stored proxy: {e}"))
   } else {
@@ -263,8 +246,8 @@ async fn create_stored_proxy(
 }
 
 #[tauri::command]
-async fn get_stored_proxies() -> Result<Vec<crate::proxy_manager::StoredProxy>, String> {
-  Ok(crate::proxy_manager::PROXY_MANAGER.get_stored_proxies())
+async fn get_stored_proxies() -> Result<Vec<crate::proxy::proxy_manager::StoredProxy>, String> {
+  Ok(crate::proxy::proxy_manager::PROXY_MANAGER.get_stored_proxies())
 }
 
 #[tauri::command]
@@ -273,15 +256,15 @@ async fn update_stored_proxy(
   proxy_id: String,
   name: Option<String>,
   proxy_settings: Option<crate::browser::ProxySettings>,
-) -> Result<crate::proxy_manager::StoredProxy, String> {
-  crate::proxy_manager::PROXY_MANAGER
+) -> Result<crate::proxy::proxy_manager::StoredProxy, String> {
+  crate::proxy::proxy_manager::PROXY_MANAGER
     .update_stored_proxy(&app_handle, &proxy_id, name, proxy_settings)
     .map_err(|e| format!("Failed to update stored proxy: {e}"))
 }
 
 #[tauri::command]
 async fn delete_stored_proxy(app_handle: tauri::AppHandle, proxy_id: String) -> Result<(), String> {
-  crate::proxy_manager::PROXY_MANAGER
+  crate::proxy::proxy_manager::PROXY_MANAGER
     .delete_stored_proxy(&app_handle, &proxy_id)
     .map_err(|e| format!("Failed to delete stored proxy: {e}"))
 }
@@ -290,29 +273,31 @@ async fn delete_stored_proxy(app_handle: tauri::AppHandle, proxy_id: String) -> 
 async fn check_proxy_validity(
   proxy_id: String,
   proxy_settings: Option<crate::browser::ProxySettings>,
-) -> Result<crate::proxy_manager::ProxyCheckResult, String> {
+) -> Result<crate::proxy::proxy_manager::ProxyCheckResult, String> {
   let settings = if let Some(s) = proxy_settings {
     s
   } else {
-    crate::proxy_manager::PROXY_MANAGER
+    crate::proxy::proxy_manager::PROXY_MANAGER
       .get_proxy_settings_by_id(&proxy_id)
       .ok_or_else(|| format!("Proxy '{proxy_id}' not found"))?
   };
-  crate::proxy_manager::PROXY_MANAGER
+  crate::proxy::proxy_manager::PROXY_MANAGER
     .check_proxy_validity(&proxy_id, &settings)
     .await
 }
 
 #[tauri::command]
-fn get_cached_proxy_check(proxy_id: String) -> Option<crate::proxy_manager::ProxyCheckResult> {
-  crate::proxy_manager::PROXY_MANAGER.get_cached_proxy_check(&proxy_id)
+fn get_cached_proxy_check(
+  proxy_id: String,
+) -> Option<crate::proxy::proxy_manager::ProxyCheckResult> {
+  crate::proxy::proxy_manager::PROXY_MANAGER.get_cached_proxy_check(&proxy_id)
 }
 
 #[tauri::command]
 fn export_proxies(format: String) -> Result<String, String> {
   match format.as_str() {
-    "json" => crate::proxy_manager::PROXY_MANAGER.export_proxies_json(),
-    "txt" => Ok(crate::proxy_manager::PROXY_MANAGER.export_proxies_txt()),
+    "json" => crate::proxy::proxy_manager::PROXY_MANAGER.export_proxies_json(),
+    "txt" => Ok(crate::proxy::proxy_manager::PROXY_MANAGER.export_proxies_txt()),
     _ => Err(format!("Unsupported export format: {format}")),
   }
 }
@@ -321,24 +306,24 @@ fn export_proxies(format: String) -> Result<String, String> {
 async fn import_proxies_json(
   app_handle: tauri::AppHandle,
   content: String,
-) -> Result<crate::proxy_manager::ProxyImportResult, String> {
-  crate::proxy_manager::PROXY_MANAGER
+) -> Result<crate::proxy::proxy_manager::ProxyImportResult, String> {
+  crate::proxy::proxy_manager::PROXY_MANAGER
     .import_proxies_json(&app_handle, &content)
     .map_err(|e| format!("Failed to import proxies: {e}"))
 }
 
 #[tauri::command]
-fn parse_txt_proxies(content: String) -> Vec<crate::proxy_manager::ProxyParseResult> {
-  crate::proxy_manager::ProxyManager::parse_txt_proxies(&content)
+fn parse_txt_proxies(content: String) -> Vec<crate::proxy::proxy_manager::ProxyParseResult> {
+  crate::proxy::proxy_manager::ProxyManager::parse_txt_proxies(&content)
 }
 
 #[tauri::command]
 async fn import_proxies_from_parsed(
   app_handle: tauri::AppHandle,
-  parsed_proxies: Vec<crate::proxy_manager::ParsedProxyLine>,
+  parsed_proxies: Vec<crate::proxy::proxy_manager::ParsedProxyLine>,
   name_prefix: Option<String>,
-) -> Result<crate::proxy_manager::ProxyImportResult, String> {
-  crate::proxy_manager::PROXY_MANAGER
+) -> Result<crate::proxy::proxy_manager::ProxyImportResult, String> {
+  crate::proxy::proxy_manager::PROXY_MANAGER
     .import_proxies_from_parsed(&app_handle, parsed_proxies, name_prefix)
     .map_err(|e| format!("Failed to import proxies: {e}"))
 }
@@ -429,17 +414,17 @@ async fn export_profile_cookies(profile_id: String, format: String) -> Result<St
 
 #[tauri::command]
 fn check_wayfern_terms_accepted() -> bool {
-  wayfern_terms::WayfernTermsManager::instance().is_terms_accepted()
+  browser::wayfern_terms::WayfernTermsManager::instance().is_terms_accepted()
 }
 
 #[tauri::command]
 fn check_wayfern_downloaded() -> bool {
-  wayfern_terms::WayfernTermsManager::instance().is_wayfern_downloaded()
+  browser::wayfern_terms::WayfernTermsManager::instance().is_wayfern_downloaded()
 }
 
 #[tauri::command]
 async fn accept_wayfern_terms() -> Result<(), String> {
-  wayfern_terms::WayfernTermsManager::instance()
+  browser::wayfern_terms::WayfernTermsManager::instance()
     .accept_terms()
     .await
 }
@@ -751,23 +736,22 @@ async fn is_geoip_database_available() -> Result<bool, String> {
 }
 
 #[tauri::command]
-async fn get_all_traffic_snapshots() -> Result<Vec<crate::traffic_stats::TrafficSnapshot>, String> {
+async fn get_all_traffic_snapshots(
+) -> Result<Vec<crate::proxy::traffic_stats::TrafficSnapshot>, String> {
   // Use real-time snapshots that merge in-memory data with disk data
-  Ok(crate::traffic_stats::get_all_traffic_snapshots_realtime())
+  Ok(crate::proxy::traffic_stats::get_all_traffic_snapshots_realtime())
 }
 
 #[tauri::command]
 async fn get_profile_traffic_snapshot(
   profile_id: String,
-) -> Result<Option<crate::traffic_stats::TrafficSnapshot>, String> {
-  Ok(crate::traffic_stats::get_traffic_snapshot_for_profile(
-    &profile_id,
-  ))
+) -> Result<Option<crate::proxy::traffic_stats::TrafficSnapshot>, String> {
+  Ok(crate::proxy::traffic_stats::get_traffic_snapshot_for_profile(&profile_id))
 }
 
 #[tauri::command]
 async fn clear_all_traffic_stats() -> Result<(), String> {
-  crate::traffic_stats::clear_all_traffic_stats()
+  crate::proxy::traffic_stats::clear_all_traffic_stats()
     .map_err(|e| format!("Failed to clear traffic stats: {e}"))
 }
 
@@ -775,8 +759,8 @@ async fn clear_all_traffic_stats() -> Result<(), String> {
 async fn get_traffic_stats_for_period(
   profile_id: String,
   seconds: u64,
-) -> Result<Option<crate::traffic_stats::FilteredTrafficStats>, String> {
-  Ok(crate::traffic_stats::get_traffic_stats_for_period(
+) -> Result<Option<crate::proxy::traffic_stats::FilteredTrafficStats>, String> {
+  Ok(crate::proxy::traffic_stats::get_traffic_stats_for_period(
     &profile_id,
     seconds,
   ))
@@ -959,13 +943,13 @@ async fn update_vpn_config(vpn_id: String, name: String) -> Result<vpn::VpnConfi
 #[tauri::command]
 async fn check_vpn_validity(
   vpn_id: String,
-) -> Result<crate::proxy_manager::ProxyCheckResult, String> {
+) -> Result<crate::proxy::proxy_manager::ProxyCheckResult, String> {
   check_vpn_validity_core(&vpn_id).await
 }
 
 pub async fn check_vpn_validity_core(
   vpn_id: &str,
-) -> Result<crate::proxy_manager::ProxyCheckResult, String> {
+) -> Result<crate::proxy::proxy_manager::ProxyCheckResult, String> {
   let now = std::time::SystemTime::now()
     .duration_since(std::time::UNIX_EPOCH)
     .unwrap_or_default()
@@ -982,7 +966,7 @@ pub async fn check_vpn_validity_core(
     vpn_worker.local_port.unwrap_or_default()
   );
 
-  let local_proxy = crate::proxy_runner::start_proxy_process(Some(socks_url), None)
+  let local_proxy = crate::proxy::proxy_runner::start_proxy_process(Some(socks_url), None)
     .await
     .map_err(|error| error.to_string());
   let local_proxy = match local_proxy {
@@ -1009,11 +993,11 @@ pub async fn check_vpn_validity_core(
     match ip_utils::fetch_public_ip(Some(&local_proxy_url)).await {
       Ok(ip) => {
         let (city, country, country_code) =
-          crate::proxy_manager::ProxyManager::get_ip_geolocation(&ip)
+          crate::proxy::proxy_manager::ProxyManager::get_ip_geolocation(&ip)
             .await
             .unwrap_or_default();
 
-        result = Some(crate::proxy_manager::ProxyCheckResult {
+        result = Some(crate::proxy::proxy_manager::ProxyCheckResult {
           ip,
           city,
           country,
@@ -1033,12 +1017,12 @@ pub async fn check_vpn_validity_core(
     }
   }
 
-  let _ = crate::proxy_runner::stop_proxy_process(&local_proxy.id).await;
+  let _ = crate::proxy::proxy_runner::stop_proxy_process(&local_proxy.id).await;
   if !had_existing_worker {
     let _ = vpn_worker_runner::stop_vpn_worker(&vpn_worker.id).await;
   }
 
-  let result = result.unwrap_or(crate::proxy_manager::ProxyCheckResult {
+  let result = result.unwrap_or(crate::proxy::proxy_manager::ProxyCheckResult {
     ip: String::new(),
     city: None,
     country: None,
@@ -1071,13 +1055,13 @@ pub async fn validate_profile_network(
     // The cloud-included proxy is managed infrastructure; its only failure mode
     // is the user hitting their usage limit, which surfaces as a 402 at request
     // time. There's nothing to pre-validate here.
-    if proxy_id == crate::proxy_manager::CLOUD_PROXY_ID {
+    if proxy_id == crate::proxy::proxy_manager::CLOUD_PROXY_ID {
       return Ok(());
     }
-    let settings = crate::proxy_manager::PROXY_MANAGER
+    let settings = crate::proxy::proxy_manager::PROXY_MANAGER
       .get_proxy_settings_by_id(proxy_id)
       .ok_or_else(|| format!("Proxy '{proxy_id}' not found"))?;
-    match crate::proxy_manager::PROXY_MANAGER
+    match crate::proxy::proxy_manager::PROXY_MANAGER
       .check_proxy_validity(proxy_id, &settings)
       .await
     {
@@ -1125,7 +1109,7 @@ async fn disconnect_vpn(vpn_id: String) -> Result<(), String> {
 
 #[tauri::command]
 async fn get_vpn_status(vpn_id: String) -> Result<vpn::VpnStatus, String> {
-  use crate::proxy_storage::is_process_running;
+  use crate::proxy::proxy_storage::is_process_running;
 
   if let Some(worker) = vpn_worker_storage::find_vpn_worker_by_vpn_id(&vpn_id) {
     let connected = worker.pid.map(is_process_running).unwrap_or(false);
@@ -1151,7 +1135,7 @@ async fn get_vpn_status(vpn_id: String) -> Result<vpn::VpnStatus, String> {
 
 #[tauri::command]
 async fn list_active_vpn_connections() -> Result<Vec<vpn::VpnStatus>, String> {
-  use crate::proxy_storage::is_process_running;
+  use crate::proxy::proxy_storage::is_process_running;
 
   let workers = vpn_worker_storage::list_vpn_worker_configs();
   Ok(
@@ -1209,17 +1193,17 @@ async fn generate_sample_fingerprint(
   };
 
   if browser == "camoufox" {
-    let config: crate::camoufox_manager::CamoufoxConfig =
+    let config: crate::browser::camoufox_manager::CamoufoxConfig =
       serde_json::from_str(&config_json).map_err(|e| format!("Failed to parse config: {e}"))?;
-    let manager = crate::camoufox_manager::CamoufoxManager::instance();
+    let manager = crate::browser::camoufox_manager::CamoufoxManager::instance();
     manager
       .generate_fingerprint_config(&app_handle, &temp_profile, &config)
       .await
       .map_err(|e| format!("Failed to generate fingerprint: {e}"))
   } else if browser == "wayfern" {
-    let config: crate::wayfern_manager::WayfernConfig =
+    let config: crate::browser::wayfern_manager::WayfernConfig =
       serde_json::from_str(&config_json).map_err(|e| format!("Failed to parse config: {e}"))?;
-    let manager = crate::wayfern_manager::WayfernManager::instance();
+    let manager = crate::browser::wayfern_manager::WayfernManager::instance();
     manager
       .generate_fingerprint_config(&app_handle, &temp_profile, &config)
       .await
@@ -1440,7 +1424,7 @@ pub fn run() {
     )
     .setup(|app| {
       // Recover ephemeral dir mappings from RAM-backed storage (tmpfs/ramdisk)
-      ephemeral_dirs::recover_ephemeral_dirs();
+      browser::ephemeral_dirs::recover_ephemeral_dirs();
 
       // Extract icons and metadata for existing extensions that don't have them yet
       {
@@ -1656,7 +1640,7 @@ pub fn run() {
       // process — if the app crashed while a browser was running, its detached
       // browser keeps going and needs the proxy/VPN worker to stay alive.
       tauri::async_runtime::spawn(async move {
-        use crate::proxy_storage::{delete_proxy_config, is_process_running, list_proxy_configs};
+        use crate::proxy::proxy_storage::{delete_proxy_config, is_process_running, list_proxy_configs};
         use crate::vpn_worker_storage::{delete_vpn_worker_config, list_vpn_worker_configs};
 
         // Build sets of (profile_id, vpn_id) whose browsers are still running
@@ -1695,7 +1679,7 @@ pub fn run() {
                 config.id,
                 pid
               );
-              let _ = crate::proxy_runner::stop_proxy_process(&config.id).await;
+              let _ = crate::proxy::proxy_runner::stop_proxy_process(&config.id).await;
               continue;
             }
           }
@@ -1795,7 +1779,7 @@ pub fn run() {
           }
 
           let registry =
-            crate::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+            crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
           if let Err(e) = registry.cleanup_unused_binaries() {
             log::error!("Periodic cleanup failed: {e}");
           } else {
@@ -1847,7 +1831,7 @@ pub fn run() {
       // Start Camoufox cleanup task
       let _app_handle_cleanup = app.handle().clone();
       tauri::async_runtime::spawn(async move {
-        let camoufox_manager = crate::camoufox_manager::CamoufoxManager::instance();
+        let camoufox_manager = crate::browser::camoufox_manager::CamoufoxManager::instance();
         let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60));
 
         loop {
@@ -1870,7 +1854,7 @@ pub fn run() {
         // Wait a bit for the app to fully initialize
         tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
-        let geoip_downloader = crate::geoip_downloader::GeoIPDownloader::instance();
+        let geoip_downloader = crate::updater::geoip_downloader::GeoIPDownloader::instance();
         match geoip_downloader.check_missing_geoip_database() {
           Ok(true) => {
             log::info!(
@@ -1903,7 +1887,7 @@ pub fn run() {
         loop {
           interval.tick().await;
 
-          match crate::proxy_manager::PROXY_MANAGER
+          match crate::proxy::proxy_manager::PROXY_MANAGER
             .cleanup_dead_proxies(app_handle_proxy_cleanup.clone())
             .await
           {
@@ -1942,7 +1926,7 @@ pub fn run() {
         loop {
           interval.tick().await;
 
-          let runner = crate::browser_runner::BrowserRunner::instance();
+          let runner = crate::browser::browser_runner::BrowserRunner::instance();
           let profiles = match runner.profile_manager.list_profiles() {
             Ok(p) => p,
             Err(e) => {
@@ -2081,7 +2065,7 @@ pub fn run() {
           Ok(settings) => {
             if settings.api_enabled {
               log::info!("API is enabled in settings, starting API server...");
-              match crate::api_server::start_api_server_internal(settings.api_port, &app_handle_api)
+              match crate::api::api_server::start_api_server_internal(settings.api_port, &app_handle_api)
                 .await
               {
                 Ok(port) => {
@@ -2089,7 +2073,7 @@ pub fn run() {
                   // Emit success toast to frontend
                   if let Err(e) = events::emit(
                     "show-toast",
-                    crate::api_server::ToastPayload {
+                    crate::api::api_server::ToastPayload {
                       message: "API server started successfully".to_string(),
                       variant: "success".to_string(),
                       title: "Local API Started".to_string(),
@@ -2104,7 +2088,7 @@ pub fn run() {
                   // Emit error toast to frontend
                   if let Err(toast_err) = events::emit(
                     "show-toast",
-                    crate::api_server::ToastPayload {
+                    crate::api::api_server::ToastPayload {
                       message: "Failed to start API server".to_string(),
                       variant: "error".to_string(),
                       title: "Failed to Start Local API".to_string(),

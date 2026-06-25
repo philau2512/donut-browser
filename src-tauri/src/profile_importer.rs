@@ -4,12 +4,12 @@ use std::collections::HashSet;
 use std::fs::{self, create_dir_all};
 use std::path::Path;
 
-use crate::camoufox_manager::CamoufoxConfig;
-use crate::downloaded_browsers_registry::DownloadedBrowsersRegistry;
+use crate::browser::camoufox_manager::CamoufoxConfig;
+use crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry;
+use crate::browser::wayfern_manager::WayfernConfig;
 use crate::profile::types::{get_host_os, BrowserProfile, SyncMode};
 use crate::profile::ProfileManager;
-use crate::proxy_manager::PROXY_MANAGER;
-use crate::wayfern_manager::WayfernConfig;
+use crate::proxy::proxy_manager::PROXY_MANAGER;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DetectedProfile {
@@ -34,7 +34,7 @@ pub struct ProfileImporter {
   base_dirs: BaseDirs,
   downloaded_browsers_registry: &'static DownloadedBrowsersRegistry,
   profile_manager: &'static ProfileManager,
-  wayfern_manager: &'static crate::wayfern_manager::WayfernManager,
+  wayfern_manager: &'static crate::browser::wayfern_manager::WayfernManager,
 }
 
 impl ProfileImporter {
@@ -43,7 +43,7 @@ impl ProfileImporter {
       base_dirs: BaseDirs::new().expect("Failed to get base directories"),
       downloaded_browsers_registry: DownloadedBrowsersRegistry::instance(),
       profile_manager: ProfileManager::instance(),
-      wayfern_manager: crate::wayfern_manager::WayfernManager::instance(),
+      wayfern_manager: crate::browser::wayfern_manager::WayfernManager::instance(),
     }
   }
 
@@ -243,8 +243,10 @@ impl ProfileImporter {
     let mapped = map_browser_type(browser_type);
 
     if let Some(ref pid) = proxy_id {
-      if PROXY_MANAGER.is_cloud_or_derived(pid) || pid == crate::proxy_manager::CLOUD_PROXY_ID {
-        crate::cloud_auth::CLOUD_AUTH.sync_cloud_proxy().await;
+      if PROXY_MANAGER.is_cloud_or_derived(pid)
+        || pid == crate::proxy::proxy_manager::CLOUD_PROXY_ID
+      {
+        crate::api::cloud_auth::CLOUD_AUTH.sync_cloud_proxy().await;
       }
     }
 
@@ -388,7 +390,7 @@ impl ProfileImporter {
           .map(|d| d.as_secs())
           .unwrap_or(0),
       ),
-      updated_at: Some(crate::proxy_manager::now_secs()),
+      updated_at: Some(crate::proxy::proxy_manager::now_secs()),
     };
 
     self.profile_manager.save_profile(&profile)?;
@@ -477,7 +479,7 @@ pub async fn import_browser_profile(
     .and_then(|c| c.os.as_deref())
     .or_else(|| wayfern_config.as_ref().and_then(|c| c.os.as_deref()));
 
-  if !crate::cloud_auth::CLOUD_AUTH
+  if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(fingerprint_os)
     .await
   {

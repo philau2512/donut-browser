@@ -743,7 +743,7 @@ impl SyncScheduler {
           }
         }
         "proxy" => {
-          let proxy_manager = &crate::proxy_manager::PROXY_MANAGER;
+          let proxy_manager = &crate::proxy::proxy_manager::PROXY_MANAGER;
           let proxies = proxy_manager.get_stored_proxies();
           if let Some(proxy) = proxies.iter().find(|p| p.id == entity_id) {
             if proxy.sync_enabled {

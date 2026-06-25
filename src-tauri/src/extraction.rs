@@ -2,8 +2,8 @@ use std::fs::{self, File};
 use std::io::{self, BufReader, Read};
 use std::path::{Path, PathBuf};
 
+use crate::browser::downloader::DownloadProgress;
 use crate::browser::BrowserType;
-use crate::downloader::DownloadProgress;
 use crate::events;
 
 #[cfg(target_os = "macos")]

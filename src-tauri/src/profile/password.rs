@@ -244,7 +244,7 @@ pub async fn set_profile_password(profile_id: String, password: String) -> Resul
 
   if profile
     .process_id
-    .is_some_and(crate::proxy_storage::is_process_running)
+    .is_some_and(crate::proxy::proxy_storage::is_process_running)
   {
     return Err(err_code("PROFILE_RUNNING"));
   }
@@ -368,13 +368,13 @@ pub async fn lock_profile(profile_id: String) -> Result<(), String> {
   }
   if profile
     .process_id
-    .is_some_and(crate::proxy_storage::is_process_running)
+    .is_some_and(crate::proxy::proxy_storage::is_process_running)
   {
     return Err(err_code("PROFILE_RUNNING"));
   }
   drop_cached_key(&id);
   // Purge any leftover ephemeral dir in case keep_decrypted_profiles_in_ram was on.
-  crate::ephemeral_dirs::remove_ephemeral_dir(&id.to_string());
+  crate::browser::ephemeral_dirs::remove_ephemeral_dir(&id.to_string());
   emit_profiles_changed();
   Ok(())
 }
@@ -394,7 +394,7 @@ pub async fn change_profile_password(
   }
   if profile
     .process_id
-    .is_some_and(crate::proxy_storage::is_process_running)
+    .is_some_and(crate::proxy::proxy_storage::is_process_running)
   {
     return Err(err_code("PROFILE_RUNNING"));
   }
@@ -445,7 +445,7 @@ pub async fn remove_profile_password(profile_id: String, password: String) -> Re
   }
   if profile
     .process_id
-    .is_some_and(crate::proxy_storage::is_process_running)
+    .is_some_and(crate::proxy::proxy_storage::is_process_running)
   {
     return Err(err_code("PROFILE_RUNNING"));
   }
@@ -548,9 +548,9 @@ pub fn prepare_for_launch(profile: &crate::profile::BrowserProfile) -> Result<Pa
   let key = get_cached_key(&id).ok_or_else(|| err_code("PROFILE_LOCKED"))?;
 
   let id_str = id.to_string();
-  let ephemeral = match crate::ephemeral_dirs::get_ephemeral_dir(&id_str) {
+  let ephemeral = match crate::browser::ephemeral_dirs::get_ephemeral_dir(&id_str) {
     Some(p) => p,
-    None => crate::ephemeral_dirs::create_ephemeral_dir(&id_str).map_err(err_internal)?,
+    None => crate::browser::ephemeral_dirs::create_ephemeral_dir(&id_str).map_err(err_internal)?,
   };
 
   let already_populated = POPULATED_EPHEMERAL
@@ -640,7 +640,7 @@ pub fn complete_after_quit_blocking(
     .unwrap_or_default();
 
   let id_str = id.to_string();
-  let ephemeral = crate::ephemeral_dirs::get_ephemeral_dir(&id_str)?;
+  let ephemeral = crate::browser::ephemeral_dirs::get_ephemeral_dir(&id_str)?;
   let encrypted = profile_data_dir(profile);
   let key = get_cached_key(&id)?;
 
@@ -668,7 +668,7 @@ pub fn complete_after_quit_blocking(
     if let Ok(mut guard) = POPULATED_EPHEMERAL.lock() {
       guard.remove(&id);
     }
-    crate::ephemeral_dirs::remove_ephemeral_dir(&id_str);
+    crate::browser::ephemeral_dirs::remove_ephemeral_dir(&id_str);
   }
 
   result
@@ -756,7 +756,7 @@ mod tests {
     drop_cached_key(id);
     let _ = LAUNCH_SNAPSHOTS.lock().map(|mut g| g.remove(id));
     let _ = POPULATED_EPHEMERAL.lock().map(|mut g| g.remove(id));
-    crate::ephemeral_dirs::remove_ephemeral_dir(&id.to_string());
+    crate::browser::ephemeral_dirs::remove_ephemeral_dir(&id.to_string());
   }
 
   fn profile_full_path(profile: &BrowserProfile, profiles_dir: &Path) -> PathBuf {
@@ -860,7 +860,7 @@ mod tests {
       "key should be dropped"
     );
     assert!(
-      crate::ephemeral_dirs::get_ephemeral_dir(&profile.id.to_string()).is_none(),
+      crate::browser::ephemeral_dirs::get_ephemeral_dir(&profile.id.to_string()).is_none(),
       "ephemeral should be purged"
     );
 
@@ -940,7 +940,7 @@ mod tests {
       "key should still be cached"
     );
     assert!(
-      crate::ephemeral_dirs::get_ephemeral_dir(&profile.id.to_string()).is_some(),
+      crate::browser::ephemeral_dirs::get_ephemeral_dir(&profile.id.to_string()).is_some(),
       "ephemeral should be preserved"
     );
 

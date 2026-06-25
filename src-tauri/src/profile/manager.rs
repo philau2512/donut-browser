@@ -1,12 +1,12 @@
-use crate::api_client::is_browser_version_nightly;
+use crate::api::api_client::is_browser_version_nightly;
+use crate::api::cloud_auth::CLOUD_AUTH;
+use crate::browser::camoufox_manager::CamoufoxConfig;
+use crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry;
+use crate::browser::wayfern_manager::WayfernConfig;
 use crate::browser::{create_browser, BrowserType, ProxySettings};
-use crate::camoufox_manager::CamoufoxConfig;
-use crate::cloud_auth::CLOUD_AUTH;
-use crate::downloaded_browsers_registry::DownloadedBrowsersRegistry;
 use crate::events;
 use crate::profile::types::{get_host_os, BrowserProfile, SyncMode};
-use crate::proxy_manager::PROXY_MANAGER;
-use crate::wayfern_manager::WayfernConfig;
+use crate::proxy::proxy_manager::PROXY_MANAGER;
 use std::fs::{self, create_dir_all};
 use std::path::{Path, PathBuf};
 use sysinfo::{Pid, ProcessRefreshKind, RefreshKind, System};
@@ -27,15 +27,15 @@ fn atomic_write(path: &Path, data: &[u8]) -> std::io::Result<()> {
 }
 
 pub struct ProfileManager {
-  camoufox_manager: &'static crate::camoufox_manager::CamoufoxManager,
-  wayfern_manager: &'static crate::wayfern_manager::WayfernManager,
+  camoufox_manager: &'static crate::browser::camoufox_manager::CamoufoxManager,
+  wayfern_manager: &'static crate::browser::wayfern_manager::WayfernManager,
 }
 
 impl ProfileManager {
   fn new() -> Self {
     Self {
-      camoufox_manager: crate::camoufox_manager::CamoufoxManager::instance(),
-      wayfern_manager: crate::wayfern_manager::WayfernManager::instance(),
+      camoufox_manager: crate::browser::camoufox_manager::CamoufoxManager::instance(),
+      wayfern_manager: crate::browser::wayfern_manager::WayfernManager::instance(),
     }
   }
 
@@ -95,7 +95,9 @@ impl ProfileManager {
 
     // Sync cloud proxy credentials if the profile uses a cloud or cloud-derived proxy
     if let Some(ref pid) = proxy_id {
-      if PROXY_MANAGER.is_cloud_or_derived(pid) || pid == crate::proxy_manager::CLOUD_PROXY_ID {
+      if PROXY_MANAGER.is_cloud_or_derived(pid)
+        || pid == crate::proxy::proxy_manager::CLOUD_PROXY_ID
+      {
         log::info!("Syncing cloud proxy credentials before profile creation");
         CLOUD_AUTH.sync_cloud_proxy().await;
       }
@@ -129,7 +131,7 @@ impl ProfileManager {
     let final_camoufox_config = if browser == "camoufox" {
       let mut config = camoufox_config.unwrap_or_else(|| {
         log::info!("Creating default Camoufox config for profile: {name}");
-        crate::camoufox_manager::CamoufoxConfig::default()
+        crate::browser::camoufox_manager::CamoufoxConfig::default()
       });
 
       // Pass upstream proxy information to config for fingerprint generation
@@ -235,7 +237,7 @@ impl ProfileManager {
     let final_wayfern_config = if browser == "wayfern" {
       let mut config = wayfern_config.unwrap_or_else(|| {
         log::info!("Creating default Wayfern config for profile: {name}");
-        crate::wayfern_manager::WayfernConfig::default()
+        crate::browser::wayfern_manager::WayfernConfig::default()
       });
 
       // Always ensure executable_path is set to the user's binary location
@@ -330,14 +332,16 @@ impl ProfileManager {
       // for. On launch this is compared against the profile's current routing
       // so a proxy that was changed after creation triggers a location refresh
       // instead of showing a stale timezone.
-      config.geo_proxy_signature = Some(crate::wayfern_manager::WayfernManager::geo_signature(
-        proxy_id
-          .as_ref()
-          .and_then(|id| PROXY_MANAGER.get_proxy_settings_by_id(id))
-          .as_ref(),
-        None,
-        config.geoip.as_ref(),
-      ));
+      config.geo_proxy_signature = Some(
+        crate::browser::wayfern_manager::WayfernManager::geo_signature(
+          proxy_id
+            .as_ref()
+            .and_then(|id| PROXY_MANAGER.get_proxy_settings_by_id(id))
+            .as_ref(),
+          None,
+          config.geoip.as_ref(),
+        ),
+      );
 
       // Clear the proxy from config after fingerprint generation
       config.proxy = None;
@@ -380,7 +384,7 @@ impl ProfileManager {
           .map(|d| d.as_secs())
           .unwrap_or(0),
       ),
-      updated_at: Some(crate::proxy_manager::now_secs()),
+      updated_at: Some(crate::proxy::proxy_manager::now_secs()),
     };
 
     // Save profile info
@@ -526,7 +530,7 @@ impl ProfileManager {
 
     // Update profile name (no need to move directories since we use UUID)
     profile.name = new_name.to_string();
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     // Save profile with new name
     self.save_profile(&profile)?;
@@ -648,8 +652,9 @@ impl ProfileManager {
       log::info!("Deleted local profile {} (tombstoned remotely)", profile_id);
     }
 
-    if let Err(e) = crate::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance()
-      .cleanup_unused_binaries()
+    if let Err(e) =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance()
+        .cleanup_unused_binaries()
     {
       log::warn!("Failed to cleanup binaries after tombstone deletion: {e}");
     }
@@ -736,7 +741,7 @@ impl ProfileManager {
       }
 
       profile.group_id = group_id.clone();
-      profile.updated_at = Some(crate::proxy_manager::now_secs());
+      profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
       self.save_profile(&profile)?;
 
       crate::sync::queue_profile_sync_if_eligible(&profile);
@@ -791,7 +796,7 @@ impl ProfileManager {
       }
     }
     profile.tags = deduped;
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     // Save profile
     self.save_profile(&profile)?;
@@ -828,7 +833,7 @@ impl ProfileManager {
 
     // Update note (trim whitespace, set to None if empty)
     profile.note = note.map(|n| n.trim().to_string()).filter(|n| !n.is_empty());
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     // Save profile
     self.save_profile(&profile)?;
@@ -858,7 +863,7 @@ impl ProfileManager {
       .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
 
     profile.launch_hook = Self::normalize_launch_hook(launch_hook)?;
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     self.save_profile(&profile)?;
 
@@ -890,7 +895,7 @@ impl ProfileManager {
       .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
 
     profile.proxy_bypass_rules = rules;
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     self.save_profile(&profile)?;
 
@@ -917,7 +922,7 @@ impl ProfileManager {
       .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
 
     profile.dns_blocklist = dns_blocklist;
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     self.save_profile(&profile)?;
 
@@ -1081,7 +1086,7 @@ impl ProfileManager {
           .map(|d| d.as_secs())
           .unwrap_or(0),
       ),
-      updated_at: Some(crate::proxy_manager::now_secs()),
+      updated_at: Some(crate::proxy::proxy_manager::now_secs()),
     };
 
     // Donut: a clone must NOT be linkable to its source. The source
@@ -1264,7 +1269,7 @@ impl ProfileManager {
     // Update proxy settings and clear VPN (mutual exclusion)
     profile.proxy_id = proxy_id.clone();
     profile.vpn_id = None;
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     // Save the updated profile
     self
@@ -1364,7 +1369,7 @@ impl ProfileManager {
     // Update VPN and clear proxy (mutual exclusion)
     profile.vpn_id = vpn_id.clone();
     profile.proxy_id = None;
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     self
       .save_profile(&profile)
@@ -1409,7 +1414,7 @@ impl ProfileManager {
       .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
 
     profile.extension_group_id = extension_group_id.clone();
-    profile.updated_at = Some(crate::proxy_manager::now_secs());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
     self.save_profile(&profile)?;
 
     crate::sync::queue_profile_sync_if_eligible(&profile);
@@ -1577,7 +1582,7 @@ impl ProfileManager {
             log::warn!("Warning: Failed to update profile with new PID: {e}");
           }
           if let Some(prev) = old_pid {
-            let _ = crate::proxy_manager::PROXY_MANAGER.update_proxy_pid(prev, pid);
+            let _ = crate::proxy::proxy_manager::PROXY_MANAGER.update_proxy_pid(prev, pid);
           }
         }
       } else if merged.process_id.is_some() {
@@ -1590,7 +1595,7 @@ impl ProfileManager {
       }
 
       if detected_stop {
-        if let Some(updated) = crate::auto_updater::AutoUpdater::instance()
+        if let Some(updated) = crate::updater::auto_updater::AutoUpdater::instance()
           .update_profile_to_latest_installed(&app_handle, &merged)
         {
           merged = updated;
@@ -1615,7 +1620,7 @@ impl ProfileManager {
     let launcher = self.camoufox_manager;
     let profiles_dir = self.get_profiles_dir();
     let profile_data_path =
-      crate::ephemeral_dirs::get_effective_profile_path(profile, &profiles_dir);
+      crate::browser::ephemeral_dirs::get_effective_profile_path(profile, &profiles_dir);
     let profile_path_str = profile_data_path.to_string_lossy();
 
     // Check if there's a running Camoufox instance for this profile
@@ -1644,7 +1649,7 @@ impl ProfileManager {
               log::warn!("Warning: Failed to update Camoufox profile with process info: {e}");
             }
             if let (Some(prev), Some(new)) = (old_pid, camoufox_process.processId) {
-              let _ = crate::proxy_manager::PROXY_MANAGER.update_proxy_pid(prev, new);
+              let _ = crate::proxy::proxy_manager::PROXY_MANAGER.update_proxy_pid(prev, new);
             }
 
             // Emit profile update event to frontend
@@ -1664,7 +1669,7 @@ impl ProfileManager {
       Ok(None) => {
         // No running instance found, clear process ID if set and stop proxy
         if profile.ephemeral {
-          crate::ephemeral_dirs::remove_ephemeral_dir(&profile.id.to_string());
+          crate::browser::ephemeral_dirs::remove_ephemeral_dir(&profile.id.to_string());
         }
 
         let profiles_dir = self.get_profiles_dir();
@@ -1687,7 +1692,7 @@ impl ProfileManager {
               log::warn!("Warning: Failed to clear Camoufox profile process info: {e}");
             }
 
-            if let Some(updated) = crate::auto_updater::AutoUpdater::instance()
+            if let Some(updated) = crate::updater::auto_updater::AutoUpdater::instance()
               .update_profile_to_latest_installed(app_handle, &latest)
             {
               latest = updated;
@@ -1704,7 +1709,7 @@ impl ProfileManager {
         // Error checking status, assume not running and clear process ID
         log::warn!("Warning: Failed to check Camoufox status: {e}");
         if profile.ephemeral {
-          crate::ephemeral_dirs::remove_ephemeral_dir(&profile.id.to_string());
+          crate::browser::ephemeral_dirs::remove_ephemeral_dir(&profile.id.to_string());
         }
 
         let profiles_dir = self.get_profiles_dir();
@@ -1729,7 +1734,7 @@ impl ProfileManager {
               );
             }
 
-            if let Some(updated) = crate::auto_updater::AutoUpdater::instance()
+            if let Some(updated) = crate::updater::auto_updater::AutoUpdater::instance()
               .update_profile_to_latest_installed(app_handle, &latest)
             {
               latest = updated;
@@ -1755,7 +1760,7 @@ impl ProfileManager {
     let manager = self.wayfern_manager;
     let profiles_dir = self.get_profiles_dir();
     let profile_data_path =
-      crate::ephemeral_dirs::get_effective_profile_path(profile, &profiles_dir);
+      crate::browser::ephemeral_dirs::get_effective_profile_path(profile, &profiles_dir);
     let profile_path_str = profile_data_path.to_string_lossy();
 
     // Check if there's a running Wayfern instance for this profile
@@ -1784,7 +1789,7 @@ impl ProfileManager {
               log::warn!("Warning: Failed to update Wayfern profile with process info: {e}");
             }
             if let (Some(prev), Some(new)) = (old_pid, wayfern_process.processId) {
-              let _ = crate::proxy_manager::PROXY_MANAGER.update_proxy_pid(prev, new);
+              let _ = crate::proxy::proxy_manager::PROXY_MANAGER.update_proxy_pid(prev, new);
             }
 
             // Emit profile update event to frontend
@@ -1804,7 +1809,7 @@ impl ProfileManager {
       None => {
         // No running instance found, clear process ID if set
         if profile.ephemeral {
-          crate::ephemeral_dirs::remove_ephemeral_dir(&profile.id.to_string());
+          crate::browser::ephemeral_dirs::remove_ephemeral_dir(&profile.id.to_string());
         }
 
         let profiles_dir = self.get_profiles_dir();
@@ -1827,7 +1832,7 @@ impl ProfileManager {
               log::warn!("Warning: Failed to clear Wayfern profile process info: {e}");
             }
 
-            if let Some(updated) = crate::auto_updater::AutoUpdater::instance()
+            if let Some(updated) = crate::updater::auto_updater::AutoUpdater::instance()
               .update_profile_to_latest_installed(app_handle, &latest)
             {
               latest = updated;
@@ -2490,7 +2495,7 @@ pub async fn create_browser_profile_new(
     .and_then(|c| c.os.as_deref())
     .or_else(|| wayfern_config.as_ref().and_then(|c| c.os.as_deref()));
 
-  if !crate::cloud_auth::CLOUD_AUTH
+  if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(fingerprint_os)
     .await
   {
@@ -2528,14 +2533,14 @@ pub async fn update_camoufox_config(
   config: CamoufoxConfig,
 ) -> Result<(), String> {
   if config.fingerprint.is_some()
-    && !crate::cloud_auth::CLOUD_AUTH
+    && !crate::api::cloud_auth::CLOUD_AUTH
       .can_use_cross_os_fingerprints()
       .await
   {
     return Err(serde_json::json!({ "code": "FINGERPRINT_REQUIRES_PRO" }).to_string());
   }
 
-  if !crate::cloud_auth::CLOUD_AUTH
+  if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(config.os.as_deref())
     .await
   {
@@ -2556,14 +2561,14 @@ pub async fn update_wayfern_config(
   config: WayfernConfig,
 ) -> Result<(), String> {
   if config.fingerprint.is_some()
-    && !crate::cloud_auth::CLOUD_AUTH
+    && !crate::api::cloud_auth::CLOUD_AUTH
       .can_use_cross_os_fingerprints()
       .await
   {
     return Err(serde_json::json!({ "code": "FINGERPRINT_REQUIRES_PRO" }).to_string());
   }
 
-  if !crate::cloud_auth::CLOUD_AUTH
+  if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(config.os.as_deref())
     .await
   {

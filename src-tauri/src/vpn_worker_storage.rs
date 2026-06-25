@@ -1,4 +1,4 @@
-use crate::proxy_storage::get_storage_dir;
+use crate::proxy::proxy_storage::get_storage_dir;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;

@@ -1,5 +1,5 @@
-use crate::camoufox_manager::CamoufoxConfig;
-use crate::wayfern_manager::WayfernConfig;
+use crate::browser::camoufox_manager::CamoufoxConfig;
+use crate::browser::wayfern_manager::WayfernConfig;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 

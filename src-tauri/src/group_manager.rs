@@ -98,7 +98,7 @@ impl GroupManager {
       name,
       sync_enabled,
       last_sync: None,
-      updated_at: Some(crate::proxy_manager::now_secs()),
+      updated_at: Some(crate::proxy::proxy_manager::now_secs()),
     };
 
     groups_data.groups.push(group.clone());
@@ -149,7 +149,7 @@ impl GroupManager {
       .ok_or_else(|| serde_json::json!({ "code": "GROUP_NOT_FOUND" }).to_string())?;
 
     group.name = name;
-    group.updated_at = Some(crate::proxy_manager::now_secs());
+    group.updated_at = Some(crate::proxy::proxy_manager::now_secs());
     let updated_group = group.clone();
 
     self.save_groups_data(&groups_data)?;
