@@ -62,3 +62,7 @@ nodecar/nodecar-bin
 
 # claude
 .claude/
+.repomixignore
+release-manifest.json
+plans/
+.codegraph/
