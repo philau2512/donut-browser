@@ -104,7 +104,8 @@ impl WayfernManager {
                 }
               }
             } else {
-              log::error!("Pre-launch: Failed to derive encryption key from os_crypt_key (required to decrypt {} encrypted cookies)", cookie_count);
+              log::warn!("Pre-launch: Unable to derive encryption key from os_crypt_key; skipping decryption of {} encrypted cookies",
+                cookie_count);
             }
           }
         }

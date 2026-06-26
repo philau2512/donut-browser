@@ -3,15 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaDownload } from "react-icons/fa";
-import { FiWifi } from "react-icons/fi";
-import { GoGear, GoKebabHorizontal } from "react-icons/go";
+
+import { GoGear } from "react-icons/go";
 import {
+  LuChevronLeft,
+  LuChevronRight,
   LuCloud,
+  LuFolder,
+  LuGlobe,
   LuKeyboard,
   LuPlug,
+  LuPlus,
   LuPuzzle,
+  LuShield,
   LuUser,
-  LuUsers,
 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { Logo } from "../icons/logo";
@@ -236,48 +241,37 @@ function useLogoEasterEgg({
 interface RailNavProps {
   currentPage: AppPage;
   onNavigate: (page: AppPage) => void;
+  onCreateProfileClick?: () => void;
+  totalProfiles?: number;
+  runningProfilesCount?: number;
 }
 
-interface RailItem {
-  page: AppPage;
-  Icon: React.ComponentType<{ className?: string }>;
-  labelKey: string;
-}
-
-const TOP_ITEMS: RailItem[] = [
-  { page: "profiles", Icon: LuUser, labelKey: "rail.profiles" },
-  { page: "proxies", Icon: FiWifi, labelKey: "rail.network" },
-  { page: "extensions", Icon: LuPuzzle, labelKey: "rail.extensions" },
-  { page: "groups", Icon: LuUsers, labelKey: "rail.groups" },
-  { page: "integrations", Icon: LuPlug, labelKey: "rail.integrations" },
-  { page: "account", Icon: LuCloud, labelKey: "rail.account" },
-];
-
-interface MoreMenuItem {
-  page: AppPage;
-  Icon: React.ComponentType<{ className?: string }>;
-  labelKey: string;
-  hintKey: string;
-}
-
-const MORE_ITEMS: MoreMenuItem[] = [
-  {
-    page: "import",
-    Icon: FaDownload,
-    labelKey: "rail.more.importProfile",
-    hintKey: "rail.more.importProfileHint",
-  },
-  {
-    page: "shortcuts",
-    Icon: LuKeyboard,
-    labelKey: "rail.more.keyboardShortcuts",
-    hintKey: "rail.more.keyboardShortcutsHint",
-  },
-];
-
-export function RailNav({ currentPage, onNavigate }: RailNavProps) {
+export function RailNav({
+  currentPage,
+  onNavigate,
+  onCreateProfileClick,
+  totalProfiles = 0,
+  runningProfilesCount = 0,
+}: RailNavProps) {
   const { t } = useTranslation();
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("donut-sidebar-collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCollapse = () => {
+    const nextValue = !isCollapsed;
+    setIsCollapsed(nextValue);
+    try {
+      localStorage.setItem("donut-sidebar-collapsed", String(nextValue));
+    } catch (_e) {
+      // ignore
+    }
+  };
+
   const {
     logoRef,
     isPressed,
@@ -289,179 +283,399 @@ export function RailNav({ currentPage, onNavigate }: RailNavProps) {
     handleClick,
   } = useLogoEasterEgg({ currentPage, onNavigate });
 
+  const MENU_GROUPS = [
+    {
+      title: t("rail.groupProfiles", "PROFILES"),
+      items: [
+        {
+          page: "profiles",
+          Icon: LuUser,
+          label: t("rail.profiles", "Profiles"),
+        },
+        { page: "groups", Icon: LuFolder, label: t("rail.groups", "Groups") },
+        {
+          page: "extensions",
+          Icon: LuPuzzle,
+          label: t("rail.extensions", "Extensions"),
+        },
+      ],
+    },
+    {
+      title: t("rail.groupNetwork", "NETWORK"),
+      items: [
+        {
+          page: "proxies",
+          Icon: LuGlobe,
+          label: t("rail.network", "Proxies"),
+          badge: "IPs New",
+        },
+        { page: "vpns", Icon: LuShield, label: t("rail.vpns", "VPNs") },
+      ],
+    },
+    {
+      title: t("rail.groupSystem", "SYSTEM & CLOUD"),
+      items: [
+        {
+          page: "integrations",
+          Icon: LuPlug,
+          label: t("rail.integrations", "Integrations"),
+        },
+        {
+          page: "shortcuts",
+          Icon: LuKeyboard,
+          label: t("rail.shortcuts", "Shortcuts"),
+        },
+        {
+          page: "import",
+          Icon: FaDownload,
+          label: t("rail.import", "Import Profiles"),
+        },
+        {
+          page: "account",
+          Icon: LuCloud,
+          label: t("rail.account", "Cloud Account"),
+        },
+        {
+          page: "settings",
+          Icon: GoGear,
+          label: t("rail.settings", "Settings"),
+        },
+      ],
+    },
+  ];
+
   return (
-    <nav className="relative flex w-10 shrink-0 flex-col items-center gap-1 border-r border-border bg-background py-2">
-      {!isHidden ? (
-        <button
-          ref={logoRef}
-          type="button"
-          aria-label={t("header.donutLogo")}
-          className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-md bg-transparent text-foreground select-none"
-          onClick={handleClick}
-          onPointerDown={() => {
-            setIsPressed(true);
-          }}
-          onPointerUp={() => {
-            setIsPressed(false);
-          }}
-          onPointerLeave={() => {
-            setIsPressed(false);
-          }}
-        >
-          {/* Inner wrapper survives clicks (no `key`) so the scale change
-              animates smoothly across the wiggle layer's remounts. */}
-          <span
-            style={{
-              transform: isPressed
-                ? `scale(${(1 + growStep * 0.25) * 0.9})`
-                : `scale(${1 + growStep * 0.25})`,
-            }}
-            className="inline-grid place-items-center transition-transform duration-300 ease-out will-change-transform"
+    <nav
+      className={cn(
+        "relative flex shrink-0 flex-col border-r border-border bg-card py-4 text-card-foreground select-none h-full transition-all duration-300 ease-in-out overflow-visible",
+        isCollapsed ? "w-16 items-center" : "w-60",
+      )}
+    >
+      {/* Toggle collapse button */}
+      <button
+        type="button"
+        onClick={toggleCollapse}
+        className="absolute top-[45%] -right-3 z-50 flex size-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-md transition-all hover:scale-110 hover:text-foreground cursor-pointer"
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {isCollapsed ? (
+          <LuChevronRight className="size-3.5" />
+        ) : (
+          <LuChevronLeft className="size-3.5" />
+        )}
+      </button>
+
+      {/* Brand logo & easter egg */}
+      <div
+        className={cn(
+          "px-4 mb-4 flex items-center shrink-0 w-full justify-between",
+          isCollapsed && "px-0 justify-center",
+        )}
+      >
+        {!isHidden ? (
+          <button
+            ref={logoRef}
+            type="button"
+            aria-label={t("header.donutLogo")}
+            className="flex items-center gap-2.5 cursor-pointer bg-transparent text-foreground select-none text-left"
+            onClick={handleClick}
+            onPointerDown={() => setIsPressed(true)}
+            onPointerUp={() => setIsPressed(false)}
+            onPointerLeave={() => setIsPressed(false)}
           >
             <span
-              key={wobbleKey}
-              className={cn(
-                "inline-grid place-items-center",
-                !isFalling &&
-                  !isPressed &&
-                  wobbleKey > 0 &&
-                  "animate-[wiggle_0.3s_ease-in-out]",
-              )}
+              style={{
+                transform: isPressed
+                  ? `scale(${(1 + growStep * 0.25) * 0.9})`
+                  : `scale(${1 + growStep * 0.25})`,
+              }}
+              className="inline-grid place-items-center transition-transform duration-300 ease-out will-change-transform shrink-0"
             >
-              <Logo className="size-5 will-change-transform" />
+              <span
+                key={wobbleKey}
+                className={cn(
+                  "inline-grid place-items-center",
+                  !isFalling &&
+                    !isPressed &&
+                    wobbleKey > 0 &&
+                    "animate-[wiggle_0.3s_ease-in-out]",
+                )}
+              >
+                <Logo className="size-6 text-primary" />
+              </span>
             </span>
-          </span>
-        </button>
-      ) : (
-        <div className="size-7 shrink-0" />
-      )}
-
-      <div className="my-1 h-px w-5 shrink-0 bg-border" />
-
-      <div className="flex min-h-0 w-full scrollbar-none flex-col items-center gap-1 overflow-y-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {TOP_ITEMS.map(({ page, Icon, labelKey }) => {
-          const active = currentPage === page;
-          return (
-            <Tooltip key={page} delayDuration={300}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onNavigate(page);
-                  }}
-                  aria-label={t(labelKey)}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "relative grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
-                    active
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
-                  )}
-                >
-                  {active && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-y-1.5 left-[-7px] w-[2px] rounded-full bg-foreground"
-                    />
-                  )}
-                  <Icon className="size-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{t(labelKey)}</TooltipContent>
-            </Tooltip>
-          );
-        })}
+            {!isCollapsed && (
+              <div className="flex flex-col min-w-0 animate-in fade-in duration-300">
+                <span className="font-bold text-sm leading-tight tracking-tight text-foreground truncate">
+                  Donut Browser
+                </span>
+                <span className="text-[9px] text-muted-foreground font-medium leading-none uppercase tracking-wider">
+                  Local-First Engine
+                </span>
+              </div>
+            )}
+          </button>
+        ) : (
+          <div className="h-8" />
+        )}
       </div>
 
-      <div className="flex-1" />
-
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={() => {
-              setMoreOpen((v) => !v);
-            }}
-            aria-label={t("rail.more.label")}
-            aria-expanded={moreOpen}
-            className={cn(
-              "grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
-              moreOpen
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
-            )}
-          >
-            <GoKebabHorizontal className="size-3.5" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">{t("rail.more.label")}</TooltipContent>
-      </Tooltip>
-
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={() => {
-              onNavigate("settings");
-            }}
-            aria-label={t("rail.settings")}
-            aria-current={currentPage === "settings" ? "page" : undefined}
-            className={cn(
-              "relative grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
-              currentPage === "settings"
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
-            )}
-          >
-            {currentPage === "settings" && (
-              <span
-                aria-hidden="true"
-                className="absolute inset-y-1.5 left-[-7px] w-[2px] rounded-full bg-foreground"
-              />
-            )}
-            <GoGear className="size-3.5" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">{t("rail.settings")}</TooltipContent>
-      </Tooltip>
-
-      {moreOpen && (
-        <>
-          <button
-            type="button"
-            aria-label={t("rail.more.closeAriaLabel")}
-            className="fixed inset-0 z-30 cursor-default bg-transparent"
-            onClick={() => {
-              setMoreOpen(false);
-            }}
-          />
-          <div className="absolute bottom-14 left-11 z-40 w-56 animate-in rounded-lg border border-border bg-card p-1 shadow-2xl duration-100 fade-in-0 slide-in-from-bottom-1">
-            {MORE_ITEMS.map(({ page, Icon, labelKey, hintKey }) => (
+      {/* Add Profile button */}
+      <div
+        className={cn(
+          "px-4 mb-5 shrink-0 w-full",
+          isCollapsed && "px-2 flex justify-center",
+        )}
+      >
+        {isCollapsed ? (
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
               <button
-                key={page}
                 type="button"
-                onClick={() => {
-                  setMoreOpen(false);
-                  onNavigate(page);
-                }}
-                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors duration-100 hover:bg-accent"
+                onClick={onCreateProfileClick}
+                className="grid size-10 place-items-center rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-955 font-bold shadow-md transition-all active:scale-95 duration-100 cursor-pointer"
               >
-                <span className="grid size-5 shrink-0 place-items-center rounded bg-muted text-muted-foreground">
-                  <Icon className="size-3" />
-                </span>
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-xs font-medium text-foreground">
-                    {t(labelKey)}
-                  </span>
-                  <span className="truncate text-[10px] text-muted-foreground">
-                    {t(hintKey)}
-                  </span>
-                </span>
+                <LuPlus className="size-5 stroke-[3]" />
               </button>
-            ))}
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {t("header.newProfile", "Add Profile")}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            type="button"
+            onClick={onCreateProfileClick}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-955 font-bold py-2 px-4 shadow-md transition-all active:scale-95 duration-100 cursor-pointer text-sm"
+          >
+            <LuPlus className="size-4 stroke-[3]" />
+            <span>{t("header.newProfile", "Add Profile")}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Scrollable menu group */}
+      <div
+        className={cn(
+          "flex-1 px-3 space-y-4 overflow-y-auto scrollbar-none w-full",
+          isCollapsed && "px-1 space-y-3",
+        )}
+      >
+        {MENU_GROUPS.map((group) => (
+          <div key={group.title} className="space-y-1">
+            {!isCollapsed ? (
+              <span className="px-3 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase block animate-in fade-in duration-300">
+                {group.title}
+              </span>
+            ) : (
+              <div className="h-px bg-border/40 mx-2 my-1 shrink-0" />
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = currentPage === item.page;
+                const buttonContent = (
+                  <button
+                    key={item.page}
+                    type="button"
+                    onClick={() => onNavigate(item.page as AppPage)}
+                    className={cn(
+                      "flex w-full items-center rounded-lg text-sm transition-all duration-105 cursor-pointer",
+                      isCollapsed
+                        ? "justify-center size-10"
+                        : "gap-3 px-3 py-1.5",
+                      active
+                        ? "bg-primary/15 text-primary font-semibold"
+                        : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
+                    )}
+                  >
+                    <item.Icon
+                      className={cn(
+                        isCollapsed ? "size-5" : "size-4 shrink-0",
+                        active ? "text-primary" : "text-muted-foreground",
+                      )}
+                    />
+                    {!isCollapsed && (
+                      <span className="truncate flex-1 text-left animate-in fade-in duration-300">
+                        {item.label}
+                      </span>
+                    )}
+                    {!isCollapsed && item.badge && (
+                      <span className="rounded bg-blue-600/10 px-1.5 py-0.5 text-[9px] font-bold text-blue-400 animate-pulse border border-blue-500/20 shrink-0">
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+
+                if (isCollapsed) {
+                  return (
+                    <Tooltip key={item.page} delayDuration={300}>
+                      <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
+                      <TooltipContent side="right">
+                        <div className="flex items-center gap-1.5">
+                          <span>{item.label}</span>
+                          {item.badge && (
+                            <span className="rounded bg-blue-600/20 px-1 py-0.5 text-[8px] font-bold text-blue-400">
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                }
+
+                return buttonContent;
+              })}
+            </div>
           </div>
-        </>
-      )}
+        ))}
+      </div>
+
+      {/* Star on GitHub banner */}
+      <div
+        className={cn(
+          "px-4 my-3 shrink-0 w-full",
+          isCollapsed && "px-2 flex justify-center",
+        )}
+      >
+        {isCollapsed ? (
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <a
+                href="https://github.com/philau2512/donut-browser"
+                target="_blank"
+                rel="noreferrer"
+                className="grid size-10 place-items-center rounded-lg bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-rose-400 transition-all active:scale-95 duration-100 cursor-pointer"
+              >
+                <svg
+                  className="size-5 fill-current"
+                  viewBox="0 0 16 16"
+                  role="img"
+                  aria-label="Star on GitHub"
+                >
+                  <title>Star on GitHub</title>
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg>
+              </a>
+            </TooltipTrigger>
+            <TooltipContent side="right">Star on GitHub</TooltipContent>
+          </Tooltip>
+        ) : (
+          <a
+            href="https://github.com/philau2512/donut-browser"
+            target="_blank"
+            rel="noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-rose-400 font-semibold py-2 px-4 shadow-sm transition-all active:scale-95 duration-100 cursor-pointer text-xs"
+          >
+            <svg
+              className="size-4 shrink-0 fill-current"
+              viewBox="0 0 16 16"
+              role="img"
+              aria-label="Star on GitHub"
+            >
+              <title>Star on GitHub</title>
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+            <span>Star on GitHub</span>
+          </a>
+        )}
+      </div>
+
+      {/* System Local Stats Panel */}
+      <div
+        className={cn(
+          "w-full shrink-0",
+          isCollapsed ? "px-2 flex justify-center" : "px-4",
+        )}
+      >
+        {!isCollapsed ? (
+          <div className="p-3 rounded-xl bg-secondary/50 border border-border text-[11px] space-y-1.5 font-sans animate-in fade-in duration-300 w-full">
+            <div className="text-center font-bold tracking-wider text-muted-foreground border-b border-border pb-1.5 mb-1.5 uppercase text-[10px]">
+              {t("rail.statsHeader", "Local-First Engine")}
+            </div>
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span>Profiles cloud</span>
+              <span className="font-semibold text-foreground flex items-center gap-1">
+                <LuCloud className="size-3" />
+                0/0
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span>Profiles local</span>
+              <span className="font-semibold text-foreground flex items-center gap-1">
+                <LuUser className="size-3" />
+                {totalProfiles}/∞
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span>Active sessions</span>
+              <span className="font-semibold text-foreground flex items-center gap-1">
+                <span className="size-1.5 rounded-full bg-success animate-ping shrink-0" />
+                {runningProfilesCount}/∞
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span>License status</span>
+              <span className="font-bold text-success">LIFETIME</span>
+            </div>
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span>Expires on</span>
+              <span className="font-semibold text-foreground">Never</span>
+            </div>
+          </div>
+        ) : (
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <div className="grid size-10 place-items-center rounded-lg bg-secondary/50 border border-border/40 text-muted-foreground cursor-help my-2">
+                <LuCloud className="size-5" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="space-y-1 text-xs">
+              <div className="font-bold border-b border-border pb-1 mb-1 text-foreground">
+                Local-First Engine
+              </div>
+              <div>Profiles cloud: 0/0</div>
+              <div>Profiles local: {totalProfiles}/∞</div>
+              <div>Active sessions: {runningProfilesCount}/∞</div>
+              <div className="text-success font-bold">LIFETIME License</div>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      {/* Support / Preferences link */}
+      <div
+        className={cn(
+          "px-4 pb-2 shrink-0 w-full mt-2",
+          isCollapsed && "px-2 flex justify-center",
+        )}
+      >
+        {isCollapsed ? (
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => onNavigate("settings")}
+                className="grid size-10 place-items-center rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground font-semibold shadow-sm transition-all active:scale-95 duration-100 cursor-pointer"
+              >
+                <GoGear className="size-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {t("rail.preferences", "Preferences")}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onNavigate("settings")}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground font-semibold py-1.5 px-4 shadow-sm transition-all active:scale-95 duration-100 cursor-pointer text-xs"
+          >
+            <span>{t("rail.preferences", "Preferences")}</span>
+          </button>
+        )}
+      </div>
     </nav>
   );
 }

@@ -605,7 +605,13 @@ export default function Home() {
         pageTitle={subPageTitle}
       />
       <div className="flex min-h-0 flex-1">
-        <RailNav currentPage={currentPage} onNavigate={handleRailNavigate} />
+        <RailNav
+          currentPage={currentPage}
+          onNavigate={handleRailNavigate}
+          onCreateProfileClick={() => setCreateProfileDialogOpen(true)}
+          totalProfiles={profiles.length}
+          runningProfilesCount={runningProfiles.size}
+        />
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           {currentPage === "profiles" && (
             <div className="flex min-h-0 flex-1 flex-col px-3 pt-2.5">
