@@ -478,7 +478,7 @@ impl ApiClient {
   }
 
   fn get_cache_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
-    let cache_dir = crate::app_dirs::cache_dir().join("version_cache");
+    let cache_dir = crate::settings::app_dirs::cache_dir().join("version_cache");
     fs::create_dir_all(&cache_dir)?;
     Ok(cache_dir)
   }

@@ -262,7 +262,7 @@ impl McpServer {
         message: "Extension management requires an active Pro subscription".to_string(),
       });
     }
-    let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let mgr = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     let extensions = mgr.list_extensions().map_err(|e| McpError {
       code: -32000,
       message: format!("Failed to list extensions: {e}"),
@@ -287,7 +287,7 @@ impl McpServer {
         code: -32602,
         message: "Missing required parameter: extension_id".to_string(),
       })?;
-    let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let mgr = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     mgr
       .delete_extension_internal(extension_id)
       .map_err(|e| McpError {
@@ -304,7 +304,7 @@ impl McpServer {
         message: "Team features require an active team plan".to_string(),
       });
     }
-    let locks = crate::team_lock::TEAM_LOCK.get_locks().await;
+    let locks = crate::profile::team_lock::TEAM_LOCK.get_locks().await;
     Ok(serde_json::json!({
       "content": [{
         "type": "text",
@@ -330,7 +330,7 @@ impl McpServer {
         code: -32602,
         message: "Missing profile_id".to_string(),
       })?;
-    let lock_status = crate::team_lock::TEAM_LOCK
+    let lock_status = crate::profile::team_lock::TEAM_LOCK
       .get_lock_status(profile_id)
       .await;
     Ok(serde_json::json!({
@@ -795,7 +795,7 @@ impl McpServer {
       })?
     };
 
-    let info = crate::synchronizer::SynchronizerManager::instance()
+    let info = crate::sync::synchronizer::SynchronizerManager::instance()
       .start_session(app, leader_id.to_string(), follower_ids)
       .await
       .map_err(|e| McpError {
@@ -831,7 +831,7 @@ impl McpServer {
       })?
     };
 
-    crate::synchronizer::SynchronizerManager::instance()
+    crate::sync::synchronizer::SynchronizerManager::instance()
       .stop_session(app, session_id)
       .await
       .map_err(|e| McpError {
@@ -848,7 +848,7 @@ impl McpServer {
   }
 
   async fn handle_get_sync_sessions(&self) -> Result<serde_json::Value, McpError> {
-    let sessions = crate::synchronizer::SynchronizerManager::instance()
+    let sessions = crate::sync::synchronizer::SynchronizerManager::instance()
       .get_sessions()
       .await;
 
@@ -887,7 +887,7 @@ impl McpServer {
       })?
     };
 
-    crate::synchronizer::SynchronizerManager::instance()
+    crate::sync::synchronizer::SynchronizerManager::instance()
       .remove_follower(app, session_id, follower_id)
       .await
       .map_err(|e| McpError {

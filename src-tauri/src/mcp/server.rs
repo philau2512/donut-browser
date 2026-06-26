@@ -19,14 +19,14 @@ use tokio::sync::Mutex as AsyncMutex;
 use uuid::Uuid;
 
 use crate::api::cloud_auth::CLOUD_AUTH;
+use crate::browser::human_typing::{MarkovTyper, TypingAction};
 use crate::browser::wayfern_terms::WayfernTermsManager;
 use crate::browser::ProxySettings;
-use crate::group_manager::GROUP_MANAGER;
-use crate::human_typing::{MarkovTyper, TypingAction};
+use crate::profile::group_manager::GROUP_MANAGER;
 use crate::profile::{BrowserProfile, ProfileManager};
 use crate::proxy::proxy_manager::PROXY_MANAGER;
 use crate::proxy::proxy_manager::{ProxyManager, ProxyParseResult};
-use crate::settings_manager::SettingsManager;
+use crate::settings::settings_manager::SettingsManager;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

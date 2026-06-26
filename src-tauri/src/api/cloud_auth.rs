@@ -15,7 +15,7 @@ use tokio::sync::Mutex;
 
 use crate::browser::ProxySettings;
 use crate::proxy::proxy_manager::PROXY_MANAGER;
-use crate::settings_manager::SettingsManager;
+use crate::settings::settings_manager::SettingsManager;
 use crate::sync;
 
 pub const CLOUD_API_URL: &str = "https://api.donutbrowser.com";
@@ -699,7 +699,7 @@ impl CloudAuthManager {
     self.clear_wayfern_token().await;
 
     // Disconnect profile lock manager
-    crate::team_lock::PROFILE_LOCK.disconnect().await;
+    crate::profile::team_lock::PROFILE_LOCK.disconnect().await;
 
     // Try to call the logout API (best-effort)
     if let Ok(Some(access_token)) = Self::load_access_token() {
@@ -1255,8 +1255,10 @@ impl CloudAuthManager {
 
       // Reconnect profile lock manager if needed
       if let Some(auth_state) = CLOUD_AUTH.get_user().await {
-        if auth_state.user.plan != "free" && !crate::team_lock::PROFILE_LOCK.is_connected().await {
-          crate::team_lock::PROFILE_LOCK.connect().await;
+        if auth_state.user.plan != "free"
+          && !crate::profile::team_lock::PROFILE_LOCK.is_connected().await
+        {
+          crate::profile::team_lock::PROFILE_LOCK.connect().await;
         }
       }
 
@@ -1353,7 +1355,7 @@ pub async fn cloud_exchange_device_code(
 
   // Connect profile lock manager for paid users
   if state.user.plan != "free" {
-    crate::team_lock::PROFILE_LOCK.connect().await;
+    crate::profile::team_lock::PROFILE_LOCK.connect().await;
   }
 
   let _ = crate::events::emit_empty("cloud-auth-changed");
@@ -1390,7 +1392,7 @@ pub async fn cloud_logout(app_handle: tauri::AppHandle) -> Result<(), String> {
   // pre-fill the Self-Hosted tab with our production URL and a token the
   // user never typed. The cloud-URL-only check we used to do here missed
   // trailing-slash / scheme variants and any future cloud endpoint moves.
-  let manager = crate::settings_manager::SettingsManager::instance();
+  let manager = crate::settings::settings_manager::SettingsManager::instance();
   let _ = manager.save_sync_server_url(None);
   let _ = manager.remove_sync_token(&app_handle).await;
 

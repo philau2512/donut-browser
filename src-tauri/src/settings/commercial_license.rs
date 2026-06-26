@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 
 use crate::events;
-use crate::settings_manager::SettingsManager;
+use crate::settings::settings_manager::SettingsManager;
 
 const TRIAL_DURATION_SECONDS: u64 = 14 * 24 * 60 * 60; // 2 weeks
 

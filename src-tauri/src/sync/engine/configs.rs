@@ -142,7 +142,7 @@ impl SyncEngine {
     app_handle: Option<&tauri::AppHandle>,
   ) -> SyncResult<()> {
     let local_group = {
-      let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+      let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
       let groups = group_manager.get_all_groups().unwrap_or_default();
       groups.into_iter().find(|g| g.id == group_id)
     };
@@ -179,7 +179,7 @@ impl SyncEngine {
     Ok(())
   }
 
-  async fn upload_group(&self, group: &crate::group_manager::ProfileGroup) -> SyncResult<()> {
+  async fn upload_group(&self, group: &crate::profile::group_manager::ProfileGroup) -> SyncResult<()> {
     let mut updated_group = group.clone();
     updated_group.last_sync = Some(
       std::time::SystemTime::now()
@@ -198,7 +198,7 @@ impl SyncEngine {
 
     // Update local group with new last_sync
     {
-      let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+      let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
       if let Err(e) = group_manager.update_group_internal(&updated_group) {
         log::warn!("Failed to update group last_sync: {}", e);
       }
@@ -220,7 +220,7 @@ impl SyncEngine {
     let data = encryption::maybe_unseal_after_download(&raw)
       .map_err(|e| SyncError::InvalidData(format!("Failed to unseal group: {e}")))?;
 
-    let mut group: crate::group_manager::ProfileGroup = serde_json::from_slice(&data)
+    let mut group: crate::profile::group_manager::ProfileGroup = serde_json::from_slice(&data)
       .map_err(|e| SyncError::SerializationError(format!("Failed to parse group JSON: {e}")))?;
 
     group.last_sync = Some(
@@ -232,7 +232,7 @@ impl SyncEngine {
 
     // Save or update local group
     {
-      let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+      let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
       if let Err(e) = group_manager.upsert_group_internal(&group) {
         log::warn!("Failed to save downloaded group: {}", e);
       }
@@ -481,7 +481,7 @@ impl SyncEngine {
     app_handle: Option<&tauri::AppHandle>,
   ) -> SyncResult<()> {
     let local_ext = {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       manager.get_extension(ext_id).ok()
     };
 
@@ -514,7 +514,7 @@ impl SyncEngine {
     Ok(())
   }
 
-  async fn upload_extension(&self, ext: &crate::extension_manager::Extension) -> SyncResult<()> {
+  async fn upload_extension(&self, ext: &crate::browser::extension_manager::Extension) -> SyncResult<()> {
     let now = std::time::SystemTime::now()
       .duration_since(std::time::UNIX_EPOCH)
       .unwrap()
@@ -534,7 +534,7 @@ impl SyncEngine {
     // Also upload the extension file data — encrypted as a sealed envelope
     // when E2E is on (the binary is the secret here, not just the metadata).
     let file_path = {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       let file_dir = manager.get_file_dir_public(&ext.id);
       file_dir.join(&ext.file_name)
     };
@@ -563,7 +563,7 @@ impl SyncEngine {
 
     // Update local extension with new last_sync
     {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       if let Err(e) = manager.update_extension_internal(&updated_ext) {
         log::warn!("Failed to update extension last_sync: {}", e);
       }
@@ -584,7 +584,7 @@ impl SyncEngine {
     let data = encryption::maybe_unseal_after_download(&raw)
       .map_err(|e| SyncError::InvalidData(format!("Failed to unseal extension: {e}")))?;
 
-    let mut ext: crate::extension_manager::Extension = serde_json::from_slice(&data)
+    let mut ext: crate::browser::extension_manager::Extension = serde_json::from_slice(&data)
       .map_err(|e| SyncError::SerializationError(format!("Failed to parse extension JSON: {e}")))?;
 
     ext.last_sync = Some(
@@ -604,7 +604,7 @@ impl SyncEngine {
       let file_data = encryption::maybe_unseal_after_download(&file_raw)
         .map_err(|e| SyncError::InvalidData(format!("Failed to unseal extension file: {e}")))?;
 
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       let file_dir = manager.get_file_dir_public(&ext.id);
       drop(manager);
 
@@ -625,7 +625,7 @@ impl SyncEngine {
 
     // Save or update local extension
     {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       if let Err(e) = manager.upsert_extension_internal(&ext) {
         log::warn!("Failed to save downloaded extension: {}", e);
       }
@@ -673,7 +673,7 @@ impl SyncEngine {
     app_handle: Option<&tauri::AppHandle>,
   ) -> SyncResult<()> {
     let local_group = {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       manager.get_group(group_id).ok()
     };
 
@@ -708,7 +708,7 @@ impl SyncEngine {
 
   async fn upload_extension_group(
     &self,
-    group: &crate::extension_manager::ExtensionGroup,
+    group: &crate::browser::extension_manager::ExtensionGroup,
   ) -> SyncResult<()> {
     let now = std::time::SystemTime::now()
       .duration_since(std::time::UNIX_EPOCH)
@@ -729,7 +729,7 @@ impl SyncEngine {
 
     // Update local group with new last_sync
     {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       if let Err(e) = manager.update_group_internal(&updated_group) {
         log::warn!("Failed to update extension group last_sync: {}", e);
       }
@@ -751,7 +751,7 @@ impl SyncEngine {
     let data = encryption::maybe_unseal_after_download(&raw)
       .map_err(|e| SyncError::InvalidData(format!("Failed to unseal extension group: {e}")))?;
 
-    let mut group: crate::extension_manager::ExtensionGroup = serde_json::from_slice(&data)
+    let mut group: crate::browser::extension_manager::ExtensionGroup = serde_json::from_slice(&data)
       .map_err(|e| {
         SyncError::SerializationError(format!("Failed to parse extension group JSON: {e}"))
       })?;
@@ -766,7 +766,7 @@ impl SyncEngine {
 
     // Save or update local group
     {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       if let Err(e) = manager.upsert_group_internal(&group) {
         log::warn!("Failed to save downloaded extension group: {}", e);
       }
@@ -858,7 +858,7 @@ pub async fn enable_vpn_sync_if_needed(vpn_id: &str) -> Result<(), String> {
 /// Enable sync for group if not already enabled
 pub async fn enable_group_sync_if_needed(group_id: &str) -> Result<(), String> {
   let group = {
-    let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+    let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
     let groups = group_manager.get_all_groups().unwrap_or_default();
     groups
       .iter()
@@ -872,7 +872,7 @@ pub async fn enable_group_sync_if_needed(group_id: &str) -> Result<(), String> {
     updated_group.sync_enabled = true;
 
     {
-      let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+      let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
       if let Err(e) = group_manager.update_group_internal(&updated_group) {
         return Err(format!("Failed to update group: {e}"));
       }
@@ -890,7 +890,7 @@ pub async fn enable_group_sync_if_needed(group_id: &str) -> Result<(), String> {
 /// site where a synced profile gains an `extension_group_id`.
 pub async fn enable_extension_group_sync_if_needed(extension_group_id: &str) -> Result<(), String> {
   let (group_already_synced, extension_ids) = {
-    let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     let group = manager
       .get_group(extension_group_id)
       .map_err(|e| format!("Extension group with ID '{extension_group_id}' not found: {e}"))?;
@@ -899,14 +899,14 @@ pub async fn enable_extension_group_sync_if_needed(extension_group_id: &str) -> 
 
   if !group_already_synced {
     let mut updated_group = {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       manager
         .get_group(extension_group_id)
         .map_err(|e| format!("Failed to load extension group: {e}"))?
     };
     updated_group.sync_enabled = true;
     {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       manager
         .update_group_internal(&updated_group)
         .map_err(|e| format!("Failed to update extension group sync: {e}"))?;
@@ -922,7 +922,7 @@ pub async fn enable_extension_group_sync_if_needed(extension_group_id: &str) -> 
   // has the actual extension binaries when it pulls the group.
   for ext_id in extension_ids {
     let already_synced = {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       manager
         .get_extension(&ext_id)
         .ok()
@@ -930,7 +930,7 @@ pub async fn enable_extension_group_sync_if_needed(extension_group_id: &str) -> 
         .unwrap_or(true)
     };
     if !already_synced {
-      let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       if let Ok(mut ext) = manager.get_extension(&ext_id) {
         ext.sync_enabled = true;
         if let Err(e) = manager.update_extension_internal(&ext) {
@@ -1346,7 +1346,7 @@ pub async fn set_group_sync_enabled(
   enabled: bool,
 ) -> Result<(), String> {
   let group = {
-    let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+    let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
     let groups = group_manager.get_all_groups().unwrap_or_default();
     groups
       .iter()
@@ -1373,7 +1373,7 @@ pub async fn set_group_sync_enabled(
   }
 
   {
-    let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+    let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
     if let Err(e) = group_manager.update_group_internal(&updated_group) {
       return Err(
         serde_json::json!({ "code": "INTERNAL_ERROR", "params": { "detail": e.to_string() } })
@@ -1506,7 +1506,7 @@ pub fn get_unsynced_entity_counts() -> Result<UnsyncedEntityCounts, String> {
   };
 
   let group_count = {
-    let gm = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+    let gm = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
     let groups = gm
       .get_all_groups()
       .map_err(|e| format!("Failed to get groups: {e}"))?;
@@ -1522,7 +1522,7 @@ pub fn get_unsynced_entity_counts() -> Result<UnsyncedEntityCounts, String> {
   };
 
   let extension_count = {
-    let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let em = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     let exts = em
       .list_extensions()
       .map_err(|e| format!("Failed to list extensions: {e}"))?;
@@ -1530,7 +1530,7 @@ pub fn get_unsynced_entity_counts() -> Result<UnsyncedEntityCounts, String> {
   };
 
   let extension_group_count = {
-    let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let em = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     let groups = em
       .list_groups()
       .map_err(|e| format!("Failed to list extension groups: {e}"))?;
@@ -1568,7 +1568,7 @@ pub async fn enable_sync_for_all_entities(app_handle: tauri::AppHandle) -> Resul
   // Enable sync for all unsynced groups
   {
     let groups = {
-      let gm = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+      let gm = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
       gm.get_all_groups()
         .map_err(|e| format!("Failed to get groups: {e}"))?
     };
@@ -1601,7 +1601,7 @@ pub async fn enable_sync_for_all_entities(app_handle: tauri::AppHandle) -> Resul
   // Enable sync for all unsynced extensions
   {
     let exts = {
-      let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let em = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       em.list_extensions()
         .map_err(|e| format!("Failed to list extensions: {e}"))?
     };
@@ -1617,7 +1617,7 @@ pub async fn enable_sync_for_all_entities(app_handle: tauri::AppHandle) -> Resul
   // Enable sync for all unsynced extension groups
   {
     let groups = {
-      let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let em = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       em.list_groups()
         .map_err(|e| format!("Failed to list extension groups: {e}"))?
     };
@@ -1645,7 +1645,7 @@ pub async fn set_extension_sync_enabled(
   enabled: bool,
 ) -> Result<(), String> {
   let ext = {
-    let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     manager
       .get_extension(&extension_id)
       .map_err(|_| serde_json::json!({ "code": "EXTENSION_NOT_FOUND" }).to_string())?
@@ -1662,7 +1662,7 @@ pub async fn set_extension_sync_enabled(
   }
 
   {
-    let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     manager
       .update_extension_internal(&updated_ext)
       .map_err(|e| {
@@ -1689,7 +1689,7 @@ pub async fn set_extension_group_sync_enabled(
   enabled: bool,
 ) -> Result<(), String> {
   let group = {
-    let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     manager
       .get_group(&extension_group_id)
       .map_err(|_| serde_json::json!({ "code": "EXTENSION_GROUP_NOT_FOUND" }).to_string())?
@@ -1706,7 +1706,7 @@ pub async fn set_extension_group_sync_enabled(
   }
 
   {
-    let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     manager.update_group_internal(&updated_group).map_err(|e| {
       serde_json::json!({ "code": "INTERNAL_ERROR", "params": { "detail": e.to_string() } })
         .to_string()
@@ -1813,7 +1813,7 @@ pub async fn rollover_encryption_for_all_entities(
   }
 
   let groups = {
-    let gm = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+    let gm = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
     gm.get_all_groups()
       .map_err(|e| format!("Failed to get groups: {e}"))?
   };
@@ -1854,7 +1854,7 @@ pub async fn rollover_encryption_for_all_entities(
   }
 
   let extensions = {
-    let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let em = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     em.list_extensions()
       .map_err(|e| format!("Failed to list extensions: {e}"))?
   };
@@ -1871,7 +1871,7 @@ pub async fn rollover_encryption_for_all_entities(
   }
 
   let ext_groups = {
-    let em = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let em = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     em.list_groups()
       .map_err(|e| format!("Failed to list extension groups: {e}"))?
   };

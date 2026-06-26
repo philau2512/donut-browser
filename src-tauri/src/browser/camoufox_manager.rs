@@ -116,7 +116,7 @@ impl CamoufoxManager {
   }
 
   pub fn get_profiles_dir(&self) -> PathBuf {
-    crate::app_dirs::profiles_dir()
+    crate::settings::app_dirs::profiles_dir()
   }
 
   /// Generate Camoufox fingerprint configuration during profile creation

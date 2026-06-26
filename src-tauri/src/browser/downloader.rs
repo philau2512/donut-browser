@@ -40,7 +40,7 @@ pub struct Downloader {
   api_client: &'static ApiClient,
   registry: &'static crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry,
   version_service: &'static crate::browser::browser_version_manager::BrowserVersionManager,
-  extractor: &'static crate::extraction::Extractor,
+  extractor: &'static crate::browser::extraction::Extractor,
   geoip_downloader: &'static crate::updater::geoip_downloader::GeoIPDownloader,
 }
 
@@ -60,7 +60,7 @@ impl Downloader {
       registry: crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance(
       ),
       version_service: crate::browser::browser_version_manager::BrowserVersionManager::instance(),
-      extractor: crate::extraction::Extractor::instance(),
+      extractor: crate::browser::extraction::Extractor::instance(),
       geoip_downloader: crate::updater::geoip_downloader::GeoIPDownloader::instance(),
     }
   }
@@ -77,7 +77,7 @@ impl Downloader {
       registry: crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance(
       ),
       version_service: crate::browser::browser_version_manager::BrowserVersionManager::instance(),
-      extractor: crate::extraction::Extractor::instance(),
+      extractor: crate::browser::extraction::Extractor::instance(),
       geoip_downloader: crate::updater::geoip_downloader::GeoIPDownloader::instance(),
     }
   }
@@ -633,7 +633,7 @@ impl Downloader {
 
     // Use injected registry instance
 
-    let binaries_dir = crate::app_dirs::binaries_dir();
+    let binaries_dir = crate::settings::app_dirs::binaries_dir();
 
     // Check if registry thinks it's downloaded, but also verify files actually exist
     if self.registry.is_browser_downloaded(&browser_str, &version) {

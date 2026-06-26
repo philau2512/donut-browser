@@ -10,7 +10,7 @@ use tauri_plugin_shell::ShellExt;
 
 use crate::browser::ProxySettings;
 use crate::events;
-use crate::ip_utils;
+use crate::proxy::ip_utils;
 
 // Export data format for JSON export
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -216,11 +216,11 @@ impl ProxyManager {
   }
 
   fn get_proxies_dir(&self) -> PathBuf {
-    crate::app_dirs::proxies_dir()
+    crate::settings::app_dirs::proxies_dir()
   }
 
   fn get_proxy_check_cache_dir(&self) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let path = crate::app_dirs::cache_dir().join("proxy_checks");
+    let path = crate::settings::app_dirs::cache_dir().join("proxy_checks");
     fs::create_dir_all(&path)?;
     Ok(path)
   }

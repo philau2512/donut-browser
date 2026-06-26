@@ -109,12 +109,12 @@ impl WayfernManager {
 
   #[allow(dead_code)]
   pub fn get_profiles_dir(&self) -> PathBuf {
-    crate::app_dirs::profiles_dir()
+    crate::settings::app_dirs::profiles_dir()
   }
 
   #[allow(dead_code)]
   fn get_binaries_dir(&self) -> PathBuf {
-    crate::app_dirs::binaries_dir()
+    crate::settings::app_dirs::binaries_dir()
   }
 
   async fn find_free_port() -> Result<u16, Box<dyn std::error::Error + Send + Sync>> {
@@ -321,7 +321,7 @@ impl WayfernManager {
     let geo_result = async {
       let ip = match geoip {
         Some(serde_json::Value::String(ip_str)) => ip_str.clone(),
-        _ => crate::ip_utils::fetch_public_ip(proxy)
+        _ => crate::proxy::ip_utils::fetch_public_ip(proxy)
           .await
           .map_err(|e| format!("Failed to fetch public IP: {e}"))?,
       };
@@ -674,7 +674,7 @@ impl WayfernManager {
 
           // Try decrypting one cookie using the cookie_manager
           if let Some(encryption_key) =
-            crate::cookie_manager::chrome_decrypt::get_encryption_key(&profile_path_buf)
+            crate::profile::cookie_manager::chrome_decrypt::get_encryption_key(&profile_path_buf)
           {
             if let Ok(mut stmt) = conn.prepare(
               "SELECT name, host_key, encrypted_value FROM cookies WHERE length(encrypted_value) > 0 LIMIT 1",
@@ -684,7 +684,7 @@ impl WayfernManager {
                   let name: String = row.get(0).unwrap_or_default();
                   let host: String = row.get(1).unwrap_or_default();
                   let encrypted: Vec<u8> = row.get(2).unwrap_or_default();
-                  let decrypted = crate::cookie_manager::chrome_decrypt::decrypt(
+                  let decrypted = crate::profile::cookie_manager::chrome_decrypt::decrypt(
                     &encrypted,
                     &host,
                     &encryption_key,

@@ -39,7 +39,7 @@ fn invalidate_key_cache() {
 }
 
 fn get_e2e_password_path() -> std::path::PathBuf {
-  crate::app_dirs::settings_dir().join("e2e_password.dat")
+  crate::settings::app_dirs::settings_dir().join("e2e_password.dat")
 }
 
 fn get_vault_password() -> String {

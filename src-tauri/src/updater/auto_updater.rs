@@ -1,6 +1,6 @@
 use crate::browser::browser_version_manager::{BrowserVersionInfo, BrowserVersionManager};
 use crate::profile::{BrowserProfile, ProfileManager};
-use crate::settings_manager::SettingsManager;
+use crate::settings::settings_manager::SettingsManager;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;

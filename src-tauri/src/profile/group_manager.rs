@@ -37,13 +37,19 @@ struct GroupsData {
 
 pub struct GroupManager;
 
+impl Default for GroupManager {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl GroupManager {
   pub fn new() -> Self {
     Self
   }
 
   fn get_groups_file_path(&self) -> std::path::PathBuf {
-    crate::app_dirs::data_subdir().join("groups.json")
+    crate::settings::app_dirs::data_subdir().join("groups.json")
   }
 
   fn load_groups_data(&self) -> Result<GroupsData, Box<dyn std::error::Error>> {

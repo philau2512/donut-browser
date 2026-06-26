@@ -4,6 +4,7 @@ mod engine;
 pub mod manifest;
 pub mod scheduler;
 pub mod subscription;
+pub mod synchronizer;
 pub mod types;
 
 pub use client::SyncClient;

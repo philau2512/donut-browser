@@ -1,10 +1,10 @@
 use crate::browser::camoufox_manager::CamoufoxConfig;
 use crate::browser::ProxySettings;
 use crate::events;
-use crate::group_manager::GROUP_MANAGER;
+use crate::profile::group_manager::GROUP_MANAGER;
 use crate::profile::manager::ProfileManager;
+use crate::profile::tag_manager::TAG_MANAGER;
 use crate::proxy::proxy_manager::PROXY_MANAGER;
-use crate::tag_manager::TAG_MANAGER;
 use axum::{
   extract::{Path, State},
   http::{HeaderMap, StatusCode},
@@ -569,7 +569,7 @@ async fn auth_middleware(
   };
 
   // Get the stored token
-  let settings_manager = crate::settings_manager::SettingsManager::instance();
+  let settings_manager = crate::settings::settings_manager::SettingsManager::instance();
   let stored_token = match settings_manager.get_api_token(&state.app_handle).await {
     Ok(Some(stored_token)) => stored_token,
     Ok(None) => {
@@ -932,7 +932,7 @@ async fn create_profile(
 
       // Update tag manager with new tags
       if let Ok(profiles) = profile_manager.list_profiles() {
-        let _ = crate::tag_manager::TAG_MANAGER
+        let _ = crate::profile::tag_manager::TAG_MANAGER
           .lock()
           .map(|manager| manager.rebuild_from_profiles(&profiles));
       }
@@ -1098,7 +1098,7 @@ async fn update_profile(
 
     // Update tag manager with new tags from all profiles
     if let Ok(profiles) = profile_manager.list_profiles() {
-      let _ = crate::tag_manager::TAG_MANAGER
+      let _ = crate::profile::tag_manager::TAG_MANAGER
         .lock()
         .map(|manager| manager.rebuild_from_profiles(&profiles));
     }
@@ -1751,7 +1751,7 @@ async fn delete_vpn(
   Path(id): Path<String>,
   State(_state): State<ApiServerState>,
 ) -> Result<StatusCode, StatusCode> {
-  let _ = crate::vpn_worker_runner::stop_vpn_worker_by_vpn_id(&id).await;
+  let _ = crate::vpn::vpn_worker_runner::stop_vpn_worker_by_vpn_id(&id).await;
 
   let result = {
     let storage = crate::vpn::VPN_STORAGE
@@ -1782,8 +1782,10 @@ async fn delete_vpn(
 )]
 async fn get_extensions(
   State(_state): State<ApiServerState>,
-) -> Result<Json<Vec<crate::extension_manager::Extension>>, StatusCode> {
-  let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+) -> Result<Json<Vec<crate::browser::extension_manager::Extension>>, StatusCode> {
+  let mgr = crate::browser::extension_manager::EXTENSION_MANAGER
+    .lock()
+    .unwrap();
   mgr
     .list_extensions()
     .map(Json)
@@ -1802,8 +1804,10 @@ async fn get_extensions(
 )]
 async fn get_extension_groups(
   State(_state): State<ApiServerState>,
-) -> Result<Json<Vec<crate::extension_manager::ExtensionGroup>>, StatusCode> {
-  let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+) -> Result<Json<Vec<crate::browser::extension_manager::ExtensionGroup>>, StatusCode> {
+  let mgr = crate::browser::extension_manager::EXTENSION_MANAGER
+    .lock()
+    .unwrap();
   mgr
     .list_groups()
     .map(Json)
@@ -1826,7 +1830,9 @@ async fn delete_extension_api(
   Path(id): Path<String>,
   State(state): State<ApiServerState>,
 ) -> Result<StatusCode, StatusCode> {
-  let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+  let mgr = crate::browser::extension_manager::EXTENSION_MANAGER
+    .lock()
+    .unwrap();
   mgr
     .delete_extension(&state.app_handle, &id)
     .map(|_| StatusCode::NO_CONTENT)
@@ -1849,7 +1855,9 @@ async fn delete_extension_group_api(
   Path(id): Path<String>,
   State(state): State<ApiServerState>,
 ) -> Result<StatusCode, StatusCode> {
-  let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+  let mgr = crate::browser::extension_manager::EXTENSION_MANAGER
+    .lock()
+    .unwrap();
   mgr
     .delete_group(&state.app_handle, &id)
     .map(|_| StatusCode::NO_CONTENT)
@@ -1906,7 +1914,7 @@ async fn run_profile(
   }
 
   // Team lock check
-  crate::team_lock::acquire_team_lock_if_needed(profile)
+  crate::profile::team_lock::acquire_team_lock_if_needed(profile)
     .await
     .map_err(|_| StatusCode::CONFLICT)?;
 
@@ -2032,7 +2040,7 @@ async fn kill_profile(
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-  crate::team_lock::release_team_lock_if_needed(profile).await;
+  crate::profile::team_lock::release_team_lock_if_needed(profile).await;
 
   Ok(StatusCode::NO_CONTENT)
 }
@@ -2089,7 +2097,7 @@ async fn batch_run_profiles(
       results.push(fail("cross-OS profiles cannot be launched"));
       continue;
     }
-    if crate::team_lock::acquire_team_lock_if_needed(profile)
+    if crate::profile::team_lock::acquire_team_lock_if_needed(profile)
       .await
       .is_err()
     {
@@ -2183,7 +2191,7 @@ async fn batch_stop_profiles(
       .await
     {
       Ok(_) => {
-        crate::team_lock::release_team_lock_if_needed(profile).await;
+        crate::profile::team_lock::release_team_lock_if_needed(profile).await;
         results.push(BatchStopResult {
           profile_id: profile_id.clone(),
           ok: true,
@@ -2235,7 +2243,7 @@ async fn import_profile_cookies(
     return Err(StatusCode::NOT_FOUND);
   }
 
-  match crate::cookie_manager::CookieManager::import_cookies(
+  match crate::profile::cookie_manager::CookieManager::import_cookies(
     &state.app_handle,
     &id,
     &request.content,

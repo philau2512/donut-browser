@@ -60,11 +60,11 @@ fn now_secs() -> u64 {
 }
 
 fn extensions_base_dir() -> PathBuf {
-  crate::app_dirs::extensions_dir()
+  crate::settings::app_dirs::extensions_dir()
 }
 
 fn extension_groups_file() -> PathBuf {
-  crate::app_dirs::data_subdir().join("extension_groups.json")
+  crate::settings::app_dirs::data_subdir().join("extension_groups.json")
 }
 
 fn determine_browser_compatibility(file_type: &str) -> Vec<String> {
@@ -271,6 +271,12 @@ fn extract_icon_from_archive(file_data: &[u8], file_type: &str) -> Option<(Vec<u
 }
 
 pub struct ExtensionManager;
+
+impl Default for ExtensionManager {
+  fn default() -> Self {
+    Self::new()
+  }
+}
 
 impl ExtensionManager {
   pub fn new() -> Self {
@@ -1161,7 +1167,7 @@ pub async fn list_extensions() -> Result<Vec<Extension>, String> {
 
 #[tauri::command]
 pub fn get_extension_icon(extension_id: String) -> Option<String> {
-  let manager = crate::extension_manager::ExtensionManager::new();
+  let manager = crate::browser::extension_manager::ExtensionManager::new();
   manager.get_extension_icon(&extension_id)
 }
 
@@ -1347,7 +1353,7 @@ mod tests {
   #[test]
   fn test_extension_manager_crud() {
     let tmp = tempfile::tempdir().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
 
     let mgr = ExtensionManager::new();
 
@@ -1390,7 +1396,7 @@ mod tests {
   #[test]
   fn test_extension_group_crud() {
     let tmp = tempfile::tempdir().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
 
     let mgr = ExtensionManager::new();
 
@@ -1428,7 +1434,7 @@ mod tests {
   #[test]
   fn test_validate_group_compatibility() {
     let tmp = tempfile::tempdir().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
 
     let mgr = ExtensionManager::new();
 
@@ -1469,7 +1475,7 @@ mod tests {
   #[test]
   fn test_delete_extension_removes_from_groups() {
     let tmp = tempfile::tempdir().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
 
     let mgr = ExtensionManager::new();
 

@@ -680,7 +680,7 @@ impl McpServer {
       })?;
 
     // First disconnect if connected (stop VPN worker)
-    let _ = crate::vpn_worker_runner::stop_vpn_worker_by_vpn_id(vpn_id).await;
+    let _ = crate::vpn::vpn_worker_runner::stop_vpn_worker_by_vpn_id(vpn_id).await;
 
     let storage = crate::vpn::VPN_STORAGE.lock().map_err(|e| McpError {
       code: -32000,
@@ -713,7 +713,7 @@ impl McpServer {
       })?;
 
     // Start VPN worker process
-    crate::vpn_worker_runner::start_vpn_worker(vpn_id)
+    crate::vpn::vpn_worker_runner::start_vpn_worker(vpn_id)
       .await
       .map_err(|e| McpError {
         code: -32000,
@@ -749,7 +749,7 @@ impl McpServer {
         message: "Missing vpn_id".to_string(),
       })?;
 
-    crate::vpn_worker_runner::stop_vpn_worker_by_vpn_id(vpn_id)
+    crate::vpn::vpn_worker_runner::stop_vpn_worker_by_vpn_id(vpn_id)
       .await
       .map_err(|e| McpError {
         code: -32000,
@@ -777,7 +777,7 @@ impl McpServer {
       })?;
 
     let connected =
-      if let Some(worker) = crate::vpn_worker_storage::find_vpn_worker_by_vpn_id(vpn_id) {
+      if let Some(worker) = crate::vpn::vpn_worker_storage::find_vpn_worker_by_vpn_id(vpn_id) {
         worker
           .pid
           .map(crate::proxy::proxy_storage::is_process_running)
@@ -811,7 +811,7 @@ impl McpServer {
         message: "Extension management requires an active Pro subscription".to_string(),
       });
     }
-    let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let mgr = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     let groups = mgr.list_groups().map_err(|e| McpError {
       code: -32000,
       message: format!("Failed to list extension groups: {e}"),
@@ -836,7 +836,7 @@ impl McpServer {
         code: -32602,
         message: "Missing required parameter: name".to_string(),
       })?;
-    let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let mgr = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     let group = mgr.create_group(name.to_string()).map_err(|e| McpError {
       code: -32000,
       message: format!("Failed to create extension group: {e}"),
@@ -861,7 +861,7 @@ impl McpServer {
         code: -32602,
         message: "Missing required parameter: group_id".to_string(),
       })?;
-    let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+    let mgr = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
     // For MCP, we don't have an app_handle, but we need one for sync deletion.
     // Use the delete_group_internal which skips sync remote deletion.
     mgr.delete_group_internal(group_id).map_err(|e| McpError {
@@ -917,7 +917,7 @@ impl McpServer {
           code: -32000,
           message: format!("Profile '{profile_id}' not found"),
         })?;
-      let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+      let mgr = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       mgr
         .validate_group_compatibility(gid, &profile.browser)
         .map_err(|e| McpError {

@@ -70,7 +70,7 @@ impl DownloadedBrowsersRegistry {
   }
 
   fn get_registry_path() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
-    Ok(crate::app_dirs::data_subdir().join("downloaded_browsers.json"))
+    Ok(crate::settings::app_dirs::data_subdir().join("downloaded_browsers.json"))
   }
 
   pub fn add_browser(&self, info: DownloadedBrowserInfo) {
@@ -118,7 +118,7 @@ impl DownloadedBrowsersRegistry {
     };
     let browser_instance = create_browser(browser_type.clone());
 
-    let binaries_dir = crate::app_dirs::binaries_dir();
+    let binaries_dir = crate::settings::app_dirs::binaries_dir();
 
     let files_exist = browser_instance.is_version_downloaded(version, &binaries_dir);
 
@@ -539,7 +539,7 @@ impl DownloadedBrowsersRegistry {
       return Ok(());
     }
 
-    let binaries_dir = crate::app_dirs::binaries_dir();
+    let binaries_dir = crate::settings::app_dirs::binaries_dir();
 
     let version_dir = binaries_dir.join(browser).join(version);
 
@@ -832,7 +832,7 @@ impl DownloadedBrowsersRegistry {
 
       let browser = create_browser(browser_type.clone());
 
-      let binaries_dir = crate::app_dirs::binaries_dir();
+      let binaries_dir = crate::settings::app_dirs::binaries_dir();
 
       log::info!(
         "binaries_dir: {binaries_dir:?} for profile: {}",

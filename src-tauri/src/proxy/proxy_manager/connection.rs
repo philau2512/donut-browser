@@ -1179,7 +1179,7 @@ impl ProxyManager {
     // Clean up orphaned VPN worker configs where the worker process is dead
     {
       use crate::proxy::proxy_storage::is_process_running;
-      use crate::vpn_worker_storage::{delete_vpn_worker_config, list_vpn_worker_configs};
+      use crate::vpn::vpn_worker_storage::{delete_vpn_worker_config, list_vpn_worker_configs};
 
       let vpn_workers = list_vpn_worker_configs();
       for worker in vpn_workers {

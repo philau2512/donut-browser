@@ -81,7 +81,7 @@ impl GeoIPDownloader {
   }
 
   fn get_timestamp_path() -> PathBuf {
-    crate::app_dirs::cache_dir().join("geoip_last_download")
+    crate::settings::app_dirs::cache_dir().join("geoip_last_download")
   }
 
   fn is_geoip_stale() -> bool {
@@ -424,7 +424,7 @@ mod tests {
   #[test]
   fn test_is_geoip_stale() {
     let tmp = tempfile::TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_cache_dir(tmp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_cache_dir(tmp.path().to_path_buf());
 
     // No timestamp file → stale
     assert!(GeoIPDownloader::is_geoip_stale());

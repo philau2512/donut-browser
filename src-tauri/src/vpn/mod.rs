@@ -9,6 +9,8 @@ mod config;
 pub mod socks5_server;
 mod storage;
 mod tunnel;
+pub mod vpn_worker_runner;
+pub mod vpn_worker_storage;
 mod wireguard;
 
 pub use config::{

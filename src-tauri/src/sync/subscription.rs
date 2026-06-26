@@ -1,5 +1,5 @@
 use crate::events;
-use crate::settings_manager::SettingsManager;
+use crate::settings::settings_manager::SettingsManager;
 use reqwest::Client;
 use serde::Deserialize;
 use std::sync::atomic::{AtomicBool, Ordering};

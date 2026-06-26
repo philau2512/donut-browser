@@ -328,7 +328,7 @@ fn acquire_file_lock(lock_path: &PathBuf) -> Result<FileLockGuard, Box<dyn std::
 }
 
 pub fn get_traffic_stats_dir() -> PathBuf {
-  crate::app_dirs::cache_dir().join("traffic_stats")
+  crate::settings::app_dirs::cache_dir().join("traffic_stats")
 }
 
 /// Get the storage key for traffic stats (profile_id if available, otherwise proxy_id)

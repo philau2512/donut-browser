@@ -44,11 +44,11 @@ impl ProfileManager {
   }
 
   pub fn get_profiles_dir(&self) -> PathBuf {
-    crate::app_dirs::profiles_dir()
+    crate::settings::app_dirs::profiles_dir()
   }
 
   pub fn get_binaries_dir(&self) -> PathBuf {
-    crate::app_dirs::binaries_dir()
+    crate::settings::app_dirs::binaries_dir()
   }
 
   fn normalize_launch_hook(
@@ -442,7 +442,7 @@ impl ProfileManager {
     atomic_write(&profile_file, json.as_bytes())?;
 
     // Update tag suggestions after any save
-    let _ = crate::tag_manager::TAG_MANAGER.lock().map(|tm| {
+    let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
       let _ = tm.rebuild_from_profiles(&self.list_profiles().unwrap_or_default());
     });
 
@@ -538,7 +538,7 @@ impl ProfileManager {
     crate::sync::queue_profile_sync_if_eligible(&profile);
 
     // Keep tag suggestions up to date after name change (rebuild from all profiles)
-    let _ = crate::tag_manager::TAG_MANAGER.lock().map(|tm| {
+    let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
       let _ = tm.rebuild_from_profiles(&self.list_profiles().unwrap_or_default());
     });
 
@@ -622,7 +622,7 @@ impl ProfileManager {
     }
 
     // Rebuild tag suggestions after deletion
-    let _ = crate::tag_manager::TAG_MANAGER.lock().map(|tm| {
+    let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
       let _ = tm.rebuild_from_profiles(&self.list_profiles().unwrap_or_default());
     });
 
@@ -761,7 +761,7 @@ impl ProfileManager {
     }
 
     // Rebuild tag suggestions after group changes just in case
-    let _ = crate::tag_manager::TAG_MANAGER.lock().map(|tm| {
+    let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
       let _ = tm.rebuild_from_profiles(&self.list_profiles().unwrap_or_default());
     });
 
@@ -804,7 +804,7 @@ impl ProfileManager {
     crate::sync::queue_profile_sync_if_eligible(&profile);
 
     // Update global tag suggestions from all profiles
-    let _ = crate::tag_manager::TAG_MANAGER.lock().map(|tm| {
+    let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
       let _ = tm.rebuild_from_profiles(&self.list_profiles().unwrap_or_default());
     });
 
@@ -1048,7 +1048,10 @@ impl ProfileManager {
     let dest_dir = profiles_dir.join(new_id.to_string());
 
     if source_dir.exists() {
-      crate::profile_importer::ProfileImporter::copy_directory_recursive(&source_dir, &dest_dir)?;
+      crate::profile::profile_importer::ProfileImporter::copy_directory_recursive(
+        &source_dir,
+        &dest_dir,
+      )?;
     } else {
       fs::create_dir_all(&dest_dir)?;
     }

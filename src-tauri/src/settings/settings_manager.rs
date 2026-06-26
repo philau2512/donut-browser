@@ -114,7 +114,7 @@ impl SettingsManager {
   }
 
   pub fn get_settings_dir(&self) -> PathBuf {
-    crate::app_dirs::settings_dir()
+    crate::settings::app_dirs::settings_dir()
   }
 
   pub fn get_settings_file(&self) -> PathBuf {
@@ -814,7 +814,7 @@ pub async fn save_app_settings(
 /// keep clipboard payloads sane.
 #[tauri::command]
 pub async fn read_log_files(app_handle: tauri::AppHandle) -> Result<String, String> {
-  let dir = crate::app_dirs::log_dir(&app_handle);
+  let dir = crate::settings::app_dirs::log_dir(&app_handle);
   if !dir.exists() {
     return Err("Log directory does not exist yet".to_string());
   }
@@ -877,7 +877,7 @@ pub async fn read_log_files(app_handle: tauri::AppHandle) -> Result<String, Stri
 /// Reveal the log directory in the OS file manager.
 #[tauri::command]
 pub async fn open_log_directory(app_handle: tauri::AppHandle) -> Result<(), String> {
-  let dir = crate::app_dirs::log_dir(&app_handle);
+  let dir = crate::settings::app_dirs::log_dir(&app_handle);
   if !dir.exists() {
     std::fs::create_dir_all(&dir).map_err(|e| format!("Failed to create log dir: {e}"))?;
   }
@@ -1080,7 +1080,7 @@ pub fn get_system_info() -> SystemInfo {
     app_version: crate::updater::app_auto_updater::AppAutoUpdater::get_current_version(),
     os: os.to_string(),
     arch: arch.to_string(),
-    portable: crate::app_dirs::is_portable(),
+    portable: crate::settings::app_dirs::is_portable(),
   }
 }
 
@@ -1094,9 +1094,13 @@ mod tests {
   use super::*;
   use tempfile::TempDir;
 
-  fn create_test_settings_manager() -> (SettingsManager, TempDir, crate::app_dirs::TestDirGuard) {
+  fn create_test_settings_manager() -> (
+    SettingsManager,
+    TempDir,
+    crate::settings::app_dirs::TestDirGuard,
+  ) {
     let temp_dir = TempDir::new().expect("Failed to create temp directory");
-    let guard = crate::app_dirs::set_test_data_dir(temp_dir.path().to_path_buf());
+    let guard = crate::settings::app_dirs::set_test_data_dir(temp_dir.path().to_path_buf());
     let manager = SettingsManager::new();
     (manager, temp_dir, guard)
   }

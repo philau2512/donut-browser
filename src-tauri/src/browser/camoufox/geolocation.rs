@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 // Re-export IP utilities for backward compatibility
-pub use crate::ip_utils::{fetch_public_ip, is_ipv4, is_ipv6, validate_ip, IpError};
+pub use crate::proxy::ip_utils::{fetch_public_ip, is_ipv4, is_ipv6, validate_ip, IpError};
 
 /// Geolocation error type.
 #[derive(Debug, thiserror::Error)]

@@ -34,7 +34,7 @@ impl SyncEngine {
     }
 
     // Skip if profile is locked by another team member
-    if crate::team_lock::TEAM_LOCK
+    if crate::profile::team_lock::TEAM_LOCK
       .is_locked_by_another(&profile.id.to_string())
       .await
     {
@@ -1607,7 +1607,7 @@ impl SyncEngine {
         .and_then(|s| s.strip_suffix(".json"))
       {
         let exists_locally = {
-          let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+          let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
           group_manager
             .get_all_groups()
             .unwrap_or_default()

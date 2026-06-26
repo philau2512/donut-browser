@@ -451,17 +451,19 @@ impl WireGuardSocks5Server {
     // directory than in the parent (Qubes/sandboxed Linux), causing the
     // write-back to land in the wrong place and the parent to time out.
     let updated = match &config_path {
-      Some(path) => crate::vpn_worker_storage::get_vpn_worker_config_from_path(path)
-        .or_else(|| crate::vpn_worker_storage::get_vpn_worker_config(&config_id)),
-      None => crate::vpn_worker_storage::get_vpn_worker_config(&config_id),
+      Some(path) => crate::vpn::vpn_worker_storage::get_vpn_worker_config_from_path(path)
+        .or_else(|| crate::vpn::vpn_worker_storage::get_vpn_worker_config(&config_id)),
+      None => crate::vpn::vpn_worker_storage::get_vpn_worker_config(&config_id),
     };
     if let Some(mut wc) = updated {
       wc.local_port = Some(actual_port);
       wc.local_url = Some(format!("socks5://127.0.0.1:{}", actual_port));
       let result = match &config_path {
-        Some(path) => crate::vpn_worker_storage::save_vpn_worker_config_to_path(&wc, path)
+        Some(path) => crate::vpn::vpn_worker_storage::save_vpn_worker_config_to_path(&wc, path)
           .map_err(|e| e.to_string()),
-        None => crate::vpn_worker_storage::save_vpn_worker_config(&wc).map_err(|e| e.to_string()),
+        None => {
+          crate::vpn::vpn_worker_storage::save_vpn_worker_config(&wc).map_err(|e| e.to_string())
+        }
       };
       if let Err(e) = result {
         log::error!(

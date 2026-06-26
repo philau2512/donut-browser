@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime};
 
-use crate::app_dirs;
+use crate::settings::app_dirs;
 
 const REFRESH_INTERVAL: Duration = Duration::from_secs(43200); // 12 hours
 

@@ -607,7 +607,7 @@ fn clear_dir_contents(dir: &Path) -> std::io::Result<()> {
 }
 
 fn read_keep_decrypted_setting() -> bool {
-  crate::settings_manager::SettingsManager::instance()
+  crate::settings::settings_manager::SettingsManager::instance()
     .load_settings()
     .map(|s| s.keep_decrypted_profiles_in_ram)
     .unwrap_or(false)
@@ -767,7 +767,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_set_password_encrypts_dir() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     let mut profile = make_profile("test-set");
     let profiles_dir = ProfileManager::instance().get_profiles_dir();
@@ -812,7 +812,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_full_lifecycle_persists_data() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     let profile = make_profile("test-lifecycle");
     let profiles_dir = ProfileManager::instance().get_profiles_dir();
@@ -905,7 +905,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_keep_decrypted_keeps_ephemeral_but_still_re_encrypts() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     let profile = make_profile("test-keep");
     let profiles_dir = ProfileManager::instance().get_profiles_dir();
@@ -959,7 +959,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_change_and_remove_password() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     let profile = make_profile("test-change");
     let profiles_dir = ProfileManager::instance().get_profiles_dir();
@@ -1048,7 +1048,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_empty_profile_session_survives_restart() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     // Mimic a freshly created profile with no browser data yet
     let profile = make_profile("test-empty");
@@ -1136,7 +1136,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_progressive_backoff_on_wrong_password() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     let profile = make_profile("test-backoff");
     let profiles_dir = ProfileManager::instance().get_profiles_dir();
@@ -1209,7 +1209,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_lockout_survives_restart() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     let profile = make_profile("test-restart");
     let profiles_dir = ProfileManager::instance().get_profiles_dir();
@@ -1275,7 +1275,7 @@ mod tests {
   #[serial_test::serial]
   fn integration_lock_drops_key() {
     let temp = TempDir::new().unwrap();
-    let _guard = crate::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
 
     let profile = make_profile("test-lock");
     let profiles_dir = ProfileManager::instance().get_profiles_dir();

@@ -36,7 +36,7 @@ impl BrowserRunner {
   }
 
   pub fn get_binaries_dir(&self) -> PathBuf {
-    crate::app_dirs::binaries_dir()
+    crate::settings::app_dirs::binaries_dir()
   }
 
   /// Resolve the DNS blocklist level to a cached file path.
@@ -47,13 +47,13 @@ impl BrowserRunner {
     let Some(ref level_str) = profile.dns_blocklist else {
       return Ok(None);
     };
-    let Some(level) = crate::dns_blocklist::BlocklistLevel::parse_level(level_str) else {
+    let Some(level) = crate::profile::dns_blocklist::BlocklistLevel::parse_level(level_str) else {
       return Ok(None);
     };
-    if level == crate::dns_blocklist::BlocklistLevel::None {
+    if level == crate::profile::dns_blocklist::BlocklistLevel::None {
       return Ok(None);
     }
-    let path = crate::dns_blocklist::BlocklistManager::ensure_cached(level)
+    let path = crate::profile::dns_blocklist::BlocklistManager::ensure_cached(level)
       .await
       .map_err(|e| format!("Failed to fetch DNS blocklist: {e}"))?;
     Ok(Some(path.to_string_lossy().to_string()))
@@ -220,7 +220,7 @@ impl BrowserRunner {
       // If profile has a VPN instead of proxy, start VPN worker and use it as upstream
       if upstream_proxy.is_none() {
         if let Some(ref vpn_id) = profile.vpn_id {
-          match crate::vpn_worker_runner::start_vpn_worker(vpn_id).await {
+          match crate::vpn::vpn_worker_runner::start_vpn_worker(vpn_id).await {
             Ok(vpn_worker) => {
               if let Some(port) = vpn_worker.local_port {
                 upstream_proxy = Some(ProxySettings {
@@ -359,7 +359,9 @@ impl BrowserRunner {
         } else {
           updated_profile.get_profile_data_path(&profiles_dir)
         };
-        let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+        let mgr = crate::browser::extension_manager::EXTENSION_MANAGER
+          .lock()
+          .unwrap();
         match mgr.install_extensions_for_profile(&updated_profile, &ext_profile_path) {
           Ok(paths) => {
             if !paths.is_empty() {
@@ -426,7 +428,7 @@ impl BrowserRunner {
       );
       self.save_process_info(&updated_profile)?;
       // Ensure tag suggestions include any tags from this profile
-      let _ = crate::tag_manager::TAG_MANAGER.lock().map(|tm| {
+      let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
         let _ = tm.rebuild_from_profiles(&self.profile_manager.list_profiles().unwrap_or_default());
       });
       log::info!(
@@ -495,7 +497,7 @@ impl BrowserRunner {
       // If profile has a VPN instead of proxy, start VPN worker and use it as upstream
       if upstream_proxy.is_none() {
         if let Some(ref vpn_id) = profile.vpn_id {
-          match crate::vpn_worker_runner::start_vpn_worker(vpn_id).await {
+          match crate::vpn::vpn_worker_runner::start_vpn_worker(vpn_id).await {
             Ok(vpn_worker) => {
               if let Some(port) = vpn_worker.local_port {
                 upstream_proxy = Some(ProxySettings {
@@ -692,7 +694,9 @@ impl BrowserRunner {
       // Install extensions if an extension group is assigned
       let mut extension_paths = Vec::new();
       if updated_profile.extension_group_id.is_some() {
-        let mgr = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+        let mgr = crate::browser::extension_manager::EXTENSION_MANAGER
+          .lock()
+          .unwrap();
         match mgr.install_extensions_for_profile(&updated_profile, &profile_data_path) {
           Ok(paths) => {
             if !paths.is_empty() {
@@ -781,7 +785,7 @@ impl BrowserRunner {
           .unwrap_or(0)
       );
       self.save_process_info(&updated_profile)?;
-      let _ = crate::tag_manager::TAG_MANAGER.lock().map(|tm| {
+      let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
         let _ = tm.rebuild_from_profiles(&self.profile_manager.list_profiles().unwrap_or_default());
       });
       log::info!(
@@ -2388,7 +2392,7 @@ pub async fn launch_browser_profile_impl(
   }
 
   // Team lock check: if profile is sync-enabled and user is on a team, acquire lock
-  crate::team_lock::acquire_team_lock_if_needed(&profile).await?;
+  crate::profile::team_lock::acquire_team_lock_if_needed(&profile).await?;
 
   // Notify sync scheduler that profile is now running and queue sync for when it stops
   if let Some(scheduler) = crate::sync::get_global_scheduler() {
@@ -2527,7 +2531,7 @@ pub async fn kill_browser_profile(
       );
 
       // Release team lock if applicable
-      crate::team_lock::release_team_lock_if_needed(&profile).await;
+      crate::profile::team_lock::release_team_lock_if_needed(&profile).await;
 
       // Notify sync scheduler that profile stopped (sync was queued at launch)
       if let Some(scheduler) = crate::sync::get_global_scheduler() {

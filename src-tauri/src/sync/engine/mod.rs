@@ -5,7 +5,7 @@ use super::types::*;
 use crate::events;
 use crate::profile::types::{BrowserProfile, SyncMode};
 use crate::profile::ProfileManager;
-use crate::settings_manager::SettingsManager;
+use crate::settings::settings_manager::SettingsManager;
 use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
 use std::fs;

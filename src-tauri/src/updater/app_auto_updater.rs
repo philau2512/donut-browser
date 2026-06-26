@@ -115,14 +115,14 @@ pub struct AppUpdateInfo {
 
 pub struct AppAutoUpdater {
   client: Client,
-  extractor: &'static crate::extraction::Extractor,
+  extractor: &'static crate::browser::extraction::Extractor,
 }
 
 impl AppAutoUpdater {
   fn new() -> Self {
     Self {
       client: Client::new(),
-      extractor: crate::extraction::Extractor::instance(),
+      extractor: crate::browser::extraction::Extractor::instance(),
     }
   }
 
@@ -1724,12 +1724,12 @@ rm "{}"
 
 #[tauri::command]
 pub async fn check_for_app_updates() -> Result<Option<AppUpdateInfo>, String> {
-  if crate::app_dirs::is_portable() {
+  if crate::settings::app_dirs::is_portable() {
     log::info!("App auto-updates disabled in portable mode");
     return Ok(None);
   }
   // The disable_auto_updates setting controls app self-updates only
-  let disabled = crate::settings_manager::SettingsManager::instance()
+  let disabled = crate::settings::settings_manager::SettingsManager::instance()
     .load_settings()
     .map(|s| s.disable_auto_updates)
     .unwrap_or(false);

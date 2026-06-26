@@ -114,7 +114,7 @@ impl McpServer {
     }
 
     // Team lock check
-    crate::team_lock::acquire_team_lock_if_needed(profile)
+    crate::profile::team_lock::acquire_team_lock_if_needed(profile)
       .await
       .map_err(|e| McpError {
         code: -32000,
@@ -211,7 +211,7 @@ impl McpServer {
         message: format!("Failed to kill browser: {e}"),
       })?;
 
-    crate::team_lock::release_team_lock_if_needed(profile).await;
+    crate::profile::team_lock::release_team_lock_if_needed(profile).await;
 
     Ok(serde_json::json!({
       "content": [{
@@ -284,7 +284,7 @@ impl McpServer {
         ));
         continue;
       }
-      if let Err(e) = crate::team_lock::acquire_team_lock_if_needed(profile).await {
+      if let Err(e) = crate::profile::team_lock::acquire_team_lock_if_needed(profile).await {
         lines.push(format!("{profile_id}: {e}"));
         continue;
       }
@@ -368,7 +368,7 @@ impl McpServer {
         .await
       {
         Ok(_) => {
-          crate::team_lock::release_team_lock_if_needed(profile).await;
+          crate::profile::team_lock::release_team_lock_if_needed(profile).await;
           stopped += 1;
           lines.push(format!("{}: stopped", profile.name));
         }
@@ -472,7 +472,7 @@ impl McpServer {
         ProfileManager::instance().update_profile_tags(app_handle, &profile.name, tags.clone());
       profile.tags = tags;
       if let Ok(profiles) = ProfileManager::instance().list_profiles() {
-        let _ = crate::tag_manager::TAG_MANAGER
+        let _ = crate::profile::tag_manager::TAG_MANAGER
           .lock()
           .map(|manager| manager.rebuild_from_profiles(&profiles));
       }
@@ -564,7 +564,7 @@ impl McpServer {
           message: format!("Failed to update tags: {e}"),
         })?;
       if let Ok(profiles) = pm.list_profiles() {
-        let _ = crate::tag_manager::TAG_MANAGER
+        let _ = crate::profile::tag_manager::TAG_MANAGER
           .lock()
           .map(|manager| manager.rebuild_from_profiles(&profiles));
       }
@@ -640,7 +640,7 @@ impl McpServer {
   }
 
   async fn handle_list_tags(&self) -> Result<serde_json::Value, McpError> {
-    let tags = crate::tag_manager::TAG_MANAGER
+    let tags = crate::profile::tag_manager::TAG_MANAGER
       .lock()
       .map_err(|e| McpError {
         code: -32000,
@@ -743,7 +743,7 @@ impl McpServer {
     };
 
     let result =
-      crate::cookie_manager::CookieManager::import_cookies(&app_handle, profile_id, content)
+      crate::profile::cookie_manager::CookieManager::import_cookies(&app_handle, profile_id, content)
         .await
         .map_err(|e| McpError {
           code: -32000,
@@ -1063,7 +1063,7 @@ impl McpServer {
   }
 
   async fn handle_get_dns_blocklist_status(&self) -> Result<serde_json::Value, McpError> {
-    let statuses = crate::dns_blocklist::BlocklistManager::get_cache_status();
+    let statuses = crate::profile::dns_blocklist::BlocklistManager::get_cache_status();
     Ok(serde_json::json!({
       "content": [{
         "type": "text",

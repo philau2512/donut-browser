@@ -10,13 +10,19 @@ struct TagsData {
 
 pub struct TagManager;
 
+impl Default for TagManager {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl TagManager {
   pub fn new() -> Self {
     Self
   }
 
   fn get_tags_file_path(&self) -> std::path::PathBuf {
-    crate::app_dirs::data_subdir().join("tags.json")
+    crate::settings::app_dirs::data_subdir().join("tags.json")
   }
 
   fn load_tags_data(&self) -> Result<TagsData, Box<dyn std::error::Error>> {
@@ -69,7 +75,7 @@ impl TagManager {
 
 #[tauri::command]
 pub fn get_all_tags() -> Result<Vec<String>, String> {
-  let tag_manager = crate::tag_manager::TAG_MANAGER.lock().unwrap();
+  let tag_manager = crate::profile::tag_manager::TAG_MANAGER.lock().unwrap();
   tag_manager
     .get_all_tags()
     .map_err(|e| format!("Failed to get tags: {e}"))

@@ -161,7 +161,7 @@ impl SyncScheduler {
     drop(running);
 
     // Check if locked by another device (profile in use remotely)
-    if crate::team_lock::PROFILE_LOCK
+    if crate::profile::team_lock::PROFILE_LOCK
       .is_locked_by_another(profile_id)
       .await
     {
@@ -280,7 +280,7 @@ impl SyncScheduler {
     for profile in sync_enabled_profiles {
       let profile_id = profile.id.to_string();
       let is_running = profile.process_id.is_some();
-      let is_team_locked = crate::team_lock::TEAM_LOCK
+      let is_team_locked = crate::profile::team_lock::TEAM_LOCK
         .is_locked_by_another(&profile_id)
         .await;
       let should_wait = is_running || is_team_locked;
@@ -758,7 +758,7 @@ impl SyncScheduler {
           }
         }
         "group" => {
-          let group_manager = crate::group_manager::GROUP_MANAGER.lock().unwrap();
+          let group_manager = crate::profile::group_manager::GROUP_MANAGER.lock().unwrap();
           let groups = group_manager.get_all_groups().unwrap_or_default();
           if let Some(group) = groups.iter().find(|g| g.id == entity_id) {
             if group.sync_enabled {
@@ -779,7 +779,9 @@ impl SyncScheduler {
           }
         }
         "extension" => {
-          let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+          let manager = crate::browser::extension_manager::EXTENSION_MANAGER
+            .lock()
+            .unwrap();
           if let Ok(ext) = manager.get_extension(&entity_id) {
             if ext.sync_enabled {
               log::info!(
@@ -792,7 +794,9 @@ impl SyncScheduler {
           }
         }
         "extension_group" => {
-          let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+          let manager = crate::browser::extension_manager::EXTENSION_MANAGER
+            .lock()
+            .unwrap();
           if let Ok(group) = manager.get_group(&entity_id) {
             if group.sync_enabled {
               log::info!(

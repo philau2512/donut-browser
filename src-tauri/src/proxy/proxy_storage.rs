@@ -79,7 +79,7 @@ impl ProxyConfig {
 }
 
 pub fn get_storage_dir() -> PathBuf {
-  crate::app_dirs::proxy_workers_dir()
+  crate::settings::app_dirs::proxy_workers_dir()
 }
 
 pub fn save_proxy_config(config: &ProxyConfig) -> Result<(), Box<dyn std::error::Error>> {

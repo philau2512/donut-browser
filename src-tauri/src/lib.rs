@@ -18,34 +18,25 @@ pub mod api;
 pub use api::{api_client, api_server, cloud_auth};
 pub mod updater;
 pub use updater::{app_auto_updater, auto_updater, geoip_downloader, version_updater};
-pub mod app_dirs;
 pub mod browser;
-mod default_browser;
-pub mod dns_blocklist;
-mod extension_manager;
-mod extraction;
-mod group_manager;
-mod human_typing;
-mod ip_utils;
-mod profile;
-mod profile_importer;
+pub mod profile;
 pub mod proxy;
+pub mod settings;
 pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic_stats};
-mod settings_manager;
-pub mod sync;
-mod synchronizer;
-
-// mod theme_detector; // removed: theme detection handled in webview via CSS prefers-color-scheme
-mod commercial_license;
-mod cookie_manager;
 pub mod events;
 pub mod mcp;
+pub mod sync;
 pub use mcp::{mcp_integrations, mcp_server};
-mod tag_manager;
-mod team_lock;
 pub mod vpn;
-pub mod vpn_worker_runner;
-pub mod vpn_worker_storage;
+
+use browser::extension_manager;
+pub use profile::dns_blocklist;
+use profile::{cookie_manager, team_lock};
+use proxy::ip_utils;
+pub use settings::app_dirs;
+use settings::{commercial_license, settings_manager};
+use sync::synchronizer;
+pub use vpn::{vpn_worker_runner, vpn_worker_storage};
 
 use browser::browser_runner::{
   check_browser_exists, kill_browser_profile, launch_browser_profile, open_url_with_profile,
@@ -93,9 +84,9 @@ use sync::{
   verify_e2e_password,
 };
 
-use tag_manager::get_all_tags;
+use profile::tag_manager::get_all_tags;
 
-use default_browser::{is_default_browser, set_as_default_browser};
+use browser::default_browser::{is_default_browser, set_as_default_browser};
 use updater::version_updater::{
   clear_all_version_cache_and_refetch, get_version_update_status, get_version_updater,
   trigger_manual_version_update,
@@ -110,16 +101,16 @@ use updater::app_auto_updater::{
   restart_application,
 };
 
-use profile_importer::{detect_existing_profiles, import_browser_profile};
+use profile::profile_importer::{detect_existing_profiles, import_browser_profile};
 
-use extension_manager::{
+use browser::extension_manager::{
   add_extension, add_extension_to_group, assign_extension_group_to_profile, create_extension_group,
   delete_extension, delete_extension_group, get_extension_group_for_profile, get_extension_icon,
   list_extension_groups, list_extensions, remove_extension_from_group, update_extension,
   update_extension_group,
 };
 
-use group_manager::{
+use profile::group_manager::{
   assign_profiles_to_group, create_profile_group, delete_profile_group, delete_selected_profiles,
   get_groups_with_profile_counts, get_profile_groups, update_profile_group,
 };
@@ -1641,7 +1632,7 @@ pub fn run() {
       // browser keeps going and needs the proxy/VPN worker to stay alive.
       tauri::async_runtime::spawn(async move {
         use crate::proxy::proxy_storage::{delete_proxy_config, is_process_running, list_proxy_configs};
-        use crate::vpn_worker_storage::{delete_vpn_worker_config, list_vpn_worker_configs};
+        use crate::vpn::vpn_worker_storage::{delete_vpn_worker_config, list_vpn_worker_configs};
 
         // Build sets of (profile_id, vpn_id) whose browsers are still running
         let profile_manager = crate::profile::ProfileManager::instance();
@@ -1703,7 +1694,7 @@ pub fn run() {
                 worker.id,
                 pid
               );
-              let _ = crate::vpn_worker_runner::stop_vpn_worker(&worker.id).await;
+              let _ = crate::vpn::vpn_worker_runner::stop_vpn_worker(&worker.id).await;
               continue;
             }
           }
@@ -2061,7 +2052,7 @@ pub fn run() {
       // Start API server if enabled in settings
       let app_handle_api = app.handle().clone();
       tauri::async_runtime::spawn(async move {
-        match crate::settings_manager::get_app_settings(app_handle_api.clone()).await {
+        match crate::settings::settings_manager::get_app_settings(app_handle_api.clone()).await {
           Ok(settings) => {
             if settings.api_enabled {
               log::info!("API is enabled in settings, starting API server...");
