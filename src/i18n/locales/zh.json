@@ -321,7 +321,8 @@
       "updateMultiple": "批量更新",
       "proxy": "代理",
       "exportCookies": "导出 Cookie",
-      "moreAction": "更多操作"
+      "moreAction": "更多操作",
+      "synchronize": "同步操作"
     },
     "passwordProtectedBadge": "密码保护",
     "launchHook": {

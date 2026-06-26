@@ -321,7 +321,8 @@
       "updateMultiple": "일괄 업데이트",
       "proxy": "프록시",
       "exportCookies": "쿠키 내보내기",
-      "moreAction": "추가 작업"
+      "moreAction": "추가 작업",
+      "synchronize": "작업 동기화"
     },
     "passwordProtectedBadge": "비밀번호 보호됨",
     "launchHook": {

@@ -59,7 +59,7 @@ interface ProfileTableDialogsProps {
   onOpenCookieManagement?: (profile: BrowserProfile) => void;
   onAssignExtensionGroup?: (profileIds: string[]) => void;
   onCloneProfile?: (profile: BrowserProfile) => void | Promise<void>;
-  onLaunchWithSync?: (profile: BrowserProfile) => void;
+  onLaunchWithSync?: (profile: BrowserProfile, followerIds?: string[]) => void;
   onSetPassword?: (profile: BrowserProfile) => void;
   onChangePassword?: (profile: BrowserProfile) => void;
   onRemovePassword?: (profile: BrowserProfile) => void;

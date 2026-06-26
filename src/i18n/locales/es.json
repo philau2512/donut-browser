@@ -321,7 +321,8 @@
       "updateMultiple": "Actualizar múltiples",
       "proxy": "Proxy",
       "exportCookies": "Exportar cookies",
-      "moreAction": "Más acciones"
+      "moreAction": "Más acciones",
+      "synchronize": "Sincronizar acciones"
     },
     "passwordProtectedBadge": "Protegido por Contraseña",
     "launchHook": {

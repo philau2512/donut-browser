@@ -321,7 +321,8 @@
       "updateMultiple": "Обновить несколько",
       "proxy": "Прокси",
       "exportCookies": "Экспорт файлов cookie",
-      "moreAction": "Другие действия"
+      "moreAction": "Другие действия",
+      "synchronize": "Синхронизировать действия"
     },
     "passwordProtectedBadge": "Защищено паролем",
     "launchHook": {

@@ -321,7 +321,8 @@
       "updateMultiple": "Cập nhật hàng loạt",
       "proxy": "Proxy",
       "exportCookies": "Xuất cookie",
-      "moreAction": "Hành động khác"
+      "moreAction": "Hành động khác",
+      "synchronize": "Đồng bộ thao tác"
     },
     "passwordProtectedBadge": "Được bảo vệ bằng mật khẩu",
     "launchHook": {

@@ -31,6 +31,7 @@ interface ProfileBulkActionsBarProps {
   onBulkCopyCookies?: () => void;
   onBulkGroupAssignment?: () => void;
   onBulkExtensionGroupAssignment?: () => void;
+  onBulkSync?: () => void;
 }
 
 export function ProfileBulkActionsBar({
@@ -43,6 +44,7 @@ export function ProfileBulkActionsBar({
   onBulkCopyCookies,
   onBulkGroupAssignment,
   onBulkExtensionGroupAssignment,
+  onBulkSync,
 }: ProfileBulkActionsBarProps) {
   const { t } = useTranslation();
 
@@ -80,6 +82,21 @@ export function ProfileBulkActionsBar({
         {selectedCount > 0
           ? t("profiles.actionBar.stopCount", { count: selectedCount })
           : t("profiles.actionBar.stop")}
+      </Button>
+
+      <Button
+        size="sm"
+        disabled={selectedCount === 0 || !bulkActionsUnlocked}
+        onClick={bulkActionsUnlocked && onBulkSync ? onBulkSync : undefined}
+        className={cn(
+          "h-8 text-xs font-semibold gap-1.5 cursor-pointer shrink-0 shadow-none text-white",
+          selectedCount > 0 && bulkActionsUnlocked
+            ? "bg-indigo-600 hover:bg-indigo-700"
+            : "bg-muted text-muted-foreground cursor-not-allowed opacity-50",
+        )}
+      >
+        <LuUsers className="size-3.5" />
+        {t("profiles.actionBar.synchronize")}
       </Button>
 
       <Button

@@ -321,7 +321,8 @@
       "updateMultiple": "複数更新",
       "proxy": "プロキシ",
       "exportCookies": "クッキーをエクスポート",
-      "moreAction": "その他のアクション"
+      "moreAction": "その他のアクション",
+      "synchronize": "アクションを同期"
     },
     "passwordProtectedBadge": "パスワード保護",
     "launchHook": {

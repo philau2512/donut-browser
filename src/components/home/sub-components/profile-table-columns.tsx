@@ -178,7 +178,7 @@ export interface TableMeta {
         failedAtUrl: string | null;
       }
     | undefined;
-  onLaunchWithSync: (profile: BrowserProfile) => void;
+  onLaunchWithSync: (profile: BrowserProfile, followerIds?: string[]) => void;
 }
 
 const _MAX_VISIBLE_ICONS = 3;

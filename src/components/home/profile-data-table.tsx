@@ -76,7 +76,7 @@ interface ProfilesDataTableProps {
         failedAtUrl: string | null;
       }
     | undefined;
-  onLaunchWithSync?: (profile: BrowserProfile) => void;
+  onLaunchWithSync?: (profile: BrowserProfile, followerIds?: string[]) => void;
   onSetPassword?: (profile: BrowserProfile) => void;
   onChangePassword?: (profile: BrowserProfile) => void;
   onRemovePassword?: (profile: BrowserProfile) => void;
@@ -490,6 +490,19 @@ export function ProfilesDataTable({
           onBulkCopyCookies={onBulkCopyCookies}
           onBulkGroupAssignment={onBulkGroupAssignment}
           onBulkExtensionGroupAssignment={onBulkExtensionGroupAssignment}
+          onBulkSync={
+            onLaunchWithSync
+              ? () => {
+                  const selectedRows = table.getFilteredSelectedRowModel().rows;
+                  if (selectedRows.length === 0) return;
+                  const leader = selectedRows[0].original;
+                  const followerIds = selectedRows
+                    .slice(1)
+                    .map((r) => r.original.id);
+                  onLaunchWithSync(leader, followerIds);
+                }
+              : undefined
+          }
         />
 
         <div
