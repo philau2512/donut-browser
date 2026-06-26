@@ -72,38 +72,40 @@ impl WayfernManager {
             cookie_count
           );
 
-          // Try decrypting one cookie using the cookie_manager
-          if let Some(encryption_key) =
-            crate::profile::cookie_manager::chrome_decrypt::get_encryption_key(&profile_path_buf)
-          {
-            if let Ok(mut stmt) = conn.prepare(
-              "SELECT name, host_key, encrypted_value FROM cookies WHERE length(encrypted_value) > 0 LIMIT 1",
-            ) {
-              if let Ok(mut rows) = stmt.query([]) {
-                if let Ok(Some(row)) = rows.next() {
-                  let name: String = row.get(0).unwrap_or_default();
-                  let host: String = row.get(1).unwrap_or_default();
-                  let encrypted: Vec<u8> = row.get(2).unwrap_or_default();
-                  let decrypted = crate::profile::cookie_manager::chrome_decrypt::decrypt(
-                    &encrypted,
-                    &host,
-                    &encryption_key,
-                  );
-                  match decrypted {
-                    Some(val) => log::info!(
-                      "Pre-launch: Cookie decryption SUCCEEDED for '{}' (host: {}, decrypted {} bytes)",
-                      name, host, val.len()
-                    ),
-                    None => log::error!(
-                      "Pre-launch: Cookie decryption FAILED for '{}' (host: {}, encrypted {} bytes)",
-                      name, host, encrypted.len()
-                    ),
+          // Try decrypting one cookie using the cookie_manager if there are encrypted cookies
+          if cookie_count > 0 {
+            if let Some(encryption_key) =
+              crate::profile::cookie_manager::chrome_decrypt::get_encryption_key(&profile_path_buf)
+            {
+              if let Ok(mut stmt) = conn.prepare(
+                "SELECT name, host_key, encrypted_value FROM cookies WHERE length(encrypted_value) > 0 LIMIT 1",
+              ) {
+                if let Ok(mut rows) = stmt.query([]) {
+                  if let Ok(Some(row)) = rows.next() {
+                    let name: String = row.get(0).unwrap_or_default();
+                    let host: String = row.get(1).unwrap_or_default();
+                    let encrypted: Vec<u8> = row.get(2).unwrap_or_default();
+                    let decrypted = crate::profile::cookie_manager::chrome_decrypt::decrypt(
+                      &encrypted,
+                      &host,
+                      &encryption_key,
+                    );
+                    match decrypted {
+                      Some(val) => log::info!(
+                        "Pre-launch: Cookie decryption SUCCEEDED for '{}' (host: {}, decrypted {} bytes)",
+                        name, host, val.len()
+                      ),
+                      None => log::error!(
+                        "Pre-launch: Cookie decryption FAILED for '{}' (host: {}, encrypted {} bytes)",
+                        name, host, encrypted.len()
+                      ),
+                    }
                   }
                 }
               }
+            } else {
+              log::error!("Pre-launch: Failed to derive encryption key from os_crypt_key (required to decrypt {} encrypted cookies)", cookie_count);
             }
-          } else {
-            log::error!("Pre-launch: Failed to derive encryption key from os_crypt_key");
           }
         }
       } else {

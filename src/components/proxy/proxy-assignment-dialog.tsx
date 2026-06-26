@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
@@ -27,6 +27,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { BrowserProfile, StoredProxy, VpnConfig } from "@/types";
 import { RippleButton } from "../ui/ripple";
+import { parseProxyString } from "./proxy-form-dialog";
 
 interface ProxyAssignmentDialogProps {
   isOpen: boolean;
@@ -63,6 +64,24 @@ export function ProxyAssignmentDialog({
   const [formPass, setFormPass] = useState<string>("");
   const [formRotateUrl, setFormRotateUrl] = useState<string>("");
   const [formConfigJson, setFormConfigJson] = useState<string>("");
+
+  const handleHostPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      const pastedText = e.clipboardData.getData("text");
+      const parsed = parseProxyString(pastedText);
+      if (parsed) {
+        e.preventDefault();
+        setFormHost(parsed.host);
+        setFormPort(parsed.port.toString());
+        setFormUser(parsed.username);
+        setFormPass(parsed.password);
+        if (parsed.type && parsed.type !== "none") {
+          setProxyType(parsed.type);
+        }
+      }
+    },
+    [],
+  );
 
   const [isAssigning, setIsAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,18 +151,11 @@ export function ProxyAssignmentDialog({
               profileId: p.id,
               vpnId: actualId,
             });
-            await invoke("update_profile_proxy", {
-              profileId: p.id,
-              proxyId: null,
-            });
           } else {
+            const nextId = actualId === "__none__" ? null : actualId;
             await invoke("update_profile_proxy", {
               profileId: p.id,
-              proxyId: actualId,
-            });
-            await invoke("update_profile_vpn", {
-              profileId: p.id,
-              vpnId: null,
+              proxyId: nextId,
             });
           }
         }
@@ -164,6 +176,7 @@ export function ProxyAssignmentDialog({
 
         // Sequential allocation: Profile i gets Proxy i. Remaining profiles keep their current proxy.
         let assignCount = 0;
+        const now = Date.now();
         for (let i = 0; i < validProfiles.length; i++) {
           const profile = validProfiles[i];
           if (i >= lines.length) {
@@ -187,7 +200,7 @@ export function ProxyAssignmentDialog({
           }
 
           const payload = {
-            name: `${profile.name}_Bulk_${proxyType.toUpperCase()}`,
+            name: `${profile.name}_Bulk_${proxyType.toUpperCase()}_${now}_${i}`,
             proxySettings: {
               proxy_type: proxyType === "none" ? "http" : proxyType,
               host,
@@ -205,10 +218,6 @@ export function ProxyAssignmentDialog({
             profileId: profile.id,
             proxyId: newProxy.id,
           });
-          await invoke("update_profile_vpn", {
-            profileId: profile.id,
-            vpnId: null,
-          });
           assignCount++;
         }
         toast.success(t("proxyAssignment.success", { count: assignCount }));
@@ -225,7 +234,7 @@ export function ProxyAssignmentDialog({
         }
 
         const payload = {
-          name: `Proxy_${tabValue.toUpperCase()}_${formHost}:${formPort}`,
+          name: `Proxy_${tabValue.toUpperCase()}_${formHost.trim()}:${formPort}_${Date.now()}`,
           proxySettings: {
             proxy_type: proxyType === "none" ? "http" : proxyType,
             host: formHost.trim(),
@@ -244,10 +253,6 @@ export function ProxyAssignmentDialog({
             profileId: p.id,
             proxyId: newProxy.id,
           });
-          await invoke("update_profile_vpn", {
-            profileId: p.id,
-            vpnId: null,
-          });
         }
         toast.success(
           t("proxyAssignment.success", { count: validProfiles.length }),
@@ -263,7 +268,7 @@ export function ProxyAssignmentDialog({
           }
 
           const payload = {
-            name: `Proxy_Config_${config.host}:${config.port}`,
+            name: `Proxy_Config_${config.host.trim()}:${config.port}_${Date.now()}`,
             proxySettings: {
               proxy_type: config.proxy_type || config.type || "http",
               host: config.host.trim(),
@@ -281,10 +286,6 @@ export function ProxyAssignmentDialog({
             await invoke("update_profile_proxy", {
               profileId: p.id,
               proxyId: newProxy.id,
-            });
-            await invoke("update_profile_vpn", {
-              profileId: p.id,
-              vpnId: null,
             });
           }
           toast.success(
@@ -549,6 +550,7 @@ export function ProxyAssignmentDialog({
                     className="h-8 text-xs"
                     value={formHost}
                     onChange={(e) => setFormHost(e.target.value)}
+                    onPaste={handleHostPaste}
                     placeholder="residential.proxy.com"
                   />
                 </div>
@@ -591,6 +593,7 @@ export function ProxyAssignmentDialog({
                     className="h-8 text-xs"
                     value={formHost}
                     onChange={(e) => setFormHost(e.target.value)}
+                    onPaste={handleHostPaste}
                     placeholder="rotating.proxy.com"
                   />
                 </div>
@@ -661,6 +664,7 @@ export function ProxyAssignmentDialog({
                     className="h-8 text-xs"
                     value={formHost}
                     onChange={(e) => setFormHost(e.target.value)}
+                    onPaste={handleHostPaste}
                     placeholder="2001:db8::1"
                   />
                 </div>

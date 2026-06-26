@@ -60,12 +60,15 @@ impl ProxyManager {
   fn build_proxy_url(proxy_settings: &ProxySettings) -> String {
     let mut url = format!("{}://", proxy_settings.proxy_type);
 
-    if let (Some(username), Some(password)) = (&proxy_settings.username, &proxy_settings.password) {
+    let username_opt = proxy_settings.username.as_deref().filter(|u| !u.is_empty());
+    let password_opt = proxy_settings.password.as_deref().filter(|p| !p.is_empty());
+
+    if let (Some(username), Some(password)) = (username_opt, password_opt) {
       url.push_str(&urlencoding::encode(username));
       url.push(':');
       url.push_str(&urlencoding::encode(password));
       url.push('@');
-    } else if let Some(username) = &proxy_settings.username {
+    } else if let Some(username) = username_opt {
       url.push_str(&urlencoding::encode(username));
       url.push('@');
     }

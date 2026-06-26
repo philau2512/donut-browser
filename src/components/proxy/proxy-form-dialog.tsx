@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
@@ -47,6 +47,86 @@ const DEFAULT_FORM: ProxyFormData = {
   port: 8080,
   username: "",
   password: "",
+};
+
+export const parseProxyString = (str: string) => {
+  const trimmed = str.trim();
+  if (!trimmed) return null;
+
+  let type = "http";
+  let rest = trimmed;
+  const protocols = [
+    "http://",
+    "https://",
+    "socks4://",
+    "socks5://",
+    "socks://",
+    "ss://",
+    "shadowsocks://",
+  ];
+  for (const proto of protocols) {
+    if (trimmed.toLowerCase().startsWith(proto)) {
+      type = proto.replace("://", "");
+      if (type === "socks" || type === "shadowsocks") type = "socks5";
+      rest = trimmed.substring(proto.length);
+      break;
+    }
+  }
+
+  const atIdx = rest.lastIndexOf("@");
+  if (atIdx !== -1) {
+    const auth = rest.substring(0, atIdx);
+    const hostPort = rest.substring(atIdx + 1);
+
+    const authParts = auth.split(":");
+    const username = authParts[0] || "";
+    const password = authParts[1] || "";
+
+    const hpParts = hostPort.split(":");
+    const host = hpParts[0] || "";
+    const port = Number.parseInt(hpParts[1], 10) || 8080;
+
+    return { type, host, port, username, password };
+  }
+
+  const parts = rest.split(":");
+  if (parts.length === 2) {
+    const host = parts[0];
+    const port = Number.parseInt(parts[1], 10);
+    if (!Number.isNaN(port)) {
+      return { type, host, port, username: "", password: "" };
+    }
+  } else if (parts.length === 4) {
+    const portAt1 = Number.parseInt(parts[1], 10);
+    const portAt3 = Number.parseInt(parts[3], 10);
+    if (!Number.isNaN(portAt1) && Number.isNaN(portAt3)) {
+      return {
+        type,
+        host: parts[0],
+        port: portAt1,
+        username: parts[2],
+        password: parts[3],
+      };
+    } else if (Number.isNaN(portAt1) && !Number.isNaN(portAt3)) {
+      return {
+        type,
+        host: parts[2],
+        port: portAt3,
+        username: parts[0],
+        password: parts[1],
+      };
+    } else if (!Number.isNaN(portAt1)) {
+      return {
+        type,
+        host: parts[0],
+        port: portAt1,
+        username: parts[2],
+        password: parts[3],
+      };
+    }
+  }
+
+  return null;
 };
 
 export function ProxyFormDialog({
@@ -205,6 +285,21 @@ export function ProxyFormDialog({
                 value={form.host}
                 onChange={(e) => {
                   setForm({ ...form, host: e.target.value });
+                }}
+                onPaste={(e) => {
+                  const pastedText = e.clipboardData.getData("text");
+                  const parsed = parseProxyString(pastedText);
+                  if (parsed) {
+                    e.preventDefault();
+                    setForm({
+                      ...form,
+                      proxy_type: parsed.type,
+                      host: parsed.host,
+                      port: parsed.port,
+                      username: parsed.username,
+                      password: parsed.password,
+                    });
+                  }
                 }}
                 placeholder={t("proxies.form.hostPlaceholder")}
                 disabled={isSubmitting}
