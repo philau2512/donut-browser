@@ -2135,6 +2135,10 @@
     "description_other": "선택한 {{count}}개 프로필에 태그를 할당합니다.",
     "selectedProfilesLabel": "선택된 프로필",
     "assignTagsLabel": "태그 할당",
-    "assignButton": "추가"
+    "assignButton": "추가",
+    "deleteConfirmTitle": "태그 삭제",
+    "deleteConfirmDesc": "\"{{tag}}\" 태그를 삭제하시겠습니까? 이 작업은 모든 프로필과 시스템 전체에서 태그를 제거합니다.",
+    "deleteSuccess": "\"{{tag}}\" 태그가 성공적으로 삭제되었습니다",
+    "deleteFailed": "태그 삭제 실패: {{error}}"
   }
 }

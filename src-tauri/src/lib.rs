@@ -84,7 +84,7 @@ use sync::{
   verify_e2e_password,
 };
 
-use profile::tag_manager::get_all_tags;
+use profile::tag_manager::{delete_tag, get_all_tags};
 
 use browser::default_browser::{is_default_browser, set_as_default_browser};
 use updater::version_updater::{

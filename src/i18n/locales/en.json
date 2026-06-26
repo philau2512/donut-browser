@@ -2135,6 +2135,10 @@
     "description_other": "Assign tags to the {{count}} selected profiles.",
     "selectedProfilesLabel": "Selected Profiles",
     "assignTagsLabel": "Assign Tags",
-    "assignButton": "Add"
+    "assignButton": "Add",
+    "deleteConfirmTitle": "Delete Tag",
+    "deleteConfirmDesc": "Are you sure you want to delete the tag \"{{tag}}\"? This will remove it from all profiles and the system globally.",
+    "deleteSuccess": "Tag \"{{tag}}\" deleted successfully",
+    "deleteFailed": "Failed to delete tag: {{error}}"
   }
 }

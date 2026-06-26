@@ -2135,6 +2135,10 @@
     "description_other": "Gán thẻ cho {{count}} hồ sơ đã chọn.",
     "selectedProfilesLabel": "Hồ sơ đã chọn",
     "assignTagsLabel": "Gán thẻ",
-    "assignButton": "Thêm"
+    "assignButton": "Thêm",
+    "deleteConfirmTitle": "Xóa thẻ",
+    "deleteConfirmDesc": "Bạn có chắc chắn muốn xóa thẻ \"{{tag}}\" không? Thao tác này sẽ gỡ thẻ khỏi tất cả hồ sơ và toàn bộ hệ thống.",
+    "deleteSuccess": "Đã xóa thẻ \"{{tag}}\" thành công",
+    "deleteFailed": "Không thể xóa thẻ: {{error}}"
   }
 }

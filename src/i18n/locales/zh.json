@@ -2135,6 +2135,10 @@
     "description_other": "为所选的 {{count}} 个配置分配标签。",
     "selectedProfilesLabel": "所选配置",
     "assignTagsLabel": "分配标签",
-    "assignButton": "添加"
+    "assignButton": "添加",
+    "deleteConfirmTitle": "删除标签",
+    "deleteConfirmDesc": "您确定要删除标签“{{tag}}”吗？这将从所有配置和全局系统中将其删除。",
+    "deleteSuccess": "标签“{{tag}}”已成功删除",
+    "deleteFailed": "删除标签失败: {{error}}"
   }
 }

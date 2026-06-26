@@ -99,6 +99,32 @@ impl ProfileManager {
     Ok(profile)
   }
 
+  pub fn delete_tag_globally(
+    &self,
+    _app_handle: &tauri::AppHandle,
+    tag: &str,
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    let profiles = self.list_profiles()?;
+    for mut profile in profiles {
+      if profile.tags.iter().any(|t| t == tag) {
+        profile.tags.retain(|t| t != tag);
+        profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
+        self.save_profile(&profile)?;
+        crate::sync::queue_profile_sync_if_eligible(&profile);
+      }
+    }
+
+    let _ = crate::profile::tag_manager::TAG_MANAGER.lock().map(|tm| {
+      let _ = tm.delete_tag(tag);
+    });
+
+    if let Err(e) = events::emit_empty("profiles-changed") {
+      log::warn!("Warning: Failed to emit profiles-changed event: {e}");
+    }
+
+    Ok(())
+  }
+
   pub fn update_profile_note(
     &self,
     _app_handle: &tauri::AppHandle,

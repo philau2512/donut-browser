@@ -105,6 +105,7 @@ pub fn run() {
       fetch_browser_versions_with_count_cached_first,
       get_downloaded_browser_versions,
       get_all_tags,
+      delete_tag,
       get_browser_release_types,
       update_profile_proxy,
       update_profile_vpn,

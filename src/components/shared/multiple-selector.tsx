@@ -5,7 +5,7 @@
 import { Command as CommandPrimitive, useCommandState } from "cmdk";
 import * as React from "react";
 import { forwardRef, useEffect } from "react";
-import { LuX } from "react-icons/lu";
+import { LuTrash2, LuX } from "react-icons/lu";
 import { Badge } from "@/components/ui/badge";
 import {
   Command,
@@ -73,6 +73,8 @@ interface MultipleSelectorProps {
     React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>,
     "value" | "placeholder" | "disabled"
   >;
+  /** Allow deleting option from dropdown list. */
+  onDeleteOption?: (option: Option) => void;
 }
 
 export interface MultipleSelectorRef {
@@ -194,6 +196,7 @@ const MultipleSelector = React.forwardRef<
       triggerSearchOnFocus = false,
       commandProps,
       inputProps,
+      onDeleteOption,
     }: MultipleSelectorProps,
     ref: React.Ref<MultipleSelectorRef>,
   ) => {
@@ -650,12 +653,29 @@ const MultipleSelector = React.forwardRef<
                               onChange?.(newOptions);
                             }}
                             className={cn(
-                              "cursor-pointer",
+                              "cursor-pointer flex justify-between items-center group/item",
                               option.disable &&
                                 "cursor-default text-muted-foreground",
                             )}
                           >
-                            {option.label ?? option.value}
+                            <span>{option.label ?? option.value}</span>
+                            {onDeleteOption && !option.disable && (
+                              <button
+                                type="button"
+                                className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground hover:text-destructive transition-all"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  onDeleteOption(option);
+                                }}
+                              >
+                                <LuTrash2 className="size-3.5" />
+                              </button>
+                            )}
                           </CommandItem>
                         );
                       })}

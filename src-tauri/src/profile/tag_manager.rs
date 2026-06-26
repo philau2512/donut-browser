@@ -57,8 +57,14 @@ impl TagManager {
     &self,
     profiles: &[BrowserProfile],
   ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    // Build a set of all tags currently used by any profile
+    // Build a set of all tags, starting with existing global tags to preserve them
     let mut set: BTreeSet<String> = BTreeSet::new();
+    if let Ok(existing) = self.load_tags_data() {
+      for tag in existing.tags {
+        set.insert(tag);
+      }
+    }
+
     for profile in profiles {
       for tag in &profile.tags {
         // Store exactly as provided (no normalization) to preserve characters
@@ -71,6 +77,13 @@ impl TagManager {
     })?;
     Ok(combined)
   }
+
+  pub fn delete_tag(&self, tag: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut data = self.load_tags_data()?;
+    data.tags.retain(|t| t != tag);
+    self.save_tags_data(&data)?;
+    Ok(())
+  }
 }
 
 #[tauri::command]
@@ -79,6 +92,14 @@ pub fn get_all_tags() -> Result<Vec<String>, String> {
   tag_manager
     .get_all_tags()
     .map_err(|e| format!("Failed to get tags: {e}"))
+}
+
+#[tauri::command]
+pub fn delete_tag(app_handle: tauri::AppHandle, tag: String) -> Result<(), String> {
+  let profile_manager = crate::profile::ProfileManager::instance();
+  profile_manager
+    .delete_tag_globally(&app_handle, &tag)
+    .map_err(|e| format!("Failed to delete tag: {e}"))
 }
 
 lazy_static::lazy_static! {

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
+  ConfirmationDialog,
   LoadingButton,
   MultipleSelector,
   type MultipleSelectorRef,
@@ -42,6 +43,8 @@ export function TagsAssignmentDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tagToDelete, setTagToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isInitializedRef = useRef(false);
   const selectorRef = useRef<MultipleSelectorRef>(null);
@@ -122,6 +125,26 @@ export function TagsAssignmentDialog({
     t,
   ]);
 
+  const handleDeleteTag = useCallback(async () => {
+    if (!tagToDelete) return;
+    setIsDeleting(true);
+    try {
+      await invoke("delete_tag", { tag: tagToDelete });
+      toast.success(t("tags.deleteSuccess", { tag: tagToDelete }));
+      setTagToDelete(null);
+      void loadTags();
+    } catch (err) {
+      console.error("Failed to delete tag:", err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : t("tags.deleteFailed", { error: String(err) }),
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [tagToDelete, loadTags, t]);
+
   useEffect(() => {
     if (isOpen) {
       if (!isInitializedRef.current) {
@@ -147,7 +170,7 @@ export function TagsAssignmentDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md !overflow-visible">
         <DialogHeader>
           <DialogTitle>{t("tags.title")}</DialogTitle>
           <DialogDescription>
@@ -191,6 +214,9 @@ export function TagsAssignmentDialog({
                 onChange={(opts) => {
                   setSelectedTags(opts.map((o) => o.value));
                 }}
+                onDeleteOption={(opt) => {
+                  setTagToDelete(opt.value);
+                }}
                 placeholder={t("tags.placeholder")}
                 creatable
                 className="w-full bg-background border border-border rounded-md"
@@ -206,7 +232,7 @@ export function TagsAssignmentDialog({
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2">
           <RippleButton
             variant="destructive"
             onClick={onClose}
@@ -225,6 +251,17 @@ export function TagsAssignmentDialog({
           </LoadingButton>
         </DialogFooter>
       </DialogContent>
+
+      <ConfirmationDialog
+        isOpen={tagToDelete !== null}
+        onClose={() => setTagToDelete(null)}
+        onConfirm={handleDeleteTag}
+        title={t("tags.deleteConfirmTitle")}
+        description={t("tags.deleteConfirmDesc", { tag: tagToDelete ?? "" })}
+        confirmButtonText={t("common.buttons.delete")}
+        confirmButtonVariant="destructive"
+        isLoading={isDeleting}
+      />
     </Dialog>
   );
 }

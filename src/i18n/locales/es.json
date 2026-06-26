@@ -2135,6 +2135,10 @@
     "description_other": "Asignar etiquetas a los {{count}} perfiles seleccionados.",
     "selectedProfilesLabel": "Perfiles seleccionados",
     "assignTagsLabel": "Asignar etiquetas",
-    "assignButton": "Añadir"
+    "assignButton": "Añadir",
+    "deleteConfirmTitle": "Eliminar etiqueta",
+    "deleteConfirmDesc": "¿Estás seguro de que deseas eliminar la etiqueta \"{{tag}}\"? Esto la eliminará de todos los perfiles y del sistema a nivel global.",
+    "deleteSuccess": "Etiqueta \"{{tag}}\" eliminada con éxito",
+    "deleteFailed": "Error al eliminar la etiqueta: {{error}}"
   }
 }

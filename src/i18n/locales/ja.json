@@ -2135,6 +2135,10 @@
     "description_other": "選択した{{count}}個のプロファイルにタグを割り当てます。",
     "selectedProfilesLabel": "選択されたプロファイル",
     "assignTagsLabel": "タグの割り当て",
-    "assignButton": "追加"
+    "assignButton": "追加",
+    "deleteConfirmTitle": "タグの削除",
+    "deleteConfirmDesc": "タグ「{{tag}}」を削除してもよろしいですか？これにより、すべてのプロファイルおよびシステム全体から削除されます。",
+    "deleteSuccess": "タグ「{{tag}}」が正常に削除されました",
+    "deleteFailed": "タグの削除に失敗しました: {{error}}"
   }
 }

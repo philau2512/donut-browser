@@ -2135,6 +2135,10 @@
     "description_other": "Atribuir tags aos {{count}} perfis selecionados.",
     "selectedProfilesLabel": "Perfis selecionados",
     "assignTagsLabel": "Atribuir tags",
-    "assignButton": "Adicionar"
+    "assignButton": "Adicionar",
+    "deleteConfirmTitle": "Excluir tag",
+    "deleteConfirmDesc": "Tem certeza de que deseja excluir a tag \"{{tag}}\"? Isso a removerá de todos os perfis e do sistema globalmente.",
+    "deleteSuccess": "Tag \"{{tag}}\" excluída com sucesso",
+    "deleteFailed": "Falha ao excluir tag: {{error}}"
   }
 }

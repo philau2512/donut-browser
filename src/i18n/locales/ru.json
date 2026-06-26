@@ -2135,6 +2135,10 @@
     "description_other": "Назначить теги {{count}} выбранным профилям.",
     "selectedProfilesLabel": "Выбранные профили",
     "assignTagsLabel": "Назначить теги",
-    "assignButton": "Добавить"
+    "assignButton": "Добавить",
+    "deleteConfirmTitle": "Удалить тег",
+    "deleteConfirmDesc": "Вы уверены, что хотите удалить тег «{{tag}}»? Это удалит его из всех профилей и системы глобально.",
+    "deleteSuccess": "Тег «{{tag}}» успешно удален",
+    "deleteFailed": "Не удалось удалить тег: {{error}}"
   }
 }
