@@ -248,6 +248,7 @@
       "cantModifyStopping": "停止期间无法修改配置文件",
       "cantModifyUpdating": "浏览器更新期间无法修改配置文件",
       "lastOpen": "上次打开",
+      "os": "OS",
       "message": "消息",
       "changeProxy": "更改代理"
     },

@@ -532,6 +532,11 @@ export function ProfilesDataTable({
                     return (
                       <TableHead
                         key={header.id}
+                        className={cn(
+                          header.column.id !== "select" &&
+                            header.column.id !== "name" &&
+                            "text-center",
+                        )}
                         style={{
                           width: header.column.columnDef.meta?.flexWidth
                             ? undefined

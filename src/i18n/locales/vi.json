@@ -248,6 +248,7 @@
       "cantModifyStopping": "Không thể chỉnh sửa profile khi đang dừng",
       "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật",
       "lastOpen": "Lần mở cuối",
+      "os": "OS",
       "message": "Thông báo",
       "changeProxy": "Đổi Proxy"
     },

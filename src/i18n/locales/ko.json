@@ -248,6 +248,7 @@
       "cantModifyStopping": "중지하는 동안 프로필을 수정할 수 없습니다",
       "cantModifyUpdating": "브라우저 업데이트 중에는 프로필을 수정할 수 없습니다",
       "lastOpen": "마지막으로 연 시간",
+      "os": "OS",
       "message": "메시지",
       "changeProxy": "프록시 변경"
     },

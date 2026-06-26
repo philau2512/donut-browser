@@ -3,6 +3,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -32,6 +40,8 @@ export const NoteCell = React.memo<NoteCellProps>(
     setNoteOverrides,
   }) => {
     const { t } = useTranslation();
+    const isOpen = openNoteEditorFor === profile.id;
+
     const effectiveNote: string | null = Object.hasOwn(
       noteOverrides,
       profile.id,
@@ -55,31 +65,42 @@ export const NoteCell = React.memo<NoteCellProps>(
       [profile.id, setNoteOverrides],
     );
 
-    const editorRef = React.useRef<HTMLDivElement | null>(null);
     const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
     const [noteValue, setNoteValue] = React.useState(effectiveNote ?? "");
 
-    // Update local state when effective note changes (from outside)
+    // Sync local state when dialog opens or effective note changes
     React.useEffect(() => {
-      if (openNoteEditorFor !== profile.id) {
+      if (isOpen) {
         setNoteValue(effectiveNote ?? "");
       }
-    }, [effectiveNote, openNoteEditorFor, profile.id]);
+    }, [isOpen, effectiveNote]);
 
-    // Auto-resize textarea on open
+    // Auto-resize textarea when dialog opens
     React.useEffect(() => {
-      if (openNoteEditorFor === profile.id && textareaRef.current) {
+      if (isOpen && textareaRef.current) {
         const textarea = textareaRef.current;
         textarea.style.height = "auto";
         textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+        // Focus and move cursor to end
+        textarea.focus();
+        const len = textarea.value.length;
+        textarea.setSelectionRange(len, len);
       }
-    }, [openNoteEditorFor, profile.id]);
+    }, [isOpen]);
+
+    const handleSave = React.useCallback(() => {
+      void onNoteChange(noteValue);
+      setOpenNoteEditorFor(null);
+    }, [onNoteChange, noteValue, setOpenNoteEditorFor]);
+
+    const handleCancel = React.useCallback(() => {
+      setNoteValue(effectiveNote ?? "");
+      setOpenNoteEditorFor(null);
+    }, [effectiveNote, setOpenNoteEditorFor]);
 
     const handleTextareaChange = React.useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const newValue = e.target.value;
-        setNoteValue(newValue);
-        // Auto-resize
+        setNoteValue(e.target.value);
         const textarea = e.target;
         textarea.style.height = "auto";
         textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
@@ -87,40 +108,11 @@ export const NoteCell = React.memo<NoteCellProps>(
       [],
     );
 
-    React.useEffect(() => {
-      if (openNoteEditorFor !== profile.id) return;
-      const handleClick = (e: MouseEvent) => {
-        const target = e.target as Node | null;
-        if (
-          editorRef.current &&
-          target &&
-          !editorRef.current.contains(target)
-        ) {
-          const currentValue = textareaRef.current?.value ?? "";
-          void onNoteChange(currentValue);
-          setOpenNoteEditorFor(null);
-        }
-      };
-      document.addEventListener("mousedown", handleClick);
-      return () => {
-        document.removeEventListener("mousedown", handleClick);
-      };
-    }, [openNoteEditorFor, profile.id, setOpenNoteEditorFor, onNoteChange]);
-
-    React.useEffect(() => {
-      if (openNoteEditorFor === profile.id && textareaRef.current) {
-        textareaRef.current.focus();
-        // Move cursor to end
-        const len = textareaRef.current.value.length;
-        textareaRef.current.setSelectionRange(len, len);
-      }
-    }, [openNoteEditorFor, profile.id]);
-
     const displayNote = effectiveNote ?? "";
     const showTooltip = displayNote.length > 0;
 
-    if (openNoteEditorFor !== profile.id) {
-      return (
+    return (
+      <>
         <div className="min-h-6 w-full">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -131,10 +123,10 @@ export const NoteCell = React.memo<NoteCellProps>(
                   isDisabled
                     ? "cursor-not-allowed opacity-60"
                     : "cursor-pointer hover:bg-accent/50",
+                  !effectiveNote && "justify-center",
                 )}
                 onClick={() => {
                   if (!isDisabled) {
-                    setNoteValue(effectiveNote ?? "");
                     setOpenNoteEditorFor(profile.id);
                   }
                 }}
@@ -142,62 +134,55 @@ export const NoteCell = React.memo<NoteCellProps>(
                 <span
                   className={cn(
                     "block w-full truncate text-sm",
-                    !effectiveNote && "text-muted-foreground",
+                    !effectiveNote && "text-muted-foreground text-center",
                   )}
                 >
-                  {effectiveNote ? displayNote : t("profiles.note.empty")}
+                  {effectiveNote ? displayNote : "---"}
                 </span>
               </button>
             </TooltipTrigger>
             {showTooltip && (
               <TooltipContent className="max-w-[320px]">
                 <p className="wrap-break-word whitespace-pre-wrap">
-                  {effectiveNote ?? t("profiles.note.empty")}
+                  {effectiveNote}
                 </p>
               </TooltipContent>
             )}
           </Tooltip>
         </div>
-      );
-    }
 
-    return (
-      <div
-        className={cn(
-          "relative w-full",
-          isDisabled && "pointer-events-none opacity-60",
-        )}
-      >
-        <div
-          ref={editorRef}
-          className="absolute top-[-15px] -left-px z-50 min-h-6 w-60 rounded-md border bg-popover shadow-md"
+        <Dialog
+          open={isOpen}
+          onOpenChange={(open) => {
+            if (!open) handleCancel();
+          }}
         >
-          <textarea
-            ref={textareaRef}
-            value={noteValue}
-            onChange={handleTextareaChange}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                setNoteValue(effectiveNote ?? "");
-                setOpenNoteEditorFor(null);
-              } else if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                void onNoteChange(noteValue);
-                setOpenNoteEditorFor(null);
-              }
-            }}
-            onBlur={() => {
-              void onNoteChange(noteValue);
-              setOpenNoteEditorFor(null);
-            }}
-            placeholder={t("profiles.note.placeholder")}
-            className="max-h-[200px] min-h-6 w-full resize-none border-0 bg-transparent px-2 py-1 text-sm focus:ring-0 focus:outline-none"
-            style={{
-              overflow: "auto",
-            }}
-            rows={1}
-          />
-        </div>
-      </div>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("profileTable.noteHeader")}</DialogTitle>
+            </DialogHeader>
+            <textarea
+              ref={textareaRef}
+              value={noteValue}
+              onChange={handleTextareaChange}
+              placeholder={t("profiles.note.placeholder")}
+              className="min-h-[120px] w-full resize-none rounded-md border bg-secondary/50 px-3 py-2 text-sm focus:ring-0 focus:outline-none"
+              rows={4}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+            />
+            <DialogFooter>
+              <Button onClick={handleSave} className="cursor-pointer">
+                {t("common.buttons.save")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   },
 );

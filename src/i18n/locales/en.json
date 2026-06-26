@@ -248,6 +248,7 @@
       "cantModifyStopping": "Can't modify profile while stopping",
       "cantModifyUpdating": "Can't modify profile while browser is updating",
       "lastOpen": "Last Open",
+      "os": "OS",
       "message": "Message",
       "changeProxy": "Change Proxy"
     },

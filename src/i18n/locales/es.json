@@ -248,6 +248,7 @@
       "cantModifyStopping": "No se puede modificar el perfil mientras se detiene",
       "cantModifyUpdating": "No se puede modificar el perfil mientras se actualiza el navegador",
       "lastOpen": "Última apertura",
+      "os": "OS",
       "message": "Mensaje",
       "changeProxy": "Cambiar proxy"
     },

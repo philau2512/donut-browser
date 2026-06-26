@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { useBrowserState } from "@/hooks/use-browser-state";
 import {
   getBrowserDisplayName,
+  getOSDisplayName,
   getProfileIcon,
   isCrossOsProfile,
 } from "@/lib/browser-utils";
@@ -350,13 +351,8 @@ export function getProfileTableColumns(
         // Browser icon
         const BrowserIcon = getProfileIcon(profile);
 
-        // Chromium/Firefox version major
-        const versionMajor = profile.version
-          ? profile.version.split(".")[0]
-          : "142";
-
         return (
-          <div className="flex w-full min-w-0 items-center gap-3 overflow-hidden py-0.5">
+          <div className="flex w-full min-w-0 items-center overflow-hidden py-0.5">
             <button
               type="button"
               className={cn(
@@ -371,14 +367,39 @@ export function getProfileTableColumns(
             >
               <OverflowTooltipText text={name} className="text-left" />
             </button>
-
-            <div className="flex items-center gap-1.5 shrink-0 bg-secondary/50 border border-border px-2 py-0.5 rounded-md text-[10px] text-muted-foreground select-none font-mono ml-auto mr-2">
-              {/* Browser icon */}
-              {BrowserIcon && (
-                <BrowserIcon className="size-3 text-foreground" />
-              )}
-              {/* Version */}
+          </div>
+        );
+      },
+    },
+    {
+      id: "os",
+      size: 110,
+      header: ({ table }) => {
+        const meta = table.options.meta as TableMeta;
+        return meta.t("profiles.table.os");
+      },
+      cell: ({ row }) => {
+        const profile = row.original as BrowserProfile;
+        const OsIcon = getProfileIcon(profile);
+        const versionMajor = profile.version
+          ? profile.version.split(".")[0]
+          : "142";
+        const hostOs =
+          profile.host_os ||
+          profile.camoufox_config?.os ||
+          profile.wayfern_config?.os;
+        const osName = hostOs ? getOSDisplayName(hostOs) : null;
+        return (
+          <div className="flex justify-center">
+            <div className="flex items-center gap-1.5 shrink-0 bg-secondary/50 border border-border px-2 py-0.5 rounded-md text-[10px] text-muted-foreground select-none font-mono">
+              {OsIcon && <OsIcon className="size-3 text-foreground" />}
               <span>{versionMajor}</span>
+              {osName && (
+                <>
+                  <span className="opacity-50">·</span>
+                  <span>{osName}</span>
+                </>
+              )}
             </div>
           </div>
         );
@@ -415,7 +436,7 @@ export function getProfileTableColumns(
         const countryCode = effectiveProxy?.geo_country;
 
         return (
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center justify-center gap-2 text-xs">
             <button
               type="button"
               className={cn(
@@ -479,12 +500,14 @@ export function getProfileTableColumns(
           isRunning || isLaunching || isStopping || isCrossOsBlocked;
 
         return (
-          <TagsCell
-            profile={profile}
-            isDisabled={isDisabled}
-            tagsOverrides={meta.tagsOverrides ?? {}}
-            onAssignTags={meta.onAssignTags}
-          />
+          <div className="flex justify-center">
+            <TagsCell
+              profile={profile}
+              isDisabled={isDisabled}
+              tagsOverrides={meta.tagsOverrides ?? {}}
+              onAssignTags={meta.onAssignTags}
+            />
+          </div>
         );
       },
     },
@@ -507,14 +530,16 @@ export function getProfileTableColumns(
           isRunning || isLaunching || isStopping || isCrossOsBlocked;
 
         return (
-          <NoteCell
-            profile={profile}
-            isDisabled={isDisabled}
-            noteOverrides={meta.noteOverrides ?? {}}
-            openNoteEditorFor={meta.openNoteEditorFor ?? null}
-            setOpenNoteEditorFor={meta.setOpenNoteEditorFor}
-            setNoteOverrides={meta.setNoteOverrides}
-          />
+          <div className="flex justify-center">
+            <NoteCell
+              profile={profile}
+              isDisabled={isDisabled}
+              noteOverrides={meta.noteOverrides ?? {}}
+              openNoteEditorFor={meta.openNoteEditorFor ?? null}
+              setOpenNoteEditorFor={meta.setOpenNoteEditorFor}
+              setNoteOverrides={meta.setNoteOverrides}
+            />
+          </div>
         );
       },
     },
@@ -530,7 +555,7 @@ export function getProfileTableColumns(
         if (!profile.last_launch)
           return <span className="text-muted-foreground/50 text-xs">---</span>;
         return (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <span className="opacity-70 text-[10px]">⏱</span>
             <span>{formatRelativeTime(profile.last_launch)}</span>
           </div>
@@ -572,14 +597,16 @@ export function getProfileTableColumns(
         }
 
         return (
-          <Badge
-            className={cn(
-              "px-2 py-0.5 rounded-sm text-[10px] font-medium shadow-none select-none",
-              statusStyle,
-            )}
-          >
-            {statusText}
-          </Badge>
+          <div className="flex justify-center">
+            <Badge
+              className={cn(
+                "px-2 py-0.5 rounded-sm text-[10px] font-medium shadow-none select-none",
+                statusStyle,
+              )}
+            >
+              {statusText}
+            </Badge>
+          </div>
         );
       },
     },
@@ -603,7 +630,7 @@ export function getProfileTableColumns(
         else if (isStopping) msg = "Stopping...";
 
         return (
-          <span className="text-xs text-muted-foreground truncate max-w-full block">
+          <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
             {msg}
           </span>
         );
@@ -674,7 +701,7 @@ export function getProfileTableColumns(
         };
 
         return (
-          <div className="flex items-center justify-end gap-1.5 w-full">
+          <div className="flex items-center justify-center gap-1.5 w-full">
             <Button
               size="sm"
               variant={isRunning ? "destructive" : "default"}

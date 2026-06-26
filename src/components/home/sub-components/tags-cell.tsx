@@ -56,7 +56,8 @@ export const TagsCell = React.memo<TagsCellProps>(
           isDisabled
             ? "cursor-not-allowed opacity-60"
             : "cursor-pointer hover:bg-accent/50",
-          effectiveTags.length === 0 && "justify-center",
+          (effectiveTags.length === 0 || effectiveTags.length === 1) &&
+            "justify-center",
         )}
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}

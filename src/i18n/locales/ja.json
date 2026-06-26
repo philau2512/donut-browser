@@ -248,6 +248,7 @@
       "cantModifyStopping": "停止中はプロファイルを変更できません",
       "cantModifyUpdating": "ブラウザの更新中はプロファイルを変更できません",
       "lastOpen": "最終起動",
+      "os": "OS",
       "message": "メッセージ",
       "changeProxy": "プロキシ変更"
     },
