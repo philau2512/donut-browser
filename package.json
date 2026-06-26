@@ -12,6 +12,8 @@
     "test:rust": "cd src-tauri && cargo test",
     "test:rust:unit": "cd src-tauri && cargo test --lib && cargo test --test donut_proxy_integration && cargo test --test vpn_integration",
     "test:sync-e2e": "node scripts/sync-test-harness.mjs",
+    "test:quick": "cd src-tauri && cargo nextest run --lib",
+    "test:filter": "cd src-tauri && cargo nextest run --lib -E",
     "lint": "pnpm lint:js && pnpm lint:rust && pnpm lint:spell",
     "lint:js": "biome check src/ && tsc --noEmit && node scripts/check-unused-commands.mjs && cd donut-sync && biome check src/ && tsc --noEmit",
     "lint:rust": "cd src-tauri && cargo clippy --all-targets --all-features -- -D warnings -D clippy::all && cargo fmt --all",

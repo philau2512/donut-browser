@@ -105,6 +105,20 @@ donutbrowser/
 - The full `pnpm test` output dumps every test name (≈400+ lines) which burns context for no signal. Filter:
   `pnpm test 2>&1 | grep -E "test result|panicked|FAILED"` — four "test result: ok" lines means everything passed.
 
+### Fast testing during development
+
+For day-to-day feature work, use `pnpm test:quick` instead of `pnpm test`. It runs only unit tests (`--lib`) via `cargo-nextest` (parallel, faster) and skips all integration tests (proxy, vpn, sync-e2e).
+
+| Scenario | Command |
+|----------|---------|
+| All unit tests (fast) | `pnpm test:quick` |
+| Filter by module name | `cd src-tauri && cargo nextest run --lib -E 'test(tag_manager)'` |
+| Filter by test function | `cd src-tauri && cargo nextest run --lib -E 'test(test_profile_manager)'` |
+| Full suite (pre-commit/CI) | `pnpm test` |
+
+If `pnpm tauri dev` is running and causes file-lock conflicts, set a separate target dir:
+`$env:CARGO_TARGET_DIR = "target/test"; cd src-tauri; cargo nextest run --lib`
+
 ## Logs (when debugging a running app)
 
 Three log surfaces, in order of usefulness:
