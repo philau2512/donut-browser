@@ -34,7 +34,8 @@
       "saving": "Salvando…",
       "saved": "Salvo",
       "copied": "Copiado",
-      "learnMore": "Saiba mais"
+      "learnMore": "Saiba mais",
+      "toggleTheme": "Alternar tema"
     },
     "status": {
       "active": "Ativo",
@@ -563,6 +564,15 @@
       "vpnsTitle": "Excluir VPNs selecionadas",
       "vpnsDescription": "Esta ação não pode ser desfeita. Isso excluirá permanentemente {{count}} VPN(s): {{names}}.",
       "confirmButton": "Excluir {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Editar proxy rápido",
+      "formatLabel": "Formato do Proxy",
+      "formatPlaceholder": "type://user:pass@ip:port ou ip:port",
+      "checkHostLabel": "Host de verificação do proxy",
+      "checkBeforeStart": "Verificar proxy antes de iniciar o perfil.",
+      "checkButton": "Verificar Proxy",
+      "saveButton": "Editar Proxy"
     }
   },
   "groups": {

@@ -138,6 +138,12 @@ impl ProxyManager {
           country_code: None,
           timestamp: Self::get_current_timestamp(),
           is_valid: false,
+          loc: None,
+          timezone: None,
+          zip_code: None,
+          name: None,
+          asn: None,
+          country_text: None,
         };
         let _ = self.save_proxy_check_cache(proxy_id, &failed_result);
 
@@ -148,7 +154,7 @@ impl ProxyManager {
     };
 
     // Get geolocation
-    let (city, country, country_code): (Option<String>, Option<String>, Option<String>) =
+    let (city, country, country_code, loc, timezone, zip_code, name, asn, country_text) =
       Self::get_ip_geolocation(&ip).await.unwrap_or_default();
 
     // Create successful result
@@ -159,6 +165,12 @@ impl ProxyManager {
       country_code,
       timestamp: Self::get_current_timestamp(),
       is_valid: true,
+      loc,
+      timezone,
+      zip_code,
+      name,
+      asn,
+      country_text,
     };
 
     // Save to cache

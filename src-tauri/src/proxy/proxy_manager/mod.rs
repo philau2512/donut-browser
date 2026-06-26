@@ -89,6 +89,18 @@ pub struct ProxyCheckResult {
   pub country_code: Option<String>,
   pub timestamp: u64,
   pub is_valid: bool,
+  #[serde(default)]
+  pub loc: Option<String>,
+  #[serde(default)]
+  pub timezone: Option<String>,
+  #[serde(default)]
+  pub zip_code: Option<String>,
+  #[serde(default)]
+  pub name: Option<String>,
+  #[serde(default)]
+  pub asn: Option<String>,
+  #[serde(default)]
+  pub country_text: Option<String>,
 }
 
 pub const CLOUD_PROXY_ID: &str = "cloud-included-proxy";
@@ -278,10 +290,23 @@ impl ProxyManager {
 
   pub async fn get_ip_geolocation(
     ip: &str,
-  ) -> Result<(Option<String>, Option<String>, Option<String>), String> {
+  ) -> Result<
+    (
+      Option<String>,
+      Option<String>,
+      Option<String>,
+      Option<String>,
+      Option<String>,
+      Option<String>,
+      Option<String>,
+      Option<String>,
+      Option<String>,
+    ),
+    String,
+  > {
     // Use ip-api.com (free, no API key required)
     let url = format!(
-      "http://ip-api.com/json/{}?fields=status,message,country,countryCode,city",
+      "http://ip-api.com/json/{}?fields=status,message,country,countryCode,city,zip,lat,lon,timezone,as",
       ip
     );
 
@@ -308,15 +333,47 @@ impl ProxyManager {
                   .get("city")
                   .and_then(|v| v.as_str())
                   .map(|s| s.to_string());
-                Ok((city, country, country_code))
+                let zip = json
+                  .get("zip")
+                  .and_then(|v| v.as_str())
+                  .map(|s| s.to_string());
+                let lat = json.get("lat").and_then(|v| v.as_f64());
+                let lon = json.get("lon").and_then(|v| v.as_f64());
+                let loc = match (lat, lon) {
+                  (Some(lt), Some(ln)) => Some(format!("{:.5},{:.5}", lt, ln)),
+                  _ => None,
+                };
+                let timezone = json
+                  .get("timezone")
+                  .and_then(|v| v.as_str())
+                  .map(|s| s.to_string());
+                let as_str = json.get("as").and_then(|v| v.as_str()).map(|s| {
+                  s.trim_start_matches("AS")
+                    .split_whitespace()
+                    .next()
+                    .unwrap_or("")
+                    .to_string()
+                });
+
+                Ok((
+                  city,
+                  country_code.clone(),
+                  country_code,
+                  loc,
+                  timezone,
+                  zip,
+                  country.clone(),
+                  as_str,
+                  country,
+                ))
               } else {
-                Ok((None, None, None))
+                Ok((None, None, None, None, None, None, None, None, None))
               }
             }
             Err(e) => Err(format!("Failed to parse geolocation response: {e}")),
           }
         } else {
-          Ok((None, None, None))
+          Ok((None, None, None, None, None, None, None, None, None))
         }
       }
       Err(e) => Err(format!("Failed to fetch geolocation: {e}")),

@@ -34,7 +34,8 @@
       "saving": "Saving…",
       "saved": "Saved",
       "copied": "Copied",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "toggleTheme": "Toggle Theme"
     },
     "status": {
       "active": "Active",
@@ -563,6 +564,15 @@
       "vpnsTitle": "Delete Selected VPNs",
       "vpnsDescription": "This action cannot be undone. This will permanently delete {{count}} VPN(s): {{names}}.",
       "confirmButton": "Delete {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Quick Edit Proxy",
+      "formatLabel": "Format Proxy",
+      "formatPlaceholder": "type://user:pass@ip:port or ip:port",
+      "checkHostLabel": "Check proxy host",
+      "checkBeforeStart": "Check proxy before start profile.",
+      "checkButton": "Check Proxy",
+      "saveButton": "Edit Proxy"
     }
   },
   "groups": {

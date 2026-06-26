@@ -236,6 +236,8 @@ export default function Home() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [profileInfoDialog, setProfileInfoDialog] =
     useState<BrowserProfile | null>(null);
+  const [quickProxyEditProfile, setQuickProxyEditProfile] =
+    useState<BrowserProfile | null>(null);
   const { isMicrophoneAccessGranted, isCameraAccessGranted, isInitialized } =
     usePermissions();
   const { isUpdating } = useUpdateNotifications();
@@ -640,6 +642,7 @@ export default function Home() {
                 onBulkDelete={handleBulkDelete}
                 onBulkGroupAssignment={handleBulkGroupAssignment}
                 onBulkProxyAssignment={handleBulkProxyAssignment}
+                onQuickProxyEdit={setQuickProxyEditProfile}
                 onBulkCopyCookies={handleBulkCopyCookies}
                 onBulkRun={handleBulkRun}
                 onBulkStop={handleBulkStop}
@@ -824,6 +827,8 @@ export default function Home() {
         setSyncLeaderProfile={setSyncLeaderProfile}
         windowResizeWarningOpen={windowResizeWarningOpen}
         windowResizeWarningBrowserType={windowResizeWarningBrowserType}
+        quickProxyEditProfile={quickProxyEditProfile}
+        setQuickProxyEditProfile={setQuickProxyEditProfile}
         selectedGroupId={selectedGroupId}
         isUpdating={isUpdating}
         currentPermissionType={currentPermissionType}

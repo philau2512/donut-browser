@@ -21,6 +21,7 @@ import {
   WayfernTermsDialog,
 } from "@/components/profile/camoufox";
 import { ProxyAssignmentDialog } from "@/components/proxy";
+import { QuickProxyDialog } from "@/components/proxy/quick-proxy-dialog";
 import {
   CommercialTrialModal,
   ConfirmationDialog,
@@ -133,6 +134,10 @@ interface HomeDialogsProps {
   >;
   windowResizeWarningOpen: boolean;
   windowResizeWarningBrowserType: string | undefined;
+  quickProxyEditProfile: BrowserProfile | null;
+  setQuickProxyEditProfile: React.Dispatch<
+    React.SetStateAction<BrowserProfile | null>
+  >;
 
   // Other props
   selectedGroupId: string;
@@ -253,6 +258,8 @@ export function HomeDialogs({
   setSyncLeaderProfile,
   windowResizeWarningOpen,
   windowResizeWarningBrowserType,
+  quickProxyEditProfile,
+  setQuickProxyEditProfile,
   selectedGroupId,
   selectedProfiles,
   isUpdating,
@@ -568,6 +575,15 @@ export function HomeDialogs({
         leaderProfile={syncLeaderProfile}
         allProfiles={profiles}
         runningProfiles={runningProfiles}
+      />
+
+      <QuickProxyDialog
+        isOpen={quickProxyEditProfile !== null}
+        onClose={() => {
+          setQuickProxyEditProfile(null);
+        }}
+        profile={quickProxyEditProfile}
+        storedProxies={storedProxies}
       />
     </>
   );

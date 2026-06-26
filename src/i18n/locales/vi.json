@@ -34,7 +34,8 @@
       "saving": "Đang lưu…",
       "saved": "Đã lưu",
       "copied": "Đã sao chép",
-      "learnMore": "Tìm hiểu thêm"
+      "learnMore": "Tìm hiểu thêm",
+      "toggleTheme": "Chuyển đổi giao diện"
     },
     "status": {
       "active": "Đang hoạt động",
@@ -563,6 +564,15 @@
       "vpnsTitle": "Xóa các VPN đã chọn",
       "vpnsDescription": "Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn {{count}} VPN: {{names}}.",
       "confirmButton": "Xóa {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Chỉnh sửa nhanh Proxy",
+      "formatLabel": "Định dạng Proxy",
+      "formatPlaceholder": "type://user:pass@ip:port hoặc ip:port",
+      "checkHostLabel": "Host kiểm tra proxy",
+      "checkBeforeStart": "Kiểm tra proxy trước khi khởi chạy profile.",
+      "checkButton": "Kiểm tra Proxy",
+      "saveButton": "Lưu Proxy"
     }
   },
   "groups": {

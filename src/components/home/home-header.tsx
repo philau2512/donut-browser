@@ -4,13 +4,32 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GoPlus } from "react-icons/go";
-import { LuChevronLeft, LuChevronRight, LuSearch, LuX } from "react-icons/lu";
+import {
+  LuChevronLeft,
+  LuChevronRight,
+  LuMoon,
+  LuSearch,
+  LuSun,
+  LuX,
+} from "react-icons/lu";
+import { useTheme } from "@/components/app-shell";
 import { getCurrentOS } from "@/lib/browser-utils";
 import { cn } from "@/lib/utils";
 import type { GroupWithCount } from "@/types";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+
+interface AppSettings {
+  set_as_default_browser: boolean;
+  theme: string;
+  custom_theme?: Record<string, string>;
+  api_enabled: boolean;
+  api_port: number;
+  api_token?: string;
+  disable_auto_updates?: boolean;
+  keep_decrypted_profiles_in_ram?: boolean;
+}
 
 const HOLD_MS = 150;
 const DRAG_THRESHOLD_PX = 3;
@@ -46,6 +65,7 @@ const HomeHeader = ({
   onGroupSelect,
   pageTitle,
 }: Props) => {
+  const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
   const [platform, setPlatform] = useState<string>("macos");
 
@@ -55,6 +75,42 @@ const HomeHeader = ({
 
   const isMacOS = platform === "macos";
   const showProfileToolbar = !pageTitle;
+
+  const isDarkActive =
+    theme === "dark" ||
+    theme === "custom" ||
+    (theme === "system" &&
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const toggleTheme = async () => {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const currentSettings = await invoke<AppSettings>("get_app_settings");
+
+      let nextTheme = "dark";
+      if (theme === "dark" || theme === "custom") {
+        nextTheme = "light";
+      } else if (theme === "light") {
+        nextTheme = "dark";
+      } else {
+        const isSystemDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        nextTheme = isSystemDark ? "light" : "dark";
+      }
+
+      await invoke("save_app_settings", {
+        settings: {
+          ...currentSettings,
+          theme: nextTheme,
+        },
+      });
+      setTheme(nextTheme);
+    } catch (error) {
+      console.error("Failed to toggle theme:", error);
+    }
+  };
 
   // Press-and-hold drag: any pixel of the sys-bar becomes a drag handle after
   // HOLD_MS, but quick clicks still reach buttons/inputs underneath.
@@ -348,6 +404,26 @@ const HomeHeader = ({
           <TooltipContent>{t("header.createProfile")}</TooltipContent>
         </Tooltip>
       )}
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-7 w-7 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            aria-label={t("common.buttons.toggleTheme")}
+          >
+            {isDarkActive ? (
+              <LuSun className="size-3.5" />
+            ) : (
+              <LuMoon className="size-3.5" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{t("common.buttons.toggleTheme")}</TooltipContent>
+      </Tooltip>
     </div>
   );
 };

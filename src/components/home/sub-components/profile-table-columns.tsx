@@ -142,6 +142,7 @@ export interface TableMeta {
   onCopyCookiesToProfile?: (profile: BrowserProfile) => void;
   onOpenCookieManagement?: (profile: BrowserProfile) => void;
   onBulkProxyAssignment?: (profileIds: string[]) => void;
+  onQuickProxyEdit?: (profile: BrowserProfile) => void;
   onDeleteProfile?: (profile: BrowserProfile) => void;
   setProfileForInfoDialog: (profile: BrowserProfile | null) => void;
 
@@ -424,7 +425,7 @@ export function getProfileTableColumns(
               )}
               onClick={(e) => {
                 e.stopPropagation();
-                meta.onBulkProxyAssignment?.([profile.id]);
+                meta.onQuickProxyEdit?.(profile);
               }}
               title={proxyDisplay}
             >

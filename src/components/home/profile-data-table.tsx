@@ -82,6 +82,7 @@ interface ProfilesDataTableProps {
   onRemovePassword?: (profile: BrowserProfile) => void;
   infoDialogProfile?: BrowserProfile | null;
   onInfoDialogProfileChange?: (profile: BrowserProfile | null) => void;
+  onQuickProxyEdit?: (profile: BrowserProfile) => void;
 }
 
 export function ProfilesDataTable({
@@ -102,6 +103,7 @@ export function ProfilesDataTable({
   onBulkDelete,
   onBulkGroupAssignment,
   onBulkProxyAssignment,
+  onQuickProxyEdit,
   onBulkCopyCookies,
   onBulkRun,
   onBulkStop,
@@ -272,6 +274,7 @@ export function ProfilesDataTable({
       onConfigureCamoufox,
       onCopyCookiesToProfile,
       onOpenCookieManagement,
+      onQuickProxyEdit,
       setProfileForInfoDialog,
 
       trafficSnapshots,
@@ -345,6 +348,7 @@ export function ProfilesDataTable({
       onConfigureCamoufox,
       onCopyCookiesToProfile,
       onOpenCookieManagement,
+      onQuickProxyEdit,
       setProfileForInfoDialog,
       syncStatuses,
       onOpenProfileSyncDialog,

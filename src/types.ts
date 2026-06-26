@@ -146,6 +146,12 @@ export interface ProxyCheckResult {
   country_code?: string;
   timestamp: number;
   is_valid: boolean;
+  loc?: string;
+  timezone?: string;
+  zip_code?: string;
+  name?: string;
+  asn?: string;
+  country_text?: string;
 }
 
 export function isSyncEnabled(profile: BrowserProfile): boolean {

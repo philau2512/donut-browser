@@ -292,7 +292,7 @@ pub async fn check_vpn_validity_core(
 
     match ip_utils::fetch_public_ip(Some(&local_proxy_url)).await {
       Ok(ip) => {
-        let (city, country, country_code) =
+        let (city, country, country_code, loc, timezone, zip_code, name, asn, country_text) =
           crate::proxy::proxy_manager::ProxyManager::get_ip_geolocation(&ip)
             .await
             .unwrap_or_default();
@@ -304,6 +304,12 @@ pub async fn check_vpn_validity_core(
           country_code,
           timestamp: now,
           is_valid: true,
+          loc,
+          timezone,
+          zip_code,
+          name,
+          asn,
+          country_text,
         });
         break;
       }
@@ -329,6 +335,12 @@ pub async fn check_vpn_validity_core(
     country_code: None,
     timestamp: now,
     is_valid: false,
+    loc: None,
+    timezone: None,
+    zip_code: None,
+    name: None,
+    asn: None,
+    country_text: None,
   });
 
   Ok(result)

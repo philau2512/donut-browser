@@ -34,7 +34,8 @@
       "saving": "正在保存…",
       "saved": "已保存",
       "copied": "已复制",
-      "learnMore": "了解更多"
+      "learnMore": "了解更多",
+      "toggleTheme": "切换主题"
     },
     "status": {
       "active": "活跃",
@@ -563,6 +564,15 @@
       "vpnsTitle": "删除所选 VPN",
       "vpnsDescription": "此操作无法撤销。将永久删除 {{count}} 个 VPN：{{names}}。",
       "confirmButton": "删除 {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "快速编辑代理",
+      "formatLabel": "代理格式",
+      "formatPlaceholder": "type://user:pass@ip:port 或 ip:port",
+      "checkHostLabel": "代理检查主机",
+      "checkBeforeStart": "启动配置前检查代理。",
+      "checkButton": "检查代理",
+      "saveButton": "编辑代理"
     }
   },
   "groups": {

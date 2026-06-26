@@ -34,7 +34,8 @@
       "saving": "Guardando…",
       "saved": "Guardado",
       "copied": "Copiado",
-      "learnMore": "Más información"
+      "learnMore": "Más información",
+      "toggleTheme": "Cambiar tema"
     },
     "status": {
       "active": "Activo",
@@ -563,6 +564,15 @@
       "vpnsTitle": "Eliminar VPN seleccionadas",
       "vpnsDescription": "Esta acción no se puede deshacer. Se eliminarán permanentemente {{count}} VPN(s): {{names}}.",
       "confirmButton": "Eliminar {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Editar proxy rápido",
+      "formatLabel": "Formato de Proxy",
+      "formatPlaceholder": "type://user:pass@ip:port o ip:port",
+      "checkHostLabel": "Host de verificación de proxy",
+      "checkBeforeStart": "Verificar proxy antes de iniciar perfil.",
+      "checkButton": "Verificar Proxy",
+      "saveButton": "Editar Proxy"
     }
   },
   "groups": {

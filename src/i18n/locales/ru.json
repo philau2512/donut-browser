@@ -34,7 +34,8 @@
       "saving": "Сохраняем…",
       "saved": "Сохранено",
       "copied": "Скопировано",
-      "learnMore": "Подробнее"
+      "learnMore": "Подробнее",
+      "toggleTheme": "Переключить тему"
     },
     "status": {
       "active": "Активен",
@@ -563,6 +564,15 @@
       "vpnsTitle": "Удалить выбранные VPN",
       "vpnsDescription": "Это действие нельзя отменить. Будет безвозвратно удалено VPN: {{count}} — {{names}}.",
       "confirmButton": "Удалить {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Быстрое редактирование прокси",
+      "formatLabel": "Формат прокси",
+      "formatPlaceholder": "type://user:pass@ip:port или ip:port",
+      "checkHostLabel": "Хост проверки прокси",
+      "checkBeforeStart": "Проверять прокси перед запуском профиля.",
+      "checkButton": "Проверить прокси",
+      "saveButton": "Изменить прокси"
     }
   },
   "groups": {
