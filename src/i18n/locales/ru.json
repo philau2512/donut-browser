@@ -969,7 +969,9 @@
       "syncFailed": "Ошибка синхронизации",
       "profileSyncFailed": "Ошибка синхронизации профиля '{{name}}'",
       "cacheClearFailed": "Ошибка очистки кэша",
-      "unknown": "Произошла неизвестная ошибка"
+      "unknown": "Произошла неизвестная ошибка",
+      "profileCrashTitle": "Профиль '{{name}}' аварийно завершил работу",
+      "profileCrashDesc": "Браузер неожиданно завершил работу: {{status}}"
     },
     "loading": {
       "downloading": "Загрузка {{browser}} {{version}}",

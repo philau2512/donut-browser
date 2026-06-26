@@ -441,7 +441,7 @@ impl ProxyManager {
         password: exported.password,
       };
 
-      match self.create_stored_proxy(app_handle, exported.name.clone(), proxy_settings) {
+      match self.create_stored_proxy(app_handle, exported.name.clone(), proxy_settings, false) {
         Ok(proxy) => imported.push(proxy),
         Err(e) => {
           if e.contains("already exists") {
@@ -483,7 +483,7 @@ impl ProxyManager {
         password: parsed.password,
       };
 
-      match self.create_stored_proxy(app_handle, proxy_name.clone(), proxy_settings) {
+      match self.create_stored_proxy(app_handle, proxy_name.clone(), proxy_settings, false) {
         Ok(proxy) => imported.push(proxy),
         Err(e) => {
           if e.contains("already exists") {
@@ -503,6 +503,25 @@ impl ProxyManager {
     })
   }
 
+  pub async fn stop_proxy_for_profile(&self, profile_id: &str) {
+    let proxy_id = {
+      let mut map = self.profile_active_proxy_ids.lock().unwrap();
+      map.remove(profile_id)
+    };
+
+    if let Some(proxy_id) = proxy_id {
+      log::info!("Instantly stopping proxy worker {} for profile {}", proxy_id, profile_id);
+      
+      // Remove from active_proxies
+      {
+        let mut active = self.active_proxies.lock().unwrap();
+        active.retain(|_, info| info.id != proxy_id);
+      }
+
+      // Stop process
+      let _ = crate::proxy::proxy_runner::stop_proxy_process(&proxy_id).await;
+    }
+  }
 }
 
 include!("connection_lifecycle.rs");

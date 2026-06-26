@@ -969,7 +969,9 @@
       "syncFailed": "同期に失敗しました",
       "profileSyncFailed": "プロファイル '{{name}}' の同期に失敗しました",
       "cacheClearFailed": "キャッシュのクリアに失敗しました",
-      "unknown": "不明なエラーが発生しました"
+      "unknown": "不明なエラーが発生しました",
+      "profileCrashTitle": "プロファイル「{{name}}」がクラッシュしました",
+      "profileCrashDesc": "ブラウザが予期せず終了しました: {{status}}"
     },
     "loading": {
       "downloading": "{{browser}} {{version}} をダウンロード中",

@@ -969,7 +969,9 @@
       "syncFailed": "Sync failed",
       "profileSyncFailed": "Failed to sync profile '{{name}}'",
       "cacheClearFailed": "Failed to clear cache",
-      "unknown": "An unknown error occurred"
+      "unknown": "An unknown error occurred",
+      "profileCrashTitle": "Profile '{{name}}' crashed",
+      "profileCrashDesc": "Browser exited unexpectedly: {{status}}"
     },
     "loading": {
       "downloading": "Downloading {{browser}} {{version}}",

@@ -334,7 +334,7 @@ impl McpServer {
     };
 
     let proxy = PROXY_MANAGER
-      .create_stored_proxy(app_handle, name.to_string(), proxy_settings)
+      .create_stored_proxy(app_handle, name.to_string(), proxy_settings, false)
       .map_err(|e| McpError {
         code: -32000,
         message: format!("Failed to create proxy: {e}"),

@@ -85,6 +85,7 @@ impl ProxyManager {
     _app_handle: &tauri::AppHandle,
     name: String,
     proxy_settings: ProxySettings,
+    is_profile_specific: bool,
   ) -> Result<StoredProxy, String> {
     // Check if name already exists
     {
@@ -94,7 +95,8 @@ impl ProxyManager {
       }
     }
 
-    let stored_proxy = StoredProxy::new(name, proxy_settings);
+    let mut stored_proxy = StoredProxy::new(name, proxy_settings);
+    stored_proxy.is_profile_specific = is_profile_specific;
 
     {
       let mut stored_proxies = self.stored_proxies.lock().unwrap();
@@ -154,6 +156,7 @@ impl ProxyManager {
         updated_at: Some(now_secs()),
         is_cloud_managed: true,
         is_cloud_derived: false,
+        is_profile_specific: false,
         geo_country: None,
         geo_state: None,
         geo_region: None,
@@ -346,6 +349,7 @@ impl ProxyManager {
       updated_at: Some(now_secs()),
       is_cloud_managed: false,
       is_cloud_derived: true,
+      is_profile_specific: false,
       geo_country: Some(country),
       geo_state: None,
       geo_region: region,

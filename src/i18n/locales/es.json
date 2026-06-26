@@ -969,7 +969,9 @@
       "syncFailed": "Error de sincronización",
       "profileSyncFailed": "Error al sincronizar perfil '{{name}}'",
       "cacheClearFailed": "Error al limpiar caché",
-      "unknown": "Ocurrió un error desconocido"
+      "unknown": "Ocurrió un error desconocido",
+      "profileCrashTitle": "El perfil '{{name}}' se ha cerrado inesperadamente",
+      "profileCrashDesc": "El navegador se cerró inesperadamente: {{status}}"
     },
     "loading": {
       "downloading": "Descargando {{browser}} {{version}}",

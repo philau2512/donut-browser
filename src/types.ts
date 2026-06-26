@@ -162,6 +162,7 @@ export interface StoredProxy {
   last_sync?: number;
   is_cloud_managed?: boolean;
   is_cloud_derived?: boolean;
+  is_profile_specific?: boolean;
   geo_country?: string;
   geo_state?: string;
   geo_region?: string;

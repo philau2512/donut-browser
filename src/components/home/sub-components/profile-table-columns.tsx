@@ -3,14 +3,12 @@
 import { type ColumnDef, type RowData } from "@tanstack/react-table";
 import { invoke } from "@tauri-apps/api/core";
 import * as React from "react";
-import { FaApple, FaLinux, FaWindows } from "react-icons/fa";
 import { FiMoreVertical, FiWifi } from "react-icons/fi";
 import {
   LuCheck,
   LuChevronDown,
   LuChevronUp,
   LuPlay,
-  LuPlus,
   LuSquare,
 } from "react-icons/lu";
 import { Badge } from "@/components/ui/badge";
@@ -350,36 +348,17 @@ export function getProfileTableColumns(
         // Browser icon
         const BrowserIcon = getProfileIcon(profile);
 
-        // OS icon
-        const resolvedOs =
-          profile.host_os ||
-          profile.camoufox_config?.os ||
-          profile.wayfern_config?.os;
-        const OsIcon =
-          resolvedOs === "macos"
-            ? FaApple
-            : resolvedOs === "windows"
-              ? FaWindows
-              : FaLinux;
-
         // Chromium/Firefox version major
         const versionMajor = profile.version
           ? profile.version.split(".")[0]
           : "142";
 
-        // Flag info
-        const effectiveProxyId = profile.proxy_id;
-        const effectiveProxy = effectiveProxyId
-          ? meta.storedProxies.find((p) => p.id === effectiveProxyId)
-          : null;
-        const countryCode = effectiveProxy?.geo_country;
-
         return (
-          <div className="flex max-w-full min-w-0 items-center gap-3 overflow-hidden py-0.5">
+          <div className="flex w-full min-w-0 items-center gap-3 overflow-hidden py-0.5">
             <button
               type="button"
               className={cn(
-                "h-6 max-w-[200px] truncate rounded border-none bg-transparent px-2 py-1 text-left shrink-0",
+                "h-6 max-w-[240px] truncate rounded border-none bg-transparent px-2 py-1 text-left grow min-w-0",
                 "cursor-pointer hover:bg-accent/50 text-sm font-medium",
               )}
               onClick={() => {
@@ -391,71 +370,90 @@ export function getProfileTableColumns(
               <OverflowTooltipText text={name} className="text-left" />
             </button>
 
-            <div className="flex items-center gap-1.5 shrink-0 bg-secondary/50 border border-border px-2 py-0.5 rounded-md text-[10px] text-muted-foreground select-none">
+            <div className="flex items-center gap-1.5 shrink-0 bg-secondary/50 border border-border px-2 py-0.5 rounded-md text-[10px] text-muted-foreground select-none font-mono ml-auto mr-2">
               {/* Browser icon */}
               {BrowserIcon && (
                 <BrowserIcon className="size-3 text-foreground" />
               )}
+              {/* Version */}
+              <span>{versionMajor}</span>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "proxy",
+      size: 120,
+      header: ({ table }) => {
+        const meta = table.options.meta as TableMeta;
+        return meta.t("profiles.table.proxy");
+      },
+      cell: ({ row, table }) => {
+        const meta = table.options.meta as TableMeta;
+        const profile = row.original;
+        const effectiveProxyId = profile.proxy_id;
+        const effectiveProxy = effectiveProxyId
+          ? meta.storedProxies.find((p) => p.id === effectiveProxyId)
+          : null;
+        const vpnId = profile.vpn_id;
+        const effectiveVpn = vpnId
+          ? meta.vpnConfigs.find((v) => v.id === vpnId)
+          : null;
 
-              {/* OS and version */}
-              <div className="flex flex-col items-center justify-center leading-none size-4 select-none">
-                {OsIcon && <OsIcon className="size-2.5 text-foreground" />}
-                <span className="text-[7px] mt-0.5 scale-90">
-                  {versionMajor}
-                </span>
-              </div>
+        const hasProxy = !!effectiveProxyId || !!vpnId;
 
-              {/* Dotted connector */}
-              <span className="w-3 border-t border-dashed border-muted-foreground/30 mx-0.5" />
+        let proxyDisplay = "DIRECT";
+        if (effectiveVpn) {
+          proxyDisplay = `WG: ${effectiveVpn.name}`;
+        } else if (effectiveProxy) {
+          proxyDisplay = `${effectiveProxy.proxy_settings.host}:${effectiveProxy.proxy_settings.port}`;
+        }
 
-              {/* Flag icon */}
+        const countryCode = effectiveProxy?.geo_country;
+
+        return (
+          <div className="flex items-center gap-2 text-xs">
+            <button
+              type="button"
+              className={cn(
+                "flex items-center gap-1.5 px-2 py-0.5 rounded border border-border/50 transition-colors cursor-pointer",
+                hasProxy
+                  ? "bg-success/10 text-success border-success/30 hover:bg-success/20"
+                  : "bg-muted text-muted-foreground hover:bg-accent",
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                meta.onBulkProxyAssignment?.([profile.id]);
+              }}
+              title={proxyDisplay}
+            >
+              {/* Status Indicator Dot */}
+              <span
+                className={cn(
+                  "size-1.5 rounded-full shrink-0",
+                  hasProxy
+                    ? "bg-success animate-pulse"
+                    : "bg-muted-foreground/40",
+                )}
+              />
+
+              {/* Icon flag or wifi */}
               {countryCode ? (
-                <button
-                  type="button"
-                  className="size-3 cursor-pointer hover:opacity-80 transition-opacity border-none p-0 bg-transparent flex items-center justify-center shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    meta.onBulkProxyAssignment?.([profile.id]);
-                  }}
-                  title={countryCode}
-                >
-                  <span
-                    className={cn(
-                      "size-3 rounded-xs shrink-0 inline-block",
-                      getFlagIconClass(countryCode),
-                    )}
-                  />
-                </button>
+                <span
+                  className={cn(
+                    "size-3 rounded-xs shrink-0 inline-block",
+                    getFlagIconClass(countryCode),
+                  )}
+                />
               ) : (
-                <button
-                  type="button"
-                  className="size-3 hover:text-foreground flex items-center justify-center cursor-pointer transition-colors border-none p-0 bg-transparent text-muted-foreground/40"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    meta.onBulkProxyAssignment?.([profile.id]);
-                  }}
-                  title={meta.t("profiles.table.changeProxy")}
-                >
-                  <FiWifi className="size-3" />
-                </button>
+                <FiWifi className={cn("size-3", hasProxy && "text-success")} />
               )}
 
-              {/* Dotted connector */}
-              <span className="w-3 border-t border-dashed border-muted-foreground/30 mx-0.5" />
-
-              {/* Quick proxy change button */}
-              <button
-                type="button"
-                className="size-3.5 hover:bg-accent hover:text-foreground rounded flex items-center justify-center cursor-pointer transition-colors border-none p-0 bg-transparent text-muted-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  meta.onBulkProxyAssignment?.([profile.id]);
-                }}
-                title={meta.t("profiles.table.changeProxy")}
-              >
-                <LuPlus className="size-2.5" />
-              </button>
-            </div>
+              <span className="font-mono text-[10px] max-w-[80px] truncate">
+                {proxyDisplay}
+              </span>
+            </button>
           </div>
         );
       },

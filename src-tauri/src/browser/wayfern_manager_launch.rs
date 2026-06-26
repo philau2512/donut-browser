@@ -231,7 +231,7 @@ impl WayfernManager {
       .stdout(Stdio::null())
       .stderr(Stdio::null());
 
-    let child = command
+    let mut child = command
       .spawn()
       .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> {
         let hint = if e.raw_os_error() == Some(14001) {
@@ -243,7 +243,31 @@ impl WayfernManager {
         format!("Failed to spawn Wayfern: {e}{hint}").into()
       })?;
     let process_id = child.id();
-    drop(child);
+
+    let app_handle_exit = _app_handle.clone();
+    let profile_id_exit = profile.id.to_string();
+    let profile_name_exit = profile.name.clone();
+    tokio::spawn(async move {
+      let (exit_details, is_crash) = match child.wait().await {
+        Ok(status) => {
+          log::info!(
+            "Wayfern PID {:?} for {} exited with status: {:?}",
+            process_id,
+            profile_name_exit,
+            status
+          );
+          (format!("status={:?}", status), !status.success())
+        }
+        Err(e) => {
+          log::warn!("Failed to wait for Wayfern PID {:?} exit: {}", process_id, e);
+          (format!("wait_error={}", e), true)
+        }
+      };
+      let runner = BrowserRunner::instance();
+      if let Err(e) = runner.handle_profile_stopped(&app_handle_exit, &profile_id_exit, Some(&exit_details), is_crash).await {
+        log::warn!("Error running handle_profile_stopped for Wayfern {}: {e}", profile_name_exit);
+      }
+    });
 
     self.wait_for_cdp_ready(port).await?;
 

@@ -969,7 +969,9 @@
       "syncFailed": "同步失败",
       "profileSyncFailed": "配置文件 '{{name}}' 同步失败",
       "cacheClearFailed": "清除缓存失败",
-      "unknown": "发生未知错误"
+      "unknown": "发生未知错误",
+      "profileCrashTitle": "浏览器配置文件 '{{name}}' 异常崩溃",
+      "profileCrashDesc": "浏览器异常退出: {{status}}"
     },
     "loading": {
       "downloading": "正在下载 {{browser}} {{version}}",

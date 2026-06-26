@@ -106,11 +106,13 @@ export function NetworkSectionInline({
             <SelectItem value="__none__">
               {t("profileInfo.values.none")}
             </SelectItem>
-            {storedProxies.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
+            {storedProxies
+              .filter((p) => !p.is_profile_specific || p.id === proxyId)
+              .map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       </div>

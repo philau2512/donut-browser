@@ -969,7 +969,9 @@
       "syncFailed": "Échec de la synchronisation",
       "profileSyncFailed": "Échec de la synchronisation du profil '{{name}}'",
       "cacheClearFailed": "Échec de l'effacement du cache",
-      "unknown": "Une erreur inconnue s'est produite"
+      "unknown": "Une erreur inconnue s'est produite",
+      "profileCrashTitle": "Le profil '{{name}}' a planté",
+      "profileCrashDesc": "Le navigateur a quitté de manière inattendue : {{status}}"
     },
     "loading": {
       "downloading": "Téléchargement de {{browser}} {{version}}",

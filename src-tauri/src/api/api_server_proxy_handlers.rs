@@ -83,6 +83,7 @@ async fn create_proxy(
     &state.app_handle,
     request.name.clone(),
     request.proxy_settings,
+    false,
   );
 
   match result {

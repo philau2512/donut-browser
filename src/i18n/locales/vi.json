@@ -969,7 +969,9 @@
       "syncFailed": "Đồng bộ thất bại",
       "profileSyncFailed": "Đồng bộ profile '{{name}}' thất bại",
       "cacheClearFailed": "Xóa bộ nhớ đệm thất bại",
-      "unknown": "Đã xảy ra lỗi không xác định"
+      "unknown": "Đã xảy ra lỗi không xác định",
+      "profileCrashTitle": "Profile '{{name}}' đã bị tắt đột ngột",
+      "profileCrashDesc": "Trình duyệt tự thoát bất thường: {{status}}"
     },
     "loading": {
       "downloading": "Đang tải xuống {{browser}} {{version}}",

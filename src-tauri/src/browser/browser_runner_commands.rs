@@ -267,4 +267,7 @@ pub async fn open_url_with_profile(
 // Global singleton instance
 lazy_static::lazy_static! {
   static ref BROWSER_RUNNER: BrowserRunner = BrowserRunner::new();
+  pub static ref ACTIVE_RUNNING_STATES: std::sync::Mutex<std::collections::HashMap<String, bool>> =
+    std::sync::Mutex::new(std::collections::HashMap::new());
 }
+

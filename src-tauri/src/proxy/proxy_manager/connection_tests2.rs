@@ -296,6 +296,7 @@ mod tests2 {
       updated_at: None,
       is_cloud_managed: false,
       is_cloud_derived: false,
+      is_profile_specific: false,
       geo_country: Some("US".to_string()),
       geo_state: Some("california".to_string()),
       geo_region: None,

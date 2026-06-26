@@ -226,10 +226,16 @@ async fn create_stored_proxy(
   app_handle: tauri::AppHandle,
   name: String,
   proxy_settings: Option<crate::browser::ProxySettings>,
+  is_profile_specific: Option<bool>,
 ) -> Result<crate::proxy::proxy_manager::StoredProxy, String> {
   if let Some(settings) = proxy_settings {
     crate::proxy::proxy_manager::PROXY_MANAGER
-      .create_stored_proxy(&app_handle, name, settings)
+      .create_stored_proxy(
+        &app_handle,
+        name,
+        settings,
+        is_profile_specific.unwrap_or(false),
+      )
       .map_err(|e| format!("Failed to create stored proxy: {e}"))
   } else {
     Err("proxy_settings is required".to_string())

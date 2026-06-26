@@ -106,7 +106,12 @@ export function ProxyManagementDialog({
   const storedProxies = useMemo(
     () =>
       rawProxies
-        .filter((p) => !p.is_cloud_managed && !p.is_cloud_derived)
+        .filter(
+          (p) =>
+            !p.is_cloud_managed &&
+            !p.is_cloud_derived &&
+            !p.is_profile_specific,
+        )
         .sort((a, b) =>
           a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
         ),

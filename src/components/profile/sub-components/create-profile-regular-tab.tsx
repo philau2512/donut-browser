@@ -247,26 +247,32 @@ export function CreateProfileRegularTab({
                       />
                       {t("common.labels.none")}
                     </CommandItem>
-                    {storedProxies.map((proxy) => (
-                      <CommandItem
-                        key={proxy.id}
-                        value={proxy.name}
-                        onSelect={() => {
-                          setSelectedProxyId(proxy.id);
-                          setProxyPopoverOpen(false);
-                        }}
-                      >
-                        <LuCheck
-                          className={cn(
-                            "mr-2 size-4",
-                            selectedProxyId === proxy.id
-                              ? "opacity-100"
-                              : "opacity-0",
-                          )}
-                        />
-                        {proxy.name}
-                      </CommandItem>
-                    ))}
+                    {storedProxies
+                      .filter(
+                        (proxy) =>
+                          !proxy.is_profile_specific ||
+                          selectedProxyId === proxy.id,
+                      )
+                      .map((proxy) => (
+                        <CommandItem
+                          key={proxy.id}
+                          value={proxy.name}
+                          onSelect={() => {
+                            setSelectedProxyId(proxy.id);
+                            setProxyPopoverOpen(false);
+                          }}
+                        >
+                          <LuCheck
+                            className={cn(
+                              "mr-2 size-4",
+                              selectedProxyId === proxy.id
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                          {proxy.name}
+                        </CommandItem>
+                      ))}
                   </CommandGroup>
                   {vpnConfigs.length > 0 && (
                     <CommandGroup heading="VPNs">

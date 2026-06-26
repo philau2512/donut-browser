@@ -210,10 +210,10 @@ export function ProxyAssignmentDialog({
             },
           };
 
-          const newProxy = await invoke<StoredProxy>(
-            "create_stored_proxy",
-            payload,
-          );
+          const newProxy = await invoke<StoredProxy>("create_stored_proxy", {
+            ...payload,
+            isProfileSpecific: true,
+          });
           await invoke("update_profile_proxy", {
             profileId: profile.id,
             proxyId: newProxy.id,
@@ -244,10 +244,10 @@ export function ProxyAssignmentDialog({
           },
         };
 
-        const newProxy = await invoke<StoredProxy>(
-          "create_stored_proxy",
-          payload,
-        );
+        const newProxy = await invoke<StoredProxy>("create_stored_proxy", {
+          ...payload,
+          isProfileSpecific: true,
+        });
         for (const p of validProfiles) {
           await invoke("update_profile_proxy", {
             profileId: p.id,
@@ -278,10 +278,10 @@ export function ProxyAssignmentDialog({
             },
           };
 
-          const newProxy = await invoke<StoredProxy>(
-            "create_stored_proxy",
-            payload,
-          );
+          const newProxy = await invoke<StoredProxy>("create_stored_proxy", {
+            ...payload,
+            isProfileSpecific: true,
+          });
           for (const p of validProfiles) {
             await invoke("update_profile_proxy", {
               profileId: p.id,
@@ -514,7 +514,10 @@ export function ProxyAssignmentDialog({
                     </SelectItem>
                     {storedProxies
                       .filter(
-                        (px) => !px.is_cloud_managed && !px.is_cloud_derived,
+                        (px) =>
+                          !px.is_cloud_managed &&
+                          !px.is_cloud_derived &&
+                          !px.is_profile_specific,
                       )
                       .map((px) => (
                         <SelectItem

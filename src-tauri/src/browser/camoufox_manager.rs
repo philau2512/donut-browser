@@ -203,7 +203,7 @@ impl CamoufoxManager {
   #[allow(clippy::too_many_arguments)]
   pub async fn launch_camoufox(
     &self,
-    _app_handle: &AppHandle,
+    app_handle: &AppHandle,
     profile: &crate::profile::BrowserProfile,
     profile_path: &str,
     config: &CamoufoxConfig,
@@ -331,8 +331,11 @@ impl CamoufoxManager {
     // the log. Without this, all we see is "PID X is no longer running" via
     // the periodic sysinfo poll, with no clue why it died.
     let watch_profile_path = profile_path.to_string();
+    let app_handle_exit = app_handle.clone();
+    let profile_id_exit = profile.id.to_string();
+    let profile_name_exit = profile.name.clone();
     tokio::spawn(async move {
-      match child.wait().await {
+      let (exit_details, is_crash) = match child.wait().await {
         Ok(status) => {
           if status.success() {
             log::info!(
@@ -340,6 +343,7 @@ impl CamoufoxManager {
               process_id,
               watch_profile_path
             );
+            ("Clean exit".to_string(), false)
           } else {
             log::warn!(
               "Camoufox PID {:?} for {} exited abnormally: {}",
@@ -347,11 +351,28 @@ impl CamoufoxManager {
               watch_profile_path,
               status
             );
+            (format!("Abnormal exit: {}", status), true)
           }
         }
         Err(e) => {
           log::warn!("Failed to await Camoufox PID {:?} exit: {}", process_id, e);
+          (format!("wait_error={}", e), true)
         }
+      };
+      let runner = BrowserRunner::instance();
+      if let Err(e) = runner
+        .handle_profile_stopped(
+          &app_handle_exit,
+          &profile_id_exit,
+          Some(&exit_details),
+          is_crash,
+        )
+        .await
+      {
+        log::warn!(
+          "Error running handle_profile_stopped for Camoufox {}: {e}",
+          profile_name_exit
+        );
       }
     });
 

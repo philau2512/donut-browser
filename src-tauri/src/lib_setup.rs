@@ -503,6 +503,14 @@ fn setup_tauri_app(app: &mut tauri::App, startup_url: Option<String>) -> Result<
         interval.tick().await;
 
         let runner = crate::browser::browser_runner::BrowserRunner::instance();
+
+        // Sync local states with global active running states
+        if let Ok(states) = crate::browser::browser_runner::ACTIVE_RUNNING_STATES.lock() {
+          for (k, v) in states.iter() {
+            last_running_states.insert(k.clone(), *v);
+          }
+        }
+
         let profiles = match runner.profile_manager.list_profiles() {
           Ok(p) => p,
           Err(e) => {
@@ -573,51 +581,36 @@ fn setup_tauri_app(app: &mut tauri::App, startup_url: Option<String>) -> Result<
                   is_running
                 );
 
-                #[derive(serde::Serialize)]
-                struct RunningChangedPayload {
-                  id: String,
-                  is_running: bool,
-                }
-
-                let payload = RunningChangedPayload {
-                  id: profile_id.clone(),
-                  is_running,
-                };
-
-                if let Err(e) = events::emit("profile-running-changed", &payload) {
-                  log::warn!("Failed to emit profile running changed event: {e}");
-                } else {
-                  log::debug!(
-                    "Status checker emitted profile-running-changed event for {}: running={}",
-                    profile.name,
-                    is_running
-                  );
-                }
-
-                // Re-encrypt password-protected profiles when the browser
-                // exits naturally (user closing the window) — the explicit
-                // kill path in browser_runner.rs handles app-driven stops.
-                // Must run BEFORE `mark_profile_stopped` because that
-                // releases any queued sync run, and a sync that picks up
-                // the on-disk dir before re-encryption finishes uploads
-                // the previous snapshot (issue: encrypted profiles not
-                // syncing fresh data).
-                if !is_running && profile.password_protected {
-                  crate::profile::password::complete_after_quit_and_wait(&profile)
-                    .await;
-                }
-
-                // Notify sync scheduler of running state changes
-                if let Some(scheduler) = sync::get_global_scheduler() {
-                  if is_running {
-                    scheduler.mark_profile_running(&profile_id).await;
-                  } else {
-                    // Sync was queued at launch; mark_profile_stopped triggers it
-                    scheduler.mark_profile_stopped(&profile_id).await;
+                if is_running {
+                  if let Ok(mut states) = crate::browser::browser_runner::ACTIVE_RUNNING_STATES.lock() {
+                    states.insert(profile_id.clone(), true);
                   }
-                }
 
-                last_running_states.insert(profile_id, is_running);
+                  #[derive(serde::Serialize)]
+                  struct RunningChangedPayload {
+                    id: String,
+                    is_running: bool,
+                  }
+
+                  let payload = RunningChangedPayload {
+                    id: profile_id.clone(),
+                    is_running: true,
+                  };
+
+                  if let Err(e) = events::emit("profile-running-changed", &payload) {
+                    log::warn!("Failed to emit profile running changed event: {e}");
+                  }
+
+                  if let Some(scheduler) = sync::get_global_scheduler() {
+                    scheduler.mark_profile_running(&profile_id).await;
+                  }
+
+                  last_running_states.insert(profile_id.clone(), true);
+                } else {
+                  // Centralized stopped cleanup
+                  let _ = runner.handle_profile_stopped(&app_handle_status, &profile_id, Some("Detected by Status Checker poll"), false).await;
+                  last_running_states.insert(profile_id.clone(), false);
+                }
               } else {
                 // Update the state even if unchanged to ensure we have it tracked
                 last_running_states.insert(profile_id, is_running);

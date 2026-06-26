@@ -113,6 +113,8 @@ pub struct StoredProxy {
   #[serde(default)]
   pub is_cloud_derived: bool,
   #[serde(default)]
+  pub is_profile_specific: bool,
+  #[serde(default)]
   pub geo_country: Option<String>,
   // Legacy field kept for deserialization compat; mapped to geo_region on load
   #[serde(default)]
@@ -149,6 +151,7 @@ impl StoredProxy {
       updated_at: Some(now_secs()),
       is_cloud_managed: false,
       is_cloud_derived: false,
+      is_profile_specific: false,
       geo_country: None,
       geo_state: None,
       geo_region: None,
