@@ -429,4 +429,8 @@ impl SyncEngine {
 }
 
 include!("profile.rs");
+include!("profile_files.rs");
+include!("profile_missing.rs");
 include!("configs.rs");
+include!("configs_commands.rs");
+include!("configs_commands2.rs");
