@@ -46,8 +46,8 @@ use profile::manager::{
   check_browser_status, clone_profile, create_browser_profile_new, delete_profile,
   list_browser_profiles, rename_profile, update_camoufox_config, update_profile_dns_blocklist,
   update_profile_launch_hook, update_profile_note, update_profile_proxy,
-  update_profile_proxy_bypass_rules, update_profile_tags, update_profile_vpn,
-  update_wayfern_config,
+  update_profile_proxy_bypass_rules, update_profile_status, update_profile_tags,
+  update_profile_vpn, update_wayfern_config,
 };
 
 use profile::password::{
@@ -84,6 +84,7 @@ use sync::{
   verify_e2e_password,
 };
 
+use profile::profile_status_manager::{get_profile_statuses, save_profile_statuses};
 use profile::tag_manager::{delete_tag, get_all_tags};
 
 use browser::default_browser::{is_default_browser, set_as_default_browser};

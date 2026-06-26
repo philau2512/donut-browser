@@ -295,7 +295,6 @@
       "confirmButton": "Excluir {{count}} perfil(is)"
     },
     "note": {
-      "empty": "Sem nota",
       "placeholder": "Adicionar uma nota..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "Mais antigos primeiro"
     },
     "status": {
-      "ready": "Pronto",
-      "running": "Executando",
-      "launching": "Iniciando",
-      "stopping": "Parando",
-      "noStatus": "Sem status"
+      "noStatus": "Sem status",
+      "setting": "Configuração de Status",
+      "addStatus": "Adicionar Status",
+      "labelPlaceholder": "Rótulo do status...",
+      "manageTitle": "Gerenciar Status"
     },
     "menu": {
       "rename": "Renomear",

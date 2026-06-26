@@ -11,7 +11,6 @@ import {
   LuPlay,
   LuSquare,
 } from "react-icons/lu";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -34,6 +33,7 @@ import type {
   BrowserProfile,
   ExtensionGroup,
   LocationItem,
+  ProfileStatusConfig,
   ProxyCheckResult,
   StoredProxy,
   SyncSessionInfo,
@@ -42,6 +42,7 @@ import type {
 } from "@/types";
 import { NoteCell } from "./note-cell";
 import { OverflowTooltipText } from "./overflow-tooltip";
+import { StatusCell } from "./status-cell";
 import { TagsCell } from "./tags-cell";
 
 declare module "@tanstack/react-table" {
@@ -80,6 +81,16 @@ export interface TableMeta {
   openNoteEditorFor: string | null;
   setOpenNoteEditorFor: React.Dispatch<React.SetStateAction<string | null>>;
   setNoteOverrides: React.Dispatch<
+    React.SetStateAction<Record<string, string | null>>
+  >;
+
+  // Status state
+  profileStatuses: ProfileStatusConfig[];
+  statusOverrides: Record<string, string | null>;
+  setProfileStatuses: React.Dispatch<
+    React.SetStateAction<ProfileStatusConfig[]>
+  >;
+  setStatusOverrides: React.Dispatch<
     React.SetStateAction<Record<string, string | null>>
   >;
 
@@ -348,9 +359,6 @@ export function getProfileTableColumns(
           );
         }
 
-        // Browser icon
-        const BrowserIcon = getProfileIcon(profile);
-
         return (
           <div className="flex w-full min-w-0 items-center overflow-hidden py-0.5">
             <button
@@ -564,7 +572,7 @@ export function getProfileTableColumns(
     },
     {
       id: "status",
-      size: 90,
+      size: 110,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
         return meta.t("profiles.table.status");
@@ -572,41 +580,16 @@ export function getProfileTableColumns(
       cell: ({ row, table }) => {
         const meta = table.options.meta as TableMeta;
         const profile = row.original;
-        const isRunning = meta.isClient && meta.runningProfiles.has(profile.id);
-        const isLaunching = meta.launchingProfiles.has(profile.id);
-        const isStopping = meta.stoppingProfiles.has(profile.id);
-
-        let statusText = meta.t("profiles.status.ready");
-        let statusStyle = "bg-success/15 text-success border border-success/30";
-
-        if (isRunning) {
-          statusText = meta.t("profiles.status.running");
-          statusStyle =
-            "bg-blue-500/15 text-blue-500 border border-blue-500/30";
-        } else if (isLaunching) {
-          statusText = meta.t("profiles.status.launching");
-          statusStyle =
-            "bg-warning/15 text-warning border border-warning/30 animate-pulse";
-        } else if (isStopping) {
-          statusText = meta.t("profiles.status.stopping");
-          statusStyle =
-            "bg-destructive/15 text-destructive border border-destructive/30";
-        } else if (!profile.last_launch) {
-          statusText = meta.t("profiles.status.noStatus");
-          statusStyle = "bg-muted text-muted-foreground border border-border";
-        }
-
+        const isLocked = meta.isProfileLockedByAnother(profile.id);
         return (
-          <div className="flex justify-center">
-            <Badge
-              className={cn(
-                "px-2 py-0.5 rounded-sm text-[10px] font-medium shadow-none select-none",
-                statusStyle,
-              )}
-            >
-              {statusText}
-            </Badge>
-          </div>
+          <StatusCell
+            profile={profile}
+            isDisabled={isLocked}
+            profileStatuses={meta.profileStatuses}
+            statusOverrides={meta.statusOverrides}
+            setStatusOverrides={meta.setStatusOverrides}
+            setProfileStatuses={meta.setProfileStatuses}
+          />
         );
       },
     },

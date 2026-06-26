@@ -41,6 +41,12 @@ export interface BrowserProfile {
   created_at?: number;
   dns_blocklist?: string;
   password_protected?: boolean;
+  profile_status?: string | null; // User-assigned status label, null = "No Status"
+}
+
+export interface ProfileStatusConfig {
+  label: string;
+  color: string; // hex color e.g. "#ef4444"
 }
 
 export interface Extension {

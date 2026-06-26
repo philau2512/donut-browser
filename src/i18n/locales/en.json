@@ -295,7 +295,6 @@
       "confirmButton": "Delete {{count}} Profile(s)"
     },
     "note": {
-      "empty": "No Note",
       "placeholder": "Add a note..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "Oldest first"
     },
     "status": {
-      "ready": "Ready",
-      "running": "Running",
-      "launching": "Launching",
-      "stopping": "Stopping",
-      "noStatus": "No Status"
+      "noStatus": "No Status",
+      "setting": "Status Setting",
+      "addStatus": "Add Status",
+      "labelPlaceholder": "Status label...",
+      "manageTitle": "Manage Statuses"
     },
     "menu": {
       "rename": "Rename",

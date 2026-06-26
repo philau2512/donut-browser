@@ -157,6 +157,36 @@ impl ProfileManager {
     Ok(profile)
   }
 
+  pub fn update_profile_status(
+    &self,
+    _app_handle: &tauri::AppHandle,
+    profile_id: &str,
+    profile_status: Option<String>,
+  ) -> Result<BrowserProfile, Box<dyn std::error::Error>> {
+    let profile_uuid =
+      uuid::Uuid::parse_str(profile_id).map_err(|_| format!("Invalid profile ID: {profile_id}"))?;
+    let profiles = self.list_profiles()?;
+    let mut profile = profiles
+      .into_iter()
+      .find(|p| p.id == profile_uuid)
+      .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
+
+    profile.profile_status = profile_status
+      .map(|s| s.trim().to_string())
+      .filter(|s| !s.is_empty());
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
+
+    self.save_profile(&profile)?;
+
+    crate::sync::queue_profile_sync_if_eligible(&profile);
+
+    if let Err(e) = events::emit_empty("profiles-changed") {
+      log::warn!("Warning: Failed to emit profiles-changed event: {e}");
+    }
+
+    Ok(profile)
+  }
+
   pub fn update_profile_launch_hook(
     &self,
     _app_handle: &tauri::AppHandle,
@@ -399,6 +429,7 @@ impl ProfileManager {
           .unwrap_or(0),
       ),
       updated_at: Some(crate::proxy::proxy_manager::now_secs()),
+      profile_status: None,
     };
 
     // Donut: a clone must NOT be linkable to its source. The source

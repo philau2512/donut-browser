@@ -295,7 +295,6 @@
       "confirmButton": "Eliminar {{count}} perfil(es)"
     },
     "note": {
-      "empty": "Sin nota",
       "placeholder": "Añadir una nota..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "Más antiguos primero"
     },
     "status": {
-      "ready": "Listo",
-      "running": "Ejecutando",
-      "launching": "Iniciando",
-      "stopping": "Deteniendo",
-      "noStatus": "Sin estado"
+      "noStatus": "Sin estado",
+      "setting": "Configuración de Estado",
+      "addStatus": "Agregar Estado",
+      "labelPlaceholder": "Etiqueta de estado...",
+      "manageTitle": "Gestionar Estados"
     },
     "menu": {
       "rename": "Renombrar",

@@ -295,7 +295,6 @@
       "confirmButton": "Удалить {{count}} профил(ей)"
     },
     "note": {
-      "empty": "Нет заметки",
       "placeholder": "Добавить заметку..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "Сначала старые"
     },
     "status": {
-      "ready": "Готов",
-      "running": "Запущен",
-      "launching": "Запуск...",
-      "stopping": "Остановка...",
-      "noStatus": "Нет статуса"
+      "noStatus": "Нет статуса",
+      "setting": "Настройка статуса",
+      "addStatus": "Добавить статус",
+      "labelPlaceholder": "Метка статуса...",
+      "manageTitle": "Управление статусами"
     },
     "menu": {
       "rename": "Переименовать",

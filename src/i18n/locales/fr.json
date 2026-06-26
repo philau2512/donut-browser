@@ -295,7 +295,6 @@
       "confirmButton": "Supprimer {{count}} profil(s)"
     },
     "note": {
-      "empty": "Pas de note",
       "placeholder": "Ajouter une note..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "Plus anciens d’abord"
     },
     "status": {
-      "ready": "Prêt",
-      "running": "En cours",
-      "launching": "Lancement",
-      "stopping": "Arrêt en cours",
-      "noStatus": "Aucun statut"
+      "noStatus": "Aucun statut",
+      "setting": "Paramètres de Statut",
+      "addStatus": "Ajouter un Statut",
+      "labelPlaceholder": "Libellé du statut...",
+      "manageTitle": "Gérer les Statuts"
     },
     "menu": {
       "rename": "Renommer",

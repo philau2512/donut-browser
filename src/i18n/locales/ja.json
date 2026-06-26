@@ -295,7 +295,6 @@
       "confirmButton": "{{count}} 個のプロファイルを削除"
     },
     "note": {
-      "empty": "メモなし",
       "placeholder": "メモを追加..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "古い順"
     },
     "status": {
-      "ready": "準備完了",
-      "running": "実行中",
-      "launching": "起動中",
-      "stopping": "停止中",
-      "noStatus": "ステータスなし"
+      "noStatus": "ステータスなし",
+      "setting": "ステータス設定",
+      "addStatus": "ステータスを追加",
+      "labelPlaceholder": "ステータスラベル...",
+      "manageTitle": "ステータスを管理"
     },
     "menu": {
       "rename": "名前変更",

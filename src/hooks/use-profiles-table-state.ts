@@ -13,6 +13,7 @@ import type {
   BrowserProfile,
   ExtensionGroup,
   LocationItem,
+  ProfileStatusConfig,
   ProxyCheckResult,
   StoredProxy,
   TrafficSnapshot,
@@ -176,6 +177,12 @@ export function useProfilesTableState({
   const [openNoteEditorFor, setOpenNoteEditorFor] = React.useState<
     string | null
   >(null);
+  const [profileStatuses, setProfileStatuses] = React.useState<
+    ProfileStatusConfig[]
+  >([]);
+  const [statusOverrides, setStatusOverrides] = React.useState<
+    Record<string, string | null>
+  >({});
   const [trafficSnapshots, setTrafficSnapshots] = React.useState<
     Record<string, TrafficSnapshot>
   >({});
@@ -265,6 +272,17 @@ export function useProfilesTableState({
       setAllTags(tags);
     } catch (error) {
       console.error("Failed to load tags:", error);
+    }
+  }, []);
+
+  const loadProfileStatuses = React.useCallback(async () => {
+    try {
+      const statuses = await invoke<ProfileStatusConfig[]>(
+        "get_profile_statuses",
+      );
+      setProfileStatuses(statuses);
+    } catch (error) {
+      console.error("Failed to load profile statuses:", error);
     }
   }, []);
 
@@ -616,6 +634,12 @@ export function useProfilesTableState({
     }
   }, [browserState.isClient, loadAllTags]);
 
+  React.useEffect(() => {
+    if (browserState.isClient) {
+      void loadProfileStatuses();
+    }
+  }, [browserState.isClient, loadProfileStatuses]);
+
   const handleCheckboxChange = React.useCallback(
     (profileId: string, checked: boolean) => {
       const newSet = new Set(selectedProfiles);
@@ -729,6 +753,10 @@ export function useProfilesTableState({
     setNoteOverrides,
     openNoteEditorFor,
     setOpenNoteEditorFor,
+    profileStatuses,
+    setProfileStatuses,
+    statusOverrides,
+    setStatusOverrides,
     trafficSnapshots,
     trafficDialogProfile,
     setTrafficDialogProfile,

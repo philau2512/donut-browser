@@ -203,6 +203,7 @@ impl ProfileManager {
           password_protected: false,
           created_at: None,
           updated_at: None,
+          profile_status: None,
         };
 
         match self
@@ -307,6 +308,7 @@ impl ProfileManager {
           password_protected: false,
           created_at: None,
           updated_at: None,
+          profile_status: None,
         };
 
         match self
@@ -385,6 +387,7 @@ impl ProfileManager {
           .unwrap_or(0),
       ),
       updated_at: Some(crate::proxy::proxy_manager::now_secs()),
+      profile_status: None,
     };
 
     // Save profile info

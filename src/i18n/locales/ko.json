@@ -295,7 +295,6 @@
       "confirmButton": "{{count}}개 프로필 삭제"
     },
     "note": {
-      "empty": "메모 없음",
       "placeholder": "메모 추가..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "오래된순"
     },
     "status": {
-      "ready": "준비 완료",
-      "running": "실행 중",
-      "launching": "시작 중",
-      "stopping": "중지 중",
-      "noStatus": "상태 없음"
+      "noStatus": "상태 없음",
+      "setting": "상태 설정",
+      "addStatus": "상태 추가",
+      "labelPlaceholder": "상태 레이블...",
+      "manageTitle": "상태 관리"
     },
     "menu": {
       "rename": "이름 바꾸기",

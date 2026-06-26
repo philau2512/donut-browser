@@ -94,6 +94,18 @@ pub fn update_profile_note(
     .map_err(|e| format!("Failed to update profile note: {e}"))
 }
 
+#[tauri::command]
+pub fn update_profile_status(
+  app_handle: tauri::AppHandle,
+  profile_id: String,
+  profile_status: Option<String>,
+) -> Result<BrowserProfile, String> {
+  let profile_manager = ProfileManager::instance();
+  profile_manager
+    .update_profile_status(&app_handle, &profile_id, profile_status)
+    .map_err(|e| format!("Failed to update profile status: {e}"))
+}
+
 /// Validate a launch hook value. Returns `Ok(None)` for "clear the hook"
 /// (`None`, empty, or whitespace-only), `Ok(Some(_))` for a valid http(s)
 /// URL, or `Err` with the `INVALID_LAUNCH_HOOK_URL` code payload.

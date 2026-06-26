@@ -295,7 +295,6 @@
       "confirmButton": "Xóa {{count}} hồ sơ"
     },
     "note": {
-      "empty": "Không có ghi chú",
       "placeholder": "Thêm ghi chú..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "Cũ nhất trước"
     },
     "status": {
-      "ready": "Sẵn sàng",
-      "running": "Đang chạy",
-      "launching": "Đang khởi động",
-      "stopping": "Đang dừng",
-      "noStatus": "Không có trạng thái"
+      "noStatus": "Không có trạng thái",
+      "setting": "Cài đặt trạng thái",
+      "addStatus": "Thêm trạng thái",
+      "labelPlaceholder": "Nhãn trạng thái...",
+      "manageTitle": "Quản lý trạng thái"
     },
     "menu": {
       "rename": "Đổi tên",

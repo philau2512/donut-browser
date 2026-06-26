@@ -295,7 +295,6 @@
       "confirmButton": "删除 {{count}} 个配置文件"
     },
     "note": {
-      "empty": "无备注",
       "placeholder": "添加备注..."
     },
     "aria": {
@@ -348,11 +347,11 @@
       "oldest": "最早优先"
     },
     "status": {
-      "ready": "准备就绪",
-      "running": "运行中",
-      "launching": "启动中",
-      "stopping": "停止中",
-      "noStatus": "无状态"
+      "noStatus": "无状态",
+      "setting": "状态设置",
+      "addStatus": "添加状态",
+      "labelPlaceholder": "状态标签...",
+      "manageTitle": "管理状态"
     },
     "menu": {
       "rename": "重命名",

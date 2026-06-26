@@ -84,6 +84,9 @@ pub struct BrowserProfile {
   /// NOT bumped by browser-file changes, which sync via the file manifest.
   #[serde(default)]
   pub updated_at: Option<u64>,
+  /// User-assigned profile status label (e.g. "Ban", "Ready", "New"). None = "No Status".
+  #[serde(default)]
+  pub profile_status: Option<String>,
 }
 
 pub fn default_release_type() -> String {
