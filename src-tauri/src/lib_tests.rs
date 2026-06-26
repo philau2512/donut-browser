@@ -31,9 +31,7 @@ mod tests {
       "cloud_refresh_wayfern_token",
       "lock_profile",
     ];
-
-    // Extract command names from the generate_handler! macro in this file
-    let lib_rs_content = fs::read_to_string("src/lib.rs").expect("Failed to read lib.rs");
+    let lib_rs_content = fs::read_to_string("src/lib_run.rs").expect("Failed to read lib_run.rs");
     let commands = extract_tauri_commands(&lib_rs_content);
 
     // Get all frontend files

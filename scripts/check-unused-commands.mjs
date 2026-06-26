@@ -113,11 +113,11 @@ function isCommandUsed(fileContents, command) {
 function main() {
   console.log("🔍 Checking for unused Tauri commands...");
   try {
-    const libRsPath = path.resolve('src-tauri/src/lib.rs');
+    const libRunRsPath = path.resolve('src-tauri/src/lib_run.rs');
     const srcDir = path.resolve('src');
 
-    const commands = extractTauriCommands(libRsPath);
-    console.log(`Found ${commands.length} registered Tauri commands in lib.rs`);
+    const commands = extractTauriCommands(libRunRsPath);
+    console.log(`Found ${commands.length} registered Tauri commands in lib_run.rs`);
 
     const frontendFiles = getFrontendFiles(srcDir);
     console.log(`Scanning ${frontendFiles.length} frontend files in src/...`);
