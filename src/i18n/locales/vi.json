@@ -2125,5 +2125,16 @@
     "title": "Hỗ trợ Camoufox sắp kết thúc",
     "description": "Hỗ trợ cho các profile Camoufox sẽ kết thúc vào ngày 8 tháng 7 năm 2026. Bạn có một hoặc nhiều profile Camoufox. Hãy chuyển chúng sang Wayfern trước thời điểm đó — sau ngày này, các profile Camoufox có thể ngừng hoạt động.",
     "acknowledge": "Đã hiểu"
+  },
+  "tags": {
+    "title": "Thẻ",
+    "assignSuccess": "Đã thêm thẻ thành công cho {{count}} hồ sơ",
+    "failed": "Không thể gán thẻ: {{error}}",
+    "placeholder": "Chọn hoặc tạo thẻ...",
+    "description_one": "Gán thẻ cho hồ sơ đã chọn.",
+    "description_other": "Gán thẻ cho {{count}} hồ sơ đã chọn.",
+    "selectedProfilesLabel": "Hồ sơ đã chọn",
+    "assignTagsLabel": "Gán thẻ",
+    "assignButton": "Thêm"
   }
 }

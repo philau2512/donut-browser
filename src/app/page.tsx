@@ -302,6 +302,9 @@ export default function Home() {
     proxyAssignmentDialogOpen,
     setProxyAssignmentDialogOpen,
     selectedProfilesForProxy,
+    tagsAssignmentDialogOpen,
+    setTagsAssignmentDialogOpen,
+    selectedProfilesForTags,
     cookieCopyDialogOpen,
     setCookieCopyDialogOpen,
     selectedProfilesForCookies,
@@ -350,6 +353,9 @@ export default function Home() {
     handleBulkProxyAssignment,
     handleBulkExtensionGroupAssignment,
     handleBulkCopyCookies,
+    handleAssignTagsToProfiles,
+    handleTagsAssignmentComplete,
+    handleBulkTagsAssignment,
     handleBulkRun,
     handleBulkStop,
     handleOpenProfileSyncDialog,
@@ -642,6 +648,8 @@ export default function Home() {
                 onBulkDelete={handleBulkDelete}
                 onBulkGroupAssignment={handleBulkGroupAssignment}
                 onBulkProxyAssignment={handleBulkProxyAssignment}
+                onBulkTagsAssignment={handleBulkTagsAssignment}
+                onAssignTags={handleAssignTagsToProfiles}
                 onQuickProxyEdit={setQuickProxyEditProfile}
                 onBulkCopyCookies={handleBulkCopyCookies}
                 onBulkRun={handleBulkRun}
@@ -791,6 +799,9 @@ export default function Home() {
         groupAssignmentDialogOpen={groupAssignmentDialogOpen}
         setGroupAssignmentDialogOpen={setGroupAssignmentDialogOpen}
         selectedProfilesForGroup={selectedProfilesForGroup}
+        tagsAssignmentDialogOpen={tagsAssignmentDialogOpen}
+        setTagsAssignmentDialogOpen={setTagsAssignmentDialogOpen}
+        selectedProfilesForTags={selectedProfilesForTags}
         extensionGroupAssignmentDialogOpen={extensionGroupAssignmentDialogOpen}
         setExtensionGroupAssignmentDialogOpen={
           setExtensionGroupAssignmentDialogOpen
@@ -854,6 +865,7 @@ export default function Home() {
           handleExtensionGroupAssignmentComplete
         }
         handleProxyAssignmentComplete={handleProxyAssignmentComplete}
+        handleTagsAssignmentComplete={handleTagsAssignmentComplete}
         handlePendingBulkActionConfirm={handlePendingBulkActionConfirm}
         isBulkActing={isBulkActing}
         confirmBulkDelete={confirmBulkDelete}

@@ -143,6 +143,7 @@ export interface TableMeta {
   onOpenCookieManagement?: (profile: BrowserProfile) => void;
   onBulkProxyAssignment?: (profileIds: string[]) => void;
   onQuickProxyEdit?: (profile: BrowserProfile) => void;
+  onAssignTags?: (profileIds: string[]) => void;
   onDeleteProfile?: (profile: BrowserProfile) => void;
   setProfileForInfoDialog: (profile: BrowserProfile | null) => void;
 
@@ -482,11 +483,7 @@ export function getProfileTableColumns(
             profile={profile}
             isDisabled={isDisabled}
             tagsOverrides={meta.tagsOverrides ?? {}}
-            allTags={meta.allTags ?? []}
-            setAllTags={meta.setAllTags}
-            openTagsEditorFor={meta.openTagsEditorFor ?? null}
-            setOpenTagsEditorFor={meta.setOpenTagsEditorFor}
-            setTagsOverrides={meta.setTagsOverrides}
+            onAssignTags={meta.onAssignTags}
           />
         );
       },

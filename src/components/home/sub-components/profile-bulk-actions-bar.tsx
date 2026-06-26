@@ -9,6 +9,7 @@ import {
   LuPlay,
   LuPuzzle,
   LuSquare,
+  LuTag,
   LuTrash2,
   LuUsers,
 } from "react-icons/lu";
@@ -32,6 +33,7 @@ interface ProfileBulkActionsBarProps {
   onBulkGroupAssignment?: () => void;
   onBulkExtensionGroupAssignment?: () => void;
   onBulkSync?: () => void;
+  onBulkTagsAssignment?: () => void;
 }
 
 export function ProfileBulkActionsBar({
@@ -45,6 +47,7 @@ export function ProfileBulkActionsBar({
   onBulkGroupAssignment,
   onBulkExtensionGroupAssignment,
   onBulkSync,
+  onBulkTagsAssignment,
 }: ProfileBulkActionsBarProps) {
   const { t } = useTranslation();
 
@@ -198,6 +201,15 @@ export function ProfileBulkActionsBar({
             >
               <LuPuzzle className="mr-2 size-4" />
               {t("profiles.actionBar.assignExtensionGroup")}
+            </DropdownMenuItem>
+          )}
+          {onBulkTagsAssignment && (
+            <DropdownMenuItem
+              onClick={onBulkTagsAssignment}
+              className="cursor-pointer"
+            >
+              <LuTag className="mr-2 size-4" />
+              {t("tags.title")}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

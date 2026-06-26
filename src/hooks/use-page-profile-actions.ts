@@ -67,6 +67,12 @@ export function usePageProfileActions({
     string[]
   >([]);
 
+  const [tagsAssignmentDialogOpen, setTagsAssignmentDialogOpen] =
+    useState(false);
+  const [selectedProfilesForTags, setSelectedProfilesForTags] = useState<
+    string[]
+  >([]);
+
   const [cookieCopyDialogOpen, setCookieCopyDialogOpen] = useState(false);
   const [selectedProfilesForCookies, setSelectedProfilesForCookies] = useState<
     string[]
@@ -450,6 +456,21 @@ export function usePageProfileActions({
     setCookieCopyDialogOpen(true);
   }, [selectedProfiles]);
 
+  const handleAssignTagsToProfiles = useCallback((profileIds: string[]) => {
+    setSelectedProfilesForTags(profileIds);
+    setTagsAssignmentDialogOpen(true);
+  }, []);
+
+  const handleTagsAssignmentComplete = useCallback(() => {
+    setTagsAssignmentDialogOpen(false);
+    setSelectedProfilesForTags([]);
+    setSelectedProfiles([]);
+  }, []);
+
+  const handleBulkTagsAssignment = useCallback(() => {
+    handleAssignTagsToProfiles(selectedProfiles);
+  }, [selectedProfiles, handleAssignTagsToProfiles]);
+
   const executeBulkRun = useCallback(
     async (profilesToRun: BrowserProfile[]) => {
       setIsBulkActing(true);
@@ -601,6 +622,9 @@ export function usePageProfileActions({
     proxyAssignmentDialogOpen,
     setProxyAssignmentDialogOpen,
     selectedProfilesForProxy,
+    tagsAssignmentDialogOpen,
+    setTagsAssignmentDialogOpen,
+    selectedProfilesForTags,
     cookieCopyDialogOpen,
     setCookieCopyDialogOpen,
     selectedProfilesForCookies,
@@ -650,6 +674,9 @@ export function usePageProfileActions({
     handleBulkProxyAssignment,
     handleBulkExtensionGroupAssignment,
     handleBulkCopyCookies,
+    handleAssignTagsToProfiles,
+    handleTagsAssignmentComplete,
+    handleBulkTagsAssignment,
     handleBulkRun,
     handleBulkStop,
     handleOpenProfileSyncDialog,

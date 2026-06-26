@@ -2125,5 +2125,16 @@
     "title": "Camoufox support is ending",
     "description": "Support for Camoufox profiles is ending on July 8, 2026. You have one or more Camoufox profiles. Please migrate them to Wayfern before then — after that date, Camoufox profiles may stop working.",
     "acknowledge": "Got it"
+  },
+  "tags": {
+    "title": "Tags",
+    "assignSuccess": "Successfully added tags to {{count}} profile(s)",
+    "failed": "Failed to assign tags: {{error}}",
+    "placeholder": "Select or create tags...",
+    "description_one": "Assign tags to the selected profile.",
+    "description_other": "Assign tags to the {{count}} selected profiles.",
+    "selectedProfilesLabel": "Selected Profiles",
+    "assignTagsLabel": "Assign Tags",
+    "assignButton": "Add"
   }
 }

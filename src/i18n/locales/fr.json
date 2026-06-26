@@ -2125,5 +2125,16 @@
     "title": "La prise en charge de Camoufox prend fin",
     "description": "La prise en charge des profils Camoufox prendra fin le 8 juillet 2026. Vous avez un ou plusieurs profils Camoufox. Migrez-les vers Wayfern avant cette date — après quoi, les profils Camoufox pourraient cesser de fonctionner.",
     "acknowledge": "Compris"
+  },
+  "tags": {
+    "title": "Tags",
+    "assignSuccess": "Tags ajoutés avec succès à {{count}} profil(s)",
+    "failed": "Échec de l'attribution des tags : {{error}}",
+    "placeholder": "Sélectionner ou créer des tags...",
+    "description_one": "Attribuer des tags au profil sélectionné.",
+    "description_other": "Attribuer des tags aux {{count}} profils sélectionnés.",
+    "selectedProfilesLabel": "Profils sélectionnés",
+    "assignTagsLabel": "Attribuer des tags",
+    "assignButton": "Ajouter"
   }
 }

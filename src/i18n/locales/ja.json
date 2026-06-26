@@ -2125,5 +2125,16 @@
     "title": "Camoufox のサポートが終了します",
     "description": "Camoufox プロファイルのサポートは 2026 年 7 月 8 日に終了します。Camoufox プロファイルが 1 つ以上あります。それまでに Wayfern へ移行してください。その後、Camoufox プロファイルは動作しなくなる可能性があります。",
     "acknowledge": "了解しました"
+  },
+  "tags": {
+    "title": "タグ",
+    "assignSuccess": "{{count}}個のプロファイルにタグが正常に追加されました",
+    "failed": "タグの割り当てに失敗しました: {{error}}",
+    "placeholder": "タグの選択または作成...",
+    "description_one": "選択したプロファイルにタグを割り当てます。",
+    "description_other": "選択した{{count}}個のプロファイルにタグを割り当てます。",
+    "selectedProfilesLabel": "選択されたプロファイル",
+    "assignTagsLabel": "タグの割り当て",
+    "assignButton": "追加"
   }
 }

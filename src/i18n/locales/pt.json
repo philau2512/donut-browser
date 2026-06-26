@@ -2125,5 +2125,16 @@
     "title": "O suporte ao Camoufox está terminando",
     "description": "O suporte aos perfis do Camoufox terminará em 8 de julho de 2026. Você tem um ou mais perfis do Camoufox. Migre-os para o Wayfern antes dessa data — depois disso, os perfis do Camoufox podem parar de funcionar.",
     "acknowledge": "Entendi"
+  },
+  "tags": {
+    "title": "Tags",
+    "assignSuccess": "Tags adicionadas com sucesso a {{count}} perfil(is)",
+    "failed": "Falha ao atribuir tags: {{error}}",
+    "placeholder": "Selecionar ou criar tags...",
+    "description_one": "Atribuir tags ao perfil selecionado.",
+    "description_other": "Atribuir tags aos {{count}} perfis selecionados.",
+    "selectedProfilesLabel": "Perfis selecionados",
+    "assignTagsLabel": "Atribuir tags",
+    "assignButton": "Adicionar"
   }
 }

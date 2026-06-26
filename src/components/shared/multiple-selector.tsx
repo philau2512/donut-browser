@@ -334,7 +334,17 @@ const MultipleSelector = React.forwardRef<
               return;
             }
             setInputValue("");
-            const newOptions = [...selected, { value, label: value }];
+            const values = value.includes(",")
+              ? value
+                  .split(",")
+                  .map((v) => v.trim())
+                  .filter((v) => v.length > 0)
+              : [value];
+            const newAddedOptions = values.map((v) => ({ value: v, label: v }));
+            const filteredNewAdded = newAddedOptions.filter(
+              (newOpt) => !selected.some((s) => s.value === newOpt.value),
+            );
+            const newOptions = [...selected, ...filteredNewAdded];
             setSelected(newOptions);
             onChange?.(newOptions);
           }}
@@ -465,13 +475,44 @@ const MultipleSelector = React.forwardRef<
                 </Badge>
               );
             })}
-            {/* Avoid having the "Search" Icon */}
             <CommandPrimitive.Input
               {...inputProps}
               ref={inputRef}
               value={inputValue}
               disabled={disabled}
               onValueChange={(value) => {
+                if (creatable && value.includes(",")) {
+                  const parts = value.split(",");
+                  const toAdd = parts
+                    .slice(0, -1)
+                    .map((p) => p.trim())
+                    .filter((p) => p.length > 0);
+                  const lastPart = parts[parts.length - 1];
+
+                  if (toAdd.length > 0) {
+                    const newAddedOptions = toAdd.map((v) => {
+                      const entries = Object.values(options).flat();
+                      const existing = entries.find(
+                        (o) => o.value === v && !o.disable,
+                      );
+                      return existing ?? { value: v, label: v };
+                    });
+
+                    const filtered = newAddedOptions.filter(
+                      (newOpt) =>
+                        !selected.some((s) => s.value === newOpt.value),
+                    );
+
+                    if (selected.length + filtered.length <= maxSelected) {
+                      const newSelected = [...selected, ...filtered];
+                      setSelected(newSelected);
+                      onChange?.(newSelected);
+                      setInputValue(lastPart);
+                      inputProps?.onValueChange?.(lastPart);
+                      return;
+                    }
+                  }
+                }
                 setInputValue(value);
                 inputProps?.onValueChange?.(value);
               }}
@@ -484,6 +525,33 @@ const MultipleSelector = React.forwardRef<
                 if (e.key === "Enter") {
                   const value = inputValue.trim();
                   if (value.length === 0) return;
+
+                  if (creatable && value.includes(",")) {
+                    e.preventDefault();
+                    const parts = value
+                      .split(",")
+                      .map((p) => p.trim())
+                      .filter((p) => p.length > 0);
+                    const newAddedOptions = parts.map((v) => {
+                      const entries = Object.values(options).flat();
+                      const existing = entries.find(
+                        (o) => o.value === v && !o.disable,
+                      );
+                      return existing ?? { value: v, label: v };
+                    });
+                    const filtered = newAddedOptions.filter(
+                      (newOpt) =>
+                        !selected.some((s) => s.value === newOpt.value),
+                    );
+                    if (selected.length + filtered.length <= maxSelected) {
+                      const newSelected = [...selected, ...filtered];
+                      setSelected(newSelected);
+                      onChange?.(newSelected);
+                      setInputValue("");
+                    }
+                    return;
+                  }
+
                   // If option already exists among available options, pick that; otherwise create
                   const entries = Object.values(options).flat();
                   const existing = entries.find(

@@ -2125,5 +2125,16 @@
     "title": "Camoufox 支持即将结束",
     "description": "Camoufox 配置文件的支持将于 2026 年 7 月 8 日结束。您有一个或多个 Camoufox 配置文件。请在此之前迁移到 Wayfern——之后 Camoufox 配置文件可能会停止工作。",
     "acknowledge": "知道了"
+  },
+  "tags": {
+    "title": "标签",
+    "assignSuccess": "已成功为 {{count}} 个配置添加标签",
+    "failed": "分配标签失败: {{error}}",
+    "placeholder": "选择或创建标签...",
+    "description_one": "为所选配置分配标签。",
+    "description_other": "为所选的 {{count}} 个配置分配标签。",
+    "selectedProfilesLabel": "所选配置",
+    "assignTagsLabel": "分配标签",
+    "assignButton": "添加"
   }
 }

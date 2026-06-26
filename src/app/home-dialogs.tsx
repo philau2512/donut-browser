@@ -15,6 +15,7 @@ import {
   ProfilePasswordDialog,
   ProfileSelectorDialog,
   ProfileSyncDialog,
+  TagsAssignmentDialog,
 } from "@/components/profile";
 import {
   CamoufoxConfigDialog,
@@ -100,6 +101,9 @@ interface HomeDialogsProps {
   proxyAssignmentDialogOpen: boolean;
   setProxyAssignmentDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedProfilesForProxy: string[];
+  tagsAssignmentDialogOpen: boolean;
+  setTagsAssignmentDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedProfilesForTags: string[];
   cookieCopyDialogOpen: boolean;
   setCookieCopyDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedProfilesForCookies: string[];
@@ -187,6 +191,7 @@ interface HomeDialogsProps {
   handleGroupAssignmentComplete: () => void;
   handleExtensionGroupAssignmentComplete: () => void;
   handleProxyAssignmentComplete: () => void;
+  handleTagsAssignmentComplete: () => void;
   handlePendingBulkActionConfirm: () => void;
   isBulkActing: boolean;
   confirmBulkDelete: () => void;
@@ -232,6 +237,9 @@ export function HomeDialogs({
   proxyAssignmentDialogOpen,
   setProxyAssignmentDialogOpen,
   selectedProfilesForProxy,
+  tagsAssignmentDialogOpen,
+  setTagsAssignmentDialogOpen,
+  selectedProfilesForTags,
   cookieCopyDialogOpen,
   setCookieCopyDialogOpen,
   selectedProfilesForCookies,
@@ -284,6 +292,7 @@ export function HomeDialogs({
   handleGroupAssignmentComplete,
   handleExtensionGroupAssignmentComplete,
   handleProxyAssignmentComplete,
+  handleTagsAssignmentComplete,
   handlePendingBulkActionConfirm,
   isBulkActing,
   confirmBulkDelete,
@@ -431,6 +440,16 @@ export function HomeDialogs({
         profiles={profiles}
         storedProxies={storedProxies}
         vpnConfigs={vpnConfigs}
+      />
+
+      <TagsAssignmentDialog
+        isOpen={tagsAssignmentDialogOpen}
+        onClose={() => {
+          setTagsAssignmentDialogOpen(false);
+        }}
+        selectedProfiles={selectedProfilesForTags}
+        onAssignmentComplete={handleTagsAssignmentComplete}
+        profiles={profiles}
       />
 
       <CookieCopyDialog

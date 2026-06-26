@@ -83,6 +83,8 @@ interface ProfilesDataTableProps {
   infoDialogProfile?: BrowserProfile | null;
   onInfoDialogProfileChange?: (profile: BrowserProfile | null) => void;
   onQuickProxyEdit?: (profile: BrowserProfile) => void;
+  onBulkTagsAssignment?: () => void;
+  onAssignTags?: (profileIds: string[]) => void;
 }
 
 export function ProfilesDataTable({
@@ -121,6 +123,8 @@ export function ProfilesDataTable({
   onRemovePassword,
   infoDialogProfile,
   onInfoDialogProfileChange,
+  onBulkTagsAssignment,
+  onAssignTags,
 }: ProfilesDataTableProps) {
   const {
     sorting,
@@ -245,6 +249,7 @@ export function ProfilesDataTable({
       extensionGroups,
       onAssignExtensionGroup,
       setDnsBlocklistProfile,
+      onAssignTags,
 
       isProfileSelected: (id: string) => selectedProfiles.includes(id),
       handleToggleAll,
@@ -377,6 +382,7 @@ export function ProfilesDataTable({
       setDnsBlocklistProfile,
       setAllTags,
       canCreateLocationProxy,
+      onAssignTags,
     ],
   );
 
@@ -490,6 +496,7 @@ export function ProfilesDataTable({
           onBulkCopyCookies={onBulkCopyCookies}
           onBulkGroupAssignment={onBulkGroupAssignment}
           onBulkExtensionGroupAssignment={onBulkExtensionGroupAssignment}
+          onBulkTagsAssignment={onBulkTagsAssignment}
           onBulkSync={
             onLaunchWithSync
               ? () => {
