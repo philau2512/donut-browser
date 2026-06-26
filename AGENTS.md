@@ -15,41 +15,86 @@
 donutbrowser/
 ├── src/                              # Next.js frontend
 │   ├── app/                          # App router (page.tsx, layout.tsx)
-│   ├── components/                   # 50+ React components (dialogs, tables, UI)
+│   ├── components/                   # 160+ React components organized by domain
+│   │   ├── app-shell/               # App shell, tray, window chrome
+│   │   ├── cookie/                  # Cookie management UI
+│   │   ├── extension/               # Extension management UI
+│   │   ├── group/                   # Profile group UI
+│   │   ├── home/                    # Main profiles list + sub-components
+│   │   ├── icons/                   # Icon components
+│   │   ├── navigation/              # Sidebar navigation
+│   │   ├── onboarding/              # First-run onboarding
+│   │   ├── profile/                 # Profile dialogs + camoufox config
+│   │   ├── proxy/                   # Proxy management UI
+│   │   ├── settings/                # Settings pages
+│   │   ├── shared/                  # Shared/reusable components
+│   │   ├── sync/                    # Cloud sync UI
+│   │   ├── ui/                      # shadcn/ui primitives
+│   │   └── vpn/                     # VPN management UI
 │   ├── hooks/                        # Event-driven React hooks
 │   ├── i18n/locales/                 # Translations (en, es, fr, ja, ko, pt, ru, vi, zh)
-│   ├── lib/                          # Utilities (themes, toast, browser-utils)
+│   ├── lib/                          # Utilities (themes, toast, browser-utils, shortcuts)
 │   └── types.ts                      # Shared TypeScript interfaces
 ├── src-tauri/                        # Rust backend (Tauri)
 │   ├── src/
-│   │   ├── lib.rs                    # Tauri command registration (100+ commands)
-│   │   ├── browser_runner.rs         # Profile launch/kill orchestration
-│   │   ├── browser.rs               # Browser trait & launch logic
-│   │   ├── profile/                  # Profile CRUD (manager.rs, types.rs)
-│   │   ├── proxy_manager.rs         # Proxy lifecycle & connection testing
-│   │   ├── proxy_server.rs          # Local proxy binary (donut-proxy)
-│   │   ├── proxy_storage.rs         # Proxy config persistence (JSON files)
-│   │   ├── api_server.rs            # REST API (utoipa + axum)
-│   │   ├── mcp_server.rs            # MCP protocol server
-│   │   ├── sync/                    # Cloud sync (engine, encryption, manifest, scheduler)
-│   │   ├── vpn/                     # WireGuard tunnels
-│   │   ├── wayfern_manager.rs       # Wayfern (Chromium) browser management
-│   │   ├── downloader.rs           # Browser binary downloader
-│   │   ├── extraction.rs           # Archive extraction (zip, tar, dmg, msi)
-│   │   ├── settings_manager.rs     # App settings persistence
-│   │   ├── cookie_manager.rs       # Cookie import/export
-│   │   ├── extension_manager.rs    # Browser extension management
-│   │   ├── group_manager.rs        # Profile group management
-│   │   ├── synchronizer.rs         # Real-time profile synchronizer
-│   │   ├── daemon/                 # Background daemon + tray icon (currently disabled)
-│   │   └── cloud_auth.rs           # Cloud authentication
-│   ├── tests/                      # Integration tests
-│   └── Cargo.toml                  # Rust dependencies
-├── donut-sync/                     # NestJS sync server (self-hostable)
-│   └── src/                        # Controllers, services, auth, S3 sync
-├── docs/                           # Documentation (self-hosting guide)
-├── flake.nix                       # Nix development environment
-└── .github/workflows/              # CI/CD pipelines
+│   │   ├── lib.rs                    # Tauri command registration entry point
+│   │   ├── lib_commands_proxy.rs     # Proxy/VPN/MCP Tauri commands
+│   │   ├── lib_commands_sync.rs      # Sync/VPN connect Tauri commands
+│   │   ├── lib_commands_tray.rs      # Tray menu Tauri commands
+│   │   ├── lib_run.rs                # Tauri app builder (run())
+│   │   ├── lib_setup.rs              # Tauri .setup() handler
+│   │   ├── api/                      # REST API (utoipa + axum)
+│   │   │   ├── api_server.rs         # Server setup + middleware
+│   │   │   ├── api_server_profile_handlers*.rs  # Profile CRUD endpoints
+│   │   │   ├── api_server_proxy_handlers.rs     # Proxy/VPN endpoints
+│   │   │   ├── api_server_run_handlers.rs       # Browser run/batch endpoints
+│   │   │   ├── api_client.rs         # Browser release API client
+│   │   │   ├── cloud_auth.rs         # Cloud auth manager + methods + commands
+│   │   │   └── mod.rs
+│   │   ├── browser/                  # Browser management (all split into modules)
+│   │   │   ├── browser_runner*.rs    # Launch/kill orchestration (split)
+│   │   │   ├── browser.rs            # Browser trait + BrowserType
+│   │   │   ├── browser_version_manager*.rs  # Version fetching
+│   │   │   ├── camoufox_manager*.rs  # Camoufox process management
+│   │   │   ├── camoufox/             # Config, fingerprint, geolocation
+│   │   │   ├── downloaded_browsers_registry*.rs  # Installed browser tracking
+│   │   │   ├── downloader*.rs        # Binary downloader + progress
+│   │   │   ├── extraction*.rs        # Archive extraction (zip/tar/dmg/msi)
+│   │   │   ├── extension_manager*.rs # Extension management
+│   │   │   ├── platform_browser*.rs  # Platform-specific process launch/kill
+│   │   │   └── wayfern_manager*.rs   # Wayfern (Chromium) process management
+│   │   ├── mcp/                      # MCP protocol server
+│   │   │   ├── server.rs             # MCP server core
+│   │   │   ├── tools*.rs             # Tool definitions (split)
+│   │   │   ├── mcp_integrations.rs   # Claude Desktop integrations
+│   │   │   └── handlers/             # profiles*.rs, integrations*.rs, proxies_groups*.rs
+│   │   ├── profile/                  # Profile CRUD + password (all split)
+│   │   │   ├── manager*.rs           # ProfileManager (6 files)
+│   │   │   ├── cookie_manager*.rs    # Cookie import/export
+│   │   │   ├── password*.rs          # Profile encryption
+│   │   │   └── encryption.rs, group_manager.rs, types.rs, ...
+│   │   ├── proxy/                    # Local proxy infrastructure
+│   │   │   ├── proxy_manager/        # ProxyManager (connection, crud, lifecycle)
+│   │   │   ├── proxy_server*.rs      # HTTP/SOCKS proxy server (split)
+│   │   │   └── traffic_stats*.rs, socks5_local.rs, proxy_runner.rs, ...
+│   │   ├── settings/                 # App settings (app_dirs, manager, commands, types)
+│   │   ├── sync/                     # Cloud sync engine
+│   │   │   ├── engine/               # Sync engine modules
+│   │   │   └── manifest*.rs, scheduler*.rs, synchronizer*.rs, client.rs, ...
+│   │   ├── updater/                  # Auto-updater
+│   │   │   ├── app_auto_updater/     # In-app update flow (split)
+│   │   │   └── auto_updater/, version_updater.rs, geoip_downloader.rs
+│   │   └── vpn/                      # WireGuard VPN (config, tunnel, storage, socks5_server)
+│   ├── tests/                        # Integration tests
+│   │   ├── donut_proxy_integration.rs
+│   │   ├── sync_e2e.rs
+│   │   ├── vpn_integration.rs
+│   │   └── helpers/                  # Test split files (via include!())
+│   └── Cargo.toml
+├── donut-sync/                       # NestJS sync server (self-hostable)
+├── docs/                             # Documentation (self-hosting guide)
+├── flake.nix                         # Nix development environment
+└── .github/workflows/                # CI/CD pipelines
 ```
 
 ## Testing and Quality
@@ -317,3 +362,4 @@ This project is indexed by GitNexus as **donut-browser** (6414 symbols, 18987 re
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
