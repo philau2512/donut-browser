@@ -1,4 +1,4 @@
-﻿import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 import React from "react";
 import { type ExternalToast, toast as sonnerToast } from "sonner";
 import { UnifiedToast } from "@/components/shared";
@@ -106,47 +106,56 @@ export function showToast(props: ToastProps & { id?: string }) {
   }
 
   if (props.type === "success") {
-    sonnerToast.custom(() => React.createElement(UnifiedToast, props), {
-      id: toastId,
-      duration,
-      dismissible: props.dismissible,
-      style: {
-        background: "transparent",
-        border: "none",
-        boxShadow: "none",
-        padding: 0,
-        zIndex: 10001,
-        pointerEvents: "auto",
+    sonnerToast.custom(
+      () => React.createElement(UnifiedToast, { ...props, id: toastId }),
+      {
+        id: toastId,
+        duration,
+        dismissible: props.dismissible,
+        style: {
+          background: "transparent",
+          border: "none",
+          boxShadow: "none",
+          padding: 0,
+          zIndex: 10001,
+          pointerEvents: "auto",
+        },
       },
-    });
+    );
   } else if (props.type === "error") {
-    sonnerToast.custom(() => React.createElement(UnifiedToast, props), {
-      id: toastId,
-      duration,
-      dismissible: props.dismissible,
-      style: {
-        background: "transparent",
-        border: "none",
-        boxShadow: "none",
-        padding: 0,
-        zIndex: 10001,
-        pointerEvents: "auto",
+    sonnerToast.custom(
+      () => React.createElement(UnifiedToast, { ...props, id: toastId }),
+      {
+        id: toastId,
+        duration,
+        dismissible: props.dismissible,
+        style: {
+          background: "transparent",
+          border: "none",
+          boxShadow: "none",
+          padding: 0,
+          zIndex: 10001,
+          pointerEvents: "auto",
+        },
       },
-    });
+    );
   } else {
-    sonnerToast.custom(() => React.createElement(UnifiedToast, props), {
-      id: toastId,
-      duration,
-      dismissible: props.dismissible,
-      style: {
-        background: "transparent",
-        border: "none",
-        boxShadow: "none",
-        padding: 0,
-        zIndex: 10001,
-        pointerEvents: "auto",
+    sonnerToast.custom(
+      () => React.createElement(UnifiedToast, { ...props, id: toastId }),
+      {
+        id: toastId,
+        duration,
+        dismissible: props.dismissible,
+        style: {
+          background: "transparent",
+          border: "none",
+          boxShadow: "none",
+          padding: 0,
+          zIndex: 10001,
+          pointerEvents: "auto",
+        },
       },
-    });
+    );
   }
 
   return toastId;

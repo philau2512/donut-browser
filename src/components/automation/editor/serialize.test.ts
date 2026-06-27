@@ -98,7 +98,7 @@ describe("automation editor serialization", () => {
           continueOnError: true,
         },
       ],
-      edges: [{ from: "n1", to: "n2" }],
+      edges: [{ from: "n1", to: "n2", sourceHandle: "success" }],
     });
   });
 
@@ -123,7 +123,7 @@ describe("automation editor serialization", () => {
             continueOnError: true,
           },
         ],
-        edges: [{ from: "n1", to: "n2" }],
+        edges: [{ from: "n1", to: "n2", sourceHandle: "success" }],
       },
       { version: 1, positions: { n1: { x: 1, y: 2 } } },
     );
@@ -137,8 +137,13 @@ describe("automation editor serialization", () => {
     expect(canvas.nodes[2].position).toEqual({ x: 360, y: 240 });
     expect(canvas.nodes[2].data.continueOnError).toBe(true);
     expect(canvas.edges).toEqual([
-      { id: `edge-${START_NODE_ID}-n1`, source: START_NODE_ID, target: "n1" },
-      { id: "edge-n1-n2", source: "n1", target: "n2" },
+      {
+        id: `edge-${START_NODE_ID}-n1`,
+        source: START_NODE_ID,
+        target: "n1",
+        sourceHandle: "success",
+      },
+      { id: "edge-n1-n2", source: "n1", target: "n2", sourceHandle: "success" },
     ]);
   });
 

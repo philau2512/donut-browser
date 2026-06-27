@@ -239,6 +239,16 @@
   pointer-events: auto;
 }
 
+/* Make Sonner close button always visible and styled */
+.toaster [data-close-button] {
+  opacity: 1;
+  display: flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--card-foreground);
+  pointer-events: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

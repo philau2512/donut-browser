@@ -59,9 +59,10 @@ function FlowCanvasInner({
     AutomationCanvasNode,
     AutomationCanvasEdge
   > | null>(null);
+  const [draggingHandleId, setDraggingHandleId] = useState<string | null>(null);
 
-  const outgoingSources = useMemo(
-    () => new Set(edges.map((edge) => edge.source)),
+  const outgoingSourceHandles = useMemo(
+    () => new Set(edges.map((edge) => `${edge.source}-${edge.sourceHandle}`)),
     [edges],
   );
 
@@ -70,14 +71,19 @@ function FlowCanvasInner({
       (connection) => {
         if (!connection.source || !connection.target) return false;
         if (connection.source === connection.target) return false;
+
+        const sourceKey = `${connection.source}-${connection.sourceHandle}`;
+
         const replacingSameEdge = edges.some(
           (edge) =>
             edge.source === connection.source &&
-            edge.target === connection.target,
+            edge.sourceHandle === connection.sourceHandle &&
+            edge.target === connection.target &&
+            edge.targetHandle === connection.targetHandle,
         );
-        return replacingSameEdge || !outgoingSources.has(connection.source);
+        return replacingSameEdge || !outgoingSourceHandles.has(sourceKey);
       },
-      [edges, outgoingSources],
+      [edges, outgoingSourceHandles],
     );
 
   const onConnect = useCallback(
@@ -94,6 +100,24 @@ function FlowCanvasInner({
       );
     },
     [isValidConnection, setEdges],
+  );
+
+  const onConnectStart = useCallback(
+    (_: any, { handleId }: { handleId: string | null }) => {
+      setDraggingHandleId(handleId);
+    },
+    [],
+  );
+
+  const onConnectEnd = useCallback(() => {
+    setDraggingHandleId(null);
+  }, []);
+
+  const onEdgeDoubleClick = useCallback(
+    (_: any, edge: AutomationCanvasEdge) => {
+      setEdges((current) => current.filter((e) => e.id !== edge.id));
+    },
+    [setEdges],
   );
 
   const onDrop = useCallback(
@@ -121,6 +145,21 @@ function FlowCanvasInner({
     event.dataTransfer.dropEffect = "copy";
   }, []);
 
+  const styledEdges = useMemo(() => {
+    return edges.map((edge) => {
+      const isFail = edge.sourceHandle === "fail";
+      return {
+        ...edge,
+        style: {
+          ...edge.style,
+          stroke: edge.selected ? "#eab308" : isFail ? "#ef4444" : "#22c55e",
+          strokeWidth: edge.selected ? 4 : 2.5,
+          opacity: edge.selected ? 1 : 0.8,
+        },
+      };
+    });
+  }, [edges]);
+
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: dragOver preventDefault required on wrapper to show drop cursor in WebView2
     <div
@@ -129,17 +168,24 @@ function FlowCanvasInner({
     >
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={styledEdges}
         nodeTypes={nodeTypes}
         onInit={setInstance}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        onEdgeDoubleClick={onEdgeDoubleClick}
         onDrop={onDrop}
         onDragOver={onDragOver}
         onNodeClick={(_, node) => onSelectNode(node.id)}
         onPaneClick={() => onSelectNode(null)}
         isValidConnection={isValidConnection}
+        connectionLineStyle={{
+          stroke: draggingHandleId === "fail" ? "#ef4444" : "#22c55e",
+          strokeWidth: 2.5,
+        }}
         fitView
       >
         <Background />

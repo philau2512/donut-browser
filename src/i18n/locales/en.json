@@ -2039,6 +2039,16 @@
       "errors": {
         "loadFailed": "Failed to load flow: {{error}}",
         "saveFailed": "Failed to save flow: {{error}}"
+      },
+      "toolbar": {
+        "edit": "Edit parameters",
+        "startFromHere": "Start from here",
+        "delete": "Delete node"
+      },
+      "comment": {
+        "title": "Add comment",
+        "placeholder": "Type a comment...",
+        "characters": "characters"
       }
     },
     "nodes": {

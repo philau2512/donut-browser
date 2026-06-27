@@ -126,9 +126,15 @@ export function validateFlow(flow) {
     if (!edge || typeof edge !== "object") {
       throw new FlowValidationError("Each edge must be an object");
     }
-    const extra = Object.keys(edge).filter((k) => k !== "from" && k !== "to");
+    const extra = Object.keys(edge).filter((k) => k !== "from" && k !== "to" && k !== "sourceHandle");
     if (extra.length > 0) {
       throw new FlowValidationError(`Edge has unknown keys: ${extra.join(", ")}`);
+    }
+    if (edge.sourceHandle != null && typeof edge.sourceHandle !== "string") {
+      throw new FlowValidationError(`Edge.sourceHandle must be a string: ${JSON.stringify(edge.sourceHandle)}`);
+    }
+    if (edge.sourceHandle != null && edge.sourceHandle !== "success" && edge.sourceHandle !== "fail") {
+      throw new FlowValidationError(`Edge.sourceHandle must be 'success' or 'fail': ${JSON.stringify(edge.sourceHandle)}`);
     }
     if (!ids.has(edge.from)) {
       throw new FlowValidationError(`Edge.from references unknown node: ${JSON.stringify(edge.from)}`);
@@ -160,8 +166,8 @@ function validateNode(node, ids) {
     );
   }
 
-  // closed-schema key check: only id/type/params/continueOnError allowed
-  const allowedNodeKeys = ["id", "type", "params", "continueOnError"];
+  // closed-schema key check: only id/type/params/continueOnError/comment allowed
+  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment"];
   const extraNodeKeys = Object.keys(node).filter((k) => !allowedNodeKeys.includes(k));
   if (extraNodeKeys.length > 0) {
     throw new FlowValidationError(`Node ${node.id}: unknown keys ${extraNodeKeys.join(", ")}`);
@@ -169,6 +175,10 @@ function validateNode(node, ids) {
 
   if (node.continueOnError != null && typeof node.continueOnError !== "boolean") {
     throw new FlowValidationError(`Node ${node.id}: continueOnError must be a boolean`);
+  }
+
+  if (node.comment != null && typeof node.comment !== "string") {
+    throw new FlowValidationError(`Node ${node.id}: comment must be a string`);
   }
 
   const params = node.params ?? {};

@@ -15,9 +15,14 @@ import { LuSave } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { AutomationNodeCatalogItem } from "@/lib/automation/node-catalog";
+import {
+  AUTOMATION_NODE_BY_TYPE,
+  type AutomationNodeCatalogItem,
+  type AutomationNodeType,
+} from "@/lib/automation/node-catalog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { FlowCanvas } from "./flow-canvas";
+import { NodeCommentDialog } from "./node-comment-dialog";
 import { NodePalette } from "./node-palette";
 import { NodePropertiesDialog } from "./node-properties-dialog";
 import {
@@ -52,16 +57,110 @@ export function FlowEditorPage({
     [],
   );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+  const [commentingNodeId, setCommentingNodeId] = useState<string | null>(null);
   const [flowName, setFlowName] = useState("Untitled flow");
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(Boolean(flowPath));
   const [isSaving, setIsSaving] = useState(false);
   const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
 
-  const selectedNode = useMemo(
+  const _selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
     [nodes, selectedNodeId],
   );
+
+  const editingNode = useMemo(
+    () => nodes.find((node) => node.id === editingNodeId) ?? null,
+    [nodes, editingNodeId],
+  );
+
+  const commentingNode = useMemo(
+    () => nodes.find((node) => node.id === commentingNodeId) ?? null,
+    [nodes, commentingNodeId],
+  );
+
+  const handleEditNode = useCallback((nodeId: string) => {
+    setEditingNodeId(nodeId);
+  }, []);
+
+  const handleCommentNode = useCallback((nodeId: string) => {
+    setCommentingNodeId(nodeId);
+  }, []);
+
+  const handleSaveComment = useCallback(
+    (nodeId: string, commentText: string) => {
+      setNodes((current) =>
+        current.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  comment: commentText.trim() || undefined,
+                },
+              }
+            : node,
+        ),
+      );
+    },
+    [setNodes],
+  );
+
+  const handleDeleteNode = useCallback(
+    (nodeId: string) => {
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) =>
+        eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
+      );
+      if (selectedNodeId === nodeId) {
+        setSelectedNodeId(null);
+      }
+      if (editingNodeId === nodeId) {
+        setEditingNodeId(null);
+      }
+      if (commentingNodeId === nodeId) {
+        setCommentingNodeId(null);
+      }
+    },
+    [selectedNodeId, editingNodeId, commentingNodeId, setEdges, setNodes],
+  );
+
+  const handleStartFromHere = useCallback(
+    (nodeId: string) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      const label = node
+        ? t(
+            AUTOMATION_NODE_BY_TYPE[node.data.nodeType as AutomationNodeType]
+              ?.labelKey || "",
+          )
+        : nodeId;
+      showSuccessToast(
+        t("automation.editor.toast.startFromHere", { name: label }) ||
+          `Chạy từ node: ${label}`,
+      );
+    },
+    [nodes, t],
+  );
+
+  const nodesWithCallbacks = useMemo(() => {
+    return nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        onEdit: handleEditNode,
+        onDelete: handleDeleteNode,
+        onStartFromHere: handleStartFromHere,
+        onComment: handleCommentNode,
+      },
+    }));
+  }, [
+    nodes,
+    handleEditNode,
+    handleDeleteNode,
+    handleStartFromHere,
+    handleCommentNode,
+  ]);
 
   useEffect(() => {
     if (!flowPath) return;
@@ -123,10 +222,10 @@ export function FlowEditorPage({
     key: string,
     value: string | number | boolean,
   ) => {
-    if (!selectedNode) return;
+    if (!editingNode) return;
     setNodes((current) =>
       current.map((node) =>
-        node.id === selectedNode.id
+        node.id === editingNode.id
           ? {
               ...node,
               data: {
@@ -140,10 +239,10 @@ export function FlowEditorPage({
   };
 
   const updateSelectedContinueOnError = (value: boolean) => {
-    if (!selectedNode) return;
+    if (!editingNode) return;
     setNodes((current) =>
       current.map((node) =>
-        node.id === selectedNode.id
+        node.id === editingNode.id
           ? { ...node, data: { ...node.data, continueOnError: value } }
           : node,
       ),
@@ -226,7 +325,7 @@ export function FlowEditorPage({
       <div className="flex min-h-0 flex-1 gap-3">
         <NodePalette onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
         <FlowCanvas
-          nodes={nodes}
+          nodes={nodesWithCallbacks}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -239,13 +338,24 @@ export function FlowEditorPage({
       </div>
 
       <NodePropertiesDialog
-        node={selectedNode}
+        node={editingNode}
         variables={variables}
         onOpenChange={(open) => {
-          if (!open) setSelectedNodeId(null);
+          if (!open) setEditingNodeId(null);
         }}
         onParamChange={updateSelectedParam}
         onContinueOnErrorChange={updateSelectedContinueOnError}
+      />
+
+      <NodeCommentDialog
+        key={commentingNodeId || "none"}
+        node={commentingNode}
+        onClose={(comment) => {
+          if (commentingNodeId) {
+            handleSaveComment(commentingNodeId, comment);
+          }
+          setCommentingNodeId(null);
+        }}
       />
     </div>
   );

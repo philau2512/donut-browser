@@ -2033,10 +2033,22 @@
         "interaction": "Interaction",
         "utility": "Utility"
       },
-      "toast": { "saved": "Saved \"{{name}}\"." },
+      "toast": {
+        "saved": "Saved \"{{name}}\"."
+      },
       "errors": {
         "loadFailed": "Failed to load flow: {{error}}",
         "saveFailed": "Failed to save flow: {{error}}"
+      },
+      "toolbar": {
+        "edit": "Chỉnh sửa thuộc tính",
+        "startFromHere": "Chạy từ node này",
+        "delete": "Xóa node"
+      },
+      "comment": {
+        "title": "Thêm ghi chú",
+        "placeholder": "Nhập ghi chú...",
+        "characters": "ký tự"
       }
     },
     "nodes": {

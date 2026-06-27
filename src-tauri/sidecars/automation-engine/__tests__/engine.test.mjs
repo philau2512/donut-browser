@@ -338,6 +338,71 @@ test("type node never logs the typed text (#12)", async () => {
   assert.ok(!lines.some((l) => l.msg.includes("hunter2")));
 });
 
+test("runFlow follows success branch when node succeeds", async () => {
+  const flow = {
+    version: 1,
+    name: "t",
+    nodes: [
+      { id: "n1", type: "log", params: { message: "start" } },
+      { id: "n2", type: "log", params: { message: "success_path" } },
+      { id: "n3", type: "log", params: { message: "fail_path" } },
+    ],
+    edges: [
+      { from: "n1", to: "n2", sourceHandle: "success" },
+      { from: "n1", to: "n3", sourceHandle: "fail" },
+    ],
+  };
+  const page = mockPage();
+  const { logger, lines } = collectLogger();
+  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  assert.equal(failed, false);
+  assert.ok(lines.some((l) => l.nodeId === "n2" && l.msg.includes("success_path")));
+  assert.ok(!lines.some((l) => l.nodeId === "n3" && l.msg.includes("fail_path")));
+});
+
+test("runFlow follows fail branch when node fails", async () => {
+  const flow = {
+    version: 1,
+    name: "t",
+    nodes: [
+      { id: "n1", type: "openUrl", params: { url: "https://example.com" } },
+      { id: "n2", type: "log", params: { message: "success_path" } },
+      { id: "n3", type: "log", params: { message: "fail_path" } },
+    ],
+    edges: [
+      { from: "n1", to: "n2", sourceHandle: "success" },
+      { from: "n1", to: "n3", sourceHandle: "fail" },
+    ],
+  };
+  const page = mockPage();
+  page.goto = async () => {
+    throw new Error("fail on purpose");
+  };
+  const { logger, lines } = collectLogger();
+  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  assert.equal(failed, false);
+  assert.ok(!lines.some((l) => l.nodeId === "n2" && l.msg.includes("success_path")));
+  assert.ok(lines.some((l) => l.nodeId === "n3" && l.msg.includes("fail_path")));
+});
+
+test("runFlow terminates and reports error on infinite loop", async () => {
+  const flow = {
+    version: 1,
+    name: "t",
+    nodes: [
+      { id: "n1", type: "log", params: { message: "loop" } },
+    ],
+    edges: [
+      { from: "n1", to: "n1", sourceHandle: "success" },
+    ],
+  };
+  const page = mockPage();
+  const { logger, lines } = collectLogger();
+  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  assert.equal(failed, true);
+  assert.ok(lines.some((l) => l.msg.includes("maximum step execution limit")));
+});
+
 // ---- --validate mode (HIGH-2: JSON via stdin, no CDP) ---------------------
 
 test("--validate exits 0 for a well-formed flow", async () => {

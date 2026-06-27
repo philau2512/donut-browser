@@ -49,26 +49,43 @@ export function NodePropertiesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent
+        className="max-w-2xl h-[480px] flex flex-col"
+        onPointerDownOutside={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest("[data-radix-popper-content-wrapper]")) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t(catalog.labelKey)}</DialogTitle>
           <DialogDescription>{t(catalog.descriptionKey)}</DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="options" className="min-h-0">
-          <TabsList>
-            <TabsTrigger value="options">
+        <Tabs defaultValue="options" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="shrink-0 justify-start w-full bg-transparent p-0 h-auto rounded-none border-b border-border gap-6">
+            <TabsTrigger
+              value="options"
+              className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary border-b-2 border-transparent px-1 pb-2 h-auto text-sm font-semibold text-muted-foreground hover:text-foreground"
+            >
               {t("automation.editor.properties.options")}
             </TabsTrigger>
-            <TabsTrigger value="setting">
+            <TabsTrigger
+              value="setting"
+              className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary border-b-2 border-transparent px-1 pb-2 h-auto text-sm font-semibold text-muted-foreground hover:text-foreground"
+            >
               {t("automation.editor.properties.setting")}
             </TabsTrigger>
-            <TabsTrigger value="document">
+            <TabsTrigger
+              value="document"
+              className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary border-b-2 border-transparent px-1 pb-2 h-auto text-sm font-semibold text-muted-foreground hover:text-foreground"
+            >
               {t("automation.editor.properties.document")}
             </TabsTrigger>
           </TabsList>
           <TabsContent
             value="options"
-            className="max-h-[55vh] overflow-y-auto pr-1"
+            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0"
           >
             <PropertyForm
               catalog={catalog}
@@ -77,7 +94,10 @@ export function NodePropertiesDialog({
               onParamChange={onParamChange}
             />
           </TabsContent>
-          <TabsContent value="setting">
+          <TabsContent
+            value="setting"
+            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0"
+          >
             <div className="flex items-center gap-3 rounded-md border border-border p-3">
               <Checkbox
                 checked={editableNode.data.continueOnError === true}
@@ -95,7 +115,10 @@ export function NodePropertiesDialog({
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="document">
+          <TabsContent
+            value="document"
+            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0"
+          >
             <p className="whitespace-pre-line text-sm text-muted-foreground">
               {t(catalog.documentKey)}
             </p>

@@ -2033,10 +2033,22 @@
         "interaction": "Interaction",
         "utility": "Utility"
       },
-      "toast": { "saved": "Saved \"{{name}}\"." },
+      "toast": {
+        "saved": "Saved \"{{name}}\"."
+      },
       "errors": {
         "loadFailed": "Failed to load flow: {{error}}",
         "saveFailed": "Failed to save flow: {{error}}"
+      },
+      "toolbar": {
+        "edit": "Edit parameters",
+        "startFromHere": "Start from here",
+        "delete": "Delete node"
+      },
+      "comment": {
+        "title": "Añadir comentario",
+        "placeholder": "Escriba un comentario...",
+        "characters": "caracteres"
       }
     },
     "nodes": {

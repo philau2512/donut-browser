@@ -12,11 +12,13 @@ export interface DonutFlowNode {
   type: AutomationNodeType;
   params?: Record<string, string | number | boolean>;
   continueOnError?: boolean;
+  comment?: string;
 }
 
 export interface DonutFlowEdge {
   from: string;
   to: string;
+  sourceHandle?: string;
 }
 
 export interface DonutFlowV1 {
@@ -32,6 +34,7 @@ export interface AutomationNodeData extends Record<string, unknown> {
   nodeType: AutomationNodeType | "start";
   params: Record<string, string | number | boolean>;
   continueOnError?: boolean;
+  comment?: string;
 }
 
 export type AutomationCanvasNode = Node<AutomationNodeData, "automation">;
@@ -48,7 +51,7 @@ export function createStartNode(): AutomationCanvasNode {
     type: "automation",
     position: { x: 120, y: 120 },
     deletable: false,
-    draggable: false,
+    draggable: true,
     data: {
       label: "Start",
       nodeType: "start",
@@ -114,6 +117,7 @@ export function toDonutFlow(
         params: pruneEmptyParams(node.data.params),
       };
       if (node.data.continueOnError === true) out.continueOnError = true;
+      if (node.data.comment) out.comment = node.data.comment;
       return out;
     }),
     edges: edges
@@ -123,7 +127,11 @@ export function toDonutFlow(
           realNodeIds.has(edge.source) &&
           realNodeIds.has(edge.target),
       )
-      .map((edge) => ({ from: edge.source, to: edge.target })),
+      .map((edge) => ({
+        from: edge.source,
+        to: edge.target,
+        sourceHandle: edge.sourceHandle ?? "success",
+      })),
   };
 }
 
@@ -145,6 +153,7 @@ export function fromDonutFlow(
         nodeType: node.type,
         params: { ...(node.params ?? {}) },
         continueOnError: node.continueOnError,
+        comment: node.comment,
       },
     });
   });
@@ -157,6 +166,7 @@ export function fromDonutFlow(
       id: `edge-${START_NODE_ID}-${firstRoot.id}`,
       source: START_NODE_ID,
       target: firstRoot.id,
+      sourceHandle: "success",
     });
   }
   for (const edge of flow.edges) {
@@ -164,6 +174,7 @@ export function fromDonutFlow(
       id: `edge-${edge.from}-${edge.to}`,
       source: edge.from,
       target: edge.to,
+      sourceHandle: edge.sourceHandle ?? "success",
     });
   }
 

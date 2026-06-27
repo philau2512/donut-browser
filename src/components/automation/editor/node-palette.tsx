@@ -59,11 +59,14 @@ export function NodePalette({ onDragStart, onDragEnd }: NodePaletteProps) {
           const items = filtered.filter((item) => item.group === group);
           if (items.length === 0) return null;
           return (
-            <section key={group} className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {t(`automation.editor.groups.${group}`)}
-              </p>
-              <div className="space-y-1.5">
+            <details key={group} open className="group space-y-2">
+              <summary className="flex cursor-pointer items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground list-none select-none hover:text-foreground [&::-webkit-details-marker]:hidden">
+                <span>{t(`automation.editor.groups.${group}`)}</span>
+                <span className="text-[9px] text-muted-foreground transition-transform group-open:rotate-180">
+                  ▼
+                </span>
+              </summary>
+              <div className="grid grid-cols-2 gap-2 pt-1.5">
                 {items.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -73,22 +76,17 @@ export function NodePalette({ onDragStart, onDragEnd }: NodePaletteProps) {
                       draggable
                       onDragStart={(event) => onDragStart(event, item)}
                       onDragEnd={onDragEnd}
-                      className="flex w-full cursor-grab items-start gap-2 rounded-md border border-border bg-background p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing"
+                      className="flex cursor-grab items-center gap-1.5 rounded-md border border-border bg-background/50 p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing min-w-0"
                     >
-                      <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium">
-                          {t(item.labelKey)}
-                        </span>
-                        <span className="mt-0.5 line-clamp-2 block text-[11px] text-muted-foreground">
-                          {t(item.descriptionKey)}
-                        </span>
+                      <Icon className="size-3.5 shrink-0 text-primary" />
+                      <span className="truncate text-[11px] font-semibold">
+                        {t(item.labelKey)}
                       </span>
                     </button>
                   );
                 })}
               </div>
-            </section>
+            </details>
           );
         })}
       </div>

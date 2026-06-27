@@ -100,36 +100,65 @@ async function resolvePage(browser, logger) {
 }
 
 export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger }) {
-  const order = topoOrder(flow);
   const ctx = { logger, vars, artifactsDir, allowedSchemes };
   let failed = false;
 
-  for (const node of order) {
-    const interpolated = { ...node, params: interpolateParams(node.params ?? {}, vars) };
-    const handler = getHandler(node.type);
-    if (!handler) {
-      // Validation should have caught this; defense in depth.
-      logger.error(node.id, `no handler for node type: ${node.type}`);
-      if (!(node.continueOnError ?? continueDefault)) {
-        failed = true;
-        break;
-      }
-      continue;
+  const byId = new Map(flow.nodes.map((n) => [n.id, n]));
+  const getNextNode = (fromId, outcome) => {
+    const edge = flow.edges.find((e) => e.from === fromId && (e.sourceHandle ?? "success") === outcome);
+    return edge ? byId.get(edge.to) : null;
+  };
+
+  const incoming = new Map(flow.nodes.map((n) => [n.id, 0]));
+  for (const e of flow.edges) {
+    incoming.set(e.to, (incoming.get(e.to) ?? 0) + 1);
+  }
+  let cur = flow.nodes.find((n) => (incoming.get(n.id) ?? 0) === 0) ?? flow.nodes[0];
+
+  let steps = 0;
+  const MAX_STEPS = 1000;
+
+  while (cur) {
+    if (steps++ >= MAX_STEPS) {
+      logger.error(null, `maximum step execution limit (${MAX_STEPS}) reached - stopping to prevent infinite loop`);
+      failed = true;
+      break;
     }
 
-    logger.info(node.id, `▶ ${node.type}`);
+    const interpolated = { ...cur, params: interpolateParams(cur.params ?? {}, vars) };
+    const handler = getHandler(cur.type);
+    if (!handler) {
+      logger.error(cur.id, `no handler for node type: ${cur.type}`);
+      failed = true;
+      break;
+    }
+
+    logger.info(cur.id, `▶ ${cur.type}`);
+    let success = true;
     try {
       await handler(interpolated, page, ctx);
-      logger.info(node.id, `✓ ${node.type}`);
+      logger.info(cur.id, `✓ ${cur.type}`);
     } catch (err) {
+      success = false;
       const msg = err instanceof Error ? err.message : String(err);
-      logger.error(node.id, `✗ ${node.type}: ${msg}`);
-      const cont = node.continueOnError ?? continueDefault;
-      if (cont) {
-        logger.warn(node.id, `continueOnError → skipping failed node, proceeding`);
+      logger.error(cur.id, `✗ ${cur.type}: ${msg}`);
+    }
+
+    if (success) {
+      cur = getNextNode(cur.id, "success");
+    } else {
+      const nextFailNode = getNextNode(cur.id, "fail");
+      if (nextFailNode) {
+        cur = nextFailNode;
       } else {
-        failed = true;
-        break;
+        const cont = cur.continueOnError ?? continueDefault;
+        if (cont) {
+          logger.warn(cur.id, `continueOnError → skipping failed node, proceeding to success branch`);
+          cur = getNextNode(cur.id, "success");
+        } else {
+          failed = true;
+          break;
+        }
       }
     }
   }

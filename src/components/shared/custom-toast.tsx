@@ -57,7 +57,7 @@ import {
   LuTriangleAlert,
   LuX,
 } from "react-icons/lu";
-import type { ExternalToast } from "sonner";
+import { type ExternalToast, toast } from "sonner";
 import { RippleButton } from "@/components/ui/ripple";
 
 interface BaseToastProps {
@@ -196,26 +196,16 @@ function getToastIcon(type: ToastProps["type"], stage?: string) {
 
 export function UnifiedToast(props: ToastProps) {
   const { t } = useTranslation();
-  const { title, description, type, action, onCancel } = props;
+  const { id, title, description, type, action, onCancel } = props;
   const stage = "stage" in props ? props.stage : undefined;
   const progress = "progress" in props ? props.progress : undefined;
 
   return (
-    <div className="flex w-full max-w-md items-start rounded-lg border border-border bg-card p-3 text-card-foreground shadow-lg">
+    <div className="flex w-full max-w-md items-start rounded-lg border border-border bg-card p-3 text-card-foreground shadow-lg relative group">
       <div className="mt-0.5 mr-3">{getToastIcon(type, stage)}</div>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 pr-6">
         <div className="flex items-center justify-between">
           <p className="text-sm/tight font-semibold text-foreground">{title}</p>
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="ml-2 shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label={t("common.buttons.cancel")}
-            >
-              <LuX className="size-3" />
-            </button>
-          )}
         </div>
 
         {/* Download progress */}
@@ -344,6 +334,20 @@ export function UnifiedToast(props: ToastProps) {
             </div>
           )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (onCancel) onCancel();
+          if (id) {
+            toast.dismiss(id);
+          }
+        }}
+        className="absolute top-2 right-2 shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground opacity-100 md:opacity-0 group-hover:opacity-100"
+        aria-label={t("common.buttons.close")}
+      >
+        <LuX className="size-3.5" />
+      </button>
     </div>
   );
 }
