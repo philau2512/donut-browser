@@ -100,7 +100,7 @@ async function resolvePage(browser, logger) {
 }
 
 export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger }) {
-  const ctx = { logger, vars, artifactsDir, allowedSchemes };
+  const ctx = { logger, vars, artifactsDir, allowedSchemes, page };
   let failed = false;
 
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
@@ -134,31 +134,40 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
     }
 
     logger.info(cur.id, `▶ ${cur.type}`);
-    let success = true;
+    let outcome = "success";
     try {
-      await handler(interpolated, page, ctx);
-      logger.info(cur.id, `✓ ${cur.type}`);
+      const result = await handler(interpolated, ctx.page, ctx);
+      if (typeof result === "string") {
+        outcome = result;
+      }
+      logger.info(cur.id, `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`);
     } catch (err) {
-      success = false;
+      outcome = "fail";
       const msg = err instanceof Error ? err.message : String(err);
       logger.error(cur.id, `✗ ${cur.type}: ${msg}`);
     }
 
-    if (success) {
-      cur = getNextNode(cur.id, "success");
+    const next = getNextNode(cur.id, outcome);
+    if (next) {
+      cur = next;
     } else {
-      const nextFailNode = getNextNode(cur.id, "fail");
-      if (nextFailNode) {
-        cur = nextFailNode;
-      } else {
+      if (outcome === "fail") {
         const cont = cur.continueOnError ?? continueDefault;
         if (cont) {
           logger.warn(cur.id, `continueOnError → skipping failed node, proceeding to success branch`);
+          // Clean up loop state if this node was a loop node that failed
+          const loopStateKey = `__loop_state_${cur.id}`;
+          if (loopStateKey in vars) {
+            delete vars[loopStateKey];
+            logger.debug(cur.id, `cleaned up loop state on continueOnError`);
+          }
           cur = getNextNode(cur.id, "success");
         } else {
           failed = true;
           break;
         }
+      } else {
+        cur = null;
       }
     }
   }

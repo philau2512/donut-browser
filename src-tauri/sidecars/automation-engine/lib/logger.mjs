@@ -12,6 +12,8 @@
 // typed value unconditionally (see nodes/interaction.mjs), so even a non-secret
 // variable name does not leak keystrokes.
 
+import { containArtifactPath } from "./safe-path.mjs";
+
 const SECRET_NAME_RE = /(PASS|PASSWORD|TOKEN|SECRET|APIKEY|API_KEY)/i;
 
 /**
@@ -90,6 +92,18 @@ export class Logger {
   }
   error(nodeId, msg) {
     this.emit("error", nodeId, msg);
+  }
+
+  /**
+   * Resolve a path against the artifacts directory, ensuring it stays contained.
+   * Used by handlers that write/read files (screenshot, readCsv, writeCsv, downloadFile).
+   * @param {string} requestedPath - filename or relative subpath from node params
+   * @param {string} artifactsDir - base directory to contain paths
+   * @returns {string} absolute path guaranteed within artifactsDir
+   * @throws {Error} if path escapes artifacts dir
+   */
+  safePath(requestedPath, artifactsDir) {
+    return containArtifactPath(artifactsDir, requestedPath);
   }
 }
 
