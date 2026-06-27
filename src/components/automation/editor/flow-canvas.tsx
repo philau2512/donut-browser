@@ -21,7 +21,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import type { AutomationNodeCatalogItem } from "@/lib/automation/node-catalog";
+import { isAutomationNodeType } from "@/lib/automation/node-catalog";
 import { AutomationNode } from "./nodes/automation-node";
 import {
   type AutomationCanvasEdge,
@@ -96,19 +96,15 @@ function FlowCanvasInner({
     (event: DragEvent) => {
       event.preventDefault();
       if (!instance) return;
-      const type = event.dataTransfer.getData("application/donut-node-type");
-      if (!type) return;
+      const type =
+        event.dataTransfer.getData("application/donut-node-type") ||
+        event.dataTransfer.getData("text/plain");
+      if (!isAutomationNodeType(type)) return;
       const position = instance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       });
-      setNodes((current) => [
-        ...current,
-        createAutomationNode(
-          type as AutomationNodeCatalogItem["type"],
-          position,
-        ),
-      ]);
+      setNodes((current) => [...current, createAutomationNode(type, position)]);
     },
     [instance, setNodes],
   );

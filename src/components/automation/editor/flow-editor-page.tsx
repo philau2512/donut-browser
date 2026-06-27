@@ -107,6 +107,7 @@ export function FlowEditorPage({
   const handleDragStart = useCallback(
     (event: DragEvent, item: AutomationNodeCatalogItem) => {
       event.dataTransfer.setData("application/donut-node-type", item.type);
+      event.dataTransfer.setData("text/plain", item.type);
       event.dataTransfer.effectAllowed = "copy";
     },
     [],
