@@ -3,6 +3,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 import { interpolateString, interpolateParams } from "../lib/interpolate.mjs";
 import { validateFlow, FlowValidationError } from "../lib/validate.mjs";
@@ -10,6 +13,25 @@ import { createRedactor, Logger } from "../lib/logger.mjs";
 import { assertNavigableUrl, isAllowedUrlScheme } from "../lib/url-guard.mjs";
 import { containArtifactPath, sanitizeFilenameFragment } from "../lib/safe-path.mjs";
 import { topoOrder, runFlow } from "../engine.mjs";
+
+const ENGINE_PATH = join(dirname(fileURLToPath(import.meta.url)), "..", "engine.mjs");
+
+/** Spawn `node engine.mjs --validate`, pipe `input` to stdin, resolve {code,stderr}. */
+function runValidate(input) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [ENGINE_PATH, "--validate"], {
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    let stderr = "";
+    child.stderr.on("data", (c) => {
+      stderr += c;
+    });
+    child.on("error", reject);
+    child.on("close", (code) => resolve({ code, stderr }));
+    child.stdin.write(input);
+    child.stdin.end();
+  });
+}
 
 // ---- interpolate ----------------------------------------------------------
 
@@ -314,4 +336,24 @@ test("type node never logs the typed text (#12)", async () => {
   assert.ok(page.calls.some((c) => c[0] === "fill" && c[2] === "hunter2"));
   // …but never appears in any log line.
   assert.ok(!lines.some((l) => l.msg.includes("hunter2")));
+});
+
+// ---- --validate mode (HIGH-2: JSON via stdin, no CDP) ---------------------
+
+test("--validate exits 0 for a well-formed flow", async () => {
+  const { code } = await runValidate(JSON.stringify(goodFlow));
+  assert.equal(code, 0);
+});
+
+test("--validate exits 2 + stderr message for an invalid flow", async () => {
+  const f = structuredClone(goodFlow);
+  f.nodes[0].type = "evilEval";
+  const { code, stderr } = await runValidate(JSON.stringify(f));
+  assert.equal(code, 2);
+  assert.ok(stderr.length > 0, "stderr should carry the validation error");
+});
+
+test("--validate exits 2 for non-JSON stdin", async () => {
+  const { code } = await runValidate("not json at all");
+  assert.equal(code, 2);
 });

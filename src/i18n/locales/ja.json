@@ -2001,6 +2001,93 @@
       "readFlowFailed": "フローの読み込みに失敗しました: {{error}}",
       "startFailed": "実行の開始に失敗しました: {{error}}",
       "stopFailed": "実行の停止に失敗しました: {{error}}"
+    },
+    "editor": {
+      "comingSoon": "ビジュアルエディターは近日公開予定です。",
+      "start": "Start",
+      "palette": "Node palette",
+      "paletteHint": "Drag nodes onto the canvas, then connect them in a line.",
+      "searchNodes": "Search nodes…",
+      "linearHint": "Linear mode: each node can have one outgoing edge.",
+      "name": "Flow name",
+      "namePlaceholder": "Flow name",
+      "saving": "Saving…",
+      "selectNode": "Select a node to edit its properties.",
+      "booleanEnabled": "Enabled",
+      "groups": {
+        "navigator": "Navigator",
+        "interaction": "Interaction",
+        "utility": "Utility"
+      },
+      "toast": { "saved": "Saved \"{{name}}\"." },
+      "errors": {
+        "loadFailed": "Failed to load flow: {{error}}",
+        "saveFailed": "Failed to save flow: {{error}}"
+      }
+    },
+    "nodes": {
+      "openUrl": {
+        "label": "Open URL",
+        "description": "Navigate the browser to a URL."
+      },
+      "click": {
+        "label": "Click",
+        "description": "Click an element by selector."
+      },
+      "type": {
+        "label": "Type",
+        "description": "Type text into an input or editable element."
+      },
+      "wait": {
+        "label": "Wait",
+        "description": "Wait for a selector or fixed timeout."
+      },
+      "scroll": {
+        "label": "Scroll",
+        "description": "Scroll the page or an element."
+      },
+      "screenshot": {
+        "label": "Screenshot",
+        "description": "Capture a screenshot during the run."
+      },
+      "log": {
+        "label": "Log",
+        "description": "Write a message to the run log."
+      },
+      "delay": {
+        "label": "Delay",
+        "description": "Pause for a fixed number of milliseconds."
+      }
+    },
+    "script": {
+      "add": "スクリプトを追加",
+      "import": "スクリプトをインポート",
+      "edit": "編集",
+      "duplicate": "複製",
+      "export": "エクスポート",
+      "delete": "削除",
+      "searchPlaceholder": "名前でスクリプトを検索…",
+      "loading": "スクリプトを読み込み中…",
+      "empty": "まだスクリプトがありません。追加して始めましょう。",
+      "noMatches": "検索に一致するスクリプトがありません。",
+      "modifiedAt": "更新 {{date}}",
+      "toast": {
+        "duplicated": "「{{name}}」として複製しました。",
+        "exported": "「{{name}}」をエクスポートしました。",
+        "imported": "「{{name}}」をインポートしました。",
+        "deleted": "「{{name}}」を削除しました。"
+      },
+      "errors": {
+        "deleteFailed": "スクリプトの削除に失敗しました: {{error}}",
+        "duplicateFailed": "スクリプトの複製に失敗しました: {{error}}",
+        "exportFailed": "スクリプトのエクスポートに失敗しました: {{error}}",
+        "importFailed": "スクリプトのインポートに失敗しました: {{error}}"
+      },
+      "confirm": {
+        "deleteTitle": "スクリプトを削除しますか？",
+        "deleteDescription": "「{{name}}」は完全に削除されます。元に戻せません。",
+        "overwriteImport": "「{{name}}」という名前のスクリプトは既に存在します。上書きしますか？"
+      }
     }
   },
   "encryption": {

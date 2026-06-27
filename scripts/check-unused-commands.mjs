@@ -18,6 +18,9 @@ const mcpOnlyCommands = [
   "cloud_get_wayfern_token",
   "cloud_refresh_wayfern_token",
   "lock_profile",
+  // Server-side only: called inside write_automation_flow as the validation
+  // gate, never invoked directly from the frontend.
+  "validate_automation_flow",
 ];
 
 const verbose = process.argv.includes('--verbose') || process.argv.includes('-v');

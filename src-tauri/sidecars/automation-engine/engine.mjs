@@ -16,6 +16,7 @@
 //   2 = setup failure (bad args, flow invalid, CDP connect failed)
 
 import { readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import { chromium } from "playwright-core";
 
 import { validateFlow } from "./lib/validate.mjs";
@@ -135,8 +136,49 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
   return failed;
 }
 
+/** Read all of stdin to a string (used by --validate). */
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    process.stdin.setEncoding("utf-8");
+    process.stdin.on("data", (chunk) => {
+      data += chunk;
+    });
+    process.stdin.on("end", () => resolve(data));
+    process.stdin.on("error", reject);
+  });
+}
+
+/**
+ * Validate-only mode (--validate): read a flow JSON from stdin, run the shared
+ * validator, and exit 0 (valid) or 2 (invalid, message on stderr). NEVER touches
+ * CDP/Playwright — this is the gate the Rust write/import path spawns. JSON comes
+ * via stdin, not argv, so large flows don't hit the OS command-line length limit
+ * (red-team HIGH-2).
+ */
+async function validateOnly() {
+  let raw;
+  try {
+    raw = await readStdin();
+  } catch (e) {
+    process.stderr.write(`failed to read flow from stdin: ${e.message}\n`);
+    return EXIT_SETUP;
+  }
+  try {
+    validateFlow(JSON.parse(raw));
+  } catch (e) {
+    process.stderr.write(`${e.message}\n`);
+    return EXIT_SETUP;
+  }
+  return EXIT_OK;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+
+  if (args.validate) {
+    return validateOnly();
+  }
 
   // Bare logger for setup-phase errors (no redaction needed pre-vars).
   const bootLog = new Logger({ runId: args["run-id"] ?? "?", profileId: args["profile-id"] ?? "?" });
@@ -214,7 +256,11 @@ async function main() {
 }
 
 // Only run main when executed directly (not when imported by tests).
-const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}`;
+// Use pathToFileURL for a canonical comparison: a hand-built `file://${path}`
+// produces a double-slash URL on Windows (file://D:/…) that never matches
+// import.meta.url's triple-slash form (file:///D:/…), so main() would never run.
+const isMain =
+  process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
 if (isMain) {
   main()
     .then((code) => process.exit(code))

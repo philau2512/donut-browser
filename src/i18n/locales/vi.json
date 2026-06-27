@@ -2001,6 +2001,93 @@
       "readFlowFailed": "Không đọc được flow: {{error}}",
       "startFailed": "Không bắt đầu được lần chạy: {{error}}",
       "stopFailed": "Không dừng được lần chạy: {{error}}"
+    },
+    "editor": {
+      "comingSoon": "Trình chỉnh sửa trực quan sắp ra mắt.",
+      "start": "Start",
+      "palette": "Node palette",
+      "paletteHint": "Drag nodes onto the canvas, then connect them in a line.",
+      "searchNodes": "Search nodes…",
+      "linearHint": "Linear mode: each node can have one outgoing edge.",
+      "name": "Flow name",
+      "namePlaceholder": "Flow name",
+      "saving": "Saving…",
+      "selectNode": "Select a node to edit its properties.",
+      "booleanEnabled": "Enabled",
+      "groups": {
+        "navigator": "Navigator",
+        "interaction": "Interaction",
+        "utility": "Utility"
+      },
+      "toast": { "saved": "Saved \"{{name}}\"." },
+      "errors": {
+        "loadFailed": "Failed to load flow: {{error}}",
+        "saveFailed": "Failed to save flow: {{error}}"
+      }
+    },
+    "nodes": {
+      "openUrl": {
+        "label": "Open URL",
+        "description": "Navigate the browser to a URL."
+      },
+      "click": {
+        "label": "Click",
+        "description": "Click an element by selector."
+      },
+      "type": {
+        "label": "Type",
+        "description": "Type text into an input or editable element."
+      },
+      "wait": {
+        "label": "Wait",
+        "description": "Wait for a selector or fixed timeout."
+      },
+      "scroll": {
+        "label": "Scroll",
+        "description": "Scroll the page or an element."
+      },
+      "screenshot": {
+        "label": "Screenshot",
+        "description": "Capture a screenshot during the run."
+      },
+      "log": {
+        "label": "Log",
+        "description": "Write a message to the run log."
+      },
+      "delay": {
+        "label": "Delay",
+        "description": "Pause for a fixed number of milliseconds."
+      }
+    },
+    "script": {
+      "add": "Thêm script",
+      "import": "Nhập script",
+      "edit": "Sửa",
+      "duplicate": "Nhân bản",
+      "export": "Xuất",
+      "delete": "Xóa",
+      "searchPlaceholder": "Tìm script theo tên…",
+      "loading": "Đang tải script…",
+      "empty": "Chưa có script nào. Thêm một cái để bắt đầu.",
+      "noMatches": "Không có script nào khớp với tìm kiếm.",
+      "modifiedAt": "Sửa {{date}}",
+      "toast": {
+        "duplicated": "Đã nhân bản thành \"{{name}}\".",
+        "exported": "Đã xuất \"{{name}}\".",
+        "imported": "Đã nhập \"{{name}}\".",
+        "deleted": "Đã xóa \"{{name}}\"."
+      },
+      "errors": {
+        "deleteFailed": "Không xóa được script: {{error}}",
+        "duplicateFailed": "Không nhân bản được script: {{error}}",
+        "exportFailed": "Không xuất được script: {{error}}",
+        "importFailed": "Không nhập được script: {{error}}"
+      },
+      "confirm": {
+        "deleteTitle": "Xóa script?",
+        "deleteDescription": "\"{{name}}\" sẽ bị xóa vĩnh viễn. Không thể hoàn tác.",
+        "overwriteImport": "Đã có script tên \"{{name}}\". Ghi đè?"
+      }
     }
   },
   "encryption": {

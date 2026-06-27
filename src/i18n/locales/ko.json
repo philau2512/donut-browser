@@ -2001,6 +2001,93 @@
       "readFlowFailed": "플로우 읽기 실패: {{error}}",
       "startFailed": "실행 시작 실패: {{error}}",
       "stopFailed": "실행 중지 실패: {{error}}"
+    },
+    "editor": {
+      "comingSoon": "비주얼 편집기가 곧 제공됩니다.",
+      "start": "Start",
+      "palette": "Node palette",
+      "paletteHint": "Drag nodes onto the canvas, then connect them in a line.",
+      "searchNodes": "Search nodes…",
+      "linearHint": "Linear mode: each node can have one outgoing edge.",
+      "name": "Flow name",
+      "namePlaceholder": "Flow name",
+      "saving": "Saving…",
+      "selectNode": "Select a node to edit its properties.",
+      "booleanEnabled": "Enabled",
+      "groups": {
+        "navigator": "Navigator",
+        "interaction": "Interaction",
+        "utility": "Utility"
+      },
+      "toast": { "saved": "Saved \"{{name}}\"." },
+      "errors": {
+        "loadFailed": "Failed to load flow: {{error}}",
+        "saveFailed": "Failed to save flow: {{error}}"
+      }
+    },
+    "nodes": {
+      "openUrl": {
+        "label": "Open URL",
+        "description": "Navigate the browser to a URL."
+      },
+      "click": {
+        "label": "Click",
+        "description": "Click an element by selector."
+      },
+      "type": {
+        "label": "Type",
+        "description": "Type text into an input or editable element."
+      },
+      "wait": {
+        "label": "Wait",
+        "description": "Wait for a selector or fixed timeout."
+      },
+      "scroll": {
+        "label": "Scroll",
+        "description": "Scroll the page or an element."
+      },
+      "screenshot": {
+        "label": "Screenshot",
+        "description": "Capture a screenshot during the run."
+      },
+      "log": {
+        "label": "Log",
+        "description": "Write a message to the run log."
+      },
+      "delay": {
+        "label": "Delay",
+        "description": "Pause for a fixed number of milliseconds."
+      }
+    },
+    "script": {
+      "add": "스크립트 추가",
+      "import": "스크립트 가져오기",
+      "edit": "편집",
+      "duplicate": "복제",
+      "export": "내보내기",
+      "delete": "삭제",
+      "searchPlaceholder": "이름으로 스크립트 검색…",
+      "loading": "스크립트를 불러오는 중…",
+      "empty": "아직 스크립트가 없습니다. 추가하여 시작하세요.",
+      "noMatches": "검색과 일치하는 스크립트가 없습니다.",
+      "modifiedAt": "수정 {{date}}",
+      "toast": {
+        "duplicated": "\"{{name}}\"(으)로 복제했습니다.",
+        "exported": "\"{{name}}\"을(를) 내보냈습니다.",
+        "imported": "\"{{name}}\"을(를) 가져왔습니다.",
+        "deleted": "\"{{name}}\"을(를) 삭제했습니다."
+      },
+      "errors": {
+        "deleteFailed": "스크립트 삭제 실패: {{error}}",
+        "duplicateFailed": "스크립트 복제 실패: {{error}}",
+        "exportFailed": "스크립트 내보내기 실패: {{error}}",
+        "importFailed": "스크립트 가져오기 실패: {{error}}"
+      },
+      "confirm": {
+        "deleteTitle": "스크립트를 삭제할까요?",
+        "deleteDescription": "\"{{name}}\"이(가) 영구적으로 삭제됩니다. 되돌릴 수 없습니다.",
+        "overwriteImport": "\"{{name}}\" 이름의 스크립트가 이미 있습니다. 덮어쓸까요?"
+      }
     }
   },
   "encryption": {

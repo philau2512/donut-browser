@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LuCircleStop, LuPlay, LuRefreshCw } from "react-icons/lu";
+import { LuArrowLeft, LuCircleStop, LuPlay, LuRefreshCw } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -26,6 +26,11 @@ import { AutomationRunnerGrid } from "./automation-runner-grid";
 
 interface AutomationPageProps {
   profiles: BrowserProfile[];
+  /** When set, preselect this flow on mount (the run panel was opened from a
+   * script card). Undefined keeps the legacy "pick a flow" entry point. */
+  initialFlowPath?: string;
+  /** When set, render a Back control that returns to the script list. */
+  onBack?: () => void;
 }
 
 /** Strip the directory + extension from a flow path for display. */
@@ -34,7 +39,11 @@ function flowLabel(path: string): string {
   return base.replace(/\.donutflow$/i, "");
 }
 
-export function AutomationPage({ profiles }: AutomationPageProps) {
+export function AutomationPage({
+  profiles,
+  initialFlowPath,
+  onBack,
+}: AutomationPageProps) {
   const { t } = useTranslation();
   const {
     flows,
@@ -55,6 +64,15 @@ export function AutomationPage({ profiles }: AutomationPageProps) {
     new Set(),
   );
   const [settings, setSettings] = useState<RunSettings>(DEFAULT_RUN_SETTINGS);
+
+  // Preselect the flow the run panel was opened with (from a script card),
+  // once it appears in the loaded list. Only seeds an empty selection so it
+  // never fights a manual change.
+  useEffect(() => {
+    if (!initialFlowPath) return;
+    if (!flows.includes(initialFlowPath)) return;
+    setSelectedFlow((prev) => (prev === "" ? initialFlowPath : prev));
+  }, [initialFlowPath, flows]);
 
   // The active run is "live" while any of its profiles is still non-terminal.
   const activeRun = activeRunId ? runs[activeRunId] : undefined;
@@ -112,6 +130,16 @@ export function AutomationPage({ profiles }: AutomationPageProps) {
     <div className="flex min-h-0 flex-1 gap-3 p-3">
       {/* Left column: configuration */}
       <div className="flex w-80 shrink-0 flex-col gap-4 overflow-y-auto rounded-lg border border-border bg-card p-4">
+        {onBack && (
+          <button
+            type="button"
+            className="-mb-1 flex items-center gap-1.5 self-start text-xs text-muted-foreground hover:text-foreground"
+            onClick={onBack}
+          >
+            <LuArrowLeft className="size-3.5" />
+            {t("common.buttons.back")}
+          </button>
+        )}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

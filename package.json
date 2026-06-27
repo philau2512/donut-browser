@@ -49,6 +49,7 @@
     "@radix-ui/react-tooltip": "^1.2.10",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.3",
+    "@xyflow/react": "12.9.3",
     "@tauri-apps/api": "~2.11.1",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
     "@tauri-apps/plugin-deep-link": "^2.4.9",

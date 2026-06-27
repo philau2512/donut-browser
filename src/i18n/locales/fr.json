@@ -2001,6 +2001,93 @@
       "readFlowFailed": "Échec de la lecture du flux : {{error}}",
       "startFailed": "Échec du démarrage de l'exécution : {{error}}",
       "stopFailed": "Échec de l'arrêt de l'exécution : {{error}}"
+    },
+    "editor": {
+      "comingSoon": "L'éditeur visuel arrive bientôt.",
+      "start": "Start",
+      "palette": "Node palette",
+      "paletteHint": "Drag nodes onto the canvas, then connect them in a line.",
+      "searchNodes": "Search nodes…",
+      "linearHint": "Linear mode: each node can have one outgoing edge.",
+      "name": "Flow name",
+      "namePlaceholder": "Flow name",
+      "saving": "Saving…",
+      "selectNode": "Select a node to edit its properties.",
+      "booleanEnabled": "Enabled",
+      "groups": {
+        "navigator": "Navigator",
+        "interaction": "Interaction",
+        "utility": "Utility"
+      },
+      "toast": { "saved": "Saved \"{{name}}\"." },
+      "errors": {
+        "loadFailed": "Failed to load flow: {{error}}",
+        "saveFailed": "Failed to save flow: {{error}}"
+      }
+    },
+    "nodes": {
+      "openUrl": {
+        "label": "Open URL",
+        "description": "Navigate the browser to a URL."
+      },
+      "click": {
+        "label": "Click",
+        "description": "Click an element by selector."
+      },
+      "type": {
+        "label": "Type",
+        "description": "Type text into an input or editable element."
+      },
+      "wait": {
+        "label": "Wait",
+        "description": "Wait for a selector or fixed timeout."
+      },
+      "scroll": {
+        "label": "Scroll",
+        "description": "Scroll the page or an element."
+      },
+      "screenshot": {
+        "label": "Screenshot",
+        "description": "Capture a screenshot during the run."
+      },
+      "log": {
+        "label": "Log",
+        "description": "Write a message to the run log."
+      },
+      "delay": {
+        "label": "Delay",
+        "description": "Pause for a fixed number of milliseconds."
+      }
+    },
+    "script": {
+      "add": "Ajouter un script",
+      "import": "Importer un script",
+      "edit": "Modifier",
+      "duplicate": "Dupliquer",
+      "export": "Exporter",
+      "delete": "Supprimer",
+      "searchPlaceholder": "Rechercher des scripts par nom…",
+      "loading": "Chargement des scripts…",
+      "empty": "Aucun script pour l'instant. Ajoutez-en un pour commencer.",
+      "noMatches": "Aucun script ne correspond à votre recherche.",
+      "modifiedAt": "Modifié {{date}}",
+      "toast": {
+        "duplicated": "Dupliqué sous « {{name}} ».",
+        "exported": "Exporté « {{name}} ».",
+        "imported": "Importé « {{name}} ».",
+        "deleted": "Supprimé « {{name}} »."
+      },
+      "errors": {
+        "deleteFailed": "Échec de la suppression du script : {{error}}",
+        "duplicateFailed": "Échec de la duplication du script : {{error}}",
+        "exportFailed": "Échec de l'exportation du script : {{error}}",
+        "importFailed": "Échec de l'importation du script : {{error}}"
+      },
+      "confirm": {
+        "deleteTitle": "Supprimer le script ?",
+        "deleteDescription": "« {{name}} » sera définitivement supprimé. Cette action est irréversible.",
+        "overwriteImport": "Un script nommé « {{name}} » existe déjà. Le remplacer ?"
+      }
     }
   },
   "encryption": {

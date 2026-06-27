@@ -2001,6 +2001,93 @@
       "readFlowFailed": "读取流程失败：{{error}}",
       "startFailed": "启动运行失败：{{error}}",
       "stopFailed": "停止运行失败：{{error}}"
+    },
+    "editor": {
+      "comingSoon": "可视化编辑器即将推出。",
+      "start": "Start",
+      "palette": "Node palette",
+      "paletteHint": "Drag nodes onto the canvas, then connect them in a line.",
+      "searchNodes": "Search nodes…",
+      "linearHint": "Linear mode: each node can have one outgoing edge.",
+      "name": "Flow name",
+      "namePlaceholder": "Flow name",
+      "saving": "Saving…",
+      "selectNode": "Select a node to edit its properties.",
+      "booleanEnabled": "Enabled",
+      "groups": {
+        "navigator": "Navigator",
+        "interaction": "Interaction",
+        "utility": "Utility"
+      },
+      "toast": { "saved": "Saved \"{{name}}\"." },
+      "errors": {
+        "loadFailed": "Failed to load flow: {{error}}",
+        "saveFailed": "Failed to save flow: {{error}}"
+      }
+    },
+    "nodes": {
+      "openUrl": {
+        "label": "Open URL",
+        "description": "Navigate the browser to a URL."
+      },
+      "click": {
+        "label": "Click",
+        "description": "Click an element by selector."
+      },
+      "type": {
+        "label": "Type",
+        "description": "Type text into an input or editable element."
+      },
+      "wait": {
+        "label": "Wait",
+        "description": "Wait for a selector or fixed timeout."
+      },
+      "scroll": {
+        "label": "Scroll",
+        "description": "Scroll the page or an element."
+      },
+      "screenshot": {
+        "label": "Screenshot",
+        "description": "Capture a screenshot during the run."
+      },
+      "log": {
+        "label": "Log",
+        "description": "Write a message to the run log."
+      },
+      "delay": {
+        "label": "Delay",
+        "description": "Pause for a fixed number of milliseconds."
+      }
+    },
+    "script": {
+      "add": "添加脚本",
+      "import": "导入脚本",
+      "edit": "编辑",
+      "duplicate": "复制",
+      "export": "导出",
+      "delete": "删除",
+      "searchPlaceholder": "按名称搜索脚本…",
+      "loading": "正在加载脚本…",
+      "empty": "还没有脚本。添加一个开始吧。",
+      "noMatches": "没有与搜索匹配的脚本。",
+      "modifiedAt": "修改于 {{date}}",
+      "toast": {
+        "duplicated": "已复制为“{{name}}”。",
+        "exported": "已导出“{{name}}”。",
+        "imported": "已导入“{{name}}”。",
+        "deleted": "已删除“{{name}}”。"
+      },
+      "errors": {
+        "deleteFailed": "删除脚本失败：{{error}}",
+        "duplicateFailed": "复制脚本失败：{{error}}",
+        "exportFailed": "导出脚本失败：{{error}}",
+        "importFailed": "导入脚本失败：{{error}}"
+      },
+      "confirm": {
+        "deleteTitle": "删除脚本？",
+        "deleteDescription": "“{{name}}”将被永久删除。此操作无法撤销。",
+        "overwriteImport": "已存在名为“{{name}}”的脚本。要覆盖它吗？"
+      }
     }
   },
   "encryption": {

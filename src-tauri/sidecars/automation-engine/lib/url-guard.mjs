@@ -12,7 +12,7 @@ const DEFAULT_ALLOWED_SCHEMES = ["http:", "https:"];
  * @param {string} rawUrl - the (already variable-interpolated) URL string
  * @param {string[]} [allowedSchemes] - optional override list, e.g. ["http:","https:","ftp:"]
  * @returns {URL} the parsed URL when allowed
- * @throws {Error} when the URL is unparseable or its scheme is not allowed
+ * @throws {Error} when the URL is unparsable or its scheme is not allowed
  */
 export function assertNavigableUrl(rawUrl, allowedSchemes = DEFAULT_ALLOWED_SCHEMES) {
   if (typeof rawUrl !== "string" || rawUrl.trim() === "") {
@@ -44,7 +44,7 @@ export function assertNavigableUrl(rawUrl, allowedSchemes = DEFAULT_ALLOWED_SCHE
 /**
  * Non-throwing scheme check for static validation (validate.mjs uses this to
  * reject obviously-hostile literal URLs before runtime). Returns false for
- * unparseable URLs or disallowed schemes.
+ * unparsable URLs or disallowed schemes.
  * @param {string} rawUrl
  * @param {string[]} [allowedSchemes]
  * @returns {boolean}

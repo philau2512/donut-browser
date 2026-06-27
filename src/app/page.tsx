@@ -5,7 +5,7 @@ import { useOnborda } from "onborda";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 // Automation
-import { AutomationPage } from "@/components/automation";
+import { AutomationTab } from "@/components/automation";
 // Settings
 import { ExtensionManagementDialog } from "@/components/extension";
 import { GroupManagementDialog } from "@/components/group";
@@ -680,7 +680,7 @@ export default function Home() {
           )}
 
           {currentPage === "automation" && (
-            <AutomationPage profiles={profiles} />
+            <AutomationTab profiles={profiles} />
           )}
 
           {settingsDialogOpen && (

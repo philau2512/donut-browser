@@ -282,7 +282,11 @@ pub fn run() {
       crate::automation::commands::list_automation_runs,
       crate::automation::commands::get_run_log_path,
       crate::automation::commands::list_automation_flows,
+      crate::automation::commands::list_automation_flow_meta,
       crate::automation::commands::read_automation_flow,
+      crate::automation::commands::write_automation_flow,
+      crate::automation::commands::delete_automation_flow,
+      crate::automation::commands::validate_automation_flow,
     ])
     .build(tauri::generate_context!())
     .expect("error while building tauri application")
