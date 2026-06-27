@@ -1926,7 +1926,8 @@
     },
     "network": "네트워크",
     "integrations": "통합",
-    "account": "계정"
+    "account": "계정",
+    "automation": "자동화"
   },
   "pageTitle": {
     "proxies": "네트워크",
@@ -1937,7 +1938,70 @@
     "integrations": "통합",
     "account": "계정",
     "import": "프로필 가져오기",
-    "shortcuts": "키보드 단축키"
+    "shortcuts": "키보드 단축키",
+    "automation": "자동화"
+  },
+  "automation": {
+    "flow": {
+      "label": "플로우",
+      "placeholder": "플로우 선택",
+      "refresh": "플로우 새로고침",
+      "empty": "플로우 디렉터리에서 .donutflow 파일을 찾을 수 없습니다."
+    },
+    "profiles": {
+      "label": "프로필 ({{count}})",
+      "selectAll": "전체 선택",
+      "deselectAll": "전체 해제",
+      "empty": "사용 가능한 프로필이 없습니다."
+    },
+    "settings": {
+      "title": "실행 설정",
+      "concurrency": "동시 실행 수",
+      "concurrencyHint": "병렬로 실행할 최대 프로필 수입니다.",
+      "delayOpen": "열기 지연 (초)",
+      "delayOpenHint": "실행 간 시간 간격(초)입니다.",
+      "headless": "헤드리스",
+      "headlessHint": "브라우저 창 없이 실행합니다.",
+      "noOverlapping": "프로필 중복 방지",
+      "noOverlappingHint": "이미 실행 중인 프로필을 건너뜁니다.",
+      "closeOnComplete": "완료 시 닫기",
+      "closeOnCompleteHint": "플로우가 끝나면 브라우저를 닫습니다.",
+      "writeLogs": "로그 기록",
+      "writeLogsHint": "프로필별 로그 파일을 디스크에 저장합니다."
+    },
+    "actions": {
+      "run": "실행",
+      "starting": "시작 중…",
+      "stopAll": "전체 중지"
+    },
+    "grid": {
+      "empty": "플로우와 프로필을 선택한 후 실행하세요.",
+      "stopProfile": "{{name}} 중지"
+    },
+    "status": {
+      "idle": "대기 중",
+      "launching": "실행 준비 중",
+      "running": "실행 중",
+      "done": "완료",
+      "doneWithErrors": "오류와 함께 완료",
+      "error": "오류",
+      "skipped": "건너뜀",
+      "stopped": "중지됨"
+    },
+    "log": {
+      "title": "로그",
+      "allProfiles": "모든 프로필",
+      "scrollLock": "최신 항목으로 스크롤 고정",
+      "scrollUnlock": "스크롤 고정 해제",
+      "openFile": "로그 파일 열기",
+      "empty": "아직 로그 출력이 없습니다."
+    },
+    "runInfo": "실행 중인 플로우: {{name}}",
+    "errors": {
+      "readFlowFailed": "플로우 읽기 실패: {{error}}",
+      "startFailed": "실행 시작 실패: {{error}}",
+      "stopFailed": "실행 중지 실패: {{error}}"
+    }
   },
   "encryption": {
     "required": {

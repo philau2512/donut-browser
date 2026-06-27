@@ -1926,7 +1926,8 @@
     },
     "network": "Network",
     "integrations": "Integrations",
-    "account": "Account"
+    "account": "Account",
+    "automation": "Automation"
   },
   "pageTitle": {
     "proxies": "Network",
@@ -1937,7 +1938,70 @@
     "integrations": "Integrations",
     "account": "Account",
     "import": "Import profile",
-    "shortcuts": "Keyboard shortcuts"
+    "shortcuts": "Keyboard shortcuts",
+    "automation": "Automation"
+  },
+  "automation": {
+    "flow": {
+      "label": "Flow",
+      "placeholder": "Select a flow",
+      "refresh": "Refresh flows",
+      "empty": "No .donutflow files found in the flows directory."
+    },
+    "profiles": {
+      "label": "Profiles ({{count}})",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "empty": "No profiles available."
+    },
+    "settings": {
+      "title": "Run settings",
+      "concurrency": "Concurrency",
+      "concurrencyHint": "Max profiles running in parallel.",
+      "delayOpen": "Delay open (s)",
+      "delayOpenHint": "Seconds to stagger between launches.",
+      "headless": "Headless",
+      "headlessHint": "Run without a visible browser window.",
+      "noOverlapping": "No overlapping profiles",
+      "noOverlappingHint": "Skip a profile that is already running.",
+      "closeOnComplete": "Close on complete",
+      "closeOnCompleteHint": "Close the browser after the flow finishes.",
+      "writeLogs": "Write logs",
+      "writeLogsHint": "Save per-profile log files to disk."
+    },
+    "actions": {
+      "run": "Run",
+      "starting": "Starting…",
+      "stopAll": "Stop all"
+    },
+    "grid": {
+      "empty": "Select a flow and profiles, then run.",
+      "stopProfile": "Stop {{name}}"
+    },
+    "status": {
+      "idle": "Idle",
+      "launching": "Launching",
+      "running": "Running",
+      "done": "Done",
+      "doneWithErrors": "Done with errors",
+      "error": "Error",
+      "skipped": "Skipped",
+      "stopped": "Stopped"
+    },
+    "log": {
+      "title": "Logs",
+      "allProfiles": "All profiles",
+      "scrollLock": "Lock scroll to newest",
+      "scrollUnlock": "Unlock scroll",
+      "openFile": "Open log file",
+      "empty": "No log output yet."
+    },
+    "runInfo": "Running flow: {{name}}",
+    "errors": {
+      "readFlowFailed": "Failed to read flow: {{error}}",
+      "startFailed": "Failed to start run: {{error}}",
+      "stopFailed": "Failed to stop run: {{error}}"
+    }
   },
   "encryption": {
     "required": {

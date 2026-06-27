@@ -276,6 +276,13 @@ pub fn run() {
       unlock_profile,
       lock_profile,
       is_profile_locked,
+      // Automation commands (in-app visual node automation)
+      crate::automation::commands::start_automation_run,
+      crate::automation::commands::stop_automation_run,
+      crate::automation::commands::list_automation_runs,
+      crate::automation::commands::get_run_log_path,
+      crate::automation::commands::list_automation_flows,
+      crate::automation::commands::read_automation_flow,
     ])
     .build(tauri::generate_context!())
     .expect("error while building tauri application")

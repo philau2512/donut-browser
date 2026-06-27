@@ -1926,7 +1926,8 @@
     },
     "network": "Mạng",
     "integrations": "Tích hợp",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "automation": "Tự động hóa"
   },
   "pageTitle": {
     "proxies": "Mạng",
@@ -1937,7 +1938,70 @@
     "integrations": "Tích hợp",
     "account": "Tài khoản",
     "import": "Nhập profile",
-    "shortcuts": "Phím tắt"
+    "shortcuts": "Phím tắt",
+    "automation": "Tự động hóa"
+  },
+  "automation": {
+    "flow": {
+      "label": "Flow",
+      "placeholder": "Chọn một flow",
+      "refresh": "Làm mới flow",
+      "empty": "Không tìm thấy tệp .donutflow nào trong thư mục flow."
+    },
+    "profiles": {
+      "label": "Profile ({{count}})",
+      "selectAll": "Chọn tất cả",
+      "deselectAll": "Bỏ chọn tất cả",
+      "empty": "Không có profile nào."
+    },
+    "settings": {
+      "title": "Cài đặt chạy",
+      "concurrency": "Đồng thời",
+      "concurrencyHint": "Số profile tối đa chạy song song.",
+      "delayOpen": "Trễ khi mở (giây)",
+      "delayOpenHint": "Số giây giãn cách giữa các lần khởi chạy.",
+      "headless": "Headless",
+      "headlessHint": "Chạy không hiển thị cửa sổ trình duyệt.",
+      "noOverlapping": "Không trùng profile",
+      "noOverlappingHint": "Bỏ qua profile đang chạy.",
+      "closeOnComplete": "Đóng khi hoàn tất",
+      "closeOnCompleteHint": "Đóng trình duyệt sau khi flow kết thúc.",
+      "writeLogs": "Ghi log",
+      "writeLogsHint": "Lưu tệp log riêng cho từng profile vào đĩa."
+    },
+    "actions": {
+      "run": "Chạy",
+      "starting": "Đang khởi động…",
+      "stopAll": "Dừng tất cả"
+    },
+    "grid": {
+      "empty": "Chọn một flow và các profile, rồi chạy.",
+      "stopProfile": "Dừng {{name}}"
+    },
+    "status": {
+      "idle": "Chờ",
+      "launching": "Đang khởi chạy",
+      "running": "Đang chạy",
+      "done": "Hoàn tất",
+      "doneWithErrors": "Hoàn tất kèm lỗi",
+      "error": "Lỗi",
+      "skipped": "Đã bỏ qua",
+      "stopped": "Đã dừng"
+    },
+    "log": {
+      "title": "Log",
+      "allProfiles": "Tất cả profile",
+      "scrollLock": "Khóa cuộn theo dòng mới nhất",
+      "scrollUnlock": "Mở khóa cuộn",
+      "openFile": "Mở tệp log",
+      "empty": "Chưa có log nào."
+    },
+    "runInfo": "Đang chạy flow: {{name}}",
+    "errors": {
+      "readFlowFailed": "Không đọc được flow: {{error}}",
+      "startFailed": "Không bắt đầu được lần chạy: {{error}}",
+      "stopFailed": "Không dừng được lần chạy: {{error}}"
+    }
   },
   "encryption": {
     "required": {

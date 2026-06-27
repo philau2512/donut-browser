@@ -1,0 +1,13 @@
+{
+  "name": "automation-spike",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Throwaway spike: prove playwright-core connectOverCDP works against a running Wayfern profile without downloading Chromium. Delete after Phase 1 verdict.",
+  "scripts": {
+    "spike": "node spike.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.49.1"
+  }
+}

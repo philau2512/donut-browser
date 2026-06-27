@@ -1926,7 +1926,8 @@
     },
     "network": "Сеть",
     "integrations": "Интеграции",
-    "account": "Аккаунт"
+    "account": "Аккаунт",
+    "automation": "Автоматизация"
   },
   "pageTitle": {
     "proxies": "Сеть",
@@ -1937,7 +1938,70 @@
     "integrations": "Интеграции",
     "account": "Аккаунт",
     "import": "Импорт профиля",
-    "shortcuts": "Сочетания клавиш"
+    "shortcuts": "Сочетания клавиш",
+    "automation": "Автоматизация"
+  },
+  "automation": {
+    "flow": {
+      "label": "Поток",
+      "placeholder": "Выберите поток",
+      "refresh": "Обновить потоки",
+      "empty": "В каталоге потоков не найдено файлов .donutflow."
+    },
+    "profiles": {
+      "label": "Профили ({{count}})",
+      "selectAll": "Выбрать все",
+      "deselectAll": "Снять выбор",
+      "empty": "Нет доступных профилей."
+    },
+    "settings": {
+      "title": "Параметры запуска",
+      "concurrency": "Параллельность",
+      "concurrencyHint": "Максимум профилей, запущенных одновременно.",
+      "delayOpen": "Задержка запуска (с)",
+      "delayOpenHint": "Секунды задержки между запусками.",
+      "headless": "Безголовый режим",
+      "headlessHint": "Запуск без видимого окна браузера.",
+      "noOverlapping": "Без пересечения профилей",
+      "noOverlappingHint": "Пропустить уже запущенный профиль.",
+      "closeOnComplete": "Закрыть по завершении",
+      "closeOnCompleteHint": "Закрыть браузер после завершения потока.",
+      "writeLogs": "Записывать логи",
+      "writeLogsHint": "Сохранять файлы логов по каждому профилю на диск."
+    },
+    "actions": {
+      "run": "Запустить",
+      "starting": "Запуск…",
+      "stopAll": "Остановить все"
+    },
+    "grid": {
+      "empty": "Выберите поток и профили, затем запустите.",
+      "stopProfile": "Остановить {{name}}"
+    },
+    "status": {
+      "idle": "Ожидание",
+      "launching": "Запуск",
+      "running": "Выполняется",
+      "done": "Готово",
+      "doneWithErrors": "Готово с ошибками",
+      "error": "Ошибка",
+      "skipped": "Пропущено",
+      "stopped": "Остановлено"
+    },
+    "log": {
+      "title": "Логи",
+      "allProfiles": "Все профили",
+      "scrollLock": "Закрепить прокрутку на новых",
+      "scrollUnlock": "Открепить прокрутку",
+      "openFile": "Открыть файл лога",
+      "empty": "Пока нет вывода логов."
+    },
+    "runInfo": "Выполняется поток: {{name}}",
+    "errors": {
+      "readFlowFailed": "Не удалось прочитать поток: {{error}}",
+      "startFailed": "Не удалось запустить выполнение: {{error}}",
+      "stopFailed": "Не удалось остановить выполнение: {{error}}"
+    }
   },
   "encryption": {
     "required": {

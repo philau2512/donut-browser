@@ -1,0 +1,235 @@
+// Closed-schema validator for .donutflow v1 — Phase 2 (red-team #7b).
+//
+// A flow is UNTRUSTED input (may be imported from another user — see Phase 5
+// #14). The validator is the first gate: it rejects unknown node types and
+// unknown params (closed schema) so a crafted flow cannot smuggle data through
+// to a handler's param switch. It does NOT execute anything.
+//
+// Schema v1 (mirrors docs/automation-flow-schema.md):
+//   { version: 1, name, variables?: {}, nodes: [...], edges: [...] }
+// Each node: { id, type, params?: {}, continueOnError?: bool }
+// Each edge: { from, to }
+
+import { isAllowedUrlScheme } from "./url-guard.mjs";
+import { NODE_TYPES } from "../nodes/index.mjs";
+
+export const SCHEMA_VERSION = 1;
+
+// Per-node-type param spec. `required` must be present; `optional` may be
+// present; anything else => reject (closed schema). Param NAMES must match the
+// handler destructuring in nodes/*.mjs exactly — a cross-check below asserts the
+// set of node types here equals the registry, so the two cannot silently drift.
+export const NODE_SCHEMAS = {
+  openUrl: {
+    required: { url: "string" },
+    optional: { timeout: "number", waitUntil: "string" },
+  },
+  click: {
+    required: { selector: "string" },
+    optional: { timeout: "number", button: "string", clickCount: "number" },
+  },
+  type: {
+    required: { selector: "string", text: "string" },
+    optional: { timeout: "number", delay: "number" },
+  },
+  wait: {
+    // wait for a selector to appear (or fixed time when no selector)
+    required: {},
+    optional: { selector: "string", timeout: "number", state: "string" },
+  },
+  scroll: {
+    required: {},
+    optional: { selector: "string", x: "number", y: "number" },
+  },
+  screenshot: {
+    required: {},
+    optional: { path: "string", fullPage: "boolean" },
+  },
+  log: {
+    required: { message: "string" },
+    optional: { level: "string" },
+  },
+  delay: {
+    required: { ms: "number" },
+    optional: {},
+  },
+};
+
+export const ALLOWED_NODE_TYPES = Object.freeze(Object.keys(NODE_SCHEMAS));
+
+// Anti-drift guard (#7b): the validator's schema and the dispatcher's registry
+// must cover exactly the same node types. If a handler is added/removed without
+// updating NODE_SCHEMAS (or vice-versa), fail loudly at module load.
+{
+  const schemaSet = new Set(ALLOWED_NODE_TYPES);
+  const registrySet = new Set(NODE_TYPES);
+  const missingInSchema = NODE_TYPES.filter((t) => !schemaSet.has(t));
+  const missingInRegistry = ALLOWED_NODE_TYPES.filter((t) => !registrySet.has(t));
+  if (missingInSchema.length > 0 || missingInRegistry.length > 0) {
+    throw new Error(
+      `Node-type drift between validate.mjs and nodes/index.mjs — ` +
+        `missing in schema: [${missingInSchema.join(", ")}], ` +
+        `missing in registry: [${missingInRegistry.join(", ")}]`,
+    );
+  }
+}
+
+export class FlowValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "FlowValidationError";
+  }
+}
+
+function checkType(value, expected) {
+  if (expected === "number") return typeof value === "number" && Number.isFinite(value);
+  if (expected === "string") return typeof value === "string";
+  if (expected === "boolean") return typeof value === "boolean";
+  return false;
+}
+
+/**
+ * Validate a parsed flow object. Throws FlowValidationError on any violation.
+ * Returns the flow (unchanged) on success for chaining.
+ *
+ * @param {unknown} flow
+ * @returns {object}
+ */
+export function validateFlow(flow) {
+  if (!flow || typeof flow !== "object" || Array.isArray(flow)) {
+    throw new FlowValidationError("Flow must be a JSON object");
+  }
+  if (flow.version !== SCHEMA_VERSION) {
+    throw new FlowValidationError(
+      `Unsupported flow version: ${JSON.stringify(flow.version)} (expected ${SCHEMA_VERSION})`,
+    );
+  }
+  if (typeof flow.name !== "string" || flow.name.length === 0) {
+    throw new FlowValidationError("Flow.name must be a non-empty string");
+  }
+  if (flow.variables != null && (typeof flow.variables !== "object" || Array.isArray(flow.variables))) {
+    throw new FlowValidationError("Flow.variables must be an object when present");
+  }
+  if (!Array.isArray(flow.nodes) || flow.nodes.length === 0) {
+    throw new FlowValidationError("Flow.nodes must be a non-empty array");
+  }
+  if (!Array.isArray(flow.edges)) {
+    throw new FlowValidationError("Flow.edges must be an array");
+  }
+
+  const ids = new Set();
+  for (const node of flow.nodes) {
+    validateNode(node, ids);
+  }
+
+  for (const edge of flow.edges) {
+    if (!edge || typeof edge !== "object") {
+      throw new FlowValidationError("Each edge must be an object");
+    }
+    const extra = Object.keys(edge).filter((k) => k !== "from" && k !== "to");
+    if (extra.length > 0) {
+      throw new FlowValidationError(`Edge has unknown keys: ${extra.join(", ")}`);
+    }
+    if (!ids.has(edge.from)) {
+      throw new FlowValidationError(`Edge.from references unknown node: ${JSON.stringify(edge.from)}`);
+    }
+    if (!ids.has(edge.to)) {
+      throw new FlowValidationError(`Edge.to references unknown node: ${JSON.stringify(edge.to)}`);
+    }
+  }
+
+  detectCycle(flow.nodes, flow.edges);
+  return flow;
+}
+
+function validateNode(node, ids) {
+  if (!node || typeof node !== "object" || Array.isArray(node)) {
+    throw new FlowValidationError("Each node must be an object");
+  }
+  if (typeof node.id !== "string" || node.id.length === 0) {
+    throw new FlowValidationError("Node.id must be a non-empty string");
+  }
+  if (ids.has(node.id)) {
+    throw new FlowValidationError(`Duplicate node id: ${node.id}`);
+  }
+  ids.add(node.id);
+
+  if (typeof node.type !== "string" || !ALLOWED_NODE_TYPES.includes(node.type)) {
+    throw new FlowValidationError(
+      `Node ${node.id}: unknown type ${JSON.stringify(node.type)} (allowed: ${ALLOWED_NODE_TYPES.join(", ")})`,
+    );
+  }
+
+  // closed-schema key check: only id/type/params/continueOnError allowed
+  const allowedNodeKeys = ["id", "type", "params", "continueOnError"];
+  const extraNodeKeys = Object.keys(node).filter((k) => !allowedNodeKeys.includes(k));
+  if (extraNodeKeys.length > 0) {
+    throw new FlowValidationError(`Node ${node.id}: unknown keys ${extraNodeKeys.join(", ")}`);
+  }
+
+  if (node.continueOnError != null && typeof node.continueOnError !== "boolean") {
+    throw new FlowValidationError(`Node ${node.id}: continueOnError must be a boolean`);
+  }
+
+  const params = node.params ?? {};
+  if (typeof params !== "object" || Array.isArray(params)) {
+    throw new FlowValidationError(`Node ${node.id}: params must be an object`);
+  }
+
+  const spec = NODE_SCHEMAS[node.type];
+  // required present + correct type
+  for (const [key, expected] of Object.entries(spec.required)) {
+    if (!(key in params)) {
+      throw new FlowValidationError(`Node ${node.id} (${node.type}): missing required param '${key}'`);
+    }
+    if (!checkType(params[key], expected)) {
+      throw new FlowValidationError(`Node ${node.id} (${node.type}): param '${key}' must be ${expected}`);
+    }
+  }
+  // no unknown params (closed schema)
+  const known = new Set([...Object.keys(spec.required), ...Object.keys(spec.optional)]);
+  for (const key of Object.keys(params)) {
+    if (!known.has(key)) {
+      throw new FlowValidationError(`Node ${node.id} (${node.type}): unknown param '${key}'`);
+    }
+    const expected = spec.required[key] ?? spec.optional[key];
+    if (!checkType(params[key], expected)) {
+      throw new FlowValidationError(`Node ${node.id} (${node.type}): param '${key}' must be ${expected}`);
+    }
+  }
+
+  // Static scheme check for openUrl literals (templated urls re-checked at runtime
+  // by url-guard after interpolation — this catches obvious hostile literals early).
+  if (node.type === "openUrl" && typeof params.url === "string" && !params.url.includes("{{")) {
+    if (!isAllowedUrlScheme(params.url)) {
+      throw new FlowValidationError(
+        `Node ${node.id} (openUrl): url scheme not allowed: ${JSON.stringify(params.url)}`,
+      );
+    }
+  }
+}
+
+// Phase 2 is linear chains but we still reject cycles so the walk terminates.
+function detectCycle(nodes, edges) {
+  const adj = new Map(nodes.map((n) => [n.id, []]));
+  for (const e of edges) adj.get(e.from).push(e.to);
+
+  const WHITE = 0;
+  const GRAY = 1;
+  const BLACK = 2;
+  const color = new Map(nodes.map((n) => [n.id, WHITE]));
+
+  const visit = (id) => {
+    color.set(id, GRAY);
+    for (const next of adj.get(id)) {
+      const c = color.get(next);
+      if (c === GRAY) throw new FlowValidationError(`Flow contains a cycle at node: ${next}`);
+      if (c === WHITE) visit(next);
+    }
+    color.set(id, BLACK);
+  };
+
+  for (const n of nodes) {
+    if (color.get(n.id) === WHITE) visit(n.id);
+  }
+}

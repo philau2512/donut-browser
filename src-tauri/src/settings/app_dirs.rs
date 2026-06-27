@@ -129,6 +129,18 @@ pub fn extensions_dir() -> PathBuf {
   data_dir().join("extensions")
 }
 
+/// Directory holding saved automation flows (`.donutflow`). Phase 4 flow picker
+/// lists from here; Phase 3 snapshots runs read the chosen flow from here.
+pub fn automation_flows_dir() -> PathBuf {
+  data_dir().join("automation").join("flows")
+}
+
+/// Directory holding per-run automation artifacts: `<runId>/flow.json`,
+/// `<runId>/<profileId>.log`, `<runId>/pids.json`, screenshots.
+pub fn automation_runs_dir() -> PathBuf {
+  data_dir().join("automation").join("runs")
+}
+
 pub fn dns_blocklist_dir() -> PathBuf {
   cache_dir().join("dns_blocklists")
 }
@@ -232,6 +244,8 @@ mod tests {
     assert!(vpn_dir().ends_with("vpn"));
     assert!(extensions_dir().ends_with("extensions"));
     assert!(dns_blocklist_dir().ends_with("dns_blocklists"));
+    assert!(automation_flows_dir().ends_with("flows"));
+    assert!(automation_runs_dir().ends_with("runs"));
   }
 
   #[test]

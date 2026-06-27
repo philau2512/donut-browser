@@ -1,0 +1,15 @@
+{
+  "name": "donut-automation-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Donut Browser automation execution engine (Node sidecar). Connects to a running Wayfern/Chromium instance over CDP and walks a .donutflow graph with Playwright.",
+  "main": "engine.mjs",
+  "scripts": {
+    "test": "node --test",
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.49.1"
+  }
+}

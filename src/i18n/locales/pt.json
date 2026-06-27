@@ -1926,7 +1926,8 @@
     },
     "network": "Rede",
     "integrations": "Integrações",
-    "account": "Conta"
+    "account": "Conta",
+    "automation": "Automação"
   },
   "pageTitle": {
     "proxies": "Rede",
@@ -1937,7 +1938,70 @@
     "integrations": "Integrações",
     "account": "Conta",
     "import": "Importar perfil",
-    "shortcuts": "Atalhos de teclado"
+    "shortcuts": "Atalhos de teclado",
+    "automation": "Automação"
+  },
+  "automation": {
+    "flow": {
+      "label": "Fluxo",
+      "placeholder": "Selecione um fluxo",
+      "refresh": "Atualizar fluxos",
+      "empty": "Nenhum arquivo .donutflow encontrado no diretório de fluxos."
+    },
+    "profiles": {
+      "label": "Perfis ({{count}})",
+      "selectAll": "Selecionar todos",
+      "deselectAll": "Desmarcar todos",
+      "empty": "Nenhum perfil disponível."
+    },
+    "settings": {
+      "title": "Configurações de execução",
+      "concurrency": "Concorrência",
+      "concurrencyHint": "Máximo de perfis executando em paralelo.",
+      "delayOpen": "Atraso de abertura (s)",
+      "delayOpenHint": "Segundos de intervalo entre as inicializações.",
+      "headless": "Sem interface",
+      "headlessHint": "Executar sem uma janela de navegador visível.",
+      "noOverlapping": "Sem perfis sobrepostos",
+      "noOverlappingHint": "Ignorar um perfil que já está em execução.",
+      "closeOnComplete": "Fechar ao concluir",
+      "closeOnCompleteHint": "Fechar o navegador após o término do fluxo.",
+      "writeLogs": "Gravar logs",
+      "writeLogsHint": "Salvar arquivos de log por perfil no disco."
+    },
+    "actions": {
+      "run": "Executar",
+      "starting": "Iniciando…",
+      "stopAll": "Parar tudo"
+    },
+    "grid": {
+      "empty": "Selecione um fluxo e perfis, depois execute.",
+      "stopProfile": "Parar {{name}}"
+    },
+    "status": {
+      "idle": "Ocioso",
+      "launching": "Iniciando",
+      "running": "Em execução",
+      "done": "Concluído",
+      "doneWithErrors": "Concluído com erros",
+      "error": "Erro",
+      "skipped": "Ignorado",
+      "stopped": "Parado"
+    },
+    "log": {
+      "title": "Logs",
+      "allProfiles": "Todos os perfis",
+      "scrollLock": "Travar rolagem no mais recente",
+      "scrollUnlock": "Destravar rolagem",
+      "openFile": "Abrir arquivo de log",
+      "empty": "Nenhuma saída de log ainda."
+    },
+    "runInfo": "Executando fluxo: {{name}}",
+    "errors": {
+      "readFlowFailed": "Falha ao ler o fluxo: {{error}}",
+      "startFailed": "Falha ao iniciar a execução: {{error}}",
+      "stopFailed": "Falha ao parar a execução: {{error}}"
+    }
   },
   "encryption": {
     "required": {

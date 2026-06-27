@@ -1926,7 +1926,8 @@
     },
     "network": "网络",
     "integrations": "集成",
-    "account": "账号"
+    "account": "账号",
+    "automation": "自动化"
   },
   "pageTitle": {
     "proxies": "网络",
@@ -1937,7 +1938,70 @@
     "integrations": "集成",
     "account": "账户",
     "import": "导入配置文件",
-    "shortcuts": "键盘快捷键"
+    "shortcuts": "键盘快捷键",
+    "automation": "自动化"
+  },
+  "automation": {
+    "flow": {
+      "label": "流程",
+      "placeholder": "选择流程",
+      "refresh": "刷新流程",
+      "empty": "流程目录中未找到 .donutflow 文件。"
+    },
+    "profiles": {
+      "label": "配置文件（{{count}}）",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "empty": "没有可用的配置文件。"
+    },
+    "settings": {
+      "title": "运行设置",
+      "concurrency": "并发数",
+      "concurrencyHint": "并行运行的最大配置文件数。",
+      "delayOpen": "延迟打开（秒）",
+      "delayOpenHint": "每次启动之间的间隔秒数。",
+      "headless": "无头模式",
+      "headlessHint": "运行时不显示浏览器窗口。",
+      "noOverlapping": "不重复运行配置文件",
+      "noOverlappingHint": "跳过已在运行的配置文件。",
+      "closeOnComplete": "完成后关闭",
+      "closeOnCompleteHint": "流程结束后关闭浏览器。",
+      "writeLogs": "写入日志",
+      "writeLogsHint": "将每个配置文件的日志保存到磁盘。"
+    },
+    "actions": {
+      "run": "运行",
+      "starting": "启动中…",
+      "stopAll": "全部停止"
+    },
+    "grid": {
+      "empty": "选择流程和配置文件，然后运行。",
+      "stopProfile": "停止 {{name}}"
+    },
+    "status": {
+      "idle": "空闲",
+      "launching": "启动中",
+      "running": "运行中",
+      "done": "已完成",
+      "doneWithErrors": "完成但有错误",
+      "error": "错误",
+      "skipped": "已跳过",
+      "stopped": "已停止"
+    },
+    "log": {
+      "title": "日志",
+      "allProfiles": "所有配置文件",
+      "scrollLock": "锁定滚动到最新",
+      "scrollUnlock": "解锁滚动",
+      "openFile": "打开日志文件",
+      "empty": "暂无日志输出。"
+    },
+    "runInfo": "正在运行流程：{{name}}",
+    "errors": {
+      "readFlowFailed": "读取流程失败：{{error}}",
+      "startFailed": "启动运行失败：{{error}}",
+      "stopFailed": "停止运行失败：{{error}}"
+    }
   },
   "encryption": {
     "required": {

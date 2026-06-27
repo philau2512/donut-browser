@@ -29,6 +29,8 @@ pub mod sync;
 pub use mcp::{mcp_integrations, mcp_server};
 pub mod vpn;
 
+pub mod automation;
+
 use browser::extension_manager;
 pub use profile::dns_blocklist;
 use profile::{cookie_manager, team_lock};

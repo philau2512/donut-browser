@@ -4,6 +4,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { useOnborda } from "onborda";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+// Automation
+import { AutomationPage } from "@/components/automation";
 // Settings
 import { ExtensionManagementDialog } from "@/components/extension";
 import { GroupManagementDialog } from "@/components/group";
@@ -390,6 +392,8 @@ export default function Home() {
     switch (page) {
       case "profiles":
         break;
+      case "automation":
+        break;
       case "settings":
         setSettingsDialogOpen(true);
         break;
@@ -673,6 +677,10 @@ export default function Home() {
 
           {currentPage === "shortcuts" && (
             <ShortcutsPage groupTargets={orderedGroupTargets} />
+          )}
+
+          {currentPage === "automation" && (
+            <AutomationPage profiles={profiles} />
           )}
 
           {settingsDialogOpen && (

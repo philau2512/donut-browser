@@ -287,6 +287,13 @@ fn setup_tauri_app(app: &mut tauri::App, startup_url: Option<String>) -> Result<
       }
     });
 
+    // Reap automation browser/sidecar PIDs left behind by a previous crash.
+    // Persisted pid files outlive the process; on a clean start no run is active,
+    // so every persisted PID is an orphan from a hard kill and must be cleaned up.
+    tauri::async_runtime::spawn(async move {
+      crate::automation::reaper::reap_orphans_on_startup().await;
+    });
+
     // Immediately bump non-running profiles to the latest installed browser version.
     // This runs synchronously before any network calls so profiles are updated on launch.
     {

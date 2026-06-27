@@ -1926,7 +1926,8 @@
     },
     "network": "Réseau",
     "integrations": "Intégrations",
-    "account": "Compte"
+    "account": "Compte",
+    "automation": "Automatisation"
   },
   "pageTitle": {
     "proxies": "Réseau",
@@ -1937,7 +1938,70 @@
     "integrations": "Intégrations",
     "account": "Compte",
     "import": "Importer un profil",
-    "shortcuts": "Raccourcis clavier"
+    "shortcuts": "Raccourcis clavier",
+    "automation": "Automatisation"
+  },
+  "automation": {
+    "flow": {
+      "label": "Flux",
+      "placeholder": "Sélectionner un flux",
+      "refresh": "Actualiser les flux",
+      "empty": "Aucun fichier .donutflow trouvé dans le dossier des flux."
+    },
+    "profiles": {
+      "label": "Profils ({{count}})",
+      "selectAll": "Tout sélectionner",
+      "deselectAll": "Tout désélectionner",
+      "empty": "Aucun profil disponible."
+    },
+    "settings": {
+      "title": "Paramètres d'exécution",
+      "concurrency": "Concurrence",
+      "concurrencyHint": "Nombre maximal de profils exécutés en parallèle.",
+      "delayOpen": "Délai d'ouverture (s)",
+      "delayOpenHint": "Secondes d'écart entre les lancements.",
+      "headless": "Sans interface",
+      "headlessHint": "Exécuter sans fenêtre de navigateur visible.",
+      "noOverlapping": "Pas de profils en double",
+      "noOverlappingHint": "Ignorer un profil déjà en cours d'exécution.",
+      "closeOnComplete": "Fermer à la fin",
+      "closeOnCompleteHint": "Fermer le navigateur une fois le flux terminé.",
+      "writeLogs": "Écrire les journaux",
+      "writeLogsHint": "Enregistrer un fichier journal par profil sur le disque."
+    },
+    "actions": {
+      "run": "Exécuter",
+      "starting": "Démarrage…",
+      "stopAll": "Tout arrêter"
+    },
+    "grid": {
+      "empty": "Sélectionnez un flux et des profils, puis lancez l'exécution.",
+      "stopProfile": "Arrêter {{name}}"
+    },
+    "status": {
+      "idle": "Inactif",
+      "launching": "Lancement",
+      "running": "En cours",
+      "done": "Terminé",
+      "doneWithErrors": "Terminé avec des erreurs",
+      "error": "Erreur",
+      "skipped": "Ignoré",
+      "stopped": "Arrêté"
+    },
+    "log": {
+      "title": "Journaux",
+      "allProfiles": "Tous les profils",
+      "scrollLock": "Verrouiller le défilement sur le plus récent",
+      "scrollUnlock": "Déverrouiller le défilement",
+      "openFile": "Ouvrir le fichier journal",
+      "empty": "Aucune sortie de journal pour le moment."
+    },
+    "runInfo": "Flux en cours : {{name}}",
+    "errors": {
+      "readFlowFailed": "Échec de la lecture du flux : {{error}}",
+      "startFailed": "Échec du démarrage de l'exécution : {{error}}",
+      "stopFailed": "Échec de l'arrêt de l'exécution : {{error}}"
+    }
   },
   "encryption": {
     "required": {

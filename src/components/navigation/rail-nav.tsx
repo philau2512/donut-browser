@@ -17,6 +17,7 @@ import {
   LuPuzzle,
   LuShield,
   LuUser,
+  LuWorkflow,
 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { Logo } from "../icons/logo";
@@ -24,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export type AppPage =
   | "profiles"
+  | "automation"
   | "proxies"
   | "extensions"
   | "groups"
@@ -297,6 +299,11 @@ export function RailNav({
           page: "extensions",
           Icon: LuPuzzle,
           label: t("rail.extensions", "Extensions"),
+        },
+        {
+          page: "automation",
+          Icon: LuWorkflow,
+          label: t("rail.automation", "Automation"),
         },
       ],
     },

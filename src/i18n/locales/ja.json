@@ -1926,7 +1926,8 @@
     },
     "network": "ネットワーク",
     "integrations": "連携",
-    "account": "アカウント"
+    "account": "アカウント",
+    "automation": "オートメーション"
   },
   "pageTitle": {
     "proxies": "ネットワーク",
@@ -1937,7 +1938,70 @@
     "integrations": "連携",
     "account": "アカウント",
     "import": "プロファイルをインポート",
-    "shortcuts": "キーボードショートカット"
+    "shortcuts": "キーボードショートカット",
+    "automation": "オートメーション"
+  },
+  "automation": {
+    "flow": {
+      "label": "フロー",
+      "placeholder": "フローを選択",
+      "refresh": "フローを更新",
+      "empty": "フローディレクトリに .donutflow ファイルが見つかりません。"
+    },
+    "profiles": {
+      "label": "プロファイル ({{count}})",
+      "selectAll": "すべて選択",
+      "deselectAll": "選択を解除",
+      "empty": "利用可能なプロファイルがありません。"
+    },
+    "settings": {
+      "title": "実行設定",
+      "concurrency": "同時実行数",
+      "concurrencyHint": "並行して実行する最大プロファイル数。",
+      "delayOpen": "起動遅延 (秒)",
+      "delayOpenHint": "起動間隔をずらす秒数。",
+      "headless": "ヘッドレス",
+      "headlessHint": "ブラウザウィンドウを表示せずに実行します。",
+      "noOverlapping": "プロファイルの重複なし",
+      "noOverlappingHint": "すでに実行中のプロファイルをスキップします。",
+      "closeOnComplete": "完了時に閉じる",
+      "closeOnCompleteHint": "フロー終了後にブラウザを閉じます。",
+      "writeLogs": "ログを保存",
+      "writeLogsHint": "プロファイルごとのログファイルをディスクに保存します。"
+    },
+    "actions": {
+      "run": "実行",
+      "starting": "開始中…",
+      "stopAll": "すべて停止"
+    },
+    "grid": {
+      "empty": "フローとプロファイルを選択して実行してください。",
+      "stopProfile": "{{name}} を停止"
+    },
+    "status": {
+      "idle": "待機中",
+      "launching": "起動中",
+      "running": "実行中",
+      "done": "完了",
+      "doneWithErrors": "エラーありで完了",
+      "error": "エラー",
+      "skipped": "スキップ",
+      "stopped": "停止済み"
+    },
+    "log": {
+      "title": "ログ",
+      "allProfiles": "すべてのプロファイル",
+      "scrollLock": "最新にスクロールを固定",
+      "scrollUnlock": "スクロール固定を解除",
+      "openFile": "ログファイルを開く",
+      "empty": "ログ出力はまだありません。"
+    },
+    "runInfo": "フローを実行中: {{name}}",
+    "errors": {
+      "readFlowFailed": "フローの読み込みに失敗しました: {{error}}",
+      "startFailed": "実行の開始に失敗しました: {{error}}",
+      "stopFailed": "実行の停止に失敗しました: {{error}}"
+    }
   },
   "encryption": {
     "required": {

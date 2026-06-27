@@ -1926,7 +1926,8 @@
     },
     "network": "Red",
     "integrations": "Integraciones",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "automation": "Automatización"
   },
   "pageTitle": {
     "proxies": "Red",
@@ -1937,7 +1938,70 @@
     "integrations": "Integraciones",
     "account": "Cuenta",
     "import": "Importar perfil",
-    "shortcuts": "Atajos de teclado"
+    "shortcuts": "Atajos de teclado",
+    "automation": "Automatización"
+  },
+  "automation": {
+    "flow": {
+      "label": "Flujo",
+      "placeholder": "Selecciona un flujo",
+      "refresh": "Actualizar flujos",
+      "empty": "No se encontraron archivos .donutflow en el directorio de flujos."
+    },
+    "profiles": {
+      "label": "Perfiles ({{count}})",
+      "selectAll": "Seleccionar todo",
+      "deselectAll": "Deseleccionar todo",
+      "empty": "No hay perfiles disponibles."
+    },
+    "settings": {
+      "title": "Ajustes de ejecución",
+      "concurrency": "Concurrencia",
+      "concurrencyHint": "Máximo de perfiles ejecutándose en paralelo.",
+      "delayOpen": "Retardo de apertura (s)",
+      "delayOpenHint": "Segundos para escalonar entre lanzamientos.",
+      "headless": "Sin interfaz",
+      "headlessHint": "Ejecutar sin una ventana de navegador visible.",
+      "noOverlapping": "Sin perfiles superpuestos",
+      "noOverlappingHint": "Omitir un perfil que ya se está ejecutando.",
+      "closeOnComplete": "Cerrar al completar",
+      "closeOnCompleteHint": "Cerrar el navegador cuando termine el flujo.",
+      "writeLogs": "Escribir registros",
+      "writeLogsHint": "Guardar archivos de registro por perfil en el disco."
+    },
+    "actions": {
+      "run": "Ejecutar",
+      "starting": "Iniciando…",
+      "stopAll": "Detener todo"
+    },
+    "grid": {
+      "empty": "Selecciona un flujo y perfiles, luego ejecuta.",
+      "stopProfile": "Detener {{name}}"
+    },
+    "status": {
+      "idle": "Inactivo",
+      "launching": "Lanzando",
+      "running": "En ejecución",
+      "done": "Completado",
+      "doneWithErrors": "Completado con errores",
+      "error": "Error",
+      "skipped": "Omitido",
+      "stopped": "Detenido"
+    },
+    "log": {
+      "title": "Registros",
+      "allProfiles": "Todos los perfiles",
+      "scrollLock": "Fijar desplazamiento al más reciente",
+      "scrollUnlock": "Desbloquear desplazamiento",
+      "openFile": "Abrir archivo de registro",
+      "empty": "Aún no hay salida de registro."
+    },
+    "runInfo": "Ejecutando flujo: {{name}}",
+    "errors": {
+      "readFlowFailed": "Error al leer el flujo: {{error}}",
+      "startFailed": "Error al iniciar la ejecución: {{error}}",
+      "stopFailed": "Error al detener la ejecución: {{error}}"
+    }
   },
   "encryption": {
     "required": {
