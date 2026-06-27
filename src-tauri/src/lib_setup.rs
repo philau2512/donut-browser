@@ -23,6 +23,13 @@ fn setup_tauri_app(app: &mut tauri::App, startup_url: Option<String>) -> Result<
     #[cfg(target_os = "windows")]
     let win_builder = win_builder.decorations(false);
 
+    // Disable the OS-level file-drop handler on Windows so that WebView2 does
+    // not intercept drag events before they reach the HTML5 DnD API.
+    // Without this, dragging anything over the window shows a 🚫 cursor and
+    // onDrop / onDragOver never fire in React.
+    #[cfg(target_os = "windows")]
+    let win_builder = win_builder.disable_drag_drop_handler();
+
     #[allow(unused_variables)]
     let window = win_builder.build().unwrap();
 

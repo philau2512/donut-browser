@@ -14,9 +14,10 @@ const GROUPS: AutomationNodeGroup[] = ["navigator", "interaction", "utility"];
 
 interface NodePaletteProps {
   onDragStart: (event: DragEvent, item: AutomationNodeCatalogItem) => void;
+  onDragEnd?: () => void;
 }
 
-export function NodePalette({ onDragStart }: NodePaletteProps) {
+export function NodePalette({ onDragStart, onDragEnd }: NodePaletteProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
 
@@ -71,6 +72,7 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
                       type="button"
                       draggable
                       onDragStart={(event) => onDragStart(event, item)}
+                      onDragEnd={onDragEnd}
                       className="flex w-full cursor-grab items-start gap-2 rounded-md border border-border bg-background p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing"
                     >
                       <Icon className="mt-0.5 size-4 shrink-0 text-primary" />

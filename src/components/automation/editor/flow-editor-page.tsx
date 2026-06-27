@@ -56,6 +56,7 @@ export function FlowEditorPage({
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(Boolean(flowPath));
   const [isSaving, setIsSaving] = useState(false);
+  const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -109,9 +110,14 @@ export function FlowEditorPage({
       event.dataTransfer.setData("application/donut-node-type", item.type);
       event.dataTransfer.setData("text/plain", item.type);
       event.dataTransfer.effectAllowed = "copy";
+      setDraggedNodeType(item.type);
     },
     [],
   );
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedNodeType(null);
+  }, []);
 
   const updateSelectedParam = (
     key: string,
@@ -218,7 +224,7 @@ export function FlowEditorPage({
       </div>
 
       <div className="flex min-h-0 flex-1 gap-3">
-        <NodePalette onDragStart={handleDragStart} />
+        <NodePalette onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
         <FlowCanvas
           nodes={nodes}
           edges={edges}
@@ -227,6 +233,7 @@ export function FlowEditorPage({
           setNodes={setNodes}
           setEdges={setEdges}
           onSelectNode={setSelectedNodeId}
+          draggedNodeType={draggedNodeType}
         />
         <VariablesPanel variables={variables} onChange={setVariables} />
       </div>

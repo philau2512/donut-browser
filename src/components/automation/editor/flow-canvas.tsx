@@ -39,6 +39,9 @@ interface FlowCanvasProps {
   setNodes: Dispatch<SetStateAction<AutomationCanvasNode[]>>;
   setEdges: Dispatch<SetStateAction<AutomationCanvasEdge[]>>;
   onSelectNode: (nodeId: string | null) => void;
+  /** Node type being dragged from the palette — bypasses DataTransfer which
+   * is blocked by WebView2 security policy on Windows. */
+  draggedNodeType: string | null;
 }
 
 function FlowCanvasInner({
@@ -49,6 +52,7 @@ function FlowCanvasInner({
   setNodes,
   setEdges,
   onSelectNode,
+  draggedNodeType,
 }: FlowCanvasProps) {
   const { t } = useTranslation();
   const [instance, setInstance] = useState<ReactFlowInstance<
@@ -96,7 +100,10 @@ function FlowCanvasInner({
     (event: DragEvent) => {
       event.preventDefault();
       if (!instance) return;
+      // Prefer the React-state copy (set by the parent on dragstart) because
+      // WebView2 on Windows blocks DataTransfer.getData() in drop handlers.
       const type =
+        draggedNodeType ||
         event.dataTransfer.getData("application/donut-node-type") ||
         event.dataTransfer.getData("text/plain");
       if (!isAutomationNodeType(type)) return;
@@ -106,7 +113,7 @@ function FlowCanvasInner({
       });
       setNodes((current) => [...current, createAutomationNode(type, position)]);
     },
-    [instance, setNodes],
+    [instance, draggedNodeType, setNodes],
   );
 
   const onDragOver = useCallback((event: DragEvent) => {
@@ -115,7 +122,11 @@ function FlowCanvasInner({
   }, []);
 
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-background">
+    // biome-ignore lint/a11y/noStaticElementInteractions: dragOver preventDefault required on wrapper to show drop cursor in WebView2
+    <div
+      className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-background"
+      onDragOver={onDragOver}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}

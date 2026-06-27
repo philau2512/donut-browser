@@ -70,6 +70,7 @@ function dataTransfer(values: Record<string, string>) {
 
 function renderCanvas(options?: {
   edges?: Array<{ source: string; target: string }>;
+  draggedNodeType?: string | null;
 }) {
   const nodes: AutomationCanvasNode[] = [
     {
@@ -95,6 +96,7 @@ function renderCanvas(options?: {
       setNodes={setNodes}
       setEdges={setEdges}
       onSelectNode={vi.fn()}
+      draggedNodeType={options?.draggedNodeType ?? null}
     />,
   );
 
