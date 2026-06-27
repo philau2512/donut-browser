@@ -2014,6 +2014,20 @@
       "saving": "Saving…",
       "selectNode": "Select a node to edit its properties.",
       "booleanEnabled": "Enabled",
+      "properties": {
+        "options": "Options",
+        "setting": "Setting",
+        "document": "Document",
+        "continueOnError": "Continue on error",
+        "continueOnErrorHint": "If this node fails, continue with the next node in the line."
+      },
+      "variables": {
+        "title": "Variables",
+        "description": "Use variables in string fields with {{VAR}} syntax.",
+        "add": "Add variable",
+        "autoInjected": "Auto",
+        "reserved": "PROFILE_ID and PROFILE_NAME are injected at run time."
+      },
       "groups": {
         "navigator": "Navigator",
         "interaction": "Interaction",
@@ -2028,36 +2042,54 @@
     "nodes": {
       "openUrl": {
         "label": "Open URL",
-        "description": "Navigate the browser to a URL."
+        "description": "Navigate the browser to a URL.",
+        "document": "Navigate the browser to a URL. Literal URLs are checked by the engine validator; templated URLs are checked again at run time after variables are interpolated."
       },
       "click": {
         "label": "Click",
-        "description": "Click an element by selector."
+        "description": "Click an element by selector.",
+        "document": "Click an element matched by a Playwright selector. Keep selectors stable and specific so the click lands on the intended element."
       },
       "type": {
         "label": "Type",
-        "description": "Type text into an input or editable element."
+        "description": "Type text into an input or editable element.",
+        "document": "Type text into an input or editable element. Text fields can include variables like {{EMAIL}}."
       },
       "wait": {
         "label": "Wait",
-        "description": "Wait for a selector or fixed timeout."
+        "description": "Wait for a selector or fixed timeout.",
+        "document": "Wait for a selector state or a fixed timeout. Use this before interactions that depend on slow page rendering."
       },
       "scroll": {
         "label": "Scroll",
-        "description": "Scroll the page or an element."
+        "description": "Scroll the page or an element.",
+        "document": "Scroll the page or a selected element by x/y pixels."
       },
       "screenshot": {
         "label": "Screenshot",
-        "description": "Capture a screenshot during the run."
+        "description": "Capture a screenshot during the run.",
+        "document": "Capture a screenshot during the run. Paths can include variables to separate output per profile."
       },
       "log": {
         "label": "Log",
-        "description": "Write a message to the run log."
+        "description": "Write a message to the run log.",
+        "document": "Write a message to the automation log. Useful for debugging and milestone markers."
       },
       "delay": {
         "label": "Delay",
-        "description": "Pause for a fixed number of milliseconds."
+        "description": "Pause for a fixed number of milliseconds.",
+        "document": "Pause for a fixed number of milliseconds before continuing to the next node."
       }
+    },
+    "review": {
+      "title": "Review flow: {{name}}",
+      "description": "This flow has not been reviewed for its current contents. Check destinations and selectors before running it on logged-in profiles.",
+      "urls": "URLs opened by this flow",
+      "noUrls": "No openUrl nodes found.",
+      "selectors": "Selectors used by this flow",
+      "noSelectors": "No selectors found.",
+      "templatedOrInvalidHost": "Templated or invalid host",
+      "confirm": "I reviewed this flow, run it"
     },
     "script": {
       "add": "Adicionar script",
@@ -2086,6 +2118,7 @@
       "confirm": {
         "deleteTitle": "Excluir script?",
         "deleteDescription": "\"{{name}}\" será excluído permanentemente. Isso não pode ser desfeito.",
+        "exportVariables": "This flow contains variables. Exporting writes their values into the .donutflow file. Continue?",
         "overwriteImport": "Já existe um script chamado \"{{name}}\". Substituí-lo?"
       }
     }

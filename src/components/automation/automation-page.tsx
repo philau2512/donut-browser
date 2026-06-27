@@ -23,6 +23,7 @@ import {
 import { AutomationLogPanel } from "./automation-log-panel";
 import { AutomationRunSettings } from "./automation-run-settings";
 import { AutomationRunnerGrid } from "./automation-runner-grid";
+import { FlowReviewDialog } from "./editor/flow-review-dialog";
 
 interface AutomationPageProps {
   profiles: BrowserProfile[];
@@ -51,9 +52,12 @@ export function AutomationPage({
     runs,
     profileStates,
     logs,
+    pendingReview,
     isStarting,
     loadFlows,
     start,
+    confirmPendingReview,
+    cancelPendingReview,
     stop,
     clearLogs,
     getLogPath,
@@ -283,6 +287,14 @@ export function AutomationPage({
           </p>
         )}
       </div>
+
+      <FlowReviewDialog
+        open={pendingReview !== null}
+        flowName={pendingReview?.flowName ?? ""}
+        items={pendingReview?.items ?? []}
+        onCancel={cancelPendingReview}
+        onConfirm={() => void confirmPendingReview()}
+      />
     </div>
   );
 }

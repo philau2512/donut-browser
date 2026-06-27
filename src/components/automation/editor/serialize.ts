@@ -78,6 +78,7 @@ export function toDonutFlow(
   name: string,
   nodes: AutomationCanvasNode[],
   edges: AutomationCanvasEdge[],
+  variables: Record<string, string> = {},
 ): DonutFlowV1 {
   const realNodes = nodes.filter(
     (node) => node.id !== START_NODE_ID && node.data.nodeType !== "start",
@@ -101,7 +102,7 @@ export function toDonutFlow(
   return {
     version: 1,
     name,
-    variables: {},
+    variables,
     nodes: sortedNodes.map((node) => {
       const nodeType = node.data.nodeType;
       if (!isAutomationNodeType(nodeType)) {
@@ -180,7 +181,7 @@ export function toLayoutSidecar(
 }
 
 export function layoutPathForFlow(flowPath: string): string {
-  return flowPath.replace(/\.donutflow$/i, ".donutflow.layout.json");
+  return flowPath.replace(/\.donutflow$/i, ".layout.json");
 }
 
 function pruneEmptyParams(

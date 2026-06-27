@@ -1,7 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { DonutFlowV1 } from "@/components/automation/editor/serialize";
 import i18n from "@/i18n";
+import {
+  extractFlowReviewItems,
+  type FlowReviewItem,
+  isFlowReviewed,
+  markFlowReviewed,
+} from "@/lib/automation/flow-review";
 import { showErrorToast } from "@/lib/toast-utils";
 import type { BrowserProfile } from "@/types";
 import type {
@@ -16,6 +23,15 @@ import type {
  * "cap buffer" mitigation in the plan's risk assessment. */
 const MAX_LOG_LINES = 2000;
 
+export interface PendingFlowReview {
+  flowPath: string;
+  flowName: string;
+  flowJson: string;
+  items: FlowReviewItem[];
+  profiles: BrowserProfile[];
+  settings: RunSettings;
+}
+
 export interface UseAutomationRunReturn {
   /** Available `.donutflow` file paths from the flows dir. */
   flows: string[];
@@ -27,6 +43,7 @@ export interface UseAutomationRunReturn {
   profileStates: Record<string, ProfileRunState>;
   /** Live log buffer for the active run (capped). */
   logs: LogLine[];
+  pendingReview: PendingFlowReview | null;
   isStarting: boolean;
   loadFlows: () => Promise<void>;
   readFlow: (path: string) => Promise<string | null>;
@@ -35,6 +52,8 @@ export interface UseAutomationRunReturn {
     profiles: BrowserProfile[],
     settings: RunSettings,
   ) => Promise<string | null>;
+  confirmPendingReview: () => Promise<string | null>;
+  cancelPendingReview: () => void;
   stop: (runId: string) => Promise<void>;
   clearLogs: () => void;
   getLogPath: (runId: string, profileId: string) => Promise<string | null>;
@@ -48,6 +67,9 @@ export function useAutomationRun(): UseAutomationRunReturn {
     Record<string, ProfileRunState>
   >({});
   const [logs, setLogs] = useState<LogLine[]>([]);
+  const [pendingReview, setPendingReview] = useState<PendingFlowReview | null>(
+    null,
+  );
   const [isStarting, setIsStarting] = useState(false);
 
   // The active run id is read inside event handlers; keep a ref so the
@@ -81,6 +103,35 @@ export function useAutomationRun(): UseAutomationRunReturn {
     }
   }, []);
 
+  const runFlowJson = useCallback(
+    async (
+      flowJson: string,
+      profiles: BrowserProfile[],
+      settings: RunSettings,
+    ): Promise<string | null> => {
+      const runId = await invoke<string>("start_automation_run", {
+        flowJson,
+        profiles,
+        settings,
+      });
+      // Seed the live state from the run snapshot so the grid shows every
+      // selected profile immediately (idle) before the first status event.
+      const seeded: Record<string, ProfileRunState> = {};
+      for (const p of profiles) {
+        seeded[p.id] = {
+          profile_id: p.id,
+          profile_name: p.name,
+          status: "idle",
+        };
+      }
+      setProfileStates(seeded);
+      setLogs([]);
+      setActiveRunId(runId);
+      return runId;
+    },
+    [],
+  );
+
   const start = useCallback(
     async (
       flowPath: string,
@@ -93,25 +144,19 @@ export function useAutomationRun(): UseAutomationRunReturn {
         const flowJson = await invoke<string>("read_automation_flow", {
           path: flowPath,
         });
-        const runId = await invoke<string>("start_automation_run", {
-          flowJson,
-          profiles,
-          settings,
-        });
-        // Seed the live state from the run snapshot so the grid shows every
-        // selected profile immediately (idle) before the first status event.
-        const seeded: Record<string, ProfileRunState> = {};
-        for (const p of profiles) {
-          seeded[p.id] = {
-            profile_id: p.id,
-            profile_name: p.name,
-            status: "idle",
-          };
+        if (!(await isFlowReviewed(flowPath, flowJson))) {
+          const flow = JSON.parse(flowJson) as DonutFlowV1;
+          setPendingReview({
+            flowPath,
+            flowName: flow.name,
+            flowJson,
+            items: extractFlowReviewItems(flow),
+            profiles,
+            settings,
+          });
+          return null;
         }
-        setProfileStates(seeded);
-        setLogs([]);
-        setActiveRunId(runId);
-        return runId;
+        return await runFlowJson(flowJson, profiles, settings);
       } catch (err) {
         console.error("Failed to start automation run:", err);
         showErrorToast(
@@ -124,8 +169,35 @@ export function useAutomationRun(): UseAutomationRunReturn {
         setIsStarting(false);
       }
     },
-    [],
+    [runFlowJson],
   );
+
+  const confirmPendingReview = useCallback(async (): Promise<string | null> => {
+    if (!pendingReview) return null;
+    setIsStarting(true);
+    try {
+      await markFlowReviewed(pendingReview.flowPath, pendingReview.flowJson);
+      const runId = await runFlowJson(
+        pendingReview.flowJson,
+        pendingReview.profiles,
+        pendingReview.settings,
+      );
+      setPendingReview(null);
+      return runId;
+    } catch (err) {
+      console.error("Failed to start reviewed automation run:", err);
+      showErrorToast(
+        i18n.t("automation.errors.startFailed", {
+          error: JSON.stringify(err),
+        }),
+      );
+      return null;
+    } finally {
+      setIsStarting(false);
+    }
+  }, [pendingReview, runFlowJson]);
+
+  const cancelPendingReview = useCallback(() => setPendingReview(null), []);
 
   const stop = useCallback(async (runId: string) => {
     try {
@@ -240,10 +312,13 @@ export function useAutomationRun(): UseAutomationRunReturn {
     runs,
     profileStates,
     logs,
+    pendingReview,
     isStarting,
     loadFlows,
     readFlow,
     start,
+    confirmPendingReview,
+    cancelPendingReview,
     stop,
     clearLogs,
     getLogPath,

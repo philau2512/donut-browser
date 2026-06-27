@@ -13,18 +13,13 @@ import {
 import { useTranslation } from "react-i18next";
 import { LuSave } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  AUTOMATION_NODE_BY_TYPE,
-  type AutomationNodeCatalogItem,
-  type AutomationNodeType,
-} from "@/lib/automation/node-catalog";
+import type { AutomationNodeCatalogItem } from "@/lib/automation/node-catalog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { FlowCanvas } from "./flow-canvas";
 import { NodePalette } from "./node-palette";
+import { NodePropertiesDialog } from "./node-properties-dialog";
 import {
   type AutomationCanvasEdge,
   type AutomationCanvasNode,
@@ -33,10 +28,10 @@ import {
   type FlowLayoutSidecarV1,
   fromDonutFlow,
   layoutPathForFlow,
-  START_NODE_ID,
   toDonutFlow,
   toLayoutSidecar,
 } from "./serialize";
+import { VariablesPanel } from "./variables-panel";
 
 interface FlowEditorPageProps {
   flowPath?: string;
@@ -58,6 +53,7 @@ export function FlowEditorPage({
   );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [flowName, setFlowName] = useState("Untitled flow");
+  const [variables, setVariables] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(Boolean(flowPath));
   const [isSaving, setIsSaving] = useState(false);
 
@@ -88,6 +84,7 @@ export function FlowEditorPage({
         if (cancelled) return;
         const canvas = fromDonutFlow(flow, layout);
         setFlowName(flow.name);
+        setVariables(flow.variables ?? {});
         setNodes(canvas.nodes);
         setEdges(canvas.edges);
       } catch (err) {
@@ -135,10 +132,21 @@ export function FlowEditorPage({
     );
   };
 
+  const updateSelectedContinueOnError = (value: boolean) => {
+    if (!selectedNode) return;
+    setNodes((current) =>
+      current.map((node) =>
+        node.id === selectedNode.id
+          ? { ...node, data: { ...node.data, continueOnError: value } }
+          : node,
+      ),
+    );
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const flow = toDonutFlow(flowName.trim(), nodes, edges);
+      const flow = toDonutFlow(flowName.trim(), nodes, edges, variables);
       const json = JSON.stringify(flow, null, 2);
       const shouldOverwrite = Boolean(flowPath);
       let savedPath: string;
@@ -219,91 +227,18 @@ export function FlowEditorPage({
           setEdges={setEdges}
           onSelectNode={setSelectedNodeId}
         />
-        <PropertyPanel
-          node={selectedNode}
-          onParamChange={updateSelectedParam}
-        />
+        <VariablesPanel variables={variables} onChange={setVariables} />
       </div>
+
+      <NodePropertiesDialog
+        node={selectedNode}
+        variables={variables}
+        onOpenChange={(open) => {
+          if (!open) setSelectedNodeId(null);
+        }}
+        onParamChange={updateSelectedParam}
+        onContinueOnErrorChange={updateSelectedContinueOnError}
+      />
     </div>
-  );
-}
-
-function PropertyPanel({
-  node,
-  onParamChange,
-}: {
-  node: AutomationCanvasNode | null;
-  onParamChange: (key: string, value: string | number | boolean) => void;
-}) {
-  const { t } = useTranslation();
-
-  if (!node || node.id === START_NODE_ID || node.data.nodeType === "start") {
-    return (
-      <aside className="flex w-80 shrink-0 items-center justify-center rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">
-        {t("automation.editor.selectNode")}
-      </aside>
-    );
-  }
-
-  const type = node.data.nodeType as AutomationNodeType;
-  const catalog = AUTOMATION_NODE_BY_TYPE[type];
-
-  return (
-    <aside className="w-80 shrink-0 overflow-y-auto rounded-lg border border-border bg-card p-4">
-      <div className="space-y-1">
-        <h2 className="text-sm font-semibold">{t(catalog.labelKey)}</h2>
-        <p className="text-xs text-muted-foreground">
-          {t(catalog.descriptionKey)}
-        </p>
-      </div>
-      <div className="mt-4 space-y-3">
-        {catalog.params.map((param) => {
-          const value = node.data.params[param.key];
-          return (
-            <div key={param.key} className="space-y-1.5">
-              <Label className="text-xs">
-                {param.key}
-                {param.required && <span className="text-destructive"> *</span>}
-              </Label>
-              {param.kind === "boolean" ? (
-                <div className="flex items-center gap-2 rounded-md border border-border p-2">
-                  <Checkbox
-                    checked={Boolean(value)}
-                    onCheckedChange={(checked) =>
-                      onParamChange(param.key, checked === true)
-                    }
-                  />
-                  <span className="text-sm">
-                    {t("automation.editor.booleanEnabled")}
-                  </span>
-                </div>
-              ) : param.multiline ? (
-                <Textarea
-                  value={String(value ?? "")}
-                  onChange={(event) =>
-                    onParamChange(param.key, event.target.value)
-                  }
-                  placeholder={param.placeholder}
-                />
-              ) : (
-                <Input
-                  value={String(value ?? "")}
-                  type={param.kind === "number" ? "number" : "text"}
-                  onChange={(event) =>
-                    onParamChange(
-                      param.key,
-                      param.kind === "number"
-                        ? Number(event.target.value)
-                        : event.target.value,
-                    )
-                  }
-                  placeholder={param.placeholder}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </aside>
   );
 }

@@ -28,7 +28,9 @@ import {
   type FlowMeta,
   useScriptManagement,
 } from "@/hooks/use-script-management";
+import { reviewedPathForFlow } from "@/lib/automation/flow-review";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
+import { type DonutFlowV1, layoutPathForFlow } from "./editor/serialize";
 
 interface ScriptManagementPageProps {
   /** Open the run panel for a flow. */
@@ -57,6 +59,23 @@ function nextDuplicateName(base: string, taken: Set<string>): string {
   }
   // Fallback: timestamp suffix (practically unreachable).
   return `${base} (${Date.now()})`;
+}
+
+async function copyTextSidecar(source: string, target: string) {
+  try {
+    await writeTextFile(target, await readTextFile(source));
+  } catch {
+    // Missing or unreadable sidecars are non-fatal; duplicate still copies flow JSON.
+  }
+}
+
+function flowHasVariables(json: string): boolean {
+  try {
+    const flow = JSON.parse(json) as DonutFlowV1;
+    return Object.keys(flow.variables ?? {}).length > 0;
+  } catch {
+    return false;
+  }
 }
 
 /** Grid of `.donutflow` scripts with CRUD + run + import/export, modeled on the
@@ -90,7 +109,15 @@ export function ScriptManagementPage({
       if (json == null) return;
       const newName = nextDuplicateName(flow.name, takenNames);
       // overwrite=false: auto-suffixed name is unique, so it can't collide.
-      await writeFlow(newName, json, false);
+      const newPath = await writeFlow(newName, json, false);
+      await copyTextSidecar(
+        layoutPathForFlow(flow.path),
+        layoutPathForFlow(newPath),
+      );
+      await copyTextSidecar(
+        reviewedPathForFlow(flow.path),
+        reviewedPathForFlow(newPath),
+      );
       showSuccessToast(
         t("automation.script.toast.duplicated", { name: newName }),
       );
@@ -111,6 +138,12 @@ export function ScriptManagementPage({
     try {
       const json = await readFlow(flow.path);
       if (json == null) return;
+      if (flowHasVariables(json)) {
+        const ok = window.confirm(
+          t("automation.script.confirm.exportVariables"),
+        );
+        if (!ok) return;
+      }
       const dest = await save({
         defaultPath: `${flow.name}.donutflow`,
         filters: [{ name: "Donut Flow", extensions: ["donutflow"] }],

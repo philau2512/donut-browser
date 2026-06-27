@@ -299,8 +299,8 @@ pub fn delete_automation_flow(path: String) -> Result<(), String> {
   {
     std::fs::remove_file(&requested).map_err(|e| format!("failed to delete flow: {e}"))?;
     // Best-effort sidecar cleanup (their absence is not an error).
-    for suffix in [".layout.json", ".reviewed"] {
-      let sidecar = requested.with_extension(format!("donutflow{suffix}"));
+    for suffix in ["layout.json", "reviewed"] {
+      let sidecar = requested.with_extension(suffix);
       let _ = std::fs::remove_file(&sidecar);
     }
     Ok(())
