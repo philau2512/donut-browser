@@ -20,7 +20,7 @@ const BUTTON_OPTIONS: ParamOption[] = [
 export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
   {
     type: "click",
-    group: "interaction",
+    group: "mouse",
     labelKey: "automation.nodes.click.label",
     descriptionKey: "automation.nodes.click.description",
     documentKey: "automation.nodes.click.document",
@@ -46,7 +46,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
   },
   {
     type: "hover",
-    group: "interaction",
+    group: "mouse",
     labelKey: "automation.nodes.hover.label",
     descriptionKey: "automation.nodes.hover.description",
     documentKey: "automation.nodes.hover.document",
@@ -84,7 +84,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
   },
   {
     type: "dragAndDrop",
-    group: "interaction",
+    group: "mouse",
     labelKey: "automation.nodes.dragAndDrop.label",
     descriptionKey: "automation.nodes.dragAndDrop.description",
     documentKey: "automation.nodes.dragAndDrop.document",
@@ -110,7 +110,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
   },
   {
     type: "clickDown",
-    group: "interaction",
+    group: "mouse",
     labelKey: "automation.nodes.clickDown.label",
     descriptionKey: "automation.nodes.clickDown.description",
     documentKey: "automation.nodes.clickDown.document",
@@ -135,7 +135,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
   },
   {
     type: "clickUp",
-    group: "interaction",
+    group: "mouse",
     labelKey: "automation.nodes.clickUp.label",
     descriptionKey: "automation.nodes.clickUp.description",
     documentKey: "automation.nodes.clickUp.document",
@@ -160,7 +160,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
   },
   {
     type: "type",
-    group: "interaction",
+    group: "keyboard",
     labelKey: "automation.nodes.type.label",
     descriptionKey: "automation.nodes.type.description",
     documentKey: "automation.nodes.type.document",
@@ -184,48 +184,5 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
       { key: "delay", kind: "number", placeholder: "25" },
     ],
     defaults: { selector: "input", text: "" },
-  },
-  {
-    type: "pressKey",
-    group: "interaction",
-    labelKey: "automation.nodes.pressKey.label",
-    descriptionKey: "automation.nodes.pressKey.description",
-    documentKey: "automation.nodes.pressKey.document",
-    icon: LuPenTool,
-    params: [
-      {
-        key: "key",
-        kind: "string",
-        required: true,
-        placeholder: "Enter",
-      },
-      {
-        key: "selector",
-        kind: "string",
-        required: false,
-        placeholder: "body",
-        supportsExpression: true,
-      },
-    ],
-    defaults: { key: "Enter" },
-  },
-  {
-    type: "clearInput",
-    group: "interaction",
-    labelKey: "automation.nodes.clearInput.label",
-    descriptionKey: "automation.nodes.clearInput.description",
-    documentKey: "automation.nodes.clearInput.document",
-    icon: LuEraser,
-    params: [
-      {
-        key: "selector",
-        kind: "string",
-        required: true,
-        placeholder: "input[name=username]",
-        supportsExpression: true,
-      },
-      { key: "timeout", kind: "number", placeholder: "30000" },
-    ],
-    defaults: { selector: "input" },
   },
 ];

@@ -351,8 +351,8 @@ test("Phase 7 — Control-flow nodes", async (t) => {
         },
       ];
       const edges = [
-        { from: "n1", to: "n2", sourceHandle: "loop" },
-        { from: "n2", to: "n1", sourceHandle: "loop" },
+        { from: "n1", to: "n2", sourceHandle: "success" },
+        { from: "n2", to: "n1", sourceHandle: "success" },
       ];
 
       const failed = await runTestFlow({ vars, nodes, edges });
@@ -386,8 +386,8 @@ test("Phase 7 — Control-flow nodes", async (t) => {
         { id: "n2", type: "addComment", params: { comment: "body" } },
       ];
       const edges = [
-        { from: "n1", to: "n2", sourceHandle: "loop" },
-        { from: "n2", to: "n1", sourceHandle: "loop" },
+        { from: "n1", to: "n2", sourceHandle: "success" },
+        { from: "n2", to: "n1", sourceHandle: "success" },
       ];
 
       const failed = await runTestFlow({ vars, logger, nodes, edges });
@@ -413,7 +413,7 @@ test("Phase 7 — Control-flow nodes", async (t) => {
       { id: "n4", type: "addLog", params: { message: "after loop" } },
     ];
     const edges = [
-      { from: "n1", to: "n2", sourceHandle: "loop" },
+      { from: "n1", to: "n2", sourceHandle: "success" },
       { from: "n2", to: "n3", sourceHandle: "success" },
       { from: "n3", to: "n4", sourceHandle: "done" },
     ];

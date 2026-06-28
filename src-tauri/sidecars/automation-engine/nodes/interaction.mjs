@@ -1,3 +1,5 @@
+import { getLocatorRoot, getPage } from "../lib/execution-target.mjs";
+
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 /** click: click an element by selector. */
@@ -7,8 +9,9 @@ export async function click(node, page, ctx) {
     throw new Error("click: selector is required");
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
+  const root = getLocatorRoot(ctx);
   ctx.logger.info(node.id, `click → ${selector}`);
-  await page.click(selector, {
+  await root.click(selector, {
     timeout: t,
     button: button ?? "left",
     clickCount: Number.isFinite(clickCount) ? clickCount : 1,
@@ -22,12 +25,13 @@ export async function type(node, page, ctx) {
     throw new Error("type: selector is required");
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
+  const root = getLocatorRoot(ctx);
   ctx.logger.info(node.id, `type → <redacted> into ${selector}`);
-  await page.waitForSelector(selector, { timeout: t });
-  if (Number.isFinite(delay) && delay > 0) {
-    await page.type(selector, String(text ?? ""), { delay });
+  await root.waitForSelector(selector, { timeout: t });
+  if (Number.isFinite(delay) && delay > 0 && typeof root.type === "function") {
+    await root.type(selector, String(text ?? ""), { delay });
   } else {
-    await page.fill(selector, String(text ?? ""));
+    await root.fill(selector, String(text ?? ""));
   }
 }
 
@@ -38,8 +42,9 @@ export async function hover(node, page, ctx) {
     throw new Error("hover: selector is required");
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
+  const root = getLocatorRoot(ctx);
   ctx.logger.info(node.id, `hover → ${selector}`);
-  await page.hover(selector, { timeout: t });
+  await root.hover(selector, { timeout: t });
 }
 
 /** dragAndDrop: drag element from source to target */
@@ -52,8 +57,9 @@ export async function dragAndDrop(node, page, ctx) {
     throw new Error("dragAndDrop: targetSelector is required");
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
+  const root = getLocatorRoot(ctx);
   ctx.logger.info(node.id, `dragAndDrop → ${sourceSelector} to ${targetSelector}`);
-  await page.dragAndDrop(sourceSelector, targetSelector, { timeout: t });
+  await root.dragAndDrop(sourceSelector, targetSelector, { timeout: t });
 }
 
 /** clickDown: press mouse button down on element */
@@ -64,16 +70,17 @@ export async function clickDown(node, page, ctx) {
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   const btn = button ?? "left";
+  const root = getLocatorRoot(ctx);
+  const pg = getPage(ctx);
   ctx.logger.info(node.id, `clickDown → ${selector} (${btn})`);
 
-  // Locate element and get bounding box to position mouse
-  const element = await page.waitForSelector(selector, { timeout: t });
+  const element = await root.waitForSelector(selector, { timeout: t });
   const box = await element.boundingBox();
   if (!box) {
     throw new Error(`clickDown: element ${selector} has no bounding box`);
   }
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down({ button: btn });
+  await pg.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await pg.mouse.down({ button: btn });
 }
 
 /** clickUp: release mouse button on element */
@@ -84,14 +91,15 @@ export async function clickUp(node, page, ctx) {
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   const btn = button ?? "left";
+  const root = getLocatorRoot(ctx);
+  const pg = getPage(ctx);
   ctx.logger.info(node.id, `clickUp → ${selector} (${btn})`);
 
-  // Locate element and get bounding box to position mouse
-  const element = await page.waitForSelector(selector, { timeout: t });
+  const element = await root.waitForSelector(selector, { timeout: t });
   const box = await element.boundingBox();
   if (!box) {
     throw new Error(`clickUp: element ${selector} has no bounding box`);
   }
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.up({ button: btn });
+  await pg.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await pg.mouse.up({ button: btn });
 }

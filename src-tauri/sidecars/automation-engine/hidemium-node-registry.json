@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "source": "https://docs.hidemium.io/automation-user-manual",
+  "nodes": [
+    {
+      "hidemiumSlug": "navigator/open-url",
+      "donutType": "openUrl",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "navigator/new-tab",
+      "donutType": "newTab",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "navigator/active-tab",
+      "donutType": "switchTab",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "navigator/close-tab",
+      "donutType": "closeTab",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "navigator/reload-page",
+      "donutType": "reloadPage",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "navigator/go-back",
+      "donutType": "goBack",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "navigator/switch-frame",
+      "donutType": "switchFrame",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "navigator/screenshot",
+      "donutType": "screenshot",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "mouse/click",
+      "donutType": "click",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "mouse/scroll",
+      "donutType": "scroll",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "mouse/press-and-hold",
+      "donutType": "clickDown",
+      "status": "partial",
+      "wave": 1,
+      "notes": "Pair with clickUp"
+    },
+    {
+      "hidemiumSlug": "mouse/mouse-movement",
+      "donutType": "hover",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "keyboard/press-key",
+      "donutType": "pressKey",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "keyboard/type-text",
+      "donutType": "typeText",
+      "status": "missing",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "keyboard/send-text-to-selector",
+      "donutType": "sendTextToSelector",
+      "status": "partial",
+      "wave": 1,
+      "notes": "Legacy type node only"
+    },
+    {
+      "hidemiumSlug": "keyboard/clear-text",
+      "donutType": "clearInput",
+      "status": "implemented",
+      "wave": 1
+    },
+    {
+      "hidemiumSlug": "data/get-text",
+      "donutType": "getText",
+      "status": "implemented",
+      "wave": 2
+    },
+    {
+      "hidemiumSlug": "data/http",
+      "donutType": "http",
+      "status": "implemented",
+      "wave": 2
+    },
+    {
+      "hidemiumSlug": "other/if",
+      "donutType": "ifCondition",
+      "status": "implemented",
+      "wave": 2
+    },
+    {
+      "hidemiumSlug": "other/for",
+      "donutType": "loopFor",
+      "status": "implemented",
+      "wave": 2
+    },
+    {
+      "hidemiumSlug": "other/while",
+      "donutType": "while",
+      "status": "implemented",
+      "wave": 2
+    },
+    {
+      "hidemiumSlug": "other/eval",
+      "donutType": "evalJs",
+      "status": "implemented",
+      "wave": 2
+    },
+    {
+      "hidemiumSlug": "other/add-log",
+      "donutType": "addLog",
+      "status": "implemented",
+      "wave": 2
+    },
+    {
+      "hidemiumSlug": "other/add-comment",
+      "donutType": "addComment",
+      "status": "implemented",
+      "wave": 2
+    }
+  ]
+}

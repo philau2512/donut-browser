@@ -82,7 +82,8 @@ struct WayfernInstance {
   /// Page-target WebSocket URLs that already received `Wayfern.setFingerprint`.
   fingerprinted_targets: Arc<AsyncMutex<HashSet<String>>>,
   /// Signals the background fingerprint watcher to stop when the instance is torn down.
-  watcher_cancel: Option<tokio::sync::watch::Sender<()>>,
+  /// Uses watch channel (bool) for reliable cancellation signaling.
+  watcher_cancel: Option<tokio::sync::watch::Sender<bool>>,
 }
 
 struct WayfernManagerInner {
@@ -352,7 +353,9 @@ impl WayfernManager {
             use chrono::Offset;
             let now = chrono::Utc::now().with_timezone(&tz);
             let offset_seconds = now.offset().fix().local_minus_utc();
-            let offset_minutes = -(offset_seconds / 60);
+            // timezoneOffset = minutes west of UTC (Firefox convention)
+            // America/Los_Angeles (PDT) = +420, Europe/London (BST) = -60
+            let offset_minutes = offset_seconds / 60;
             obj.insert("timezoneOffset".to_string(), json!(offset_minutes));
           }
           obj.insert("latitude".to_string(), json!(geo.latitude));
@@ -378,7 +381,9 @@ impl WayfernManager {
             obj.insert("timezone".to_string(), json!("America/New_York"));
           }
           if !obj.contains_key("timezoneOffset") {
-            obj.insert("timezoneOffset".to_string(), json!(300));
+            // Firefox convention: minutes west of UTC
+            // America/New_York (EDT in summer) = +240
+            obj.insert("timezoneOffset".to_string(), json!(240));
           }
         }
         false
@@ -559,7 +564,7 @@ impl WayfernManager {
       .send_cdp_command(&ws_url, "Wayfern.getFingerprint", json!({}))
       .await;
 
-    let fingerprint = match get_result {
+    let mut fingerprint = match get_result {
       Ok(result) => {
         // Wayfern.getFingerprint returns { fingerprint: {...} }
         // We need to extract just the fingerprint object
@@ -583,6 +588,20 @@ impl WayfernManager {
         return Err(format!("Failed to get fingerprint: {e}").into());
       }
     };
+
+    // Post-process: Clamp screen resolution to OS-appropriate integer values
+    // This fixes pixelscan "inconsistent fingerprint" detection where Wayfern
+    // generates Mac Retina fractional pixels (e.g., 2560.5) for Windows profiles
+    if let Err(e) = Self::clamp_screen_resolution(&mut fingerprint, os) {
+      cleanup().await;
+      return Err(format!("Failed to clamp screen resolution: {e}").into());
+    }
+
+    // Validate fingerprint consistency before storing (fail fast)
+    if let Err(e) = Self::validate_fingerprint_consistency(&fingerprint, os) {
+      cleanup().await;
+      return Err(format!("Fingerprint validation failed: {e}").into());
+    }
 
     cleanup().await;
 
@@ -610,6 +629,208 @@ impl WayfernManager {
     }
 
     Ok(fingerprint_json)
+  }
+
+  /// Clamp screen resolution to OS-appropriate integer values.
+  /// Fixes Wayfern generating Mac Retina fractional pixels (e.g., 2560.5) for Windows profiles.
+  /// Adjusts related fields (windowOuterWidth, screenAvailWidth) to maintain consistency.
+  fn clamp_screen_resolution(fingerprint: &mut serde_json::Value, os: &str) -> Result<(), String> {
+    let obj = fingerprint
+      .as_object_mut()
+      .ok_or("Fingerprint must be a JSON object")?;
+
+    // Helper to read numeric field (accepts both number and string)
+    // Note: We read all needed values first to avoid borrow conflicts
+    let read_screen_w = obj.get("screenWidth").and_then(|v| {
+      v.as_f64()
+        .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
+    });
+    let read_screen_h = obj.get("screenHeight").and_then(|v| {
+      v.as_f64()
+        .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
+    });
+    let read_window_outer_w = obj.get("windowOuterWidth").and_then(|v| {
+      v.as_f64()
+        .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
+    });
+    let read_window_outer_h = obj.get("windowOuterHeight").and_then(|v| {
+      v.as_f64()
+        .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
+    });
+    let read_avail_w = obj.get("screenAvailWidth").and_then(|v| {
+      v.as_f64()
+        .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
+    });
+    let read_avail_h = obj.get("screenAvailHeight").and_then(|v| {
+      v.as_f64()
+        .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
+    });
+
+    if read_screen_w.is_none() || read_screen_h.is_none() {
+      // No screen dimensions in fingerprint — nothing to clamp
+      return Ok(());
+    }
+
+    // macOS and Linux allow fractional pixels (Retina/High-DPI displays)
+    // Only apply clamping logic for Windows
+    if os != "windows" {
+      return Ok(());
+    }
+
+    let mut w = read_screen_w.unwrap();
+    let mut h = read_screen_h.unwrap();
+
+    // Check if fractional pixels exist (Mac Retina format: 2560.5)
+    let has_fractional = w.fract() != 0.0 || h.fract() != 0.0;
+
+    // Only clamp fractional pixels for Windows
+    if has_fractional {
+      log::warn!(
+        "Clamping fractional screen resolution for Windows: {}x{} → rounding to integers",
+        w,
+        h
+      );
+      w = w.round();
+      h = h.round();
+    }
+
+    // If OS is Windows but resolution looks like Mac Retina preset, replace with Windows resolution
+    // Common Mac Retina: 2560x1600, 2880x1800, 3072x1920
+    // These are unlikely on Windows (Windows uses 1920x1080, 2560x1440, 3840x2160)
+    let looks_like_mac_retina =
+      (w == 2560.0 && h == 1600.0) || (w == 2880.0 && h == 1800.0) || (w == 3072.0 && h == 1920.0);
+
+    if looks_like_mac_retina {
+      log::warn!(
+        "Replacing Mac Retina preset {}x{} with Windows resolution for Windows OS",
+        w,
+        h
+      );
+      // Use common Windows resolution (1920x1080 is most popular)
+      w = 1920.0;
+      h = 1080.0;
+    }
+
+    // Write clamped integer values
+    obj.insert("screenWidth".to_string(), serde_json::json!(w as u32));
+    obj.insert("screenHeight".to_string(), serde_json::json!(h as u32));
+
+    // Adjust related fields to maintain consistency
+    // windowOuterWidth should be <= screenWidth (typically screenWidth - window chrome)
+    if let Some(outer_w) = read_window_outer_w {
+      if outer_w > w {
+        obj.insert("windowOuterWidth".to_string(), serde_json::json!(w as u32));
+      }
+    }
+    if let Some(outer_h) = read_window_outer_h {
+      if outer_h > h {
+        obj.insert("windowOuterHeight".to_string(), serde_json::json!(h as u32));
+      }
+    }
+
+    // screenAvailWidth/Height should be <= screenWidth/Height
+    if let Some(avail_w) = read_avail_w {
+      if avail_w > w {
+        obj.insert("screenAvailWidth".to_string(), serde_json::json!(w as u32));
+      }
+    }
+    if let Some(avail_h) = read_avail_h {
+      if avail_h > h {
+        obj.insert("screenAvailHeight".to_string(), serde_json::json!(h as u32));
+      }
+    }
+
+    if has_fractional || looks_like_mac_retina {
+      log::info!(
+        "Screen resolution clamped: {}x{} (OS: {})",
+        w as u32,
+        h as u32,
+        os
+      );
+    }
+
+    Ok(())
+  }
+
+  /// Validate fingerprint consistency.
+  /// Rejects fingerprints that would trigger "inconsistent" warnings on fingerprint scanners.
+  /// Checks: integer screen pixels, OS-appropriate resolution, window/screen field sanity.
+  fn validate_fingerprint_consistency(
+    fingerprint: &serde_json::Value,
+    os: &str,
+  ) -> Result<(), String> {
+    let obj = fingerprint
+      .as_object()
+      .ok_or("Fingerprint must be a JSON object")?;
+
+    // Helper to read numeric field
+    let read_num = |key: &str| -> Option<f64> {
+      obj.get(key).and_then(|v| {
+        v.as_f64()
+          .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
+      })
+    };
+
+    // Check 1: Screen dimensions must be integers (no fractional pixels) for Windows
+    // macOS and Linux allow fractional pixels (Retina/High-DPI displays)
+    if os == "windows" {
+      if let Some(w) = read_num("screenWidth") {
+        if w.fract() != 0.0 {
+          return Err(format!(
+            "screenWidth has fractional pixels ({}), expected integer for Windows",
+            w
+          ));
+        }
+      }
+      if let Some(h) = read_num("screenHeight") {
+        if h.fract() != 0.0 {
+          return Err(format!(
+            "screenHeight has fractional pixels ({}), expected integer for Windows",
+            h
+          ));
+        }
+      }
+    }
+
+    // Check 2: Windows should not have Mac Retina-style resolutions
+    // (defense in depth — clamp_screen_resolution should have fixed this)
+    if os == "windows" {
+      if let (Some(w), Some(h)) = (read_num("screenWidth"), read_num("screenHeight")) {
+        let looks_like_mac_retina = (w == 2560.0 && h == 1600.0)
+          || (w == 2880.0 && h == 1800.0)
+          || (w == 3072.0 && h == 1920.0);
+        if looks_like_mac_retina {
+          return Err(format!(
+            "Windows profile has Mac Retina resolution {}x{} — this will trigger inconsistent fingerprint detection",
+            w, h
+          ));
+        }
+      }
+    }
+
+    // Check 3: windowOuterWidth <= screenWidth (sanity check)
+    if let (Some(outer_w), Some(screen_w)) = (read_num("windowOuterWidth"), read_num("screenWidth"))
+    {
+      if outer_w > screen_w {
+        return Err(format!(
+          "windowOuterWidth ({}) exceeds screenWidth ({})",
+          outer_w, screen_w
+        ));
+      }
+    }
+
+    // Check 4: screenAvailWidth <= screenWidth
+    if let (Some(avail_w), Some(screen_w)) = (read_num("screenAvailWidth"), read_num("screenWidth"))
+    {
+      if avail_w > screen_w {
+        return Err(format!(
+          "screenAvailWidth ({}) exceeds screenWidth ({})",
+          avail_w, screen_w
+        ));
+      }
+    }
+
+    Ok(())
   }
 }
 

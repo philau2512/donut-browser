@@ -16,6 +16,13 @@ const WAIT_UNTIL_OPTIONS: ParamOption[] = [
   { value: "networkidle" },
 ];
 
+const MATCH_MODE_OPTIONS: ParamOption[] = [
+  { value: "contain" },
+  { value: "equal" },
+];
+
+const FRAME_MODE_OPTIONS: ParamOption[] = [{ value: "sub" }, { value: "main" }];
+
 export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
   {
     type: "openUrl",
@@ -70,6 +77,39 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
     icon: LuLayers,
     params: [
       {
+        key: "tabIndex",
+        kind: "number",
+        required: false,
+        placeholder: "1",
+        helpKey: "automation.nodes.switchTab.tabIndexHelp",
+      },
+      {
+        key: "urlFilter",
+        kind: "string",
+        required: false,
+        placeholder: "facebook",
+        supportsExpression: true,
+      },
+      {
+        key: "urlMode",
+        kind: "enum",
+        placeholder: "contain",
+        options: MATCH_MODE_OPTIONS,
+      },
+      {
+        key: "titleFilter",
+        kind: "string",
+        required: false,
+        placeholder: "Facebook",
+        supportsExpression: true,
+      },
+      {
+        key: "titleMode",
+        kind: "enum",
+        placeholder: "contain",
+        options: MATCH_MODE_OPTIONS,
+      },
+      {
         key: "index",
         kind: "number",
         required: false,
@@ -83,7 +123,7 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
         supportsExpression: true,
       },
     ],
-    defaults: { index: 0 },
+    defaults: { tabIndex: 1, urlMode: "contain", titleMode: "contain" },
   },
   {
     type: "closeTab",
@@ -134,14 +174,20 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
     icon: LuFrame,
     params: [
       {
+        key: "mode",
+        kind: "enum",
+        placeholder: "sub",
+        options: FRAME_MODE_OPTIONS,
+      },
+      {
         key: "selector",
         kind: "string",
-        required: true,
+        required: false,
         placeholder: "#iframe-id",
         supportsExpression: true,
       },
       { key: "timeout", kind: "number", placeholder: "30000" },
     ],
-    defaults: { selector: "#iframe-id" },
+    defaults: { mode: "sub", selector: "#iframe-id" },
   },
 ];

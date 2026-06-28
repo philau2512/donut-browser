@@ -18,6 +18,8 @@ export type AutomationNodeType =
   | "type"
   | "pressKey"
   | "clearInput"
+  | "typeText"
+  | "sendTextToSelector"
   | "getCookies"
   | "setCookies"
   | "clearCookies"
@@ -51,15 +53,20 @@ export type AutomationNodeType =
   | "stopLoop"
   | "runOtherScript"
   | "addLog"
-  | "addComment";
+  | "addComment"
+  // Extension (spike)
+  | "switchExtensionPopup";
 
 export type AutomationNodeGroup =
   | "navigator"
-  | "interaction"
-  | "utility"
+  | "mouse"
+  | "keyboard"
   | "data"
   | "network"
-  | "control";
+  | "other"
+  | "utility"
+  | "control"
+  | "interaction";
 
 export type ParamKind = "string" | "number" | "boolean" | "enum";
 
@@ -94,8 +101,10 @@ export interface AutomationNodeCatalogItem {
 import { CONTROL_FLOW_CATALOG } from "./catalog/control-flow";
 import { COOKIE_CATALOG } from "./catalog/cookie";
 import { DATA_CATALOG } from "./catalog/data";
+import { EXTENSION_CATALOG } from "./catalog/extension";
 import { EXTRACTION_CATALOG } from "./catalog/extraction";
 import { INTERACTION_CATALOG } from "./catalog/interaction";
+import { KEYBOARD_CATALOG } from "./catalog/keyboard";
 import { LOGIC_CATALOG } from "./catalog/logic";
 import { NAVIGATOR_CATALOG } from "./catalog/navigator";
 import { NETWORK_CATALOG } from "./catalog/network";
@@ -104,6 +113,8 @@ import { NETWORK_CATALOG } from "./catalog/network";
  * Keep node type + param names in lockstep with the engine validator. */
 export const AUTOMATION_NODE_CATALOG: AutomationNodeCatalogItem[] = [
   ...NAVIGATOR_CATALOG,
+  ...EXTENSION_CATALOG,
+  ...KEYBOARD_CATALOG,
   ...INTERACTION_CATALOG,
   ...COOKIE_CATALOG,
   ...LOGIC_CATALOG,

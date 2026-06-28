@@ -177,6 +177,11 @@ export function AutomationLogPanel({
                     ]{" "}
                   </span>
                 )}
+                {line.nodeId && (
+                  <span className="font-mono text-[10px] text-muted-foreground/70">
+                    [{line.nodeId}]{" "}
+                  </span>
+                )}
                 {line.msg ?? ""}
               </div>
             );

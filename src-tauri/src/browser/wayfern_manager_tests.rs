@@ -84,4 +84,87 @@ mod tests {
     assert_eq!(config_empty.webrtc_mode, None);
     assert_eq!(config_empty.block_webrtc, None);
   }
+
+  #[test]
+  fn clamp_screen_resolution_removes_fractional_pixels() {
+    let mut fp: serde_json::Value = serde_json::json!({
+      "screenWidth": 2560.5,
+      "screenHeight": 1600.5,
+      "windowOuterWidth": 2560,
+      "windowOuterHeight": 1600
+    });
+    WayfernManager::clamp_screen_resolution(&mut fp, "windows").unwrap();
+    assert_eq!(fp["screenWidth"], 2561); // rounded
+    assert_eq!(fp["screenHeight"], 1601);
+  }
+
+  #[test]
+  fn clamp_screen_resolution_replaces_mac_retina_on_windows() {
+    let mut fp: serde_json::Value = serde_json::json!({
+      "screenWidth": 2560,
+      "screenHeight": 1600,
+      "windowOuterWidth": 2560,
+      "windowOuterHeight": 1600
+    });
+    WayfernManager::clamp_screen_resolution(&mut fp, "windows").unwrap();
+    // Mac Retina 2560x1600 replaced with common Windows resolution
+    assert_eq!(fp["screenWidth"], 1920);
+    assert_eq!(fp["screenHeight"], 1080);
+  }
+
+  #[test]
+  fn clamp_screen_resolution_preserves_macos_fractional() {
+    let mut fp: serde_json::Value = serde_json::json!({
+      "screenWidth": 2560.5,
+      "screenHeight": 1600.5
+    });
+    WayfernManager::clamp_screen_resolution(&mut fp, "macos").unwrap();
+    // macOS allows fractional pixels (Retina)
+    assert_eq!(fp["screenWidth"], 2560.5);
+    assert_eq!(fp["screenHeight"], 1600.5);
+  }
+
+  #[test]
+  fn validate_fingerprint_consistency_rejects_fractional_on_windows() {
+    let fp: serde_json::Value = serde_json::json!({
+      "screenWidth": 2560.5,
+      "screenHeight": 1600.5
+    });
+    let result = WayfernManager::validate_fingerprint_consistency(&fp, "windows");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("fractional pixels"));
+  }
+
+  #[test]
+  fn validate_fingerprint_consistency_accepts_integers_on_windows() {
+    let fp: serde_json::Value = serde_json::json!({
+      "screenWidth": 1920,
+      "screenHeight": 1080,
+      "windowOuterWidth": 1820,
+      "screenAvailWidth": 1920
+    });
+    let result = WayfernManager::validate_fingerprint_consistency(&fp, "windows");
+    assert!(result.is_ok());
+  }
+
+  #[test]
+  fn validate_fingerprint_consistency_rejects_mac_retina_on_windows() {
+    let fp: serde_json::Value = serde_json::json!({
+      "screenWidth": 2560,
+      "screenHeight": 1600
+    });
+    let result = WayfernManager::validate_fingerprint_consistency(&fp, "windows");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("Mac Retina"));
+  }
+
+  #[test]
+  fn validate_fingerprint_consistency_accepts_mac_retina_on_macos() {
+    let fp: serde_json::Value = serde_json::json!({
+      "screenWidth": 2560.5,
+      "screenHeight": 1600.5
+    });
+    let result = WayfernManager::validate_fingerprint_consistency(&fp, "macos");
+    assert!(result.is_ok());
+  }
 }

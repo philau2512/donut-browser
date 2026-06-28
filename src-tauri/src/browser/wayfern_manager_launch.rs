@@ -337,7 +337,8 @@ impl WayfernManager {
     if let Some(instance) = inner.instances.remove(id) {
       log::info!("Cleaning up Wayfern instance {}", instance.id);
       if let Some(cancel) = instance.watcher_cancel {
-        let _ = cancel.send(());
+        // Send true to trigger changed() in watcher (false → true transition)
+        let _ = cancel.send(true);
       }
       if let Some(pid) = instance.process_id {
         #[cfg(unix)]

@@ -1,12 +1,13 @@
 import { openUrl, newTab, switchTab, closeTab, reloadPage, goBack, goForward, switchFrame, wait, scroll } from "./navigator.mjs";
 import { click, hover, dragAndDrop, clickDown, clickUp, type } from "./interaction.mjs";
-import { pressKey, clearInput } from "./keyboard.mjs";
+import { typeText, sendTextToSelector, pressKey, clearInput } from "./keyboard.mjs";
 import { getCookies, setCookies, clearCookies } from "./cookie.mjs";
 import { ifCondition, loopFor, loopElements, evalJs } from "./logic.mjs";
 import { setVariable, readCsv, writeCsv, downloadFile, screenshot, log, delay } from "./data.mjs";
 import { getText, getAttributeValue, getValue, elementExists, extractionInText, random } from "./extraction.mjs";
 import { http, setUserAgent, getUrl, convertingJson, imageSearch } from "./network.mjs";
 import { whileLoop, stopLoop, runOtherScript, addLog, addComment } from "./control-flow.mjs";
+import { switchExtensionPopup } from "./extension.mjs";
 
 export const handlers = {
   // Navigator
@@ -30,6 +31,8 @@ export const handlers = {
   type,
 
   // Keyboard
+  typeText,
+  sendTextToSelector,
   pressKey,
   clearInput,
 
@@ -74,6 +77,9 @@ export const handlers = {
   runOtherScript,
   addLog,
   addComment,
+
+  // Extension (spike)
+  switchExtensionPopup,
 };
 
 export const NODE_TYPES = Object.keys(handlers);

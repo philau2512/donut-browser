@@ -41,6 +41,7 @@ export type BackendErrorCode =
   | "WAYFERN_NO_PAGE_TARGETS"
   | "WAYFERN_FINGERPRINT_APPLY_FAILED"
   | "WAYFERN_REHYDRATE_FAILED"
+  | "WAYFERN_FINGERPRINT_INCONSISTENT"
   | "INTERNAL_ERROR";
 
 export interface BackendError {
@@ -161,6 +162,10 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       });
     case "WAYFERN_REHYDRATE_FAILED":
       return t("backendErrors.wayfernRehydrateFailed", {
+        reason: parsed.params?.reason ?? "",
+      });
+    case "WAYFERN_FINGERPRINT_INCONSISTENT":
+      return t("backendErrors.wayfernFingerprintInconsistent", {
         reason: parsed.params?.reason ?? "",
       });
     case "INTERNAL_ERROR":

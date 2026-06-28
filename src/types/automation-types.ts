@@ -80,6 +80,9 @@ export interface LogLine {
   ts?: number;
   runId?: string;
   profileId?: string;
+  /** Stable per-node identifier for debug/search correlation. Generated at flow
+   * save time, emitted by automation-engine in every log line. Optional for
+   * backward compatibility with legacy flows. */
   nodeId?: string;
   level?: "info" | "warn" | "error" | "debug";
   msg?: string;

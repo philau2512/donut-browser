@@ -10,7 +10,14 @@ import {
   type AutomationNodeGroup,
 } from "@/lib/automation/node-catalog";
 
-const GROUPS: AutomationNodeGroup[] = ["navigator", "interaction", "utility"];
+const GROUPS: AutomationNodeGroup[] = [
+  "navigator",
+  "mouse",
+  "keyboard",
+  "data",
+  "network",
+  "other",
+];
 
 interface NodePaletteProps {
   onDragStart: (event: DragEvent, item: AutomationNodeCatalogItem) => void;

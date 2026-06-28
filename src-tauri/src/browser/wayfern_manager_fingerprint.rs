@@ -184,6 +184,23 @@ impl WayfernManager {
       );
     }
 
+    // Defense in depth: Validate fingerprint consistency before launch
+    // This catches stale fingerprints from before screen consistency fix
+    // and manually edited fingerprints in profile metadata
+    if let Some(os) = config.os.as_deref() {
+      if let Err(e) = crate::browser::wayfern_manager::WayfernManager::validate_fingerprint_consistency(
+        &fingerprint_params,
+        os,
+      ) {
+        return Err(serde_json::json!({
+          "code": "WAYFERN_FINGERPRINT_INCONSISTENT",
+          "params": { "reason": e }
+        })
+        .to_string()
+        .into());
+      }
+    }
+
     Ok(fingerprint_params)
   }
 
@@ -278,13 +295,15 @@ impl WayfernManager {
   }
 
   /// Poll for new page targets and re-apply fingerprint (Ctrl+T, window.open, automation).
+  /// Uses watch channel with boolean flag (false → true) for reliable cancellation.
+  /// Prevents log spam after browser instance is stopped.
   pub(crate) fn start_fingerprint_watcher(
     &self,
     port: u16,
     fingerprint_params: Arc<serde_json::Value>,
     fingerprinted: Arc<AsyncMutex<HashSet<String>>>,
-  ) -> tokio::sync::watch::Sender<()> {
-    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(());
+  ) -> tokio::sync::watch::Sender<bool> {
+    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
     let manager = WayfernManager {
       inner: self.inner.clone(),
       http_client: self.http_client.clone(),
@@ -294,9 +313,11 @@ impl WayfernManager {
       let mut interval = tokio::time::interval(Duration::from_millis(1500));
       loop {
         tokio::select! {
-          _ = cancel_rx.changed() => {
-            log::debug!("Fingerprint watcher stopped for CDP port {port}");
-            break;
+          result = cancel_rx.changed() => {
+            if result.is_ok() && *cancel_rx.borrow() {
+              log::debug!("Fingerprint watcher stopped for CDP port {port}");
+              break;
+            }
           }
           _ = interval.tick() => {
             if let Err(e) = manager

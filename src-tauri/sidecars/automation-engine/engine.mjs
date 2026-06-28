@@ -23,6 +23,7 @@ import { chromium } from "playwright-core";
 import { validateFlow } from "./lib/validate.mjs";
 import { interpolateParams } from "./lib/interpolate.mjs";
 import { Logger, createRedactor } from "./lib/logger.mjs";
+import { getPage } from "./lib/execution-target.mjs";
 import { getHandler } from "./nodes/index.mjs";
 
 const EXIT_OK = 0;
@@ -104,7 +105,16 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
   // Inject runSubFlow so control-flow handlers can call sub-scripts without a
   // dynamic import back into engine.mjs (avoids circular-import overhead).
   const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, ...args });
-  const ctx = { logger, vars, artifactsDir, allowedSchemes, page, flowDir, runSubFlow };
+  const ctx = {
+    logger,
+    vars,
+    artifactsDir,
+    allowedSchemes,
+    page,
+    frame: null,
+    flowDir,
+    runSubFlow,
+  };
   let failed = false;
 
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
@@ -137,18 +147,21 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       break;
     }
 
-    logger.info(cur.id, `▶ ${cur.type}`);
+    // Use stable nodeId from node.data if present (for debug/search correlation)
+    const stableNodeId = cur.data?.nodeId ?? cur.id;
+    logger.info(stableNodeId, `▶ ${cur.type}`);
     let outcome = "success";
     try {
-      const result = await handler(interpolated, ctx.page, ctx);
+      const activePage = getPage(ctx);
+      const result = await handler(interpolated, activePage, ctx);
       if (typeof result === "string") {
         outcome = result;
       }
-      logger.info(cur.id, `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`);
+      logger.info(stableNodeId, `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`);
     } catch (err) {
       outcome = "fail";
       const msg = err instanceof Error ? err.message : String(err);
-      logger.error(cur.id, `✗ ${cur.type}: ${msg}`);
+      logger.error(stableNodeId, `✗ ${cur.type}: ${msg}`);
     }
 
     const next = getNextNode(cur.id, outcome);

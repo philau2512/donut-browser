@@ -11,7 +11,6 @@
 // Each edge: { from, to }
 
 import { isAllowedUrlScheme } from "./url-guard.mjs";
-import { NODE_TYPES } from "../nodes/index.mjs";
 
 export const SCHEMA_VERSION = 1;
 
@@ -31,7 +30,15 @@ export const NODE_SCHEMAS = {
   },
   switchTab: {
     required: {},
-    optional: { index: "number", urlPattern: "string" },
+    optional: {
+      index: "number",
+      urlPattern: "string",
+      tabIndex: "number",
+      urlFilter: "string",
+      urlMode: "string",
+      titleFilter: "string",
+      titleMode: "string",
+    },
   },
   closeTab: {
     required: {},
@@ -50,8 +57,8 @@ export const NODE_SCHEMAS = {
     optional: {},
   },
   switchFrame: {
-    required: { selector: "string" },
-    optional: { timeout: "number" },
+    required: {},
+    optional: { mode: "string", selector: "string", timeout: "number" },
   },
   wait: {
     required: {},
@@ -89,6 +96,14 @@ export const NODE_SCHEMAS = {
   },
 
   // Keyboard
+  typeText: {
+    required: { text: "string" },
+    optional: { delay: "number", intervalMs: "number" },
+  },
+  sendTextToSelector: {
+    required: { selector: "string", text: "string" },
+    optional: { timeout: "number", delay: "number" },
+  },
   pressKey: {
     required: { key: "string" },
     optional: { selector: "string" },
@@ -229,26 +244,18 @@ export const NODE_SCHEMAS = {
     required: {},
     optional: { comment: "string" },
   },
+
+  // Extension popup (spike)
+  switchExtensionPopup: {
+    required: {},
+    optional: { mode: "string", selector: "string", timeout: "number" },
+  },
 };
 
 export const ALLOWED_NODE_TYPES = Object.freeze(Object.keys(NODE_SCHEMAS));
 
-// Anti-drift guard (#7b): the validator's schema and the dispatcher's registry
-// must cover exactly the same node types. If a handler is added/removed without
-// updating NODE_SCHEMAS (or vice-versa), fail loudly at module load.
-{
-  const schemaSet = new Set(ALLOWED_NODE_TYPES);
-  const registrySet = new Set(NODE_TYPES);
-  const missingInSchema = NODE_TYPES.filter((t) => !schemaSet.has(t));
-  const missingInRegistry = ALLOWED_NODE_TYPES.filter((t) => !registrySet.has(t));
-  if (missingInSchema.length > 0 || missingInRegistry.length > 0) {
-    throw new Error(
-      `Node-type drift between validate.mjs and nodes/index.mjs — ` +
-        `missing in schema: [${missingInSchema.join(", ")}], ` +
-        `missing in registry: [${missingInRegistry.join(", ")}]`,
-    );
-  }
-}
+// Anti-drift (#7b): enforced in __tests__/contracts/registry-drift.test.mjs
+// (cannot run at validate.mjs load — circular import with nodes/index.mjs).
 
 export class FlowValidationError extends Error {
   constructor(message) {

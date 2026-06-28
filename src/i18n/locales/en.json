@@ -1924,7 +1924,8 @@
     "wayfernWebrtcAlterIpInvalid": "WebRTC alter mode received an invalid proxy exit IP.",
     "wayfernNoPageTargets": "Wayfern started but no browser page was available for fingerprint injection.",
     "wayfernFingerprintApplyFailed": "Failed to apply the fingerprint to Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "Failed to restore fingerprint protection on a recovered Wayfern browser: {{reason}}"
+    "wayfernRehydrateFailed": "Failed to restore fingerprint protection on a recovered Wayfern browser: {{reason}}",
+    "wayfernFingerprintInconsistent": "Fingerprint is inconsistent (e.g., screen resolution mismatch). Regenerate fingerprint to fix: {{reason}}"
   },
   "rail": {
     "profiles": "Profiles",
@@ -2116,9 +2117,10 @@
         "document": "Open a new tab in the browser context. Optionally navigate to a URL. The automation will switch to the new tab automatically."
       },
       "switchTab": {
-        "label": "Switch Tab",
-        "description": "Switch to a different tab by index or URL pattern.",
-        "document": "Switch to a different tab by index (0-based) or URL pattern. Use index for predictable tab order, or urlPattern to find a tab by its URL."
+        "label": "Active tab",
+        "description": "Switch tab by number (1-based), URL, or title — Hidemium Active tab.",
+        "document": "Hidemium Active tab: tabIndex is 1-based (first tab = 1). Filter by urlFilter/urlMode (equal or contain) and titleFilter/titleMode. Legacy index (0-based) and urlPattern still work.",
+        "tabIndexHelp": "Tab number (1 = first tab), like Hidemium"
       },
       "closeTab": {
         "label": "Close Tab",

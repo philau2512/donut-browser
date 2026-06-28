@@ -4,6 +4,7 @@ import {
   type AutomationNodeType,
   isAutomationNodeType,
 } from "@/lib/automation/node-catalog";
+import { generateNodeId } from "@/lib/automation/node-id";
 
 export const START_NODE_ID = "__start__";
 
@@ -13,6 +14,8 @@ export interface DonutFlowNode {
   params?: Record<string, string | number | boolean>;
   continueOnError?: boolean;
   comment?: string;
+  /** Stable per-node ID for debug/search correlation. Generated at save time. */
+  nodeId?: string;
 }
 
 export interface DonutFlowEdge {
@@ -60,13 +63,19 @@ export function createStartNode(): AutomationCanvasNode {
   };
 }
 
+/** Generate a 9-digit random instance ID for nodes (unique within a single flow). */
+function generateNodeInstanceId(): string {
+  // 9 digits: 100000000 - 999999999 (10^9 space, negligible collision for single-flow use)
+  return Math.floor(100000000 + Math.random() * 900000000).toString();
+}
+
 export function createAutomationNode(
   nodeType: AutomationNodeType,
   position: XYPosition,
 ): AutomationCanvasNode {
   const spec = AUTOMATION_NODE_BY_TYPE[nodeType];
   return {
-    id: `${nodeType}-${crypto.randomUUID()}`,
+    id: `${nodeType}-${generateNodeInstanceId()}`,
     type: "automation",
     position,
     data: {
@@ -115,6 +124,8 @@ export function toDonutFlow(
         id: node.id,
         type: nodeType,
         params: pruneEmptyParams(node.data.params),
+        nodeId:
+          typeof node.data.nodeId === "string" ? node.data.nodeId : undefined,
       };
       if (node.data.continueOnError === true) out.continueOnError = true;
       if (node.data.comment) out.comment = node.data.comment;
@@ -144,6 +155,10 @@ export function fromDonutFlow(
 
   flow.nodes.forEach((node, index) => {
     if (!isAutomationNodeType(node.type)) return;
+
+    // Auto-generate nodeId on load if missing (transparent migration for old flows)
+    const nodeId = node.nodeId ?? generateNodeId();
+
     nodes.push({
       id: node.id,
       type: "automation",
@@ -154,6 +169,7 @@ export function fromDonutFlow(
         params: { ...(node.params ?? {}) },
         continueOnError: node.continueOnError,
         comment: node.comment,
+        nodeId,
       },
     });
   });

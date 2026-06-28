@@ -151,33 +151,15 @@ impl CamoufoxManager {
         _ => {}
       }
 
-      if let Some(proxy_str) = &config.proxy {
-        if let Ok(parsed) = url::Url::parse(proxy_str) {
-          let host = parsed.host_str().unwrap_or("127.0.0.1");
-          let port = parsed.port().unwrap_or(8080);
-          let scheme = parsed.scheme();
-
-          if scheme == "socks5" || scheme == "socks4" {
-            prefs.push_str(&format!(
-              "user_pref(\"network.proxy.type\", 1);\n\
-               user_pref(\"network.proxy.socks\", \"{host}\");\n\
-               user_pref(\"network.proxy.socks_port\", {port});\n\
-               user_pref(\"network.proxy.socks_version\", {});\n\
-               user_pref(\"network.proxy.socks_remote_dns\", true);\n",
-              if scheme == "socks5" { 5 } else { 4 }
-            ));
-          } else {
-            // HTTP/HTTPS proxy
-            prefs.push_str(&format!(
-              "user_pref(\"network.proxy.type\", 1);\n\
-               user_pref(\"network.proxy.http\", \"{host}\");\n\
-               user_pref(\"network.proxy.http_port\", {port});\n\
-               user_pref(\"network.proxy.ssl\", \"{host}\");\n\
-               user_pref(\"network.proxy.ssl_port\", {port});\n\
-               user_pref(\"network.proxy.no_proxies_on\", \"\");\n"
-            ));
-          }
-        }
+      // NOTE: Proxy configuration is handled by the external donut-proxy layer
+      // (Rust sidecar), NOT via Firefox prefs. Setting network.proxy.* in user.js
+      // creates a detectable fingerprint (pixelscan.net, browserleaks.com).
+      // Camoufox launches behind local proxy (127.0.0.1) without exposing prefs.
+      // If config.proxy is set, it's used by donut-proxy for upstream routing.
+      if let Some(_proxy_str) = &config.proxy {
+        // Proxy routing is managed externally — do not emit network.proxy prefs.
+        // This avoids "Proxy detected" on fingerprint scanners.
+        log::debug!("Proxy configured via external layer, skipping user.js prefs");
       }
 
       if let Err(e) = std::fs::write(&user_js_path, prefs) {

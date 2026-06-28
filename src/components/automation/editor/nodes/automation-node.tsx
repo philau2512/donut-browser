@@ -112,7 +112,7 @@ export function AutomationNode({
 
       <div
         className={cn(
-          "w-40 rounded-xl border p-2 shadow-md transition-all",
+          "w-[138px] rounded-xl border p-2 shadow-md transition-all",
           groupBg,
           selected && "brightness-[0.70] ring-2 ring-primary/35",
         )}
