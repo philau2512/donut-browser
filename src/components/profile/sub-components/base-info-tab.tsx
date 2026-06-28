@@ -4,12 +4,9 @@ import { useTranslation } from "react-i18next";
 import {
   FaApple,
   FaChrome,
-  FaEdge,
   FaFirefox,
   FaLinux,
-  FaOpera,
   FaWindows,
-  FaYandex,
 } from "react-icons/fa";
 import { FaAndroid } from "react-icons/fa6";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -36,6 +33,8 @@ interface BaseInfoTabProps {
   groupId: string | undefined;
   setGroupId: (id: string | undefined) => void;
   groups: any[];
+  browserType: "camoufox" | "wayfern";
+  setBrowserType: (type: "camoufox" | "wayfern") => void;
   wayfernConfig: WayfernConfig;
   updateWayfernConfig: (key: keyof WayfernConfig, value: unknown) => void;
   fingerprintConfig: WayfernFingerprintConfig;
@@ -61,6 +60,8 @@ export function BaseInfoTab({
   groupId,
   setGroupId,
   groups,
+  browserType,
+  setBrowserType,
   wayfernConfig,
   updateWayfernConfig,
   fingerprintConfig,
@@ -87,14 +88,8 @@ export function BaseInfoTab({
   ];
 
   const browserOptions = [
-    { value: "chrome", label: "Chrome", icon: FaChrome, active: true },
-    { value: "opera", label: "Opera", icon: FaOpera, active: false },
-    { value: "edge", label: "Edge", icon: FaEdge, active: false },
-    { value: "brave", label: "Brave", icon: FaChrome, active: false },
-    { value: "yandex", label: "Yandex", icon: FaYandex, active: false },
-    { value: "firefox", label: "Firefox", icon: FaFirefox, active: false },
-    { value: "opera-gx", label: "Opera GX", icon: FaOpera, active: false },
-    { value: "chromium", label: "Chromium", icon: FaChrome, active: false },
+    { value: "camoufox", label: "Camoufox", icon: FaFirefox, active: true },
+    { value: "wayfern", label: "Wayfern", icon: FaChrome, active: true },
   ];
 
   return (
@@ -247,21 +242,30 @@ export function BaseInfoTab({
 
       {/* Browser Selection mock-up list */}
       <div className="space-y-3">
-        <Label>Browser</Label>
-        <div className="grid grid-cols-4 gap-3 md:grid-cols-8">
+        <Label>Browser Engine</Label>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {browserOptions.map((opt) => {
             const Icon = opt.icon;
+            const isSelected = browserType === opt.value;
+
             return (
-              <div
+              <button
                 key={opt.value}
+                type="button"
+                onClick={() =>
+                  setBrowserType(opt.value as "camoufox" | "wayfern")
+                }
+                disabled={!opt.active}
                 className={cn(
                   "relative flex flex-col items-center justify-center p-2.5 rounded-lg border bg-card text-card-foreground text-center transition-all",
                   opt.active
-                    ? "border-primary bg-primary/10 text-primary font-bold shadow-md shadow-primary/10 scale-105"
+                    ? isSelected
+                      ? "border-primary bg-primary/10 text-primary font-bold shadow-md shadow-primary/10 scale-105 ring-2 ring-primary/20"
+                      : "border-muted hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
                     : "opacity-35 select-none cursor-not-allowed bg-muted/5 border-muted",
                 )}
               >
-                {opt.active && (
+                {opt.active && isSelected && (
                   <span className="absolute -top-1 -right-1 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
@@ -269,7 +273,7 @@ export function BaseInfoTab({
                 )}
                 <Icon className="size-5 mb-1" />
                 <span className="text-[10px] font-medium">{opt.label}</span>
-              </div>
+              </button>
             );
           })}
         </div>

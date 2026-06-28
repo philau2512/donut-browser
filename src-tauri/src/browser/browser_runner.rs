@@ -863,6 +863,21 @@ impl BrowserRunner {
     // 2. Lấy profile từ đĩa
     let profiles_dir = self.profile_manager.get_profiles_dir();
     let profile_uuid_dir = profiles_dir.join(profile_id);
+
+    // Stop and clean up WayfernManager tracking for this profile (especially the fingerprint watcher)
+    let profile_path_str = profile_uuid_dir.to_string_lossy();
+    if let Some(existing) = self
+      .wayfern_manager
+      .find_wayfern_by_profile(&profile_path_str)
+      .await
+    {
+      log::info!(
+        "Cleaning up Wayfern instance for stopped profile: {}",
+        existing.id
+      );
+      let _ = self.wayfern_manager.stop_wayfern(&existing.id).await;
+    }
+
     let metadata_file = profile_uuid_dir.join("metadata.json");
 
     if !metadata_file.exists() {

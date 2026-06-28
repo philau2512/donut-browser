@@ -53,17 +53,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { useBrowserDownload } from "@/hooks/use-browser-download";
+import { useBrowserVersion } from "@/hooks/use-browser-version";
 import { useProxyEvents } from "@/hooks/use-proxy-events";
 import { useVpnEvents } from "@/hooks/use-vpn-events";
+import { useWayfernConfig } from "@/hooks/use-wayfern-config";
 import { cn } from "@/lib/utils";
 import type {
+  BrowserProfile,
+  CamoufoxConfig,
   WayfernConfig,
-  WayfernFingerprintConfig,
   WayfernOS,
 } from "@/types";
-
 import { BaseInfoTab } from "./sub-components/base-info-tab";
 import { CommandTab } from "./sub-components/command-tab";
 import { CookiesTab } from "./sub-components/cookies-tab";
@@ -98,6 +98,7 @@ interface CreateProfileDialogProps {
     proxyId?: string;
     vpnId?: string;
     wayfernConfig?: WayfernConfig;
+    camoufoxConfig?: CamoufoxConfig;
     groupId?: string;
     extensionGroupId?: string;
     ephemeral?: boolean;
@@ -126,19 +127,21 @@ export function CreateProfileDialog({
   const [profileGroups, setProfileGroups] = useState<any[]>([]);
   const [batchCount, setBatchCount] = useState(1);
 
+  // Browser Type Selection (Camoufox vs Wayfern)
+  const [browserType, _setBrowserType] = useState<"camoufox" | "wayfern">(
+    "camoufox",
+  );
+
+  // Batch Anti-Detect States (Phase 2 — Per-profile randomization & proxy rotation)
+  const [randomizePerProfile, setRandomizePerProfile] = useState(true);
+  const [proxyList, setProxyList] = useState("");
+
   // Configuration States
   const [selectedProxyId, setSelectedProxyId] = useState<string>();
   const [proxyPopoverOpen, setProxyPopoverOpen] = useState(false);
   const [dnsBlocklist, setDnsBlocklist] = useState<string>("");
   const [launchHook, setLaunchHook] = useState("");
   const [rawCookies, setRawCookies] = useState("");
-
-  // Wayfern Config
-  const [wayfernConfig, setWayfernConfig] = useState<WayfernConfig>(() => ({
-    os: getCurrentOS(),
-  }));
-  const [fingerprintConfig, setFingerprintConfig] =
-    useState<WayfernFingerprintConfig>({});
 
   // Extensions
   const [selectedExtensionGroupId, setSelectedExtensionGroupId] =
@@ -153,28 +156,38 @@ export function CreateProfileDialog({
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const PASSWORD_MIN_LEN = 8;
 
+  // Camoufox Config (for batch/single creation)
+  const [camoufoxConfig, _setCamoufoxConfig] = useState<CamoufoxConfig>({});
+
   // Loading States
   const [showProxyForm, setShowProxyForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [isGeneratingFingerprint, setIsGeneratingFingerprint] = useState(false);
 
   const { storedProxies } = useProxyEvents();
   const { vpnConfigs } = useVpnEvents();
 
-  // Browser version fetching hooks
+  // Extracted hooks
   const {
-    isBrowserDownloading,
+    isLoadingReleaseTypes,
+    getCreatableVersion,
+    isBrowserCurrentlyDownloading,
+    loadReleaseTypes,
     downloadBrowser,
-    loadDownloadedVersions,
-    isVersionDownloaded,
-    downloadedVersionsMap,
-  } = useBrowserDownload();
+    getBestAvailableVersion,
+  } = useBrowserVersion();
 
-  const [releaseTypes, setReleaseTypes] = useState<any>({});
-  const [isLoadingReleaseTypes, setIsLoadingReleaseTypes] = useState(false);
-  const [_releaseTypesError, setReleaseTypesError] = useState<string | null>(
-    null,
-  );
+  const {
+    wayfernConfig,
+    fingerprintConfig,
+    isGeneratingFingerprint,
+    updateWayfernConfig,
+    updateFingerprintConfig,
+    handleGenerateFingerprint,
+    handleAutoLocationToggle,
+    isAutoLocationEnabled,
+    isFingerprintEditingDisabled,
+    setWayfernConfig,
+  } = useWayfernConfig(getCreatableVersion);
 
   // Load profile groups and extension groups
   useEffect(() => {
@@ -204,194 +217,14 @@ export function CreateProfileDialog({
     }
   }, []);
 
-  // Fetch available Wayfern browser versions
-  const loadReleaseTypes = useCallback(
-    async (browser: string) => {
-      setIsLoadingReleaseTypes(true);
-      setReleaseTypesError(null);
-
-      try {
-        const rawReleaseTypes = await invoke<any>("get_browser_release_types", {
-          browserStr: browser,
-        });
-
-        await loadDownloadedVersions(browser);
-
-        const filtered: any = {};
-        if (rawReleaseTypes.stable) filtered.stable = rawReleaseTypes.stable;
-        setReleaseTypes(filtered);
-      } catch (error) {
-        console.error(`Failed to load release types for ${browser}:`, error);
-        try {
-          const downloaded = await loadDownloadedVersions(browser);
-          if (downloaded.length > 0) {
-            const fallback: any = {};
-            fallback.stable = downloaded[0];
-            setReleaseTypes(fallback);
-          } else {
-            setReleaseTypesError(
-              "Failed to fetch browser versions. Please check your internet connection.",
-            );
-          }
-        } catch (_e) {
-          setReleaseTypesError(
-            "Failed to fetch browser versions. Please check your internet connection.",
-          );
-        }
-      } finally {
-        setIsLoadingReleaseTypes(false);
-      }
-    },
-    [loadDownloadedVersions],
-  );
-
-  const getBestAvailableVersion = useCallback(
-    (_browserStr?: string) => {
-      if (!releaseTypes) return null;
-      if (releaseTypes.stable) {
-        return { version: releaseTypes.stable, releaseType: "stable" as const };
-      }
-      return null;
-    },
-    [releaseTypes],
-  );
-
-  const getCreatableVersion = useCallback(
-    (browserType?: string) => {
-      const bestVersion = getBestAvailableVersion(browserType);
-      if (bestVersion && isVersionDownloaded(bestVersion.version)) {
-        return bestVersion;
-      }
-      const browserDownloaded = downloadedVersionsMap[browserType ?? ""] ?? [];
-      if (browserDownloaded.length > 0) {
-        const fallbackVersion = browserDownloaded[0];
-        return {
-          version: fallbackVersion,
-          releaseType: "stable" as const,
-        };
-      }
-      return null;
-    },
-    [getBestAvailableVersion, isVersionDownloaded, downloadedVersionsMap],
-  );
-
-  // Generate a random sample fingerprint inside the UI
-  const handleGenerateFingerprint = useCallback(
-    async (currentConfig?: WayfernConfig) => {
-      const bestVersion = getCreatableVersion("wayfern");
-      if (!bestVersion) return;
-      setIsGeneratingFingerprint(true);
-      try {
-        const configToUse = currentConfig || wayfernConfig;
-        const configJson = JSON.stringify(configToUse);
-        const result = await invoke<string>("generate_sample_fingerprint", {
-          browser: "wayfern",
-          version: bestVersion.version,
-          configJson,
-        });
-        setWayfernConfig((prev) => ({ ...prev, fingerprint: result }));
-        toast.success("New sample fingerprint generated successfully");
-      } catch (error) {
-        console.error("Failed to generate fingerprint:", error);
-        toast.error("Failed to generate sample fingerprint");
-      } finally {
-        setIsGeneratingFingerprint(false);
-      }
-    },
-    [getCreatableVersion, wayfernConfig],
-  );
-
   // Load versions and GeoIP data on mount
   useEffect(() => {
     if (isOpen) {
-      void loadDownloadedVersions("wayfern");
       void loadReleaseTypes("wayfern");
+      void loadReleaseTypes("camoufox");
       void checkAndDownloadGeoIPDatabase();
     }
-  }, [
-    isOpen,
-    loadReleaseTypes,
-    loadDownloadedVersions,
-    checkAndDownloadGeoIPDatabase,
-  ]);
-
-  // Sync fingerprintConfig state with wayfernConfig.fingerprint JSON string
-  useEffect(() => {
-    if (wayfernConfig.fingerprint) {
-      try {
-        const parsed = JSON.parse(
-          wayfernConfig.fingerprint,
-        ) as WayfernFingerprintConfig;
-        setFingerprintConfig(parsed);
-      } catch (error) {
-        console.error("Failed to parse fingerprint config:", error);
-        setFingerprintConfig({});
-      }
-    } else {
-      setFingerprintConfig({});
-    }
-  }, [wayfernConfig.fingerprint]);
-
-  // Tự động sinh vân tay lần đầu khi mở Dialog và phiên bản trình duyệt đã sẵn sàng
-  useEffect(() => {
-    if (isOpen && !wayfernConfig.fingerprint && !isGeneratingFingerprint) {
-      const bestVersion = getCreatableVersion("wayfern");
-      if (bestVersion) {
-        void handleGenerateFingerprint(wayfernConfig);
-      }
-    }
-  }, [
-    isOpen,
-    wayfernConfig,
-    isGeneratingFingerprint,
-    getCreatableVersion,
-    handleGenerateFingerprint,
-  ]);
-
-  const updateWayfernConfig = (key: keyof WayfernConfig, value: unknown) => {
-    setWayfernConfig((prev) => {
-      const updated = { ...prev, [key]: value };
-      if (key === "os") {
-        void handleGenerateFingerprint(updated);
-      }
-      return updated;
-    });
-  };
-
-  const updateFingerprintConfig = (
-    key: keyof WayfernFingerprintConfig,
-    value: unknown,
-  ) => {
-    const newConfig = { ...fingerprintConfig };
-
-    if (
-      value === undefined ||
-      value === "" ||
-      (Array.isArray(value) && value.length === 0)
-    ) {
-      delete newConfig[key];
-    } else {
-      (newConfig as Record<string, unknown>)[key] = value;
-    }
-
-    setFingerprintConfig(newConfig);
-
-    try {
-      const jsonString = JSON.stringify(newConfig);
-      updateWayfernConfig("fingerprint", jsonString);
-    } catch (error) {
-      console.error("Failed to serialize fingerprint config:", error);
-    }
-  };
-
-  const handleAutoLocationToggle = (enabled: boolean) => {
-    updateWayfernConfig("geoip", enabled);
-  };
-
-  const isAutoLocationEnabled = wayfernConfig.geoip !== false;
-
-  const isFingerprintEditingDisabled =
-    wayfernConfig.randomize_fingerprint_on_launch === true;
+  }, [isOpen, loadReleaseTypes, checkAndDownloadGeoIPDatabase]);
 
   const _handleDownload = async (browserStr: string) => {
     const bestVersion = getBestAvailableVersion(browserStr);
@@ -432,29 +265,65 @@ export function CreateProfileDialog({
         : undefined;
 
     try {
-      const bestWayfernVersion = getCreatableVersion("wayfern");
-      if (!bestWayfernVersion) {
+      const bestVersion = getCreatableVersion(browserType);
+      if (!bestVersion) {
         toast.error(
-          "No Wayfern browser version downloaded. Please download it first.",
+          `No ${browserType === "camoufox" ? "Camoufox" : "Wayfern"} browser version downloaded. Please download it first.`,
         );
         return;
       }
 
-      const finalWayfernConfig = { ...wayfernConfig };
+      const finalWayfernConfig =
+        browserType === "wayfern" ? { ...wayfernConfig } : undefined;
       const count = Math.max(1, batchCount);
 
-      for (let i = 1; i <= count; i++) {
-        const finalName =
-          count > 1 ? `${profileName.trim()} ${i}` : profileName.trim();
+      // Batch mode: delegate to backend API for per-profile randomization & proxy rotation
+      if (count > 1) {
+        // Parse proxy list (one per line)
+        const proxyArray = proxyList
+          .split("\n")
+          .map((p) => p.trim())
+          .filter(Boolean);
+
+        const proxyRotation = proxyArray.length > 0 ? proxyArray : undefined;
+
+        // Call create_profiles_batch with individual parameters (no CreateProfileRequest struct)
+        const created = await invoke<BrowserProfile[]>(
+          "create_profiles_batch",
+          {
+            name: profileName.trim(),
+            browser: browserType,
+            version: bestVersion.version,
+            releaseType: bestVersion.releaseType,
+            proxyId: resolvedProxyId,
+            vpnId: resolvedVpnId,
+            camoufoxConfig: browserType === "camoufox" ? camoufoxConfig : null,
+            wayfernConfig: finalWayfernConfig,
+            groupId: groupId || undefined,
+            ephemeral,
+            dnsBlocklist: dnsBlocklist || undefined,
+            launchHook: launchHook || undefined,
+            count,
+            randomizePerProfile,
+            proxyRotation,
+          },
+        );
+
+        toast.success(`Created ${created.length} profiles`);
+      } else {
+        // Single profile (legacy path)
+        const finalName = profileName.trim();
 
         // 1. Create the browser profile
         const createdProfile = await onCreateProfile({
           name: finalName,
-          browserStr: "wayfern",
-          version: bestWayfernVersion.version,
-          releaseType: bestWayfernVersion.releaseType,
+          browserStr: browserType,
+          version: bestVersion.version,
+          releaseType: bestVersion.releaseType,
           proxyId: resolvedProxyId,
           vpnId: resolvedVpnId,
+          camoufoxConfig:
+            browserType === "camoufox" ? camoufoxConfig : undefined,
           wayfernConfig: finalWayfernConfig,
           groupId: groupId && groupId !== "none" ? groupId : undefined,
           extensionGroupId: selectedExtensionGroupId,
@@ -514,30 +383,23 @@ export function CreateProfileDialog({
     setPasswordConfirm("");
     setPasswordError(null);
     setActiveTab("base-info");
+    // Reset batch anti-detect states
+    setRandomizePerProfile(true);
+    setProxyList("");
     onClose();
   };
 
-  const isBrowserCurrentlyDownloading = useCallback(
-    (browserStr: string) => {
-      return isBrowserDownloading(browserStr);
-    },
-    [isBrowserDownloading],
-  );
-
-  const _isBrowserVersionAvailable = useCallback(
-    (browserStr: string) => {
-      const bestVersion = getBestAvailableVersion(browserStr);
-      return !!(bestVersion && isVersionDownloaded(bestVersion.version));
-    },
-    [isVersionDownloaded, getBestAvailableVersion],
-  );
-
   const isCreateDisabled = useMemo(() => {
     if (!profileName.trim()) return true;
-    if (isBrowserCurrentlyDownloading("wayfern")) return true;
-    if (!getCreatableVersion("wayfern")) return true;
+    if (isBrowserCurrentlyDownloading(browserType)) return true;
+    if (!getCreatableVersion(browserType)) return true;
     return false;
-  }, [profileName, isBrowserCurrentlyDownloading, getCreatableVersion]);
+  }, [
+    profileName,
+    isBrowserCurrentlyDownloading,
+    getCreatableVersion,
+    browserType,
+  ]);
 
   // Sidebar Items Definition
   const tabItems = [
@@ -677,6 +539,8 @@ export function CreateProfileDialog({
                   groupId={groupId}
                   setGroupId={setGroupId}
                   groups={profileGroups}
+                  browserType={browserType}
+                  setBrowserType={_setBrowserType}
                   wayfernConfig={wayfernConfig}
                   updateWayfernConfig={updateWayfernConfig}
                   fingerprintConfig={fingerprintConfig}
@@ -1044,12 +908,31 @@ export function CreateProfileDialog({
                 className="w-16 h-8 text-center font-bold text-xs"
               />
             </div>
+
+            {/* Download browser button (shown when selected browser not downloaded) */}
+            {!getCreatableVersion(browserType) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void _handleDownload(browserType)}
+                disabled={isBrowserCurrentlyDownloading(browserType)}
+                className="h-8 px-3 text-xs gap-1.5 border-primary/60 bg-primary/5 text-primary hover:bg-primary/20"
+              >
+                {isBrowserCurrentlyDownloading(browserType) ? (
+                  <LuLoaderCircle className="size-3.5 animate-spin" />
+                ) : (
+                  <FaPlus className="size-3" />
+                )}
+                Download {browserType === "camoufox" ? "Camoufox" : "Wayfern"}
+              </Button>
+            )}
+
             <Button
               variant="outline"
               size="sm"
               onClick={() => void handleGenerateFingerprint()}
               disabled={
-                isGeneratingFingerprint || !getCreatableVersion("wayfern")
+                isGeneratingFingerprint || !getCreatableVersion(browserType)
               }
               className="h-8 px-3 text-xs gap-1.5 border-warning/60 bg-warning/5 text-warning hover:bg-warning/20 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
