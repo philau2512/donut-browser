@@ -173,7 +173,7 @@ interface HomeDialogsProps {
     dnsBlocklist?: string;
     launchHook?: string;
     password?: string;
-  }) => Promise<void>;
+  }) => Promise<any>;
   runShortcut: (id: ShortcutId) => void;
   orderedGroupTargets: { id: string; name: string }[];
   handleRailNavigate: (page: AppPage) => void;

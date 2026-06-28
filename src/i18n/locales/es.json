@@ -416,7 +416,21 @@
       "description": "Cifra los datos del perfil en disco. Necesario para abrirlo."
     },
     "downloadingSubtitle": "Descargando…",
-    "browsersDownloading": "Los navegadores aún se están descargando. La creación de perfiles estará disponible cuando termine una descarga."
+    "browsersDownloading": "Los navegadores aún se están descargando. La creación de perfiles estará disponible cuando termine una descarga.",
+    "tabs": {
+      "baseInfo": "Información básica",
+      "location": "Ubicación",
+      "proxy": "Proxy",
+      "cookies": "Cookies",
+      "hardware": "Hardware",
+      "command": "Comando",
+      "bookmark": "Marcador",
+      "extension": "Extensión",
+      "requests": "Solicitudes",
+      "other": "Otros"
+    },
+    "quantity": "Cantidad",
+    "getFingerprint": "Obtener nueva huella"
   },
   "deleteDialog": {
     "title": "Eliminar Perfil",

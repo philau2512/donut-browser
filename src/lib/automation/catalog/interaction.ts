@@ -1,10 +1,8 @@
 import {
   LuDownload,
-  LuEraser,
   LuKeyboard,
   LuMousePointerClick,
   LuMove,
-  LuPenTool,
   LuPointer,
   LuScroll,
   LuUpload,

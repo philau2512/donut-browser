@@ -416,7 +416,21 @@
       "description": "디스크에 저장된 프로필 데이터를 암호화합니다. 실행하려면 필요합니다."
     },
     "downloadingSubtitle": "다운로드 중…",
-    "browsersDownloading": "브라우저를 아직 다운로드하는 중입니다. 다운로드가 완료되면 프로필을 만들 수 있습니다."
+    "browsersDownloading": "브라우저를 아직 다운로드하는 중입니다. 다운로드가 완료되면 프로필을 만들 수 있습니다.",
+    "tabs": {
+      "baseInfo": "기본 정보",
+      "location": "위치",
+      "proxy": "프록시",
+      "cookies": "쿠키",
+      "hardware": "하드웨어",
+      "command": "명령어",
+      "bookmark": "북마크",
+      "extension": "확장 프로그램",
+      "requests": "요청",
+      "other": "기타"
+    },
+    "quantity": "수량",
+    "getFingerprint": "새 지문 생성"
   },
   "deleteDialog": {
     "title": "프로필 삭제",

@@ -416,7 +416,21 @@
       "description": "ディスク上のプロファイルデータを暗号化します。起動に必要です。"
     },
     "downloadingSubtitle": "ダウンロード中…",
-    "browsersDownloading": "ブラウザをダウンロード中です。ダウンロードが完了するとプロファイルを作成できます。"
+    "browsersDownloading": "ブラウザをダウンロード中です。ダウンロードが完了するとプロファイルを作成できます。",
+    "tabs": {
+      "baseInfo": "基本情報",
+      "location": "位置情報",
+      "proxy": "プロキシ",
+      "cookies": "クッキー",
+      "hardware": "ハードウェア",
+      "command": "コマンド",
+      "bookmark": "ブックマーク",
+      "extension": "拡張機能",
+      "requests": "リクエスト",
+      "other": "その他"
+    },
+    "quantity": "数量",
+    "getFingerprint": "新しい指紋を取得"
   },
   "deleteDialog": {
     "title": "プロファイルを削除",

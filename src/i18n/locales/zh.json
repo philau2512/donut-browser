@@ -416,7 +416,21 @@
       "description": "加密磁盘上的配置文件数据。启动时需要密码。"
     },
     "downloadingSubtitle": "正在下载…",
-    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。"
+    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。",
+    "tabs": {
+      "baseInfo": "基本信息",
+      "location": "位置",
+      "proxy": "代理",
+      "cookies": "Cookies",
+      "hardware": "硬件",
+      "command": "命令行",
+      "bookmark": "书签",
+      "extension": "扩展程序",
+      "requests": "网络请求",
+      "other": "其他"
+    },
+    "quantity": "数量",
+    "getFingerprint": "获取新指纹"
   },
   "deleteDialog": {
     "title": "删除配置文件",

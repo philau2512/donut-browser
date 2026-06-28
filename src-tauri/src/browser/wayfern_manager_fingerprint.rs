@@ -314,7 +314,7 @@ impl WayfernManager {
       loop {
         tokio::select! {
           result = cancel_rx.changed() => {
-            if result.is_ok() && *cancel_rx.borrow() {
+            if result.is_err() || *cancel_rx.borrow() {
               log::debug!("Fingerprint watcher stopped for CDP port {port}");
               break;
             }

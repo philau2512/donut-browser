@@ -416,7 +416,21 @@
       "description": "Encrypts the on-disk profile data. Required to launch."
     },
     "downloadingSubtitle": "Downloading…",
-    "browsersDownloading": "Browsers are still downloading. Profile creation will be available once a download finishes."
+    "browsersDownloading": "Browsers are still downloading. Profile creation will be available once a download finishes.",
+    "tabs": {
+      "baseInfo": "Base info",
+      "location": "Location",
+      "proxy": "Proxy",
+      "cookies": "Cookies",
+      "hardware": "Hardware",
+      "command": "Command",
+      "bookmark": "Bookmark",
+      "extension": "Extension",
+      "requests": "Requests",
+      "other": "Other"
+    },
+    "quantity": "Quantity",
+    "getFingerprint": "Get new fingerprint"
   },
   "deleteDialog": {
     "title": "Delete Profile",

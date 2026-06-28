@@ -240,6 +240,7 @@ export function usePageProfileActions({
             );
           }
         }
+        return profile;
       } catch (error) {
         showErrorToast(
           t("errors.createProfileFailed", {

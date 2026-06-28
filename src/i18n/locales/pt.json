@@ -416,7 +416,21 @@
       "description": "Criptografa os dados do perfil em disco. Necessário para iniciar."
     },
     "downloadingSubtitle": "Baixando…",
-    "browsersDownloading": "Os navegadores ainda estão sendo baixados. A criação de perfis ficará disponível assim que um download terminar."
+    "browsersDownloading": "Os navegadores ainda estão sendo baixados. A criação de perfis ficará disponível assim que um download terminar.",
+    "tabs": {
+      "baseInfo": "Informações básicas",
+      "location": "Localização",
+      "proxy": "Proxy",
+      "cookies": "Cookies",
+      "hardware": "Hardware",
+      "command": "Comando",
+      "bookmark": "Favorito",
+      "extension": "Extensão",
+      "requests": "Requisições",
+      "other": "Outro"
+    },
+    "quantity": "Quantidade",
+    "getFingerprint": "Obter nova impressão digital"
   },
   "deleteDialog": {
     "title": "Excluir Perfil",

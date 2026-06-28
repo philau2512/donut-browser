@@ -12,3 +12,4 @@ extend-exclude = [
 [default.extend-words]
 DBE = "DBE"
 nd = "nd"
+Sur = "Sur"

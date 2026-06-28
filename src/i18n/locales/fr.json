@@ -416,7 +416,21 @@
       "description": "Chiffre les données du profil sur disque. Requis au lancement."
     },
     "downloadingSubtitle": "Téléchargement…",
-    "browsersDownloading": "Les navigateurs sont encore en cours de téléchargement. La création de profils sera disponible une fois un téléchargement terminé."
+    "browsersDownloading": "Les navigateurs sont encore en cours de téléchargement. La création de profils sera disponible une fois un téléchargement terminé.",
+    "tabs": {
+      "baseInfo": "Informations de base",
+      "location": "Localisation",
+      "proxy": "Proxy",
+      "cookies": "Cookies",
+      "hardware": "Matériel",
+      "command": "Commande",
+      "bookmark": "Signet",
+      "extension": "Extension",
+      "requests": "Requêtes",
+      "other": "Autre"
+    },
+    "quantity": "Quantité",
+    "getFingerprint": "Obtenir une nouvelle empreinte"
   },
   "deleteDialog": {
     "title": "Supprimer le profil",
