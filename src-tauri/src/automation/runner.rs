@@ -32,7 +32,7 @@ use crate::automation::run_state::{ProfileRunState, RunSettings, RunState, RunSt
 use crate::automation::sidecar::{spawn_engine, EngineInvocation, SidecarArgs};
 use crate::automation::AUTOMATION_RUNNER;
 use crate::browser::browser_runner::launch_browser_profile_impl;
-use crate::browser::browser_runner::ACTIVE_RUNNING_STATES;
+use crate::browser::browser_runner::{ACTIVE_RUNNING_STATES, EXPECTED_PROFILE_STOPS};
 use crate::profile::BrowserProfile;
 
 fn now_ms() -> u64 {
@@ -372,6 +372,9 @@ async fn finalize_profile(
 /// have no PID (best effort), since that is the only handle available.
 async fn kill_and_release(profile: &BrowserProfile, browser_pid: Option<u32>) {
   if let Some(pid) = browser_pid {
+    if let Ok(mut expected) = EXPECTED_PROFILE_STOPS.lock() {
+      expected.insert(profile.id.to_string());
+    }
     if let Err(e) = crate::automation::process_kill::kill_pid_tree(pid).await {
       log::warn!(
         "automation: kill pid {pid} failed: {e}; falling back to nothing (avoid path-kill)"

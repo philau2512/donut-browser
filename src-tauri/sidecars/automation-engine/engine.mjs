@@ -17,6 +17,7 @@
 
 import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
+import { dirname, resolve } from "node:path";
 import { chromium } from "playwright-core";
 
 import { validateFlow } from "./lib/validate.mjs";
@@ -99,8 +100,11 @@ async function resolvePage(browser, logger) {
   return pages[0];
 }
 
-export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger }) {
-  const ctx = { logger, vars, artifactsDir, allowedSchemes, page };
+export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger, flowDir }) {
+  // Inject runSubFlow so control-flow handlers can call sub-scripts without a
+  // dynamic import back into engine.mjs (avoids circular-import overhead).
+  const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, ...args });
+  const ctx = { logger, vars, artifactsDir, allowedSchemes, page, flowDir, runSubFlow };
   let failed = false;
 
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
@@ -276,6 +280,7 @@ async function main() {
       allowedSchemes,
       continueDefault,
       logger,
+      flowDir: dirname(resolve(args.flow)),
     });
     logger.info(null, failed ? `flow stopped on error` : `flow completed`);
     return failed ? EXIT_NODE_FAILED : EXIT_OK;

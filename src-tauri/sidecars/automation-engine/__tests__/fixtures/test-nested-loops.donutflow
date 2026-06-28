@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "name": "Test Nested Loops",
+  "variables": {},
+  "nodes": [
+    {
+      "id": "node-outer-loop",
+      "type": "loopFor",
+      "params": {
+        "times": 2,
+        "indexVar": "outer_idx"
+      }
+    },
+    {
+      "id": "node-inner-loop",
+      "type": "loopFor",
+      "params": {
+        "times": 3,
+        "indexVar": "inner_idx"
+      }
+    },
+    {
+      "id": "node-log",
+      "type": "log",
+      "params": {
+        "message": "{{outer_idx}}-{{inner_idx}}",
+        "level": "info"
+      }
+    },
+    {
+      "id": "node-end",
+      "type": "log",
+      "params": {
+        "message": "Nested loops completed",
+        "level": "info"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "node-outer-loop",
+      "to": "node-inner-loop",
+      "sourceHandle": "loop"
+    },
+    {
+      "from": "node-inner-loop",
+      "to": "node-log",
+      "sourceHandle": "loop"
+    },
+    {
+      "from": "node-log",
+      "to": "node-inner-loop",
+      "sourceHandle": "success"
+    },
+    {
+      "from": "node-inner-loop",
+      "to": "node-outer-loop",
+      "sourceHandle": "done"
+    },
+    {
+      "from": "node-outer-loop",
+      "to": "node-end",
+      "sourceHandle": "done"
+    }
+  ]
+}

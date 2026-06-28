@@ -285,7 +285,10 @@ pub fn run() {
       crate::automation::commands::list_automation_flow_meta,
       crate::automation::commands::read_automation_flow,
       crate::automation::commands::write_automation_flow,
+      crate::automation::commands::write_automation_flow_layout,
+      crate::automation::commands::read_automation_flow_layout,
       crate::automation::commands::delete_automation_flow,
+      crate::automation::commands::mark_automation_flow_reviewed,
       crate::automation::commands::validate_automation_flow,
     ])
     .build(tauri::generate_context!())

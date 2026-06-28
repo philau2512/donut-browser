@@ -1,7 +1,6 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
-import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useEdgesState, useNodesState } from "@xyflow/react";
 import {
   type DragEvent,
@@ -32,7 +31,6 @@ import {
   type DonutFlowV1,
   type FlowLayoutSidecarV1,
   fromDonutFlow,
-  layoutPathForFlow,
   toDonutFlow,
   toLayoutSidecar,
 } from "./serialize";
@@ -175,9 +173,13 @@ export function FlowEditorPage({
         const flow = JSON.parse(raw) as DonutFlowV1;
         let layout: FlowLayoutSidecarV1 | null = null;
         try {
-          layout = JSON.parse(
-            await readTextFile(layoutPathForFlow(flowPath)),
-          ) as FlowLayoutSidecarV1;
+          const rawLayout = await invoke<string>(
+            "read_automation_flow_layout",
+            {
+              flowPath,
+            },
+          );
+          layout = JSON.parse(rawLayout) as FlowLayoutSidecarV1;
         } catch {
           layout = null;
         }
@@ -278,10 +280,10 @@ export function FlowEditorPage({
         }
       }
 
-      await writeTextFile(
-        layoutPathForFlow(savedPath),
-        JSON.stringify(toLayoutSidecar(nodes), null, 2),
-      );
+      await invoke("write_automation_flow_layout", {
+        flowPath: savedPath,
+        layoutJson: JSON.stringify(toLayoutSidecar(nodes), null, 2),
+      });
       showSuccessToast(t("automation.editor.toast.saved", { name: flow.name }));
       onSaved?.(savedPath);
     } catch (err) {

@@ -1,4 +1,5 @@
-import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { invoke } from "@tauri-apps/api/core";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DonutFlowV1 } from "@/components/automation/editor/serialize";
 import {
@@ -9,13 +10,13 @@ import {
   sha256Hex,
 } from "./flow-review";
 
+vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/plugin-fs", () => ({
   readTextFile: vi.fn(),
-  writeTextFile: vi.fn(),
 }));
 
+const invokeMock = vi.mocked(invoke);
 const readTextFileMock = vi.mocked(readTextFile);
-const writeTextFileMock = vi.mocked(writeTextFile);
 
 const flowPath = "C:/flows/imported.donutflow";
 const flowJson = JSON.stringify({ version: 1, name: "Imported" });
@@ -57,16 +58,11 @@ describe("automation flow review sidecars", () => {
     await expect(isFlowReviewed(flowPath, flowJson)).resolves.toBe(false);
   });
 
-  it("marks a flow reviewed by writing the current content hash", async () => {
+  it("marks a flow reviewed by sending the current content hash to the backend", async () => {
     await markFlowReviewed(flowPath, flowJson);
 
-    const [, body] = writeTextFileMock.mock.calls[0];
-    expect(writeTextFileMock).toHaveBeenCalledWith(
-      "C:/flows/imported.reviewed",
-      expect.any(String),
-    );
-    expect(JSON.parse(body as string)).toEqual({
-      version: 1,
+    expect(invokeMock).toHaveBeenCalledWith("mark_automation_flow_reviewed", {
+      path: flowPath,
       sha256: await sha256Hex(flowJson),
     });
   });

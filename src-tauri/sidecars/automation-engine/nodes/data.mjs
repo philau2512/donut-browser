@@ -20,17 +20,18 @@ export async function screenshot(node, page, ctx) {
 
 /** log: output message to console logs */
 export async function log(node, page, ctx) {
-  const { message, level } = node.params ?? {};
+  const { message, level, color } = node.params ?? {};
   const msg = message ?? "";
   const lvl = level ?? "info";
+  const meta = color ? { color } : {};
   if (lvl === "error") {
-    ctx.logger.error(node.id, msg);
+    ctx.logger.error(node.id, msg, meta);
   } else if (lvl === "warn") {
-    ctx.logger.warn(node.id, msg);
+    ctx.logger.warn(node.id, msg, meta);
   } else if (lvl === "debug") {
-    ctx.logger.debug(node.id, msg);
+    ctx.logger.debug(node.id, msg, meta);
   } else {
-    ctx.logger.info(node.id, msg);
+    ctx.logger.info(node.id, msg, meta);
   }
 }
 

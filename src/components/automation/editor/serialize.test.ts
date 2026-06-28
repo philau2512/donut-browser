@@ -36,7 +36,7 @@ describe("automation editor serialization", () => {
       type: "automation",
       position: { x: 120, y: 120 },
       deletable: false,
-      draggable: false,
+      draggable: true,
       data: { label: "Start", nodeType: "start", params: {} },
     });
   });
@@ -163,5 +163,44 @@ describe("automation editor serialization", () => {
     expect(layoutPathForFlow("C:/flows/demo.DONUTFLOW")).toBe(
       "C:/flows/demo.layout.json",
     );
+  });
+
+  it("serializes and deserializes custom sourceHandles for branching and looping", () => {
+    const start = createStartNode();
+    const ifNode = node("n1", "ifCondition", {
+      leftValue: "1",
+      operator: "===",
+      rightValue: "1",
+    });
+    const logTrue = node("n2", "log", { message: "is true" });
+    const logFalse = node("n3", "log", { message: "is false" });
+
+    const flow = toDonutFlow(
+      "branching-demo",
+      [logTrue, start, ifNode, logFalse],
+      [
+        { id: "edge-start-n1", source: START_NODE_ID, target: "n1" },
+        { id: "edge-n1-n2", source: "n1", target: "n2", sourceHandle: "true" },
+        { id: "edge-n1-n3", source: "n1", target: "n3", sourceHandle: "false" },
+      ],
+      {},
+    );
+
+    expect(flow.edges).toEqual([
+      { from: "n1", to: "n2", sourceHandle: "true" },
+      { from: "n1", to: "n3", sourceHandle: "false" },
+    ]);
+
+    const canvas = fromDonutFlow(flow);
+    expect(canvas.edges).toEqual([
+      {
+        id: `edge-${START_NODE_ID}-n1`,
+        source: START_NODE_ID,
+        target: "n1",
+        sourceHandle: "success",
+      },
+      { id: "edge-n1-n2", source: "n1", target: "n2", sourceHandle: "true" },
+      { id: "edge-n1-n3", source: "n1", target: "n3", sourceHandle: "false" },
+    ]);
   });
 });

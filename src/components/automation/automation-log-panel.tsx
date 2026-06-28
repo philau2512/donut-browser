@@ -149,28 +149,38 @@ export function AutomationLogPanel({
             {t("automation.log.empty")}
           </div>
         ) : (
-          filtered.map((line, idx) => (
-            <div
-              key={`${line.ts ?? 0}-${idx}`}
-              className={cn(
-                "whitespace-pre-wrap break-words",
-                LEVEL_STYLES[line.level ?? "info"],
-              )}
-            >
-              <span className="text-muted-foreground/60">
-                {formatTs(line.ts)}{" "}
-              </span>
-              {line.profileId && filterProfile === "__all__" && (
-                <span className="text-muted-foreground/80">
-                  [
-                  {profileStates[line.profileId]?.profile_name ??
-                    line.profileId}
-                  ]{" "}
+          filtered.map((line, idx) => {
+            const msg = line.msg ?? "";
+            let colorClass = LEVEL_STYLES[line.level ?? "info"];
+            if (line.level === "error" || msg.startsWith("✗")) {
+              colorClass = "text-destructive font-semibold";
+            } else if (msg.startsWith("▶")) {
+              colorClass = "text-muted-foreground/60";
+            } else if (msg.startsWith("✓")) {
+              colorClass = "text-foreground";
+            }
+
+            return (
+              <div
+                key={`${line.ts ?? 0}-${idx}`}
+                className={cn("whitespace-pre-wrap break-words", colorClass)}
+                style={line.color ? { color: line.color } : undefined}
+              >
+                <span className="text-muted-foreground/60">
+                  {formatTs(line.ts)}{" "}
                 </span>
-              )}
-              {line.msg ?? ""}
-            </div>
-          ))
+                {line.profileId && filterProfile === "__all__" && (
+                  <span className="text-muted-foreground/80">
+                    [
+                    {profileStates[line.profileId]?.profile_name ??
+                      line.profileId}
+                    ]{" "}
+                  </span>
+                )}
+                {line.msg ?? ""}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

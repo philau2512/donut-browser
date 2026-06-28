@@ -44,7 +44,8 @@ export function AutomationNode({
     );
   }
 
-  const catalog = AUTOMATION_NODE_BY_TYPE[data.nodeType];
+  const nodeType = data.nodeType;
+  const catalog = AUTOMATION_NODE_BY_TYPE[nodeType];
   const Icon = catalog.icon;
 
   // Make all action nodes blue, matching the Houston theme primary blue or standard primary
@@ -137,20 +138,58 @@ export function AutomationNode({
             </span>
           </div>
         </div>
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="success"
-          style={{ top: "35%" }}
-          className="!bg-success !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
-        />
-        <Handle
-          type="source"
-          position={Position.Right}
-          id="fail"
-          style={{ top: "65%" }}
-          className="!bg-destructive !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
-        />
+        {nodeType === "ifCondition" ? (
+          <>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="true"
+              style={{ top: "35%" }}
+              className="!bg-success !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
+            />
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="false"
+              style={{ top: "65%" }}
+              className="!bg-destructive !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
+            />
+          </>
+        ) : nodeType === "loopFor" || nodeType === "loopElements" ? (
+          <>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="loop"
+              style={{ top: "35%" }}
+              className="!bg-primary !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
+            />
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="done"
+              style={{ top: "65%" }}
+              className="!bg-muted-foreground !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
+            />
+          </>
+        ) : (
+          <>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="success"
+              style={{ top: "35%" }}
+              className="!bg-success !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
+            />
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="fail"
+              style={{ top: "65%" }}
+              className="!bg-destructive !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
+            />
+          </>
+        )}
       </div>
 
       {data.comment && (

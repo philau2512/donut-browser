@@ -269,5 +269,7 @@ lazy_static::lazy_static! {
   static ref BROWSER_RUNNER: BrowserRunner = BrowserRunner::new();
   pub static ref ACTIVE_RUNNING_STATES: std::sync::Mutex<std::collections::HashMap<String, bool>> =
     std::sync::Mutex::new(std::collections::HashMap::new());
+  pub static ref EXPECTED_PROFILE_STOPS: std::sync::Mutex<std::collections::HashSet<String>> =
+    std::sync::Mutex::new(std::collections::HashSet::new());
 }
 

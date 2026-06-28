@@ -20,20 +20,40 @@ export const SCHEMA_VERSION = 1;
 // handler destructuring in nodes/*.mjs exactly — a cross-check below asserts the
 // set of node types here equals the registry, so the two cannot silently drift.
 export const NODE_SCHEMAS = {
+  // Navigator
   openUrl: {
     required: { url: "string" },
     optional: { timeout: "number", waitUntil: "string" },
   },
-  click: {
-    required: { selector: "string" },
-    optional: { timeout: "number", button: "string", clickCount: "number" },
+  newTab: {
+    required: {},
+    optional: { url: "string", timeout: "number" },
   },
-  type: {
-    required: { selector: "string", text: "string" },
-    optional: { timeout: "number", delay: "number" },
+  switchTab: {
+    required: {},
+    optional: { index: "number", urlPattern: "string" },
+  },
+  closeTab: {
+    required: {},
+    optional: {},
+  },
+  reloadPage: {
+    required: {},
+    optional: {},
+  },
+  goBack: {
+    required: {},
+    optional: {},
+  },
+  goForward: {
+    required: {},
+    optional: {},
+  },
+  switchFrame: {
+    required: { selector: "string" },
+    optional: { timeout: "number" },
   },
   wait: {
-    // wait for a selector to appear (or fixed time when no selector)
     required: {},
     optional: { selector: "string", timeout: "number", state: "string" },
   },
@@ -41,17 +61,173 @@ export const NODE_SCHEMAS = {
     required: {},
     optional: { selector: "string", x: "number", y: "number" },
   },
+
+  // Interaction
+  click: {
+    required: { selector: "string" },
+    optional: { timeout: "number", button: "string", clickCount: "number" },
+  },
+  hover: {
+    required: { selector: "string" },
+    optional: { timeout: "number" },
+  },
+  dragAndDrop: {
+    required: { sourceSelector: "string", targetSelector: "string" },
+    optional: { timeout: "number" },
+  },
+  clickDown: {
+    required: { selector: "string" },
+    optional: { button: "string", timeout: "number" },
+  },
+  clickUp: {
+    required: { selector: "string" },
+    optional: { button: "string", timeout: "number" },
+  },
+  type: {
+    required: { selector: "string", text: "string" },
+    optional: { timeout: "number", delay: "number" },
+  },
+
+  // Keyboard
+  pressKey: {
+    required: { key: "string" },
+    optional: { selector: "string" },
+  },
+  clearInput: {
+    required: { selector: "string" },
+    optional: { timeout: "number" },
+  },
+
+  // Cookie
+  getCookies: {
+    required: { saveToVar: "string" },
+    optional: { domain: "string" },
+  },
+  setCookies: {
+    required: { cookieJson: "string" },
+    optional: {},
+  },
+  clearCookies: {
+    required: {},
+    optional: {},
+  },
+
+  // Logic
+  ifCondition: {
+    required: { leftValue: "string", operator: "string", rightValue: "string" },
+    optional: {},
+  },
+  loopFor: {
+    required: { times: "number" },
+    optional: { indexVar: "string" },
+  },
+  loopElements: {
+    required: { selector: "string", elementVar: "string" },
+    optional: {},
+  },
+  evalJs: {
+    required: { code: "string" },
+    optional: { saveToVar: "string" },
+  },
+
+  // Data & Utilities
+  setVariable: {
+    required: { name: "string", value: "string" },
+    optional: {},
+  },
+  readCsv: {
+    required: { path: "string", saveToVar: "string" },
+    optional: {},
+  },
+  writeCsv: {
+    required: { path: "string", data: "string" },
+    optional: {},
+  },
+  downloadFile: {
+    required: { url: "string", savePath: "string" },
+    optional: { timeout: "number" },
+  },
   screenshot: {
     required: {},
     optional: { path: "string", fullPage: "boolean" },
   },
   log: {
     required: { message: "string" },
-    optional: { level: "string" },
+    optional: { level: "string", color: "string" },
   },
   delay: {
     required: { ms: "number" },
     optional: {},
+  },
+
+  // Phase 5: Data Extraction & DOM Inspection
+  getText: {
+    required: { selector: "string", saveToVar: "string" },
+    optional: { timeout: "number" },
+  },
+  getAttributeValue: {
+    required: { selector: "string", attribute: "string", saveToVar: "string" },
+    optional: { timeout: "number" },
+  },
+  getValue: {
+    required: { selector: "string", saveToVar: "string" },
+    optional: { timeout: "number" },
+  },
+  elementExists: {
+    required: { selector: "string" },
+    optional: { timeout: "number", visibility: "string" },
+  },
+  extractionInText: {
+    required: { text: "string", regex: "string", saveToVar: "string" },
+    optional: { flags: "string" },
+  },
+  random: {
+    required: { type: "string", saveToVar: "string" },
+    optional: { domain: "string", quantity: "number", length: "number", min: "number", max: "number" },
+  },
+
+  // Phase 6: Network & Advanced
+  http: {
+    required: { url: "string" },
+    optional: { method: "string", headers: "string", body: "string", saveToVar: "string", timeout: "number" },
+  },
+  setUserAgent: {
+    required: { userAgent: "string" },
+    optional: {},
+  },
+  getUrl: {
+    required: { saveToVar: "string" },
+    optional: {},
+  },
+  convertingJson: {
+    required: { input: "string", operation: "string", saveToVar: "string" },
+    optional: {},
+  },
+  imageSearch: {
+    required: { imagePath: "string", saveToVar: "string" },
+    optional: { threshold: "number" },
+  },
+
+  // Phase 7: Logic & Flow Control
+  while: {
+    required: { leftValue: "string", operator: "string", rightValue: "string" },
+    optional: {},
+  },
+  stopLoop: {
+    required: {},
+    optional: {},
+  },
+  runOtherScript: {
+    required: { scriptName: "string" },
+    optional: { vars: "string" },
+  },
+  addLog: {
+    required: { message: "string" },
+    optional: { level: "string" },
+  },
+  addComment: {
+    required: {},
+    optional: { comment: "string" },
   },
 };
 
@@ -130,11 +306,12 @@ export function validateFlow(flow) {
     if (extra.length > 0) {
       throw new FlowValidationError(`Edge has unknown keys: ${extra.join(", ")}`);
     }
+    const allowedHandles = ["success", "fail", "true", "false", "loop", "done"];
     if (edge.sourceHandle != null && typeof edge.sourceHandle !== "string") {
       throw new FlowValidationError(`Edge.sourceHandle must be a string: ${JSON.stringify(edge.sourceHandle)}`);
     }
-    if (edge.sourceHandle != null && edge.sourceHandle !== "success" && edge.sourceHandle !== "fail") {
-      throw new FlowValidationError(`Edge.sourceHandle must be 'success' or 'fail': ${JSON.stringify(edge.sourceHandle)}`);
+    if (edge.sourceHandle != null && !allowedHandles.includes(edge.sourceHandle)) {
+      throw new FlowValidationError(`Edge.sourceHandle must be one of [${allowedHandles.join(", ")}]: ${JSON.stringify(edge.sourceHandle)}`);
     }
     if (!ids.has(edge.from)) {
       throw new FlowValidationError(`Edge.from references unknown node: ${JSON.stringify(edge.from)}`);
@@ -220,9 +397,18 @@ function validateNode(node, ids) {
 }
 
 // Phase 2 is linear chains but we still reject cycles so the walk terminates.
+// Phase 3: allow intentional cycles via "loop" edges for loopFor/loopElements.
 function detectCycle(nodes, edges) {
   const adj = new Map(nodes.map((n) => [n.id, []]));
-  for (const e of edges) adj.get(e.from).push(e.to);
+
+  // Only include non-loop edges in cycle detection. "loop" edges are intentional
+  // backward jumps that create cycles by design. MAX_STEPS in engine.mjs prevents
+  // infinite loops.
+  for (const e of edges) {
+    if ((e.sourceHandle ?? "success") !== "loop") {
+      adj.get(e.from).push(e.to);
+    }
+  }
 
   const WHITE = 0;
   const GRAY = 1;

@@ -2085,12 +2085,317 @@
       "log": {
         "label": "Log",
         "description": "Write a message to the run log.",
-        "document": "Write a message to the automation log. Useful for debugging and milestone markers."
+        "document": "Write a message to the automation log. Useful for debugging and milestone markers.",
+        "params": {
+          "color": "Màu chữ"
+        }
       },
       "delay": {
         "label": "Delay",
         "description": "Pause for a fixed number of milliseconds.",
         "document": "Pause for a fixed number of milliseconds before continuing to the next node."
+      },
+      "newTab": {
+        "label": "New Tab",
+        "description": "Open a new browser tab.",
+        "document": "Open a new tab in the browser context. Optionally navigate to a URL. The automation will switch to the new tab automatically."
+      },
+      "switchTab": {
+        "label": "Switch Tab",
+        "description": "Switch to a different tab by index or URL pattern.",
+        "document": "Switch to a different tab by index (0-based) or URL pattern. Use index for predictable tab order, or urlPattern to find a tab by its URL."
+      },
+      "closeTab": {
+        "label": "Close Tab",
+        "description": "Close the current tab.",
+        "document": "Close the current browser tab. If other tabs remain open, the automation will switch to the first available tab."
+      },
+      "reloadPage": {
+        "label": "Reload Page",
+        "description": "Reload the current page.",
+        "document": "Reload the current page and wait for it to load completely."
+      },
+      "goBack": {
+        "label": "Go Back",
+        "description": "Navigate back in browser history.",
+        "document": "Navigate back one step in the browser's history, like clicking the back button."
+      },
+      "goForward": {
+        "label": "Go Forward",
+        "description": "Navigate forward in browser history.",
+        "document": "Navigate forward one step in the browser's history, like clicking the forward button."
+      },
+      "switchFrame": {
+        "label": "Switch Frame",
+        "description": "Switch to an iframe by selector.",
+        "document": "Switch the automation context to an iframe element. Subsequent actions will target elements inside the frame."
+      },
+      "hover": {
+        "label": "Hover",
+        "description": "Hover over an element.",
+        "document": "Move the mouse over an element without clicking. Useful for triggering hover menus or tooltips."
+      },
+      "dragAndDrop": {
+        "label": "Drag & Drop",
+        "description": "Drag an element to another location.",
+        "document": "Drag an element from a source selector to a target selector. Useful for drag-and-drop interfaces."
+      },
+      "clickDown": {
+        "label": "Click Down",
+        "description": "Press mouse button down on an element.",
+        "document": "Press and hold the mouse button on an element without releasing. Use with Click Up for custom mouse interactions."
+      },
+      "clickUp": {
+        "label": "Click Up",
+        "description": "Release mouse button on an element.",
+        "document": "Release the mouse button on an element. Typically used after Click Down for custom mouse interactions."
+      },
+      "pressKey": {
+        "label": "Press Key",
+        "description": "Press a keyboard key.",
+        "document": "Press a keyboard key like Enter, Tab, Escape, etc. Optionally target a specific element first."
+      },
+      "clearInput": {
+        "label": "Clear Input",
+        "description": "Clear an input field.",
+        "document": "Clear the contents of an input or textarea field. More reliable than selecting all and deleting."
+      },
+      "getCookies": {
+        "label": "Get Cookies",
+        "description": "Read cookies from the browser.",
+        "document": "Read cookies from the browser context and save them as JSON to a variable. Optionally filter by domain."
+      },
+      "setCookies": {
+        "label": "Set Cookies",
+        "description": "Set cookies in the browser.",
+        "document": "Set cookies in the browser context from a JSON array. Use this to restore saved cookies or inject authentication."
+      },
+      "clearCookies": {
+        "label": "Clear Cookies",
+        "description": "Clear all cookies.",
+        "document": "Clear all cookies from the browser context. Useful for testing logout flows or resetting state."
+      },
+      "ifCondition": {
+        "label": "If Condition",
+        "description": "Branch based on a condition.",
+        "document": "Compare two values and branch to 'true' or 'false' paths. Supports ===, !==, contains, >, < operators."
+      },
+      "loopFor": {
+        "label": "Loop For",
+        "description": "Loop a fixed number of times.",
+        "document": "Loop a fixed number of times. The current iteration index is stored in a variable (default: 'index'). Connect the 'loop' handle back to repeat, and 'done' handle to continue after the loop."
+      },
+      "loopElements": {
+        "label": "Loop Elements",
+        "description": "Loop through elements matched by a selector.",
+        "document": "Loop through all elements matching a selector. The current element index is stored in a variable. Connect the 'loop' handle back to repeat for each element."
+      },
+      "evalJs": {
+        "label": "Eval JS",
+        "description": "Execute JavaScript in the page context.",
+        "document": "Execute custom JavaScript code in the page context. The return value can be saved to a variable for use in later nodes."
+      },
+      "setVariable": {
+        "label": "Set Variable",
+        "description": "Store a value in a variable.",
+        "document": "Store a value in a variable for use in later nodes. Use {{VAR_NAME}} syntax to reference variables in other node parameters."
+      },
+      "readCsv": {
+        "label": "Read CSV",
+        "description": "Read data from a CSV file.",
+        "document": "Read a CSV file and parse it as a JSON array. Each row becomes an object with column names as keys. Saved to a variable as JSON."
+      },
+      "writeCsv": {
+        "label": "Write CSV",
+        "description": "Write data to a CSV file.",
+        "document": "Write a JSON array to a CSV file. Each object in the array becomes a row, with object keys as column names."
+      },
+      "downloadFile": {
+        "label": "Tải File",
+        "description": "Tải file từ một URL.",
+        "document": "Tải file từ URL và lưu vào ổ đĩa. File được lưu trong thư mục artifacts của lần chạy hiện tại."
+      },
+      "getText": {
+        "label": "Lấy Text",
+        "description": "Đọc nội dung văn bản của một phần tử.",
+        "document": "Đọc text trực tiếp của phần tử (không bao gồm text con lồng nhau). Đợi selector xuất hiện trước khi đọc.",
+        "params": {
+          "selector": "Selector",
+          "saveToVar": "Lưu vào biến",
+          "timeout": "Timeout (ms)"
+        },
+        "help": {
+          "selector": "CSS hoặc XPath selector cho phần tử đích.",
+          "saveToVar": "Tên biến để lưu text đã trích xuất."
+        }
+      },
+      "getAttributeValue": {
+        "label": "Lấy Thuộc Tính",
+        "description": "Đọc thuộc tính HTML từ một phần tử.",
+        "document": "Đọc giá trị thuộc tính (ví dụ: href, src, data-id) từ phần tử. Lỗi nếu thuộc tính không tồn tại.",
+        "params": {
+          "selector": "Selector",
+          "attribute": "Tên thuộc tính",
+          "saveToVar": "Lưu vào biến",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "getValue": {
+        "label": "Lấy Giá Trị Input",
+        "description": "Đọc giá trị của form input.",
+        "document": "Đọc giá trị hiện tại của input, textarea hoặc select. Lỗi nếu phần tử không phải form input.",
+        "params": {
+          "selector": "Selector",
+          "saveToVar": "Lưu vào biến",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "elementExists": {
+        "label": "Phần Tử Tồn Tại",
+        "description": "Kiểm tra xem phần tử có tồn tại trên trang không.",
+        "document": "Kiểm tra phần tử khớp selector có tồn tại với trạng thái hiển thị mong muốn. Điều hướng ra output 'true' hoặc 'false'.",
+        "params": {
+          "selector": "Selector",
+          "visibility": "Trạng thái hiển thị",
+          "timeout": "Timeout (ms)"
+        },
+        "options": {
+          "visible": "Hiển thị",
+          "hidden": "Ẩn",
+          "any": "Bất kỳ (tồn tại trong DOM)"
+        }
+      },
+      "extractionInText": {
+        "label": "Trích Xuất Văn Bản",
+        "description": "Trích xuất chuỗi con từ text bằng biểu thức chính quy.",
+        "document": "Chạy regex trên giá trị text và lưu kết quả khớp đầy đủ vào biến. Nếu không khớp, lưu chuỗi rỗng.",
+        "params": {
+          "text": "Văn bản đầu vào",
+          "regex": "Biểu thức chính quy",
+          "saveToVar": "Lưu vào biến",
+          "flags": "Flags (ví dụ: i, g)"
+        }
+      },
+      "random": {
+        "label": "Ngẫu Nhiên",
+        "description": "Tạo giá trị ngẫu nhiên.",
+        "document": "Tạo giá trị ngẫu nhiên theo loại đã chọn và lưu vào biến.",
+        "params": {
+          "type": "Loại",
+          "saveToVar": "Lưu vào biến",
+          "domain": "Domain email",
+          "quantity": "Số ký tự",
+          "length": "Độ dài mật khẩu",
+          "min": "Giá trị nhỏ nhất",
+          "max": "Giá trị lớn nhất"
+        },
+        "options": {
+          "email": "Email",
+          "fullName": "Họ tên đầy đủ",
+          "randomLetters": "Chữ cái ngẫu nhiên",
+          "password": "Mật khẩu",
+          "firstName": "Tên",
+          "lastName": "Họ",
+          "number": "Số"
+        },
+        "help": {
+          "domain": "Bắt buộc cho loại email (ví dụ: example.com)"
+        }
+      },
+      "http": {
+        "label": "HTTP Request",
+        "description": "Thực hiện HTTP request.",
+        "document": "Gửi HTTP request và lưu nội dung phản hồi vào biến. Hỗ trợ GET, POST, PUT, PATCH, DELETE.",
+        "params": {
+          "url": "URL",
+          "method": "Phương thức",
+          "headers": "Headers (JSON)",
+          "body": "Body",
+          "saveToVar": "Lưu phản hồi vào biến",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "setUserAgent": {
+        "label": "Đặt User Agent",
+        "description": "Ghi đè chuỗi user agent của trình duyệt.",
+        "document": "Đặt user agent tùy chỉnh cho tất cả các request tiếp theo trong browser context này.",
+        "params": {
+          "userAgent": "Chuỗi user agent"
+        }
+      },
+      "getUrl": {
+        "label": "Lấy URL Hiện Tại",
+        "description": "Lấy URL của trang hiện tại.",
+        "document": "Đọc URL hiện tại của trang và lưu vào biến.",
+        "params": {
+          "saveToVar": "Lưu vào biến"
+        }
+      },
+      "convertingJson": {
+        "label": "Chuyển Đổi JSON",
+        "description": "Parse hoặc stringify dữ liệu JSON.",
+        "document": "Parse chuỗi JSON thành object (parse) hoặc chuyển giá trị thành chuỗi JSON (stringify).",
+        "params": {
+          "input": "Giá trị đầu vào",
+          "operation": "Thao tác",
+          "saveToVar": "Lưu vào biến"
+        },
+        "options": {
+          "parse": "Parse (chuỗi → object)",
+          "stringify": "Stringify (object → chuỗi)"
+        }
+      },
+      "imageSearch": {
+        "label": "Tìm Kiếm Hình Ảnh",
+        "description": "Tìm hình ảnh trên trang bằng template matching.",
+        "document": "Tìm kiếm ảnh tham chiếu trên screenshot trang hiện tại. Lưu tọa độ khớp {x, y, found} vào biến.",
+        "params": {
+          "imagePath": "Đường dẫn ảnh tham chiếu",
+          "saveToVar": "Lưu kết quả vào biến",
+          "threshold": "Ngưỡng khớp (0–1)"
+        }
+      },
+      "while": {
+        "label": "Vòng Lặp While",
+        "description": "Lặp khi điều kiện đúng.",
+        "document": "Đánh giá điều kiện mỗi vòng lặp. Điều hướng ra 'loop' khi điều kiện đúng, 'done' khi sai. Dùng Stop Loop bên trong để thoát sớm.",
+        "params": {
+          "leftValue": "Giá trị trái",
+          "operator": "Toán tử",
+          "rightValue": "Giá trị phải"
+        }
+      },
+      "stopLoop": {
+        "label": "Dừng Vòng Lặp",
+        "description": "Thoát khỏi vòng lặp hiện tại.",
+        "document": "Thoát ngay lập tức khỏi vòng lặp bao quanh. Kết nối output 'done' đến node chạy sau vòng lặp.",
+        "params": {}
+      },
+      "runOtherScript": {
+        "label": "Chạy Script Khác",
+        "description": "Thực thi một script .donutflow khác.",
+        "document": "Tải và chạy script khác từ cùng thư mục flows. Sub-script chia sẻ phạm vi biến hiện tại.",
+        "params": {
+          "scriptName": "Tên script (không có .donutflow)",
+          "vars": "Biến bổ sung (JSON)"
+        }
+      },
+      "addLog": {
+        "label": "Ghi Log",
+        "description": "Ghi thông điệp vào run log.",
+        "document": "Ghi thông điệp tùy chỉnh vào automation log. Hỗ trợ {{VAR}} interpolation.",
+        "params": {
+          "message": "Thông điệp",
+          "level": "Cấp độ log"
+        }
+      },
+      "addComment": {
+        "label": "Chú Thích",
+        "description": "Thêm annotation chú thích.",
+        "document": "Node annotation không thực thi. Thêm chú thích hiển thị trên canvas flow.",
+        "params": {
+          "comment": "Nội dung chú thích"
+        }
       }
     },
     "review": {

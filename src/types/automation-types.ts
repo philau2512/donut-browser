@@ -83,4 +83,5 @@ export interface LogLine {
   nodeId?: string;
   level?: "info" | "warn" | "error" | "debug";
   msg?: string;
+  color?: string;
 }

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "name": "Test Infinite Loop Protection",
+  "variables": {},
+  "nodes": [
+    {
+      "id": "node-loop",
+      "type": "loopFor",
+      "params": {
+        "times": 999999,
+        "indexVar": "idx"
+      }
+    },
+    {
+      "id": "node-log",
+      "type": "log",
+      "params": {
+        "message": "Loop iteration {{idx}}",
+        "level": "info"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "node-loop",
+      "to": "node-log",
+      "sourceHandle": "loop"
+    },
+    {
+      "from": "node-log",
+      "to": "node-loop"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { invoke } from "@tauri-apps/api/core";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 import type { DonutFlowV1 } from "@/components/automation/editor/serialize";
 
 export interface FlowReviewItem {
@@ -39,10 +40,7 @@ export async function markFlowReviewed(
   flowJson: string,
 ): Promise<void> {
   const sha256 = await sha256Hex(flowJson);
-  await writeTextFile(
-    reviewedPathForFlow(flowPath),
-    JSON.stringify({ version: 1, sha256 }, null, 2),
-  );
+  await invoke("mark_automation_flow_reviewed", { path: flowPath, sha256 });
 }
 
 export function extractFlowReviewItems(flow: DonutFlowV1): FlowReviewItem[] {

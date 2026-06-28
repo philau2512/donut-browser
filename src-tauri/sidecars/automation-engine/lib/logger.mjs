@@ -69,7 +69,7 @@ export class Logger {
    * @param {string|null} nodeId
    * @param {string} msg
    */
-  emit(level, nodeId, msg) {
+  emit(level, nodeId, msg, meta = {}) {
     const record = {
       ts: new Date().toISOString(),
       runId: this.runId,
@@ -77,21 +77,22 @@ export class Logger {
       nodeId: nodeId ?? null,
       level,
       msg: this.redact(msg),
+      ...meta,
     };
     this.sink(JSON.stringify(record));
   }
 
-  debug(nodeId, msg) {
-    this.emit("debug", nodeId, msg);
+  debug(nodeId, msg, meta) {
+    this.emit("debug", nodeId, msg, meta);
   }
-  info(nodeId, msg) {
-    this.emit("info", nodeId, msg);
+  info(nodeId, msg, meta) {
+    this.emit("info", nodeId, msg, meta);
   }
-  warn(nodeId, msg) {
-    this.emit("warn", nodeId, msg);
+  warn(nodeId, msg, meta) {
+    this.emit("warn", nodeId, msg, meta);
   }
-  error(nodeId, msg) {
-    this.emit("error", nodeId, msg);
+  error(nodeId, msg, meta) {
+    this.emit("error", nodeId, msg, meta);
   }
 
   /**

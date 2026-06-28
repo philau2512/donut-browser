@@ -233,17 +233,23 @@ export function useAutomationRun(): UseAutomationRunReturn {
   useEffect(() => {
     let statusUnlisten: UnlistenFn | undefined;
     let logUnlisten: UnlistenFn | undefined;
+    let active = true;
 
     const setup = async () => {
-      statusUnlisten = await listen<ProfileRunState>(
+      const unlistenStatus = await listen<ProfileRunState>(
         "automation-status",
         (event) => {
           const state = event.payload;
           setProfileStates((prev) => ({ ...prev, [state.profile_id]: state }));
         },
       );
+      if (!active) {
+        unlistenStatus();
+        return;
+      }
+      statusUnlisten = unlistenStatus;
 
-      logUnlisten = await listen<LogLine>("automation-log", (event) => {
+      const unlistenLog = await listen<LogLine>("automation-log", (event) => {
         const line = event.payload;
         // Only buffer logs for the run currently shown in the panel.
         const current = activeRunIdRef.current;
@@ -255,11 +261,17 @@ export function useAutomationRun(): UseAutomationRunReturn {
           return next;
         });
       });
+      if (!active) {
+        unlistenLog();
+        return;
+      }
+      logUnlisten = unlistenLog;
     };
 
     void setup();
 
     return () => {
+      active = false;
       if (statusUnlisten) statusUnlisten();
       if (logUnlisten) logUnlisten();
     };

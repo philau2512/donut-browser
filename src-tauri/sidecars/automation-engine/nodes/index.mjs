@@ -1,26 +1,81 @@
-// Node handler registry: type → handler(node, page, ctx).
-// This is the single source of truth for the supported node-type allowlist.
-// validate.mjs imports NODE_TYPES from here and asserts (at module load) that
-// its per-type param schema covers exactly these types, so the dispatcher and
-// validator can never drift (#7b closed schema). Param-key specs live in
-// validate.mjs; this file owns only the handler wiring + the type list.
-
-import { openUrl, scroll, wait } from "./navigation.mjs";
-import { click, type } from "./interaction.mjs";
-import { screenshot, log, delay } from "./util.mjs";
+import { openUrl, newTab, switchTab, closeTab, reloadPage, goBack, goForward, switchFrame, wait, scroll } from "./navigator.mjs";
+import { click, hover, dragAndDrop, clickDown, clickUp, type } from "./interaction.mjs";
+import { pressKey, clearInput } from "./keyboard.mjs";
+import { getCookies, setCookies, clearCookies } from "./cookie.mjs";
+import { ifCondition, loopFor, loopElements, evalJs } from "./logic.mjs";
+import { setVariable, readCsv, writeCsv, downloadFile, screenshot, log, delay } from "./data.mjs";
+import { getText, getAttributeValue, getValue, elementExists, extractionInText, random } from "./extraction.mjs";
+import { http, setUserAgent, getUrl, convertingJson, imageSearch } from "./network.mjs";
+import { whileLoop, stopLoop, runOtherScript, addLog, addComment } from "./control-flow.mjs";
 
 export const handlers = {
+  // Navigator
   openUrl,
-  click,
-  type,
+  newTab,
+  switchTab,
+  closeTab,
+  reloadPage,
+  goBack,
+  goForward,
+  switchFrame,
   wait,
   scroll,
+
+  // Interaction
+  click,
+  hover,
+  dragAndDrop,
+  clickDown,
+  clickUp,
+  type,
+
+  // Keyboard
+  pressKey,
+  clearInput,
+
+  // Cookie
+  getCookies,
+  setCookies,
+  clearCookies,
+
+  // Logic
+  ifCondition,
+  loopFor,
+  loopElements,
+  evalJs,
+
+  // Data & Utilities
+  setVariable,
+  readCsv,
+  writeCsv,
+  downloadFile,
   screenshot,
   log,
   delay,
+
+  // Phase 5: Data Extraction & DOM Inspection
+  getText,
+  getAttributeValue,
+  getValue,
+  elementExists,
+  extractionInText,
+  random,
+
+  // Phase 6: Network & Advanced
+  http,
+  setUserAgent,
+  getUrl,
+  convertingJson,
+  imageSearch,
+
+  // Phase 7: Logic & Flow Control
+  while: whileLoop,
+  stopLoop,
+  runOtherScript,
+  addLog,
+  addComment,
 };
 
-/** Allowlisted node types (the 8 MVP nodes). */
 export const NODE_TYPES = Object.keys(handlers);
 
 export function getHandler(nodeType) {

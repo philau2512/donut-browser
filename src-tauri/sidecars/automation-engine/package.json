@@ -10,6 +10,9 @@
     "build": "node build.mjs"
   },
   "dependencies": {
-    "playwright-core": "1.49.1"
+    "playwright-core": "1.49.1",
+    "csv-parse": "^5.5.6",
+    "csv-stringify": "^6.5.1",
+    "sharp": "0.33.5"
   }
 }

@@ -2085,12 +2085,317 @@
       "log": {
         "label": "Log",
         "description": "Write a message to the run log.",
-        "document": "Write a message to the automation log. Useful for debugging and milestone markers."
+        "document": "Write a message to the automation log. Useful for debugging and milestone markers.",
+        "params": {
+          "color": "Text Color"
+        }
       },
       "delay": {
         "label": "Delay",
         "description": "Pause for a fixed number of milliseconds.",
         "document": "Pause for a fixed number of milliseconds before continuing to the next node."
+      },
+      "newTab": {
+        "label": "New Tab",
+        "description": "Open a new browser tab.",
+        "document": "Open a new tab in the browser context. Optionally navigate to a URL. The automation will switch to the new tab automatically."
+      },
+      "switchTab": {
+        "label": "Switch Tab",
+        "description": "Switch to a different tab by index or URL pattern.",
+        "document": "Switch to a different tab by index (0-based) or URL pattern. Use index for predictable tab order, or urlPattern to find a tab by its URL."
+      },
+      "closeTab": {
+        "label": "Close Tab",
+        "description": "Close the current tab.",
+        "document": "Close the current browser tab. If other tabs remain open, the automation will switch to the first available tab."
+      },
+      "reloadPage": {
+        "label": "Reload Page",
+        "description": "Reload the current page.",
+        "document": "Reload the current page and wait for it to load completely."
+      },
+      "goBack": {
+        "label": "Go Back",
+        "description": "Navigate back in browser history.",
+        "document": "Navigate back one step in the browser's history, like clicking the back button."
+      },
+      "goForward": {
+        "label": "Go Forward",
+        "description": "Navigate forward in browser history.",
+        "document": "Navigate forward one step in the browser's history, like clicking the forward button."
+      },
+      "switchFrame": {
+        "label": "Switch Frame",
+        "description": "Switch to an iframe by selector.",
+        "document": "Switch the automation context to an iframe element. Subsequent actions will target elements inside the frame."
+      },
+      "hover": {
+        "label": "Hover",
+        "description": "Hover over an element.",
+        "document": "Move the mouse over an element without clicking. Useful for triggering hover menus or tooltips."
+      },
+      "dragAndDrop": {
+        "label": "Drag & Drop",
+        "description": "Drag an element to another location.",
+        "document": "Drag an element from a source selector to a target selector. Useful for drag-and-drop interfaces."
+      },
+      "clickDown": {
+        "label": "Click Down",
+        "description": "Press mouse button down on an element.",
+        "document": "Press and hold the mouse button on an element without releasing. Use with Click Up for custom mouse interactions."
+      },
+      "clickUp": {
+        "label": "Click Up",
+        "description": "Release mouse button on an element.",
+        "document": "Release the mouse button on an element. Typically used after Click Down for custom mouse interactions."
+      },
+      "pressKey": {
+        "label": "Press Key",
+        "description": "Press a keyboard key.",
+        "document": "Press a keyboard key like Enter, Tab, Escape, etc. Optionally target a specific element first."
+      },
+      "clearInput": {
+        "label": "Clear Input",
+        "description": "Clear an input field.",
+        "document": "Clear the contents of an input or textarea field. More reliable than selecting all and deleting."
+      },
+      "getCookies": {
+        "label": "Get Cookies",
+        "description": "Read cookies from the browser.",
+        "document": "Read cookies from the browser context and save them as JSON to a variable. Optionally filter by domain."
+      },
+      "setCookies": {
+        "label": "Set Cookies",
+        "description": "Set cookies in the browser.",
+        "document": "Set cookies in the browser context from a JSON array. Use this to restore saved cookies or inject authentication."
+      },
+      "clearCookies": {
+        "label": "Clear Cookies",
+        "description": "Clear all cookies.",
+        "document": "Clear all cookies from the browser context. Useful for testing logout flows or resetting state."
+      },
+      "ifCondition": {
+        "label": "If Condition",
+        "description": "Branch based on a condition.",
+        "document": "Compare two values and branch to 'true' or 'false' paths. Supports ===, !==, contains, >, < operators."
+      },
+      "loopFor": {
+        "label": "Loop For",
+        "description": "Loop a fixed number of times.",
+        "document": "Loop a fixed number of times. The current iteration index is stored in a variable (default: 'index'). Connect the 'loop' handle back to repeat, and 'done' handle to continue after the loop."
+      },
+      "loopElements": {
+        "label": "Loop Elements",
+        "description": "Loop through elements matched by a selector.",
+        "document": "Loop through all elements matching a selector. The current element index is stored in a variable. Connect the 'loop' handle back to repeat for each element."
+      },
+      "evalJs": {
+        "label": "Eval JS",
+        "description": "Execute JavaScript in the page context.",
+        "document": "Execute custom JavaScript code in the page context. The return value can be saved to a variable for use in later nodes."
+      },
+      "setVariable": {
+        "label": "Set Variable",
+        "description": "Store a value in a variable.",
+        "document": "Store a value in a variable for use in later nodes. Use {{VAR_NAME}} syntax to reference variables in other node parameters."
+      },
+      "readCsv": {
+        "label": "Read CSV",
+        "description": "Read data from a CSV file.",
+        "document": "Read a CSV file and parse it as a JSON array. Each row becomes an object with column names as keys. Saved to a variable as JSON."
+      },
+      "writeCsv": {
+        "label": "Write CSV",
+        "description": "Write data to a CSV file.",
+        "document": "Write a JSON array to a CSV file. Each object in the array becomes a row, with object keys as column names."
+      },
+      "downloadFile": {
+        "label": "Download File",
+        "description": "Download a file from a URL.",
+        "document": "Download a file from a URL and save it to disk. The file is saved in the artifacts directory for the current run."
+      },
+      "getText": {
+        "label": "Get Text",
+        "description": "Read text content from an element.",
+        "document": "Read the direct text content of an element (excludes nested child text). Waits for the selector to appear before reading.",
+        "params": {
+          "selector": "Selector",
+          "saveToVar": "Save to variable",
+          "timeout": "Timeout (ms)"
+        },
+        "help": {
+          "selector": "CSS or XPath selector for the target element.",
+          "saveToVar": "Variable name to store the extracted text."
+        }
+      },
+      "getAttributeValue": {
+        "label": "Get Attribute",
+        "description": "Read an HTML attribute from an element.",
+        "document": "Read an attribute value (e.g. href, src, data-id) from an element. Throws if the attribute does not exist on the element.",
+        "params": {
+          "selector": "Selector",
+          "attribute": "Attribute name",
+          "saveToVar": "Save to variable",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "getValue": {
+        "label": "Get Value",
+        "description": "Read the value of a form input.",
+        "document": "Read the current value of an input, textarea, or select element. Throws if the element is not a form input.",
+        "params": {
+          "selector": "Selector",
+          "saveToVar": "Save to variable",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "elementExists": {
+        "label": "Element Exists",
+        "description": "Check if an element exists on the page.",
+        "document": "Check whether an element matching the selector exists with the desired visibility. Routes to 'true' or 'false' output handle.",
+        "params": {
+          "selector": "Selector",
+          "visibility": "Visibility",
+          "timeout": "Timeout (ms)"
+        },
+        "options": {
+          "visible": "Visible",
+          "hidden": "Hidden",
+          "any": "Any (exists in DOM)"
+        }
+      },
+      "extractionInText": {
+        "label": "Extract from Text",
+        "description": "Extract a substring from text using a regular expression.",
+        "document": "Run a regular expression against a text value and save the full match to a variable. If no match, saves an empty string.",
+        "params": {
+          "text": "Input text",
+          "regex": "Regular expression",
+          "saveToVar": "Save to variable",
+          "flags": "Flags (e.g. i, g)"
+        }
+      },
+      "random": {
+        "label": "Random",
+        "description": "Generate a random value.",
+        "document": "Generate a random value of the selected type and save it to a variable. Type determines which extra params are required.",
+        "params": {
+          "type": "Type",
+          "saveToVar": "Save to variable",
+          "domain": "Email domain",
+          "quantity": "Letter count",
+          "length": "Password length",
+          "min": "Min (number)",
+          "max": "Max (number)"
+        },
+        "options": {
+          "email": "Email",
+          "fullName": "Full Name",
+          "randomLetters": "Random Letters",
+          "password": "Password",
+          "firstName": "First Name",
+          "lastName": "Last Name",
+          "number": "Number"
+        },
+        "help": {
+          "domain": "Required for email type (e.g. example.com)"
+        }
+      },
+      "http": {
+        "label": "HTTP Request",
+        "description": "Make an HTTP request.",
+        "document": "Send an HTTP request and save the response body to a variable. Supports GET, POST, PUT, PATCH, DELETE. Headers and body support {{VAR}} interpolation.",
+        "params": {
+          "url": "URL",
+          "method": "Method",
+          "headers": "Headers (JSON)",
+          "body": "Body",
+          "saveToVar": "Save response to variable",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "setUserAgent": {
+        "label": "Set User Agent",
+        "description": "Override the browser user agent string.",
+        "document": "Set a custom user agent for all subsequent requests in this browser context. Useful for testing or spoofing browser identity.",
+        "params": {
+          "userAgent": "User agent string"
+        }
+      },
+      "getUrl": {
+        "label": "Get URL",
+        "description": "Get the current page URL.",
+        "document": "Read the current page URL and save it to a variable.",
+        "params": {
+          "saveToVar": "Save to variable"
+        }
+      },
+      "convertingJson": {
+        "label": "JSON Convert",
+        "description": "Parse or stringify JSON data.",
+        "document": "Parse a JSON string into an object (parse) or convert a value into a JSON string (stringify). Saves the result to a variable.",
+        "params": {
+          "input": "Input value",
+          "operation": "Operation",
+          "saveToVar": "Save to variable"
+        },
+        "options": {
+          "parse": "Parse (string → object)",
+          "stringify": "Stringify (object → string)"
+        }
+      },
+      "imageSearch": {
+        "label": "Image Search",
+        "description": "Find an image on the page using template matching.",
+        "document": "Search the current page screenshot for a reference image using pixel template matching. Saves the match coordinates {x, y, found} to a variable.",
+        "params": {
+          "imagePath": "Reference image path",
+          "saveToVar": "Save result to variable",
+          "threshold": "Match threshold (0–1)"
+        }
+      },
+      "while": {
+        "label": "While Loop",
+        "description": "Loop while a condition is true.",
+        "document": "Evaluate a condition each iteration. Routes to 'loop' while the condition holds, and 'done' when it becomes false. Use Stop Loop inside to break early.",
+        "params": {
+          "leftValue": "Left value",
+          "operator": "Operator",
+          "rightValue": "Right value"
+        }
+      },
+      "stopLoop": {
+        "label": "Stop Loop",
+        "description": "Break out of the current loop.",
+        "document": "Immediately exit the enclosing loop. Connect the 'done' output to the node that should run after the loop.",
+        "params": {}
+      },
+      "runOtherScript": {
+        "label": "Run Script",
+        "description": "Execute another .donutflow script.",
+        "document": "Load and run another script from the same flows directory. The sub-script shares the current variable scope. Execution continues in the current script when the sub-script completes.",
+        "params": {
+          "scriptName": "Script name (without .donutflow)",
+          "vars": "Extra variables (JSON)"
+        }
+      },
+      "addLog": {
+        "label": "Add Log",
+        "description": "Write a message to the run log.",
+        "document": "Write a custom message to the automation log. Supports {{VAR}} interpolation. Useful for progress markers and debugging.",
+        "params": {
+          "message": "Message",
+          "level": "Log level"
+        }
+      },
+      "addComment": {
+        "label": "Comment",
+        "description": "Add a visual comment annotation.",
+        "document": "A no-op annotation node. Adds a visible comment to the flow canvas without affecting execution.",
+        "params": {
+          "comment": "Comment text"
+        }
       }
     },
     "review": {

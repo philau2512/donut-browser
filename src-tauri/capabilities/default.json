@@ -33,8 +33,7 @@
       ]
     },
     "fs:default",
-    "fs:allow-applocaldata-write",
-    "fs:allow-applocaldata-read",
+    "fs:scope-applocaldata-recursive",
     "shell:allow-execute",
     "shell:allow-kill",
     "shell:allow-open",
@@ -48,7 +47,10 @@
     "dialog:default",
     "dialog:allow-open",
     "dialog:allow-save",
-    "fs:allow-write-text-file",
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "$APPLOCALDATA/**" }]
+    },
     "macos-permissions:default",
     "macos-permissions:allow-request-microphone-permission",
     "macos-permissions:allow-request-camera-permission",

@@ -94,7 +94,7 @@ describe("useAutomationRun — review gate", () => {
     );
   });
 
-  it("confirmPendingReview writes reviewed hash then starts run", async () => {
+  it("confirmPendingReview marks flow reviewed then starts run", async () => {
     isFlowReviewedMock.mockResolvedValue(false);
 
     const { result } = renderHook(() => useAutomationRun());

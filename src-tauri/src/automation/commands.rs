@@ -9,6 +9,7 @@ use crate::automation::runner;
 use crate::automation::sidecar::EngineInvocation;
 use crate::automation::AUTOMATION_RUNNER;
 use crate::profile::BrowserProfile;
+use std::path::Path;
 use std::process::Stdio;
 use tokio::io::AsyncWriteExt;
 
@@ -126,7 +127,7 @@ pub fn read_automation_flow(path: String) -> Result<String, String> {
   let flows_canon = flows_dir
     .canonicalize()
     .map_err(|e| format!("flows dir unavailable: {e}"))?;
-  let requested = std::path::Path::new(&path)
+  let requested = Path::new(&path)
     .canonicalize()
     .map_err(|e| format!("flow not found: {e}"))?;
   if !requested.starts_with(&flows_canon) {
@@ -141,6 +142,46 @@ pub fn read_automation_flow(path: String) -> Result<String, String> {
   } else {
     Err("not a .donutflow file".into())
   }
+}
+
+/// Write the reviewed sidecar for an existing `.donutflow` without routing
+/// through the frontend fs plugin ACL. The caller supplies the current flow hash;
+/// this command only accepts an existing flow path contained in the flows dir.
+#[tauri::command]
+pub fn mark_automation_flow_reviewed(path: String, sha256: String) -> Result<(), String> {
+  if sha256.len() != 64 || !sha256.chars().all(|c| c.is_ascii_hexdigit()) {
+    return Err("invalid flow hash".into());
+  }
+
+  let flows_dir = crate::settings::app_dirs::automation_flows_dir();
+  let flows_canon = flows_dir
+    .canonicalize()
+    .map_err(|e| format!("flows dir unavailable: {e}"))?;
+  let requested = Path::new(&path)
+    .canonicalize()
+    .map_err(|e| format!("flow not found: {e}"))?;
+  if !requested.starts_with(&flows_canon) {
+    return Err("flow path escapes the flows directory".into());
+  }
+  if !requested
+    .extension()
+    .map(|e| e == "donutflow")
+    .unwrap_or(false)
+  {
+    return Err("not a .donutflow file".into());
+  }
+
+  let target = requested.with_extension("reviewed");
+  let tmp = requested.with_extension("reviewed.tmp");
+  let json = serde_json::json!({ "version": 1, "sha256": sha256 });
+  let body = serde_json::to_string_pretty(&json)
+    .map_err(|e| format!("failed to serialize reviewed sidecar: {e}"))?;
+  std::fs::write(&tmp, body.as_bytes())
+    .map_err(|e| format!("failed to write reviewed sidecar: {e}"))?;
+  std::fs::rename(&tmp, &target).map_err(|e| {
+    let _ = std::fs::remove_file(&tmp);
+    format!("failed to commit reviewed sidecar: {e}")
+  })
 }
 
 /// Validate a flow JSON through the engine's shared validator (single source of
@@ -276,6 +317,53 @@ pub async fn write_automation_flow(
   Ok(target.to_string_lossy().to_string())
 }
 
+#[tauri::command]
+pub fn write_automation_flow_layout(flow_path: String, layout_json: String) -> Result<(), String> {
+  let flows_dir = crate::settings::app_dirs::automation_flows_dir();
+  let flows_canon = flows_dir
+    .canonicalize()
+    .map_err(|e| format!("flows dir unavailable: {e}"))?;
+
+  let flow_file = std::path::Path::new(&flow_path);
+  let resolved_flow = flow_file
+    .canonicalize()
+    .map_err(|e| format!("flow path unavailable: {e}"))?;
+
+  if !resolved_flow.starts_with(&flows_canon) {
+    return Err("flow path escapes the flows directory".into());
+  }
+
+  let layout_path = resolved_flow.with_extension("layout.json");
+  std::fs::write(&layout_path, layout_json.as_bytes())
+    .map_err(|e| format!("failed to write layout sidecar: {e}"))?;
+
+  Ok(())
+}
+
+#[tauri::command]
+pub fn read_automation_flow_layout(flow_path: String) -> Result<String, String> {
+  let flows_dir = crate::settings::app_dirs::automation_flows_dir();
+  let flows_canon = flows_dir
+    .canonicalize()
+    .map_err(|e| format!("flows dir unavailable: {e}"))?;
+
+  let flow_file = std::path::Path::new(&flow_path);
+  let resolved_flow = flow_file
+    .canonicalize()
+    .map_err(|e| format!("flow path unavailable: {e}"))?;
+
+  if !resolved_flow.starts_with(&flows_canon) {
+    return Err("flow path escapes the flows directory".into());
+  }
+
+  let layout_path = resolved_flow.with_extension("layout.json");
+  if !layout_path.exists() {
+    return Err("not_found".into());
+  }
+
+  std::fs::read_to_string(&layout_path).map_err(|e| format!("failed to read layout sidecar: {e}"))
+}
+
 /// Delete a `.donutflow` (same path-traversal guard as `read_automation_flow`)
 /// and clean up its UI-only sidecars (`<name>.layout.json`, `<name>.reviewed`)
 /// so a later flow that reuses the name can't inherit a stale layout or a stale
@@ -363,6 +451,38 @@ mod tests {
     assert!(sanitize_flow_name("flow:name").is_err());
     assert!(sanitize_flow_name("").is_err());
     assert!(sanitize_flow_name("   ").is_err());
+  }
+
+  // ---- mark_automation_flow_reviewed (backend sidecar write) ---------------
+
+  #[test]
+  fn mark_reviewed_writes_sidecar_for_existing_flow() {
+    let tmp = std::env::temp_dir().join(format!("donut-review-test-{}", uuid::Uuid::new_v4()));
+    let _guard = crate::settings::app_dirs::set_test_data_dir(tmp.clone());
+    let flows_dir = crate::settings::app_dirs::automation_flows_dir();
+    std::fs::create_dir_all(&flows_dir).expect("flows dir should be created");
+    let flow_path = flows_dir.join("reviewed.donutflow");
+    std::fs::write(&flow_path, GOOD_FLOW).expect("flow should be written");
+
+    let hash = "a".repeat(64);
+    mark_automation_flow_reviewed(flow_path.to_string_lossy().to_string(), hash.clone())
+      .expect("reviewed sidecar should be written");
+
+    let reviewed = std::fs::read_to_string(flows_dir.join("reviewed.reviewed"))
+      .expect("reviewed sidecar should exist");
+    let parsed: serde_json::Value = serde_json::from_str(&reviewed).expect("valid json");
+    assert_eq!(parsed["version"], 1);
+    assert_eq!(parsed["sha256"], hash);
+
+    std::fs::remove_dir_all(&tmp).ok();
+  }
+
+  #[test]
+  fn mark_reviewed_rejects_invalid_hash() {
+    let err =
+      mark_automation_flow_reviewed("C:/flows/missing.donutflow".to_string(), "bad".to_string())
+        .expect_err("invalid hash should be rejected first");
+    assert_eq!(err, "invalid flow hash");
   }
 
   // ---- validate_automation_flow (spawns engine via `node`) ----------------
