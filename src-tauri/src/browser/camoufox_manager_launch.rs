@@ -112,6 +112,45 @@ impl CamoufoxManager {
          user_pref(\"network.http.http3.enabled\", false);\n",
       );
 
+      // WebRTC Configuration
+      let webrtc_mode = config.webrtc_mode.as_deref().unwrap_or(
+        if config.block_webrtc.unwrap_or(false) { "disable" } else { "forward" }
+      );
+      match webrtc_mode {
+        "disable" => {
+          prefs.push_str("user_pref(\"media.peerconnection.enabled\", false);\n");
+        }
+        "forward" => {
+          prefs.push_str(
+            "user_pref(\"media.peerconnection.enabled\", true);\n\
+             user_pref(\"media.peerconnection.ice.proxy_only_if_bypass\", true);\n\
+             user_pref(\"media.peerconnection.ice.default_address_only\", true);\n"
+          );
+        }
+        "forward_google" => {
+          prefs.push_str(
+            "user_pref(\"media.peerconnection.enabled\", true);\n\
+             user_pref(\"media.peerconnection.ice.proxy_only_if_bypass\", false);\n\
+             user_pref(\"media.peerconnection.ice.default_address_only\", true);\n"
+          );
+        }
+        "real" => {
+          prefs.push_str(
+            "user_pref(\"media.peerconnection.enabled\", true);\n\
+             user_pref(\"media.peerconnection.ice.proxy_only_if_bypass\", false);\n\
+             user_pref(\"media.peerconnection.ice.default_address_only\", false);\n"
+          );
+        }
+        "alter" => {
+          prefs.push_str(
+            "user_pref(\"media.peerconnection.enabled\", true);\n\
+             user_pref(\"media.peerconnection.ice.proxy_only_if_bypass\", false);\n\
+             user_pref(\"media.peerconnection.ice.default_address_only\", false);\n"
+          );
+        }
+        _ => {}
+      }
+
       if let Some(proxy_str) = &config.proxy {
         if let Ok(parsed) = url::Url::parse(proxy_str) {
           let host = parsed.host_str().unwrap_or("127.0.0.1");
@@ -175,6 +214,21 @@ mod tests {
     assert_eq!(default_config.fingerprint, None);
     assert_eq!(default_config.randomize_fingerprint_on_launch, None);
     assert_eq!(default_config.os, None);
+    assert_eq!(default_config.webrtc_mode, None);
+  }
+
+  #[test]
+  fn test_camoufox_config_webrtc_serialization() {
+    // If webrtc_mode is provided
+    let json_str = r#"{"webrtc_mode": "forward_google"}"#;
+    let config: CamoufoxConfig = serde_json::from_str(json_str).unwrap();
+    assert_eq!(config.webrtc_mode.as_deref(), Some("forward_google"));
+
+    // If nothing is provided, it should be None
+    let json_empty = r#"{}"#;
+    let config_empty: CamoufoxConfig = serde_json::from_str(json_empty).unwrap();
+    assert_eq!(config_empty.webrtc_mode, None);
+    assert_eq!(config_empty.block_webrtc, None);
   }
 }
 

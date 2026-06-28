@@ -94,6 +94,14 @@ mod tests {
       "Wayfern args should contain no-default-browser-check"
     );
     assert!(
+      args.contains(&"--no-first-run".to_string()),
+      "Wayfern args should contain no-first-run"
+    );
+    assert!(
+      args.iter().any(|a| a.contains("Prefetch")),
+      "Wayfern args should disable prefetch/DNS leak features"
+    );
+    assert!(
       args.contains(&"--disable-background-mode".to_string()),
       "Wayfern args should contain disable-background-mode"
     );

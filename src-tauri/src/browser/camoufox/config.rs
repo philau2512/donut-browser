@@ -153,6 +153,7 @@ pub struct CamoufoxConfigBuilder {
   screen_constraints: Option<ScreenConstraints>,
   block_images: bool,
   block_webrtc: bool,
+  webrtc_mode: Option<String>,
   block_webgl: bool,
   custom_fonts: Option<Vec<String>>,
   custom_fonts_only: bool,
@@ -222,6 +223,7 @@ impl CamoufoxConfigBuilder {
       screen_constraints: None,
       block_images: false,
       block_webrtc: false,
+      webrtc_mode: None,
       block_webgl: false,
       custom_fonts: None,
       custom_fonts_only: false,
@@ -256,6 +258,11 @@ impl CamoufoxConfigBuilder {
 
   pub fn block_webrtc(mut self, block: bool) -> Self {
     self.block_webrtc = block;
+    self
+  }
+
+  pub fn webrtc_mode(mut self, mode: Option<String>) -> Self {
+    self.webrtc_mode = mode;
     self
   }
 
@@ -418,10 +425,37 @@ impl CamoufoxConfigBuilder {
       );
     }
 
-    if self.block_webrtc {
+    let webrtc_blocked = match self.webrtc_mode.as_deref() {
+      Some("disable") => true,
+      Some(_) => false,
+      None => self.block_webrtc,
+    };
+
+    if webrtc_blocked {
       firefox_prefs.insert(
         "media.peerconnection.enabled".to_string(),
         serde_json::json!(false),
+      );
+    } else {
+      firefox_prefs.insert(
+        "media.peerconnection.enabled".to_string(),
+        serde_json::json!(true),
+      );
+
+      let (proxy_only, default_only) = match self.webrtc_mode.as_deref() {
+        Some("forward") => (true, true),
+        Some("forward_google") => (false, true),
+        Some("real") => (false, false),
+        _ => (true, true), // default fallback
+      };
+
+      firefox_prefs.insert(
+        "media.peerconnection.ice.proxy_only_if_bypass".to_string(),
+        serde_json::json!(proxy_only),
+      );
+      firefox_prefs.insert(
+        "media.peerconnection.ice.default_address_only".to_string(),
+        serde_json::json!(default_only),
       );
     }
 
@@ -495,7 +529,11 @@ impl CamoufoxConfigBuilder {
       }
     });
     let geoip_option = self.geoip.clone();
-    let block_webrtc = self.block_webrtc;
+    let should_spoof_webrtc_ip = match self.webrtc_mode.as_deref() {
+      Some("alter") => true,
+      Some(_) => false,
+      None => !self.block_webrtc,
+    };
 
     // Build base config first
     let mut launch_config = self.build()?;
@@ -528,7 +566,7 @@ impl CamoufoxConfigBuilder {
           }
 
           // Add WebRTC IP spoofing if not blocked
-          if !block_webrtc {
+          if should_spoof_webrtc_ip {
             if geolocation::is_ipv4(&ip) {
               launch_config
                 .fingerprint_config

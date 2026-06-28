@@ -55,17 +55,40 @@ export function CamoufoxFingerprintFields({
                 {t("fingerprint.blockImages")}
               </Label>
             </div>
-            <div className="flex items-center gap-x-2">
-              <Checkbox
-                id="block-webrtc"
-                checked={config.block_webrtc ?? false}
-                onCheckedChange={(checked) => {
-                  onConfigChange("block_webrtc", checked);
+            <div className="flex flex-col gap-y-1.5">
+              <Label htmlFor="webrtc-mode">{t("fingerprint.webrtcMode")}</Label>
+              <Select
+                value={
+                  config.webrtc_mode ??
+                  (config.block_webrtc ? "disable" : "forward")
+                }
+                onValueChange={(val) => {
+                  onConfigChange("webrtc_mode", val);
+                  onConfigChange("block_webrtc", val === "disable");
                 }}
-              />
-              <Label htmlFor="block-webrtc">
-                {t("fingerprint.blockWebRTC")}
-              </Label>
+                disabled={readOnly}
+              >
+                <SelectTrigger id="webrtc-mode" className="w-[200px]">
+                  <SelectValue placeholder={t("fingerprint.webrtcMode")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="forward">
+                    {t("fingerprint.webrtcModes.forward")}
+                  </SelectItem>
+                  <SelectItem value="forward_google">
+                    {t("fingerprint.webrtcModes.forwardGoogle")}
+                  </SelectItem>
+                  <SelectItem value="alter">
+                    {t("fingerprint.webrtcModes.alter")}
+                  </SelectItem>
+                  <SelectItem value="real">
+                    {t("fingerprint.webrtcModes.real")}
+                  </SelectItem>
+                  <SelectItem value="disable">
+                    {t("fingerprint.webrtcModes.disable")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-x-2">
               <Checkbox

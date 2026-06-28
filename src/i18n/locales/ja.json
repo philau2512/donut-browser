@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "フィンガープリントを更新",
     "canvasNoiseSeedPlaceholder": "キャンバスフィンガープリント用のシード文字列を入力",
     "addFontsPlaceholder": "フォントを追加...",
-    "enterAsJson": "{{title}} を JSON で入力"
+    "enterAsJson": "{{title}} を JSON で入力",
+    "webrtcMode": "WebRTC モード",
+    "webrtcModes": {
+      "forward": "転送 (プロキシ)",
+      "forwardGoogle": "Google 転送",
+      "alter": "変更 (偽装)",
+      "real": "リアル",
+      "disable": "無効"
+    }
   },
   "warnings": {
     "windowResizeTitle": "カスタムウィンドウサイズ",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "選択したプロキシが機能していないため、プロファイルは作成されませんでした。",
     "proxyPaymentRequired": "選択したプロキシは支払いが必要です（402）。サブスクリプションが期限切れの可能性があります。そのため、プロファイルは作成されませんでした。",
     "vpnNotWorking": "選択したVPNが機能していないため、プロファイルは作成されませんでした。",
-    "camoufoxImportDeprecated": "Firefox ベース（Camoufox）のプロファイルのインポートはサポートされなくなりました。Camoufox は廃止予定です。代わりに Wayfern をご利用ください。"
+    "camoufoxImportDeprecated": "Firefox ベース（Camoufox）のプロファイルのインポートはサポートされなくなりました。Camoufox は廃止予定です。代わりに Wayfern をご利用ください。",
+    "wayfernFingerprintMissing": "このプロファイルにフィンガープリントがありません。Wayfernを起動する前に生成してください。",
+    "wayfernGeolocationRequired": "フィンガープリントにタイムゾーンまたは位置情報がなく、プロキシ出口を解決できませんでした。",
+    "wayfernWebrtcAlterIpUnavailable": "WebRTC alterモードにはプロキシ出口IPが必要ですが、取得できませんでした。",
+    "wayfernWebrtcAlterIpInvalid": "WebRTC alterモードで無効なプロキシ出口IPを受け取りました。",
+    "wayfernNoPageTargets": "Wayfernは起動しましたが、フィンガープリント注入用のページがありませんでした。",
+    "wayfernFingerprintApplyFailed": "Wayfernにフィンガープリントを適用できませんでした: {{detail}}",
+    "wayfernRehydrateFailed": "復旧した Wayfern ブラウザでフィンガープリント保護を復元できませんでした: {{reason}}"
   },
   "rail": {
     "profiles": "プロファイル",

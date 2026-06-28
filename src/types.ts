@@ -235,6 +235,13 @@ export interface AppUpdateProgress {
   message: string;
 }
 
+export type WebrtcMode =
+  | "forward"
+  | "forward_google"
+  | "alter"
+  | "real"
+  | "disable";
+
 export type CamoufoxOS = "windows" | "macos" | "linux";
 
 export interface CamoufoxConfig {
@@ -247,6 +254,7 @@ export interface CamoufoxConfig {
   block_images?: boolean;
   block_webrtc?: boolean;
   block_webgl?: boolean;
+  webrtc_mode?: WebrtcMode;
   executable_path?: string;
   fingerprint?: string; // JSON string of the complete fingerprint config
   randomize_fingerprint_on_launch?: boolean; // Generate new fingerprint on every launch
@@ -433,6 +441,7 @@ export interface WayfernConfig {
   block_images?: boolean; // For compatibility with shared config form
   block_webrtc?: boolean;
   block_webgl?: boolean;
+  webrtc_mode?: WebrtcMode;
   executable_path?: string;
   fingerprint?: string; // JSON string of the complete fingerprint config
   randomize_fingerprint_on_launch?: boolean; // Generate new fingerprint on every launch

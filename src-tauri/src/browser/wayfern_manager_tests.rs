@@ -70,4 +70,18 @@ mod tests {
       None
     );
   }
+
+  #[test]
+  fn test_wayfern_config_webrtc_serialization() {
+    // If webrtc_mode is provided
+    let json_str = r#"{"webrtc_mode": "alter"}"#;
+    let config: WayfernConfig = serde_json::from_str(json_str).unwrap();
+    assert_eq!(config.webrtc_mode.as_deref(), Some("alter"));
+
+    // If nothing is provided, it should be None
+    let json_empty = r#"{}"#;
+    let config_empty: WayfernConfig = serde_json::from_str(json_empty).unwrap();
+    assert_eq!(config_empty.webrtc_mode, None);
+    assert_eq!(config_empty.block_webrtc, None);
+  }
 }

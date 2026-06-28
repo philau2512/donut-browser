@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "Làm mới vân tay",
     "canvasNoiseSeedPlaceholder": "Nhập chuỗi hạt giống cho vân tay canvas",
     "addFontsPlaceholder": "Thêm phông chữ...",
-    "enterAsJson": "Nhập {{title}} dưới dạng JSON"
+    "enterAsJson": "Nhập {{title}} dưới dạng JSON",
+    "webrtcMode": "Chế độ WebRTC",
+    "webrtcModes": {
+      "forward": "Chuyển tiếp (Proxy)",
+      "forwardGoogle": "Chuyển tiếp qua Google",
+      "alter": "Thay đổi (Spoof)",
+      "real": "Thực tế",
+      "disable": "Tắt"
+    }
   },
   "warnings": {
     "windowResizeTitle": "Kích thước cửa sổ tùy chỉnh",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "Proxy đã chọn không hoạt động, nên profile chưa được tạo.",
     "proxyPaymentRequired": "Proxy đã chọn yêu cầu thanh toán (402) — gói đăng ký của nó có thể đã hết hạn — nên profile chưa được tạo.",
     "vpnNotWorking": "VPN đã chọn không hoạt động, nên profile chưa được tạo.",
-    "camoufoxImportDeprecated": "Không còn hỗ trợ nhập profile dựa trên Firefox (Camoufox). Camoufox đang bị ngừng hỗ trợ — vui lòng dùng Wayfern."
+    "camoufoxImportDeprecated": "Không còn hỗ trợ nhập profile dựa trên Firefox (Camoufox). Camoufox đang bị ngừng hỗ trợ — vui lòng dùng Wayfern.",
+    "wayfernFingerprintMissing": "Hồ sơ này chưa có vân tay. Hãy tạo vân tay trước khi khởi chạy Wayfern.",
+    "wayfernGeolocationRequired": "Vân tay thiếu múi giờ hoặc vị trí và không thể xác định IP thoát qua proxy.",
+    "wayfernWebrtcAlterIpUnavailable": "Chế độ WebRTC alter cần IP thoát proxy nhưng không lấy được.",
+    "wayfernWebrtcAlterIpInvalid": "Chế độ WebRTC alter nhận IP thoát proxy không hợp lệ.",
+    "wayfernNoPageTargets": "Wayfern đã khởi động nhưng không có tab để inject vân tay.",
+    "wayfernFingerprintApplyFailed": "Không thể áp dụng vân tay cho Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}"
   },
   "rail": {
     "profiles": "Profile",

@@ -20,6 +20,7 @@ pub struct CamoufoxConfig {
   pub geoip: Option<serde_json::Value>, // Can be String or bool
   pub block_images: Option<bool>,
   pub block_webrtc: Option<bool>,
+  pub webrtc_mode: Option<String>,
   pub block_webgl: Option<bool>,
   pub fingerprint: Option<String>, // JSON string of the complete fingerprint config
   pub randomize_fingerprint_on_launch: Option<bool>, // Generate new fingerprint on every launch
@@ -37,6 +38,7 @@ impl Default for CamoufoxConfig {
       geoip: Some(serde_json::Value::Bool(true)),
       block_images: None,
       block_webrtc: None,
+      webrtc_mode: None,
       block_webgl: None,
       fingerprint: None,
       randomize_fingerprint_on_launch: None,
@@ -135,6 +137,7 @@ impl CamoufoxManager {
     let mut builder = CamoufoxConfigBuilder::new()
       .block_images(config.block_images.unwrap_or(false))
       .block_webrtc(config.block_webrtc.unwrap_or(false))
+      .webrtc_mode(config.webrtc_mode.clone())
       .block_webgl(config.block_webgl.unwrap_or(false));
 
     // Set operating system

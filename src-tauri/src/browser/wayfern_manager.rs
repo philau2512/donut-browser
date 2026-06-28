@@ -1,9 +1,13 @@
 use crate::browser::browser_runner::BrowserRunner;
+use crate::browser::wayfern_launch_args::{
+  build_wayfern_launch_args, resolve_webrtc_mode, WayfernLaunchArgsOptions,
+  WAYFERN_DISABLE_FEATURES,
+};
 use crate::profile::BrowserProfile;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::process::Stdio;
 use std::sync::Arc;
@@ -35,6 +39,8 @@ pub struct WayfernConfig {
   pub block_images: Option<bool>, // For compatibility with shared config form
   #[serde(default)]
   pub block_webrtc: Option<bool>,
+  #[serde(default)]
+  pub webrtc_mode: Option<String>,
   #[serde(default)]
   pub block_webgl: Option<bool>,
   #[serde(default, skip_serializing)]
@@ -71,6 +77,12 @@ struct WayfernInstance {
   profile_path: Option<String>,
   url: Option<String>,
   cdp_port: Option<u16>,
+  /// CDP params last sent to `Wayfern.setFingerprint` — used to re-spoof new tabs.
+  fingerprint_params: Option<Arc<serde_json::Value>>,
+  /// Page-target WebSocket URLs that already received `Wayfern.setFingerprint`.
+  fingerprinted_targets: Arc<AsyncMutex<HashSet<String>>>,
+  /// Signals the background fingerprint watcher to stop when the instance is torn down.
+  watcher_cancel: Option<tokio::sync::watch::Sender<()>>,
 }
 
 struct WayfernManagerInner {
@@ -83,7 +95,8 @@ pub struct WayfernManager {
 }
 
 #[derive(Debug, Deserialize)]
-struct CdpTarget {
+pub(crate) struct CdpTarget {
+  id: Option<String>,
   #[serde(rename = "type")]
   target_type: String,
   #[serde(rename = "webSocketDebuggerUrl")]
@@ -422,7 +435,7 @@ impl WayfernManager {
       .arg("--disable-background-mode")
       .arg("--use-mock-keychain")
       .arg("--password-store=basic")
-      .arg("--disable-features=DialMediaRouteProvider");
+      .arg(format!("--disable-features={WAYFERN_DISABLE_FEATURES}"));
 
     #[cfg(target_os = "linux")]
     cmd
@@ -600,5 +613,6 @@ impl WayfernManager {
   }
 }
 
+include!("wayfern_manager_fingerprint.rs");
 include!("wayfern_manager_launch.rs");
 include!("wayfern_manager_tests.rs");

@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "Refresh Fingerprint",
     "canvasNoiseSeedPlaceholder": "Enter a seed string for canvas fingerprint",
     "addFontsPlaceholder": "Add fonts...",
-    "enterAsJson": "Enter {{title}} as JSON"
+    "enterAsJson": "Enter {{title}} as JSON",
+    "webrtcMode": "WebRTC Mode",
+    "webrtcModes": {
+      "forward": "Forward (Proxy)",
+      "forwardGoogle": "Forward Google",
+      "alter": "Alter (Spoof)",
+      "real": "Real",
+      "disable": "Disable"
+    }
   },
   "warnings": {
     "windowResizeTitle": "Custom Window Dimensions",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "The selected proxy isn't working, so the profile wasn't created.",
     "proxyPaymentRequired": "The selected proxy requires payment (402) — its subscription may have expired — so the profile wasn't created.",
     "vpnNotWorking": "The selected VPN isn't working, so the profile wasn't created.",
-    "camoufoxImportDeprecated": "Importing Firefox-based (Camoufox) profiles is no longer supported. Camoufox is being deprecated — please use Wayfern instead."
+    "camoufoxImportDeprecated": "Importing Firefox-based (Camoufox) profiles is no longer supported. Camoufox is being deprecated — please use Wayfern instead.",
+    "wayfernFingerprintMissing": "This profile has no fingerprint. Generate one before launching Wayfern.",
+    "wayfernGeolocationRequired": "Fingerprint is missing timezone or geolocation and the proxy exit could not be resolved.",
+    "wayfernWebrtcAlterIpUnavailable": "WebRTC alter mode requires a proxy exit IP, but it could not be fetched.",
+    "wayfernWebrtcAlterIpInvalid": "WebRTC alter mode received an invalid proxy exit IP.",
+    "wayfernNoPageTargets": "Wayfern started but no browser page was available for fingerprint injection.",
+    "wayfernFingerprintApplyFailed": "Failed to apply the fingerprint to Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "Failed to restore fingerprint protection on a recovered Wayfern browser: {{reason}}"
   },
   "rail": {
     "profiles": "Profiles",

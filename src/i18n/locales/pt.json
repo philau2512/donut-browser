@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "Atualizar Impressão Digital",
     "canvasNoiseSeedPlaceholder": "Insira uma string seed para a impressão digital do canvas",
     "addFontsPlaceholder": "Adicionar fontes...",
-    "enterAsJson": "Insira {{title}} como JSON"
+    "enterAsJson": "Insira {{title}} como JSON",
+    "webrtcMode": "Modo WebRTC",
+    "webrtcModes": {
+      "forward": "Encaminhar (Proxy)",
+      "forwardGoogle": "Encaminhar Google",
+      "alter": "Alterar (Falsificar)",
+      "real": "Real",
+      "disable": "Desativar"
+    }
   },
   "warnings": {
     "windowResizeTitle": "Dimensões de janela personalizadas",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "O proxy selecionado não está funcionando, então o perfil não foi criado.",
     "proxyPaymentRequired": "O proxy selecionado exige pagamento (402) — sua assinatura pode ter expirado — então o perfil não foi criado.",
     "vpnNotWorking": "A VPN selecionada não está funcionando, então o perfil não foi criado.",
-    "camoufoxImportDeprecated": "A importação de perfis baseados em Firefox (Camoufox) não é mais suportada. O Camoufox está sendo descontinuado — use o Wayfern."
+    "camoufoxImportDeprecated": "A importação de perfis baseados em Firefox (Camoufox) não é mais suportada. O Camoufox está sendo descontinuado — use o Wayfern.",
+    "wayfernFingerprintMissing": "Este perfil não tem impressão digital. Gere uma antes de iniciar o Wayfern.",
+    "wayfernGeolocationRequired": "A impressão digital não tem fuso horário ou geolocalização e a saída do proxy não pôde ser resolvida.",
+    "wayfernWebrtcAlterIpUnavailable": "O modo alter do WebRTC requer um IP de saída do proxy, mas não foi possível obtê-lo.",
+    "wayfernWebrtcAlterIpInvalid": "O modo alter do WebRTC recebeu um IP de saída do proxy inválido.",
+    "wayfernNoPageTargets": "O Wayfern iniciou, mas nenhuma página estava disponível para injeção de impressão digital.",
+    "wayfernFingerprintApplyFailed": "Falha ao aplicar a impressão digital ao Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "Falha ao restaurar a protecao de impressao digital em um navegador Wayfern recuperado: {{reason}}"
   },
   "rail": {
     "profiles": "Perfis",

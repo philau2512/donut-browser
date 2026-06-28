@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "Обновить отпечаток",
     "canvasNoiseSeedPlaceholder": "Введите строку-семя для отпечатка canvas",
     "addFontsPlaceholder": "Добавить шрифты...",
-    "enterAsJson": "Введите {{title}} в формате JSON"
+    "enterAsJson": "Введите {{title}} в формате JSON",
+    "webrtcMode": "Режим WebRTC",
+    "webrtcModes": {
+      "forward": "Пересылка (Proxy)",
+      "forwardGoogle": "Пересылка Google",
+      "alter": "Изменить (Spoof)",
+      "real": "Реальный",
+      "disable": "Отключить"
+    }
   },
   "warnings": {
     "windowResizeTitle": "Пользовательские размеры окна",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "Выбранный прокси не работает, поэтому профиль не создан.",
     "proxyPaymentRequired": "Выбранный прокси требует оплаты (402) — возможно, его подписка истекла — поэтому профиль не создан.",
     "vpnNotWorking": "Выбранный VPN не работает, поэтому профиль не создан.",
-    "camoufoxImportDeprecated": "Импорт профилей на основе Firefox (Camoufox) больше не поддерживается. Camoufox выводится из эксплуатации — используйте Wayfern."
+    "camoufoxImportDeprecated": "Импорт профилей на основе Firefox (Camoufox) больше не поддерживается. Camoufox выводится из эксплуатации — используйте Wayfern.",
+    "wayfernFingerprintMissing": "У этого профиля нет отпечатка. Создайте его перед запуском Wayfern.",
+    "wayfernGeolocationRequired": "В отпечатке нет часового пояса или геолокации, а выход прокси не удалось определить.",
+    "wayfernWebrtcAlterIpUnavailable": "Режим WebRTC alter требует IP выхода прокси, но его не удалось получить.",
+    "wayfernWebrtcAlterIpInvalid": "Режим WebRTC alter получил недействительный IP выхода прокси.",
+    "wayfernNoPageTargets": "Wayfern запустился, но не было страницы для внедрения отпечатка.",
+    "wayfernFingerprintApplyFailed": "Не удалось применить отпечаток к Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "Не удалось восстановить защиту отпечатка на восстановленном браузере Wayfern: {{reason}}"
   },
   "rail": {
     "profiles": "Профили",

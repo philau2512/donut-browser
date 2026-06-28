@@ -1,4 +1,8 @@
 
+use crate::browser::wayfern_launch_args::{
+  build_wayfern_launch_args, resolve_webrtc_mode, WayfernLaunchArgsOptions,
+};
+
 pub struct CamoufoxBrowser;
 
 impl CamoufoxBrowser {
@@ -121,48 +125,28 @@ impl Browser for WayfernBrowser {
     remote_debugging_port: Option<u16>,
     headless: bool,
   ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    // Wayfern uses Chromium-style arguments
-    let mut args = vec![
-      format!("--user-data-dir={}", profile_path),
-      "--no-default-browser-check".to_string(),
-      "--disable-background-mode".to_string(),
-      "--disable-component-update".to_string(),
-      "--disable-background-timer-throttling".to_string(),
-      "--crash-server-url=".to_string(),
-      "--disable-updater".to_string(),
-      "--disable-session-crashed-bubble".to_string(),
-      "--hide-crash-restore-bubble".to_string(),
-      "--disable-infobars".to_string(),
-      // Wayfern-specific args for automation
-      "--disable-features=DialMediaRouteProvider".to_string(),
-      "--use-mock-keychain".to_string(),
-      "--password-store=basic".to_string(),
-    ];
+    let proxy_url = proxy_settings.map(|proxy| {
+      let scheme = match proxy.proxy_type.to_lowercase().as_str() {
+        "socks5" | "socks4" => "socks5",
+        _ => "http",
+      };
+      format!("{scheme}://{}:{}", proxy.host, proxy.port)
+    });
 
-    // Add remote debugging port (required for CDP fingerprint injection)
-    if let Some(port) = remote_debugging_port {
-      args.push("--remote-debugging-address=127.0.0.1".to_string());
-      args.push(format!("--remote-debugging-port={port}"));
-    }
-
-    // Add headless mode if requested
-    if headless {
-      args.push("--headless=new".to_string());
-    }
-
-    // Add proxy configuration if provided
-    if let Some(proxy) = proxy_settings {
-      args.push(format!(
-        "--proxy-server=http://{}:{}",
-        proxy.host, proxy.port
-      ));
-    }
-
-    if let Some(url) = url {
-      args.push(url);
-    }
-
-    Ok(args)
+    Ok(build_wayfern_launch_args(WayfernLaunchArgsOptions {
+      profile_path,
+      remote_debugging_port,
+      headless,
+      fingerprint_json: None,
+      ephemeral: false,
+      extension_paths: &[],
+      wayfern_token: None,
+      proxy_url: proxy_url.as_deref(),
+      webrtc_mode: resolve_webrtc_mode(false, None),
+      block_images: false,
+      block_webgl: false,
+      url: url.as_deref(),
+    }))
   }
 
   fn is_version_downloaded(&self, version: &str, binaries_dir: &Path) -> bool {

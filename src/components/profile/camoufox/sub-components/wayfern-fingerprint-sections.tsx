@@ -11,24 +11,70 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { WayfernFingerprintConfig } from "@/types";
+import type { WayfernConfig, WayfernFingerprintConfig } from "@/types";
 
 interface WayfernFingerprintFieldsProps {
+  config: WayfernConfig;
+  onConfigChange: (key: keyof WayfernConfig, value: unknown) => void;
   fingerprintConfig: WayfernFingerprintConfig;
   updateFingerprintConfig: (
     key: keyof WayfernFingerprintConfig,
     value: unknown,
   ) => void;
+  readOnly: boolean;
   t: (key: string, options?: Record<string, unknown>) => string;
 }
 
 export function WayfernFingerprintFields({
+  config,
+  onConfigChange,
   fingerprintConfig,
   updateFingerprintConfig,
+  readOnly,
   t,
 }: WayfernFingerprintFieldsProps) {
+  const handleWebrtcModeChange = (val: string) => {
+    onConfigChange("webrtc_mode", val);
+    onConfigChange("block_webrtc", val === "disable");
+  };
+
   return (
     <>
+      {/* WebRTC Configuration */}
+      <div className="space-y-3">
+        <Label>{t("fingerprint.webrtcMode")}</Label>
+        <div className="max-w-xs space-y-2">
+          <Select
+            value={
+              config.webrtc_mode ??
+              (config.block_webrtc ? "disable" : "forward")
+            }
+            onValueChange={handleWebrtcModeChange}
+            disabled={readOnly}
+          >
+            <SelectTrigger id="webrtc-mode">
+              <SelectValue placeholder={t("fingerprint.webrtcMode")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="forward">
+                {t("fingerprint.webrtcModes.forward")}
+              </SelectItem>
+              <SelectItem value="forward_google">
+                {t("fingerprint.webrtcModes.forwardGoogle")}
+              </SelectItem>
+              <SelectItem value="alter">
+                {t("fingerprint.webrtcModes.alter")}
+              </SelectItem>
+              <SelectItem value="real">
+                {t("fingerprint.webrtcModes.real")}
+              </SelectItem>
+              <SelectItem value="disable">
+                {t("fingerprint.webrtcModes.disable")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       {/* User Agent and Platform */}
       <div className="space-y-3">
         <Label>{t("fingerprint.userAgentAndPlatform")}</Label>

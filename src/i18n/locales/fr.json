@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "Actualiser l'empreinte",
     "canvasNoiseSeedPlaceholder": "Entrez une graine pour l'empreinte canvas",
     "addFontsPlaceholder": "Ajouter des polices...",
-    "enterAsJson": "Entrez {{title}} en JSON"
+    "enterAsJson": "Entrez {{title}} en JSON",
+    "webrtcMode": "Mode WebRTC",
+    "webrtcModes": {
+      "forward": "Transférer (Proxy)",
+      "forwardGoogle": "Transférer Google",
+      "alter": "Altérer (Simuler)",
+      "real": "Réel",
+      "disable": "Désactiver"
+    }
   },
   "warnings": {
     "windowResizeTitle": "Dimensions de fenêtre personnalisées",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "Le proxy sélectionné ne fonctionne pas, le profil n'a donc pas été créé.",
     "proxyPaymentRequired": "Le proxy sélectionné requiert un paiement (402) — son abonnement a peut-être expiré — le profil n'a donc pas été créé.",
     "vpnNotWorking": "Le VPN sélectionné ne fonctionne pas, le profil n'a donc pas été créé.",
-    "camoufoxImportDeprecated": "L'importation de profils basés sur Firefox (Camoufox) n'est plus prise en charge. Camoufox est en cours d'abandon — utilisez Wayfern à la place."
+    "camoufoxImportDeprecated": "L'importation de profils basés sur Firefox (Camoufox) n'est plus prise en charge. Camoufox est en cours d'abandon — utilisez Wayfern à la place.",
+    "wayfernFingerprintMissing": "Ce profil n'a pas d'empreinte. Générez-en une avant de lancer Wayfern.",
+    "wayfernGeolocationRequired": "L'empreinte manque de fuseau horaire ou de géolocalisation et la sortie proxy n'a pas pu être résolue.",
+    "wayfernWebrtcAlterIpUnavailable": "Le mode alter WebRTC nécessite une IP de sortie proxy, mais elle n'a pas pu être récupérée.",
+    "wayfernWebrtcAlterIpInvalid": "Le mode alter WebRTC a reçu une IP de sortie proxy invalide.",
+    "wayfernNoPageTargets": "Wayfern a démarré mais aucune page n'était disponible pour l'injection d'empreinte.",
+    "wayfernFingerprintApplyFailed": "Échec de l'application de l'empreinte à Wayfern : {{detail}}",
+    "wayfernRehydrateFailed": "Impossible de restaurer la protection d empreinte sur un navigateur Wayfern recupere : {{reason}}"
   },
   "rail": {
     "profiles": "Profils",

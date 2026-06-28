@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "Actualizar Huella Digital",
     "canvasNoiseSeedPlaceholder": "Introduce una semilla para la huella digital del canvas",
     "addFontsPlaceholder": "Agregar fuentes...",
-    "enterAsJson": "Ingresa {{title}} como JSON"
+    "enterAsJson": "Ingresa {{title}} como JSON",
+    "webrtcMode": "Modo WebRTC",
+    "webrtcModes": {
+      "forward": "Reenviar (Proxy)",
+      "forwardGoogle": "Reenviar Google",
+      "alter": "Alterar (Simular)",
+      "real": "Real",
+      "disable": "Desactivar"
+    }
   },
   "warnings": {
     "windowResizeTitle": "Dimensiones de ventana personalizadas",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "El proxy seleccionado no funciona, por lo que no se creó el perfil.",
     "proxyPaymentRequired": "El proxy seleccionado requiere pago (402) —su suscripción puede haber vencido— por lo que no se creó el perfil.",
     "vpnNotWorking": "La VPN seleccionada no funciona, por lo que no se creó el perfil.",
-    "camoufoxImportDeprecated": "La importación de perfiles basados en Firefox (Camoufox) ya no es compatible. Camoufox está en desuso; usa Wayfern en su lugar."
+    "camoufoxImportDeprecated": "La importación de perfiles basados en Firefox (Camoufox) ya no es compatible. Camoufox está en desuso; usa Wayfern en su lugar.",
+    "wayfernFingerprintMissing": "Este perfil no tiene huella digital. Genere una antes de iniciar Wayfern.",
+    "wayfernGeolocationRequired": "A la huella le faltan zona horaria o geolocalización y no se pudo resolver la salida del proxy.",
+    "wayfernWebrtcAlterIpUnavailable": "El modo alter de WebRTC requiere una IP de salida del proxy, pero no se pudo obtener.",
+    "wayfernWebrtcAlterIpInvalid": "El modo alter de WebRTC recibió una IP de salida del proxy no válida.",
+    "wayfernNoPageTargets": "Wayfern se inició pero no había ninguna página disponible para inyectar la huella.",
+    "wayfernFingerprintApplyFailed": "No se pudo aplicar la huella a Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "No se pudo restaurar la proteccion de huella en un navegador Wayfern recuperado: {{reason}}"
   },
   "rail": {
     "profiles": "Perfiles",

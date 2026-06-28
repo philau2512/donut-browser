@@ -1142,7 +1142,15 @@
     "refreshFingerprint": "刷新指纹",
     "canvasNoiseSeedPlaceholder": "输入用于 canvas 指纹的种子字符串",
     "addFontsPlaceholder": "添加字体...",
-    "enterAsJson": "以 JSON 格式输入 {{title}}"
+    "enterAsJson": "以 JSON 格式输入 {{title}}",
+    "webrtcMode": "WebRTC 模式",
+    "webrtcModes": {
+      "forward": "转发 (代理)",
+      "forwardGoogle": "谷歌转发",
+      "alter": "修改 (欺骗)",
+      "real": "真实",
+      "disable": "禁用"
+    }
   },
   "warnings": {
     "windowResizeTitle": "自定义窗口尺寸",
@@ -1909,7 +1917,14 @@
     "proxyNotWorking": "所选代理无法使用，因此未创建配置文件。",
     "proxyPaymentRequired": "所选代理需要付费（402），其订阅可能已过期，因此未创建配置文件。",
     "vpnNotWorking": "所选 VPN 无法使用，因此未创建配置文件。",
-    "camoufoxImportDeprecated": "不再支持导入基于 Firefox 的 (Camoufox) 配置文件。Camoufox 即将停用——请改用 Wayfern。"
+    "camoufoxImportDeprecated": "不再支持导入基于 Firefox 的 (Camoufox) 配置文件。Camoufox 即将停用——请改用 Wayfern。",
+    "wayfernFingerprintMissing": "此配置文件没有指纹。启动 Wayfern 前请先生成指纹。",
+    "wayfernGeolocationRequired": "指纹缺少时区或地理位置，且无法解析代理出口。",
+    "wayfernWebrtcAlterIpUnavailable": "WebRTC alter 模式需要代理出口 IP，但无法获取。",
+    "wayfernWebrtcAlterIpInvalid": "WebRTC alter 模式收到了无效的代理出口 IP。",
+    "wayfernNoPageTargets": "Wayfern 已启动，但没有可用于注入指纹的页面。",
+    "wayfernFingerprintApplyFailed": "无法将指纹应用到 Wayfern：{{detail}}",
+    "wayfernRehydrateFailed": "无法在已恢复的 Wayfern 浏览器上恢复指纹保护：{{reason}}"
   },
   "rail": {
     "profiles": "配置文件",

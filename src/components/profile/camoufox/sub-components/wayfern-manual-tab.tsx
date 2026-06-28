@@ -181,8 +181,11 @@ export function WayfernManualTab({
           className="space-y-6"
         >
           <WayfernFingerprintFields
+            config={config}
+            onConfigChange={onConfigChange}
             fingerprintConfig={fingerprintConfig}
             updateFingerprintConfig={updateFingerprintConfig}
+            readOnly={readOnly}
             t={t}
           />
         </fieldset>

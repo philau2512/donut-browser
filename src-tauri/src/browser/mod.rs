@@ -12,6 +12,7 @@ pub mod extension_manager;
 pub mod extraction;
 pub mod human_typing;
 pub mod platform_browser;
+pub mod wayfern_launch_args;
 pub mod wayfern_manager;
 pub mod wayfern_terms;
 
