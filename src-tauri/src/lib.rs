@@ -31,6 +31,11 @@ pub mod vpn;
 
 pub mod automation;
 
+// Background task modules (extracted from lib_setup.rs for domain separation)
+pub mod lib_setup_background_cleanup;
+pub mod lib_setup_background_updaters;
+pub mod lib_setup_background_services;
+
 use browser::extension_manager;
 pub use profile::dns_blocklist;
 use profile::{cookie_manager, team_lock};
@@ -91,7 +96,7 @@ use profile::tag_manager::{delete_tag, get_all_tags};
 
 use browser::default_browser::{is_default_browser, set_as_default_browser};
 use updater::version_updater::{
-  clear_all_version_cache_and_refetch, get_version_update_status, get_version_updater,
+  clear_all_version_cache_and_refetch, get_version_update_status,
   trigger_manual_version_update,
 };
 
