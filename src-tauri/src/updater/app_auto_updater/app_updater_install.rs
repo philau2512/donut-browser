@@ -270,7 +270,7 @@ impl AppAutoUpdater {
         }
       }
 
-      Ok(())
+      return Ok(());
     }
 
     #[cfg(target_os = "windows")]
@@ -471,17 +471,17 @@ impl AppAutoUpdater {
         .and_then(|ext| ext.to_str())
         .unwrap_or("");
 
-      match extension {
+      return match extension {
         "deb" => self.install_linux_deb(installer_path).await,
         "rpm" => self.install_linux_rpm(installer_path).await,
         "appimage" => self.install_linux_appimage(installer_path).await,
         _ => Err(format!("Unsupported Linux installer format: {extension}").into()),
-      }
+      };
     }
 
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     {
-      Err("Auto-update installation not supported on this platform".into())
+      return Err("Auto-update installation not supported on this platform".into());
     }
   }
 
@@ -753,7 +753,7 @@ impl AppAutoUpdater {
         current = parent;
       }
 
-      Err("Could not find application bundle".into())
+      return Err("Could not find application bundle".into());
     }
 
     #[cfg(target_os = "windows")]
@@ -765,12 +765,12 @@ impl AppAutoUpdater {
     #[cfg(target_os = "linux")]
     {
       // On Linux, return the current executable path
-      std::env::current_exe().map_err(|e| e.into())
+      return std::env::current_exe().map_err(|e| e.into());
     }
 
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     {
-      Err("Platform not supported".into())
+      return Err("Platform not supported".into());
     }
   }
 }
