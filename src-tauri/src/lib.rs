@@ -33,8 +33,8 @@ pub mod automation;
 
 // Background task modules (extracted from lib_setup.rs for domain separation)
 pub mod lib_setup_background_cleanup;
-pub mod lib_setup_background_updaters;
 pub mod lib_setup_background_services;
+pub mod lib_setup_background_updaters;
 
 use browser::extension_manager;
 pub use profile::dns_blocklist;
@@ -96,8 +96,7 @@ use profile::tag_manager::{delete_tag, get_all_tags};
 
 use browser::default_browser::{is_default_browser, set_as_default_browser};
 use updater::version_updater::{
-  clear_all_version_cache_and_refetch, get_version_update_status,
-  trigger_manual_version_update,
+  clear_all_version_cache_and_refetch, get_version_update_status, trigger_manual_version_update,
 };
 
 use updater::auto_updater::{
