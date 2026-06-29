@@ -1164,7 +1164,14 @@
       "alter": "변경 (스푸핑)",
       "real": "실제",
       "disable": "비활성화"
-    }
+    },
+    "subTabs": {
+      "screen": "화면",
+      "system": "시스템 (CPU & RAM)",
+      "graphics": "그래픽 & 오디오"
+    },
+    "customizeDetails": "상세 하드웨어 매개변수 사용자 지정",
+    "customizeDetailsDesc": "시드, 렌더러 및 JSON 매개변수를 수동으로 조정합니다"
   },
   "warnings": {
     "windowResizeTitle": "사용자 지정 창 크기",

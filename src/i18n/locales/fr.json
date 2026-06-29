@@ -1164,7 +1164,14 @@
       "alter": "Altérer (Simuler)",
       "real": "Réel",
       "disable": "Désactiver"
-    }
+    },
+    "subTabs": {
+      "screen": "Écran",
+      "system": "Système (CPU et RAM)",
+      "graphics": "Graphismes et Audio"
+    },
+    "customizeDetails": "Personnaliser les paramètres matériels détaillés",
+    "customizeDetailsDesc": "Ajuster manuellement les graines, les moteurs de rendu et les paramètres JSON"
   },
   "warnings": {
     "windowResizeTitle": "Dimensions de fenêtre personnalisées",

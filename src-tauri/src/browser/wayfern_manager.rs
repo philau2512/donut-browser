@@ -530,19 +530,46 @@ impl WayfernManager {
       }
     };
 
-    let os = config
-      .os
-      .as_deref()
-      .unwrap_or(if cfg!(target_os = "macos") {
-        "macos"
-      } else if cfg!(target_os = "linux") {
-        "linux"
+    let host_os = if cfg!(target_os = "macos") {
+      "macos"
+    } else if cfg!(target_os = "linux") {
+      "linux"
+    } else {
+      "windows"
+    };
+
+    let requested_os = config.os.as_deref().unwrap_or(host_os);
+
+    // If requested OS is different from host OS, it's cross-OS fingerprinting.
+    // Try to fetch wayfern token if we have a paid subscription but no cached token yet.
+    let mut wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
+    if wayfern_token.is_none()
+      && requested_os != host_os
+      && crate::api::cloud_auth::CLOUD_AUTH
+        .has_active_paid_subscription()
+        .await
+    {
+      log::info!("Wayfern token missing for cross-OS fingerprinting, requesting one...");
+      if let Err(e) = crate::api::cloud_auth::CLOUD_AUTH
+        .request_wayfern_token()
+        .await
+      {
+        log::warn!("Failed to request wayfern token: {e}");
       } else {
-        "windows"
-      });
+        wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
+      }
+    }
+
+    // Determine the final OS to use. If no token is available and requested OS is cross-OS,
+    // fallback to host OS to avoid CDP error "Cross-OS fingerprinting requires a paid plan".
+    let os = if wayfern_token.is_none() && requested_os != host_os {
+      log::warn!("No Wayfern token available for cross-OS fingerprinting. Falling back from '{requested_os}' to host OS '{host_os}' to avoid CDP error.");
+      host_os
+    } else {
+      requested_os
+    };
 
     // Include wayfern token if available (enables cross-OS fingerprinting for paid users)
-    let wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
     let mut refresh_params = json!({ "operatingSystem": os });
     if let Some(ref token) = wayfern_token {
       refresh_params

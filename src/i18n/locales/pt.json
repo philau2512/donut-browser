@@ -1164,7 +1164,14 @@
       "alter": "Alterar (Falsificar)",
       "real": "Real",
       "disable": "Desativar"
-    }
+    },
+    "subTabs": {
+      "screen": "Tela",
+      "system": "Sistema (CPU & RAM)",
+      "graphics": "Gráficos & Áudio"
+    },
+    "customizeDetails": "Personalizar parâmetros de hardware detalhados",
+    "customizeDetailsDesc": "Ajustar manualmente sementes, renderizadores e parâmetros JSON"
   },
   "warnings": {
     "windowResizeTitle": "Dimensões de janela personalizadas",

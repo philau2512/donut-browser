@@ -123,7 +123,40 @@ impl WayfernManager {
       }
     }
 
-    let wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
+    let host_os = if cfg!(target_os = "macos") {
+      "macos"
+    } else if cfg!(target_os = "linux") {
+      "linux"
+    } else {
+      "windows"
+    };
+
+    let fingerprint_os = fingerprint_for_cdp
+      .get("platform")
+      .and_then(|p| p.as_str())
+      .map(|p| p.to_lowercase())
+      .unwrap_or_default();
+
+    let is_cross_os = if fingerprint_os.contains("mac") {
+      host_os != "macos"
+    } else if fingerprint_os.contains("win") {
+      host_os != "windows"
+    } else if fingerprint_os.contains("linux") {
+      host_os != "linux"
+    } else if fingerprint_os.contains("iphone") || fingerprint_os.contains("ipad") || fingerprint_os.contains("ios") {
+      true
+    } else { fingerprint_os.contains("android") };
+
+    let mut wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
+    if wayfern_token.is_none() && is_cross_os && crate::api::cloud_auth::CLOUD_AUTH.has_active_paid_subscription().await {
+      log::info!("Wayfern token missing for cross-OS launch, requesting one...");
+      if let Err(e) = crate::api::cloud_auth::CLOUD_AUTH.request_wayfern_token().await {
+        log::warn!("Failed to request wayfern token for launch: {e}");
+      } else {
+        wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
+      }
+    }
+
     let mut fingerprint_params = fingerprint_for_cdp;
     if let Some(ref token) = wayfern_token {
       if let Some(obj) = fingerprint_params.as_object_mut() {

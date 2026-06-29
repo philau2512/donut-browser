@@ -1164,7 +1164,14 @@
       "alter": "修改 (欺骗)",
       "real": "真实",
       "disable": "禁用"
-    }
+    },
+    "subTabs": {
+      "screen": "屏幕",
+      "system": "系统 (CPU & 内存)",
+      "graphics": "图形与音频"
+    },
+    "customizeDetails": "自定义详细硬件参数",
+    "customizeDetailsDesc": "手动调整种子、渲染器 và JSON 参数"
   },
   "warnings": {
     "windowResizeTitle": "自定义窗口尺寸",

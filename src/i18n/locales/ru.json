@@ -1164,7 +1164,14 @@
       "alter": "Изменить (Spoof)",
       "real": "Реальный",
       "disable": "Отключить"
-    }
+    },
+    "subTabs": {
+      "screen": "Экран",
+      "system": "Система (ЦП и ОЗУ)",
+      "graphics": "Графика и звук"
+    },
+    "customizeDetails": "Настройка подробных параметров оборудования",
+    "customizeDetailsDesc": "Ручная настройка сидов, рендереров и параметров JSON"
   },
   "warnings": {
     "windowResizeTitle": "Пользовательские размеры окна",

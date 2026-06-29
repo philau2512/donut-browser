@@ -1164,7 +1164,17 @@
       "alter": "Alter (Spoof)",
       "real": "Real",
       "disable": "Disable"
-    }
+    },
+    "subTabs": {
+      "screen": "Screen",
+      "system": "System (CPU & RAM)",
+      "graphics": "Graphics & Audio"
+    },
+    "customizeDetails": "Customize detailed hardware parameters",
+    "customizeDetailsDesc": "Manually adjust seeds, renderers, and JSON parameters",
+    "randomizeAll": "Randomize All",
+    "randomizeAllTooltip": "Auto-generate realistic hardware fingerprints (screen, CPU, RAM, GPU) matching the detected operating system",
+    "shuffleGPUTooltip": "Randomly select GPU vendor/renderer matching the operating system"
   },
   "warnings": {
     "windowResizeTitle": "Custom Window Dimensions",

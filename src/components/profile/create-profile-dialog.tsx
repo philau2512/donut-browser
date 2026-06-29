@@ -157,6 +157,7 @@ export function CreateProfileDialog({
     isGeneratingFingerprint,
     updateWayfernConfig,
     updateFingerprintConfig,
+    updateFingerprintConfigs,
     handleGenerateFingerprint,
     handleAutoLocationToggle,
     isAutoLocationEnabled,
@@ -452,7 +453,7 @@ export function CreateProfileDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 overflow-hidden bg-background">
+      <DialogContent className="max-w-6xl h-[85vh] flex flex-col p-0 overflow-hidden bg-background">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0 bg-muted/5">
           <div>
@@ -504,118 +505,121 @@ export function CreateProfileDialog({
           </TabsList>
 
           {/* Right Scrollable Content */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <ScrollArea className="flex-1 p-6">
-              {/* 1. Base Info */}
-              <TabsContent value="base-info" className="m-0 space-y-6">
-                <BaseInfoTab
-                  profileName={profileName}
-                  setProfileName={setProfileName}
-                  groupId={groupId}
-                  setGroupId={setGroupId}
-                  groups={profileGroups}
-                  browserType={browserType}
-                  setBrowserType={_setBrowserType}
-                  wayfernConfig={wayfernConfig}
-                  updateWayfernConfig={updateWayfernConfig}
-                  fingerprintConfig={fingerprintConfig}
-                  updateFingerprintConfig={updateFingerprintConfig}
-                  isLoadingReleaseTypes={isLoadingReleaseTypes}
-                  getCreatableVersion={getCreatableVersion}
-                  crossOsUnlocked={crossOsUnlocked}
-                  currentOS={getCurrentOS()}
-                  osLabels={osLabels}
-                  isCreateDisabled={isCreateDisabled}
-                  isCreating={isCreating}
-                  handleCreate={handleCreate}
-                />
-              </TabsContent>
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-6 space-y-6">
+                {/* 1. Base Info */}
+                <TabsContent value="base-info" className="m-0 space-y-6">
+                  <BaseInfoTab
+                    profileName={profileName}
+                    setProfileName={setProfileName}
+                    groupId={groupId}
+                    setGroupId={setGroupId}
+                    groups={profileGroups}
+                    browserType={browserType}
+                    setBrowserType={_setBrowserType}
+                    wayfernConfig={wayfernConfig}
+                    updateWayfernConfig={updateWayfernConfig}
+                    fingerprintConfig={fingerprintConfig}
+                    updateFingerprintConfig={updateFingerprintConfig}
+                    isLoadingReleaseTypes={isLoadingReleaseTypes}
+                    getCreatableVersion={getCreatableVersion}
+                    crossOsUnlocked={crossOsUnlocked}
+                    currentOS={getCurrentOS()}
+                    osLabels={osLabels}
+                    isCreateDisabled={isCreateDisabled}
+                    isCreating={isCreating}
+                    handleCreate={handleCreate}
+                  />
+                </TabsContent>
 
-              {/* 2. Location */}
-              <TabsContent value="location" className="m-0 space-y-6">
-                <LocationTab
-                  fingerprintConfig={fingerprintConfig}
-                  updateFingerprintConfig={updateFingerprintConfig}
-                  isEditingDisabled={isFingerprintEditingDisabled}
-                  isAutoLocationEnabled={isAutoLocationEnabled}
-                  handleAutoLocationToggle={handleAutoLocationToggle}
-                />
-              </TabsContent>
+                {/* 2. Location */}
+                <TabsContent value="location" className="m-0 space-y-6">
+                  <LocationTab
+                    fingerprintConfig={fingerprintConfig}
+                    updateFingerprintConfig={updateFingerprintConfig}
+                    isEditingDisabled={isFingerprintEditingDisabled}
+                    isAutoLocationEnabled={isAutoLocationEnabled}
+                    handleAutoLocationToggle={handleAutoLocationToggle}
+                  />
+                </TabsContent>
 
-              {/* 3. Proxy */}
-              <TabsContent value="proxy" className="m-0 space-y-4">
-                <ProxyTab
-                  storedProxies={storedProxies}
-                  vpnConfigs={vpnConfigs}
-                  selectedProxyId={selectedProxyId}
-                  setSelectedProxyId={setSelectedProxyId}
-                  setShowProxyForm={setShowProxyForm}
-                />
-              </TabsContent>
+                {/* 3. Proxy */}
+                <TabsContent value="proxy" className="m-0 space-y-4">
+                  <ProxyTab
+                    storedProxies={storedProxies}
+                    vpnConfigs={vpnConfigs}
+                    selectedProxyId={selectedProxyId}
+                    setSelectedProxyId={setSelectedProxyId}
+                    setShowProxyForm={setShowProxyForm}
+                  />
+                </TabsContent>
 
-              {/* 4. Cookies */}
-              <TabsContent value="cookies" className="m-0">
-                <CookiesTab
-                  rawCookies={rawCookies}
-                  setRawCookies={setRawCookies}
-                />
-              </TabsContent>
+                {/* 4. Cookies */}
+                <TabsContent value="cookies" className="m-0">
+                  <CookiesTab
+                    rawCookies={rawCookies}
+                    setRawCookies={setRawCookies}
+                  />
+                </TabsContent>
 
-              {/* 5. Hardware */}
-              <TabsContent value="hardware" className="m-0 space-y-6">
-                <HardwareTab
-                  fingerprintConfig={fingerprintConfig}
-                  updateFingerprintConfig={updateFingerprintConfig}
-                  isEditingDisabled={isFingerprintEditingDisabled}
-                />
-              </TabsContent>
+                {/* 5. Hardware */}
+                <TabsContent value="hardware" className="m-0 space-y-6">
+                  <HardwareTab
+                    fingerprintConfig={fingerprintConfig}
+                    updateFingerprintConfig={updateFingerprintConfig}
+                    updateFingerprintConfigs={updateFingerprintConfigs}
+                    isEditingDisabled={isFingerprintEditingDisabled}
+                  />
+                </TabsContent>
 
-              {/* 6. Command */}
-              <TabsContent value="command" className="m-0 space-y-6">
-                <CommandTab
-                  launchHook={launchHook}
-                  setLaunchHook={setLaunchHook}
-                  isCreating={isCreating}
-                />
-              </TabsContent>
+                {/* 6. Command */}
+                <TabsContent value="command" className="m-0 space-y-6">
+                  <CommandTab
+                    launchHook={launchHook}
+                    setLaunchHook={setLaunchHook}
+                    isCreating={isCreating}
+                  />
+                </TabsContent>
 
-              {/* 7. Bookmark */}
-              <TabsContent value="bookmark" className="m-0 space-y-4">
-                <BookmarkTab />
-              </TabsContent>
+                {/* 7. Bookmark */}
+                <TabsContent value="bookmark" className="m-0 space-y-4">
+                  <BookmarkTab />
+                </TabsContent>
 
-              {/* 8. Extension */}
-              <TabsContent value="extension" className="m-0 space-y-4">
-                <ExtensionTab
-                  extensionGroups={extensionGroups}
-                  selectedExtensionGroupId={selectedExtensionGroupId}
-                  setSelectedExtensionGroupId={setSelectedExtensionGroupId}
-                />
-              </TabsContent>
+                {/* 8. Extension */}
+                <TabsContent value="extension" className="m-0 space-y-4">
+                  <ExtensionTab
+                    extensionGroups={extensionGroups}
+                    selectedExtensionGroupId={selectedExtensionGroupId}
+                    setSelectedExtensionGroupId={setSelectedExtensionGroupId}
+                  />
+                </TabsContent>
 
-              {/* 9. Requests */}
-              <TabsContent value="requests" className="m-0 space-y-4">
-                <RequestsTab
-                  dnsBlocklist={dnsBlocklist}
-                  setDnsBlocklist={setDnsBlocklist}
-                />
-              </TabsContent>
+                {/* 9. Requests */}
+                <TabsContent value="requests" className="m-0 space-y-4">
+                  <RequestsTab
+                    dnsBlocklist={dnsBlocklist}
+                    setDnsBlocklist={setDnsBlocklist}
+                  />
+                </TabsContent>
 
-              {/* 10. Other */}
-              <TabsContent value="other" className="m-0 space-y-6">
-                <OtherTab
-                  ephemeral={ephemeral}
-                  setEphemeral={setEphemeral}
-                  enablePassword={setEnablePassword}
-                  enablePasswordVal={enablePassword}
-                  password={password}
-                  setPassword={setPassword}
-                  passwordConfirm={passwordConfirm}
-                  setPasswordConfirm={setPasswordConfirm}
-                  passwordError={passwordError}
-                  setPasswordError={setPasswordError}
-                />
-              </TabsContent>
+                {/* 10. Other */}
+                <TabsContent value="other" className="m-0 space-y-6">
+                  <OtherTab
+                    ephemeral={ephemeral}
+                    setEphemeral={setEphemeral}
+                    enablePassword={setEnablePassword}
+                    enablePasswordVal={enablePassword}
+                    password={password}
+                    setPassword={setPassword}
+                    passwordConfirm={passwordConfirm}
+                    setPasswordConfirm={setPasswordConfirm}
+                    passwordError={passwordError}
+                    setPasswordError={setPasswordError}
+                  />
+                </TabsContent>
+              </div>
             </ScrollArea>
           </div>
         </Tabs>

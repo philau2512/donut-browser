@@ -119,6 +119,31 @@ export function useWayfernConfig(
     }
   };
 
+  const updateFingerprintConfigs = (
+    updates: Partial<WayfernFingerprintConfig>,
+  ) => {
+    const newConfig = { ...fingerprintConfig, ...updates };
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (
+        value === undefined ||
+        value === "" ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
+        delete (newConfig as Record<string, unknown>)[key];
+      }
+    }
+
+    setFingerprintConfig(newConfig);
+
+    try {
+      const jsonString = JSON.stringify(newConfig);
+      updateWayfernConfig("fingerprint", jsonString);
+    } catch (error) {
+      console.error("Failed to serialize fingerprint config:", error);
+    }
+  };
+
   const handleAutoLocationToggle = (enabled: boolean) => {
     updateWayfernConfig("geoip", enabled);
   };
@@ -134,6 +159,7 @@ export function useWayfernConfig(
     isGeneratingFingerprint,
     updateWayfernConfig,
     updateFingerprintConfig,
+    updateFingerprintConfigs,
     handleGenerateFingerprint,
     handleAutoLocationToggle,
     isAutoLocationEnabled,

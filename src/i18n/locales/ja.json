@@ -1164,7 +1164,14 @@
       "alter": "変更 (偽装)",
       "real": "リアル",
       "disable": "無効"
-    }
+    },
+    "subTabs": {
+      "screen": "画面",
+      "system": "システム (CPU & RAM)",
+      "graphics": "グラフィックス & オーディオ"
+    },
+    "customizeDetails": "詳細なハードウェアパラメータのカスタマイズ",
+    "customizeDetailsDesc": "シード、レンダラー、JSONパラメータを手動で調整します"
   },
   "warnings": {
     "windowResizeTitle": "カスタムウィンドウサイズ",

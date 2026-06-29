@@ -1164,7 +1164,17 @@
       "alter": "Thay đổi (Spoof)",
       "real": "Thực tế",
       "disable": "Tắt"
-    }
+    },
+    "subTabs": {
+      "screen": "Màn hình",
+      "system": "Hệ thống (CPU & RAM)",
+      "graphics": "Đồ họa & Âm thanh"
+    },
+    "customizeDetails": "Tùy chỉnh thông số phần cứng chi tiết",
+    "customizeDetailsDesc": "Tự điều chỉnh seed, renderer và các tham số JSON",
+    "randomizeAll": "Randomize All",
+    "randomizeAllTooltip": "Tự động tạo ngẫu nhiên tất cả thông số hardware (màn hình, CPU, RAM, GPU) phù hợp với hệ điều hành được phát hiện",
+    "shuffleGPUTooltip": "Chọn ngẫu nhiên GPU vendor/renderer phù hợp với hệ điều hành"
   },
   "warnings": {
     "windowResizeTitle": "Kích thước cửa sổ tùy chỉnh",
