@@ -119,6 +119,15 @@ For day-to-day feature work, use `pnpm test:quick` instead of `pnpm test`. It ru
 If `pnpm tauri dev` is running and causes file-lock conflicts, set a separate target dir:
 `$env:CARGO_TARGET_DIR = "target/test"; cd src-tauri; cargo nextest run --lib`
 
+### Fast formatting and linting for specific files
+
+During development, you can format and lint only the files you have modified to save time instead of running it on the entire workspace:
+
+| Scenario | Command |
+|----------|---------|
+| Format specific file(s) | `pnpm format <path_to_file>` |
+| Lint specific file(s) | `pnpm lint <path_to_file>` |
+
 ## Logs (when debugging a running app)
 
 Three log surfaces, in order of usefulness:
