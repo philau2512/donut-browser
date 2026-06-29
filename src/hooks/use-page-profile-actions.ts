@@ -302,7 +302,7 @@ export function usePageProfileActions({
   const handleRenameProfile = useCallback(
     async (profileId: string, name: string) => {
       try {
-        await invoke("rename_profile", { profileId, name });
+        await invoke("rename_profile", { profileId, newName: name });
       } catch (err: unknown) {
         console.error("Rename profile failed:", err);
         showErrorToast(translateBackendError(t, err));

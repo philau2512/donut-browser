@@ -129,7 +129,7 @@ export function CreateProfileDialog({
 
   // Browser Type Selection (Camoufox vs Wayfern)
   const [browserType, _setBrowserType] = useState<"camoufox" | "wayfern">(
-    "camoufox",
+    "wayfern",
   );
 
   // Batch Anti-Detect States (Phase 2 — Per-profile randomization & proxy rotation)

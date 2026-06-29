@@ -9,7 +9,9 @@ import { useBrowserDownload } from "@/hooks/use-browser-download";
  * Extracted from create-profile-dialog.tsx to reduce dialog complexity.
  */
 export function useBrowserVersion() {
-  const [releaseTypes, setReleaseTypes] = useState<any>({});
+  const [releaseTypesMap, setReleaseTypesMap] = useState<Record<string, any>>(
+    {},
+  );
   const [isLoadingReleaseTypes, setIsLoadingReleaseTypes] = useState(false);
   const [_releaseTypesError, setReleaseTypesError] = useState<string | null>(
     null,
@@ -37,7 +39,7 @@ export function useBrowserVersion() {
 
         const filtered: any = {};
         if (rawReleaseTypes.stable) filtered.stable = rawReleaseTypes.stable;
-        setReleaseTypes(filtered);
+        setReleaseTypesMap((prev) => ({ ...prev, [browser]: filtered }));
       } catch (error) {
         console.error(`Failed to load release types for ${browser}:`, error);
         try {
@@ -45,7 +47,7 @@ export function useBrowserVersion() {
           if (downloaded.length > 0) {
             const fallback: any = {};
             fallback.stable = downloaded[0];
-            setReleaseTypes(fallback);
+            setReleaseTypesMap((prev) => ({ ...prev, [browser]: fallback }));
           } else {
             setReleaseTypesError(
               "Failed to fetch browser versions. Please check your internet connection.",
@@ -64,14 +66,16 @@ export function useBrowserVersion() {
   );
 
   const getBestAvailableVersion = useCallback(
-    (_browserStr?: string) => {
+    (browserStr?: string) => {
+      const key = browserStr || "wayfern";
+      const releaseTypes = releaseTypesMap[key];
       if (!releaseTypes) return null;
       if (releaseTypes.stable) {
         return { version: releaseTypes.stable, releaseType: "stable" as const };
       }
       return null;
     },
-    [releaseTypes],
+    [releaseTypesMap],
   );
 
   const getCreatableVersion = useCallback(
@@ -80,7 +84,8 @@ export function useBrowserVersion() {
       if (bestVersion && isVersionDownloaded(bestVersion.version)) {
         return bestVersion;
       }
-      const browserDownloaded = downloadedVersionsMap[browserType ?? ""] ?? [];
+      const browserDownloaded =
+        downloadedVersionsMap[browserType ?? "wayfern"] ?? [];
       if (browserDownloaded.length > 0) {
         const fallbackVersion = browserDownloaded[0];
         return {

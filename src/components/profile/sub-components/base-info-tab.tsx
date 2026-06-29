@@ -300,21 +300,21 @@ export function BaseInfoTab({
             </div>
           ) : (
             <Select
-              value={getCreatableVersion("wayfern")?.version || "none"}
+              value={getCreatableVersion(browserType)?.version || "none"}
               disabled
             >
               <SelectTrigger className="h-9">
                 <SelectValue
                   placeholder={
-                    getCreatableVersion("wayfern")?.version || "No version"
+                    getCreatableVersion(browserType)?.version || "No version"
                   }
                 />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
-                  value={getCreatableVersion("wayfern")?.version || "none"}
+                  value={getCreatableVersion(browserType)?.version || "none"}
                 >
-                  {getCreatableVersion("wayfern")?.version || "No version"}
+                  {getCreatableVersion(browserType)?.version || "No version"}
                 </SelectItem>
               </SelectContent>
             </Select>

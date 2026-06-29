@@ -9,6 +9,15 @@ import type {
   WayfernOS,
 } from "@/types";
 
+const getCurrentOS = (): WayfernOS => {
+  if (typeof navigator === "undefined") return "windows";
+  const platform = navigator.platform?.toLowerCase() || "";
+  const userAgent = navigator.userAgent?.toLowerCase() || "";
+  if (platform.includes("win") || userAgent.includes("win")) return "windows";
+  if (platform.includes("mac") || userAgent.includes("mac")) return "macos";
+  return "linux";
+};
+
 /**
  * Custom hook for Wayfern fingerprint configuration state and update handlers.
  * Extracted from create-profile-dialog.tsx to reduce dialog complexity.
@@ -18,20 +27,18 @@ export function useWayfernConfig(
     browserType?: string,
   ) => { version: string; releaseType: "stable" | "nightly" } | null,
 ) {
-  const getCurrentOS = (): WayfernOS => {
-    if (typeof navigator === "undefined") return "linux";
-    const platform = navigator.platform.toLowerCase();
-    if (platform.includes("win")) return "windows";
-    if (platform.includes("mac")) return "macos";
-    return "linux";
-  };
-
-  const [wayfernConfig, setWayfernConfig] = useState<WayfernConfig>(() => ({
-    os: getCurrentOS(),
-  }));
+  const [wayfernConfig, setWayfernConfig] = useState<WayfernConfig>({});
   const [fingerprintConfig, setFingerprintConfig] =
     useState<WayfernFingerprintConfig>({});
   const [isGeneratingFingerprint, setIsGeneratingFingerprint] = useState(false);
+
+  // Set the correct client-side detected host OS on mount to prevent SSR hydration fallback to linux
+  useEffect(() => {
+    setWayfernConfig((prev) => ({
+      ...prev,
+      os: prev.os || getCurrentOS(),
+    }));
+  }, []);
 
   // Generate a random sample fingerprint inside the UI
   const handleGenerateFingerprint = useCallback(
