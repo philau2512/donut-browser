@@ -57,6 +57,46 @@ impl BrowserRunner {
                   wayfern_process.id,
                   pid
                 );
+                
+                // Run after_close automation pipeline (non-blocking)
+                if let Some(ref automation) = profile.automation {
+                  if !automation.after_close.is_empty() {
+                    let profile_id = profile.id.to_string();
+                    let profile_name = profile.name.clone();
+                    let after_close_nodes = automation.after_close.clone();
+                    
+                    tokio::spawn(async move {
+                      log::info!(
+                        "[AUTOMATION] Running after_close pipeline for profile {} ({})",
+                        profile_name,
+                        profile_id
+                      );
+                      
+                      let mut context = ExecutionContext::new(profile_id.clone(), profile_name.clone());
+                      
+                      match AutomationEngine::run_pipeline(
+                        "AFTER_CLOSE",
+                        &after_close_nodes,
+                        &mut context,
+                        false, // Don't stop on failure for after_close
+                      ).await {
+                        Ok(()) => {
+                          log::info!(
+                            "[AUTOMATION] after_close pipeline completed for profile {}",
+                            profile_name
+                          );
+                        }
+                        Err(e) => {
+                          log::error!(
+                            "[AUTOMATION] after_close pipeline failed for profile {}: {}",
+                            profile_name,
+                            e
+                          );
+                        }
+                      }
+                    });
+                  }
+                }
               } else {
                 log::warn!(
                   "Wayfern stop command returned success but process {} (PID: {:?}) is still running - forcing kill",

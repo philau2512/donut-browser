@@ -1,4 +1,6 @@
 use crate::api::cloud_auth::CLOUD_AUTH;
+use crate::automation::pipeline::context::ExecutionContext;
+use crate::automation::pipeline::AutomationEngine;
 use crate::browser::camoufox_manager::{CamoufoxConfig, CamoufoxManager};
 use crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry;
 use crate::browser::platform_browser;
@@ -152,6 +154,63 @@ impl BrowserRunner {
   ) -> Result<Option<ProxySettings>, String> {
     Self::fire_launch_hook(profile);
 
+    // Run before_open automation pipeline if configured
+    if let Some(ref automation) = profile.automation {
+      if !automation.before_open.is_empty() {
+        log::info!(
+          "[AUTOMATION] Running before_open pipeline for profile {} ({})",
+          profile.name,
+          profile.id
+        );
+
+        // Create execution context
+        let mut context = ExecutionContext::new(profile.id.to_string(), profile.name.clone());
+
+        // Execute pipeline with stop_on_failure=true (block launch on error)
+        match AutomationEngine::run_pipeline(
+          "BEFORE_OPEN",
+          &automation.before_open,
+          &mut context,
+          true, // stop_on_failure
+        )
+        .await
+        {
+          Ok(()) => {
+            log::info!(
+              "[AUTOMATION] before_open pipeline completed successfully for profile {}",
+              profile.name
+            );
+
+            // If dynamic proxy was set by automation, use it
+            if let Some(dynamic_proxy) = context.dynamic_proxy {
+              log::info!(
+                "[AUTOMATION] Using dynamic proxy from automation: {}:{}",
+                dynamic_proxy.host,
+                dynamic_proxy.port
+              );
+
+              return Ok(Some(ProxySettings {
+                proxy_type: dynamic_proxy.protocol,
+                host: dynamic_proxy.host,
+                port: dynamic_proxy.port,
+                username: dynamic_proxy.username,
+                password: dynamic_proxy.password,
+              }));
+            }
+          }
+          Err(e) => {
+            log::error!(
+              "[AUTOMATION] before_open pipeline failed for profile {}: {}",
+              profile.name,
+              e
+            );
+            return Err(format!("Automation pipeline failed: {}", e));
+          }
+        }
+      }
+    }
+
+    // Fall back to configured proxy (if no dynamic proxy from automation)
     self
       .resolve_proxy_with_refresh(profile.proxy_id.as_ref(), Some(&profile.id.to_string()))
       .await

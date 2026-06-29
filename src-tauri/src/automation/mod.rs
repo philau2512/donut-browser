@@ -11,6 +11,7 @@
 pub mod commands;
 pub mod log_sink;
 pub mod pids;
+pub mod pipeline;
 pub mod process_kill;
 pub mod reaper;
 pub mod run_state;

@@ -750,3 +750,106 @@ export interface VpnStatus {
   bytes_received?: number;
   last_handshake?: number;
 }
+
+// ============================================================================
+// Automation Types (Profile Automation Engine)
+// ============================================================================
+
+export interface ProfileAutomation {
+  before_open: AutomationNodeConfig[];
+  after_close: AutomationNodeConfig[];
+}
+
+export type AutomationNodeConfig =
+  | DynamicProxyNodeConfig
+  | IpCheckNodeConfig
+  | LocalCommandNodeConfig
+  | WebhookNodeConfig
+  | TelegramAlertNodeConfig
+  | CleanupNodeConfig;
+
+export interface DynamicProxyNodeConfig {
+  type: "dynamic_proxy";
+  label: string;
+  api_url: string;
+  headers: Record<string, string>;
+  response_format: "json" | "text";
+  json_path_ip?: string;
+  json_path_port?: string;
+  json_path_username?: string;
+  json_path_password?: string;
+  protocol: "http" | "https" | "socks5";
+  timeout_seconds: number;
+  max_attempts: number;
+  retry_delay_ms: number;
+  backoff_multiplier: number;
+}
+
+export interface IpCheckNodeConfig {
+  type: "ip_check";
+  label: string;
+  allowed_countries: string[];
+  max_fraud_score: number;
+  use_proxy: boolean;
+  timeout_seconds: number;
+  max_attempts: number;
+  retry_delay_ms: number;
+  backoff_multiplier: number;
+}
+
+export interface LocalCommandNodeConfig {
+  type: "local_command";
+  label: string;
+  command: string;
+  working_dir?: string;
+  env_vars: Record<string, string>;
+  timeout_seconds: number;
+  max_attempts: number;
+  retry_delay_ms: number;
+  backoff_multiplier: number;
+}
+
+export interface WebhookNodeConfig {
+  type: "webhook";
+  label: string;
+  url: string;
+  method: "GET" | "POST";
+  headers: Record<string, string>;
+  body?: string;
+  timeout_seconds: number;
+  max_attempts: number;
+  retry_delay_ms: number;
+  backoff_multiplier: number;
+}
+
+export interface TelegramAlertNodeConfig {
+  type: "telegram_alert";
+  label: string;
+  bot_token: string;
+  chat_id: string;
+  message: string;
+  timeout_seconds: number;
+  max_attempts: number;
+  retry_delay_ms: number;
+  backoff_multiplier: number;
+}
+
+export interface CleanupNodeConfig {
+  type: "cleanup";
+  label: string;
+  mode: "cookies_and_cache" | "full";
+  exclude_domains: string[];
+}
+
+// Available variables for interpolation in automation nodes
+export const AUTOMATION_VARIABLES = [
+  "profile_id",
+  "profile_name",
+  "proxy_ip",
+  "proxy_port",
+  "proxy_protocol",
+  "ip_country",
+  "ip_fraud_score",
+] as const;
+
+export type AutomationVariable = (typeof AUTOMATION_VARIABLES)[number];

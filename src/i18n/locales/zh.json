@@ -1977,283 +1977,6 @@
     "shortcuts": "键盘快捷键",
     "automation": "自动化"
   },
-  "automation": {
-    "flow": {
-      "label": "流程",
-      "placeholder": "选择流程",
-      "refresh": "刷新流程",
-      "empty": "流程目录中未找到 .donutflow 文件。"
-    },
-    "profiles": {
-      "label": "配置文件（{{count}}）",
-      "selectAll": "全选",
-      "deselectAll": "取消全选",
-      "empty": "没有可用的配置文件。"
-    },
-    "settings": {
-      "title": "运行设置",
-      "concurrency": "并发数",
-      "concurrencyHint": "并行运行的最大配置文件数。",
-      "delayOpen": "延迟打开（秒）",
-      "delayOpenHint": "每次启动之间的间隔秒数。",
-      "headless": "无头模式",
-      "headlessHint": "运行时不显示浏览器窗口。",
-      "noOverlapping": "不重复运行配置文件",
-      "noOverlappingHint": "跳过已在运行的配置文件。",
-      "closeOnComplete": "完成后关闭",
-      "closeOnCompleteHint": "流程结束后关闭浏览器。",
-      "writeLogs": "写入日志",
-      "writeLogsHint": "将每个配置文件的日志保存到磁盘。"
-    },
-    "actions": {
-      "run": "运行",
-      "starting": "启动中…",
-      "stopAll": "全部停止"
-    },
-    "grid": {
-      "empty": "选择流程和配置文件，然后运行。",
-      "stopProfile": "停止 {{name}}"
-    },
-    "status": {
-      "idle": "空闲",
-      "launching": "启动中",
-      "running": "运行中",
-      "done": "已完成",
-      "doneWithErrors": "完成但有错误",
-      "error": "错误",
-      "skipped": "已跳过",
-      "stopped": "已停止"
-    },
-    "log": {
-      "title": "日志",
-      "allProfiles": "所有配置文件",
-      "scrollLock": "锁定滚动到最新",
-      "scrollUnlock": "解锁滚动",
-      "openFile": "打开日志文件",
-      "empty": "暂无日志输出。"
-    },
-    "runInfo": "正在运行流程：{{name}}",
-    "errors": {
-      "readFlowFailed": "读取流程失败：{{error}}",
-      "startFailed": "启动运行失败：{{error}}",
-      "stopFailed": "停止运行失败：{{error}}"
-    },
-    "editor": {
-      "comingSoon": "可视化编辑器即将推出。",
-      "start": "Start",
-      "palette": "Node palette",
-      "paletteHint": "Drag nodes onto the canvas, then connect them in a line.",
-      "searchNodes": "Search nodes…",
-      "linearHint": "Linear mode: each node can have one outgoing edge.",
-      "name": "Flow name",
-      "namePlaceholder": "Flow name",
-      "saving": "Saving…",
-      "selectNode": "Select a node to edit its properties.",
-      "booleanEnabled": "Enabled",
-      "properties": {
-        "options": "Options",
-        "setting": "Setting",
-        "document": "Document",
-        "continueOnError": "Continue on error",
-        "continueOnErrorHint": "If this node fails, continue with the next node in the line."
-      },
-      "variables": {
-        "title": "Variables",
-        "description": "Use variables in string fields with {{VAR}} syntax.",
-        "add": "Add variable",
-        "autoInjected": "Auto",
-        "reserved": "PROFILE_ID and PROFILE_NAME are injected at run time."
-      },
-      "groups": {
-        "navigator": "Navigator",
-        "interaction": "Interaction",
-        "utility": "Utility"
-      },
-      "toast": {
-        "saved": "Saved \"{{name}}\"."
-      },
-      "errors": {
-        "loadFailed": "Failed to load flow: {{error}}",
-        "saveFailed": "Failed to save flow: {{error}}"
-      },
-      "toolbar": {
-        "edit": "Edit parameters",
-        "startFromHere": "Start from here",
-        "delete": "Delete node"
-      },
-      "comment": {
-        "title": "添加注释",
-        "placeholder": "输入注释...",
-        "characters": "字符"
-      }
-    },
-    "nodes": {
-      "openUrl": {
-        "label": "Open URL",
-        "description": "Navigate the browser to a URL.",
-        "document": "Navigate the browser to a URL. Literal URLs are checked by the engine validator; templated URLs are checked again at run time after variables are interpolated."
-      },
-      "click": {
-        "label": "Click",
-        "description": "Click an element by selector.",
-        "document": "Click an element matched by a Playwright selector. Keep selectors stable and specific so the click lands on the intended element."
-      },
-      "type": {
-        "label": "Type",
-        "description": "Type text into an input or editable element.",
-        "document": "Type text into an input or editable element. Text fields can include variables like {{EMAIL}}."
-      },
-      "wait": {
-        "label": "Wait",
-        "description": "Wait for a selector or fixed timeout.",
-        "document": "Wait for a selector state or a fixed timeout. Use this before interactions that depend on slow page rendering."
-      },
-      "scroll": {
-        "label": "Scroll",
-        "description": "Scroll the page or an element.",
-        "document": "Scroll the page or a selected element by x/y pixels."
-      },
-      "screenshot": {
-        "label": "Screenshot",
-        "description": "Capture a screenshot during the run.",
-        "document": "Capture a screenshot during the run. Paths can include variables to separate output per profile."
-      },
-      "log": {
-        "label": "Log",
-        "description": "Write a message to the run log.",
-        "document": "Write a message to the automation log. Useful for debugging and milestone markers.",
-        "params": {
-          "color": "字体颜色"
-        }
-      },
-      "delay": {
-        "label": "Delay",
-        "description": "Pause for a fixed number of milliseconds.",
-        "document": "Pause for a fixed number of milliseconds before continuing to the next node."
-      },
-      "getText": {
-        "label": "Get Text",
-        "description": "Read text content from an element.",
-        "document": "Read the direct text content of an element (excludes nested child text). Waits for the selector to appear before reading."
-      },
-      "getAttributeValue": {
-        "label": "Get Attribute",
-        "description": "Read an HTML attribute from an element.",
-        "document": "Read an attribute value (e.g. href, src, data-id) from an element. Throws if the attribute does not exist."
-      },
-      "getValue": {
-        "label": "Get Value",
-        "description": "Read the value of a form input.",
-        "document": "Read the current value of an input, textarea, or select element."
-      },
-      "elementExists": {
-        "label": "Element Exists",
-        "description": "Check if an element exists on the page.",
-        "document": "Check whether an element exists with the desired visibility. Routes to 'true' or 'false' output handle."
-      },
-      "extractionInText": {
-        "label": "Extract from Text",
-        "description": "Extract a substring using a regular expression.",
-        "document": "Run a regular expression against text and save the full match to a variable."
-      },
-      "random": {
-        "label": "Random",
-        "description": "Generate a random value.",
-        "document": "Generate a random value of the selected type (email, fullName, password, number, etc.)."
-      },
-      "http": {
-        "label": "HTTP Request",
-        "description": "Make an HTTP request.",
-        "document": "Send an HTTP request and save the response body to a variable."
-      },
-      "setUserAgent": {
-        "label": "Set User Agent",
-        "description": "Override the browser user agent string.",
-        "document": "Set a custom user agent for all subsequent requests in this browser context."
-      },
-      "getUrl": {
-        "label": "Get URL",
-        "description": "Get the current page URL.",
-        "document": "Read the current page URL and save it to a variable."
-      },
-      "convertingJson": {
-        "label": "JSON Convert",
-        "description": "Parse or stringify JSON data.",
-        "document": "Parse a JSON string into an object or convert a value into a JSON string."
-      },
-      "imageSearch": {
-        "label": "Image Search",
-        "description": "Find an image on the page using template matching.",
-        "document": "Search the current page screenshot for a reference image. Saves match coordinates to a variable."
-      },
-      "while": {
-        "label": "While Loop",
-        "description": "Loop while a condition is true.",
-        "document": "Evaluate a condition each iteration. Routes to 'loop' while true, 'done' when false."
-      },
-      "stopLoop": {
-        "label": "Stop Loop",
-        "description": "Break out of the current loop.",
-        "document": "Immediately exit the enclosing loop."
-      },
-      "runOtherScript": {
-        "label": "Run Script",
-        "description": "Execute another .donutflow script.",
-        "document": "Load and run another script from the same flows directory."
-      },
-      "addLog": {
-        "label": "Add Log",
-        "description": "Write a message to the run log.",
-        "document": "Write a custom message to the automation log. Supports {{VAR}} interpolation."
-      },
-      "addComment": {
-        "label": "Comment",
-        "description": "Add a visual comment annotation.",
-        "document": "A no-op annotation node that adds a visible comment to the flow canvas."
-      }
-    },
-    "review": {
-      "title": "Review flow: {{name}}",
-      "description": "This flow has not been reviewed for its current contents. Check destinations and selectors before running it on logged-in profiles.",
-      "urls": "URLs opened by this flow",
-      "noUrls": "No openUrl nodes found.",
-      "selectors": "Selectors used by this flow",
-      "noSelectors": "No selectors found.",
-      "templatedOrInvalidHost": "Templated or invalid host",
-      "confirm": "I reviewed this flow, run it"
-    },
-    "script": {
-      "add": "添加脚本",
-      "import": "导入脚本",
-      "edit": "编辑",
-      "duplicate": "复制",
-      "export": "导出",
-      "delete": "删除",
-      "searchPlaceholder": "按名称搜索脚本…",
-      "loading": "正在加载脚本…",
-      "empty": "还没有脚本。添加一个开始吧。",
-      "noMatches": "没有与搜索匹配的脚本。",
-      "modifiedAt": "修改于 {{date}}",
-      "toast": {
-        "duplicated": "已复制为“{{name}}”。",
-        "exported": "已导出“{{name}}”。",
-        "imported": "已导入“{{name}}”。",
-        "deleted": "已删除“{{name}}”。"
-      },
-      "errors": {
-        "deleteFailed": "删除脚本失败：{{error}}",
-        "duplicateFailed": "复制脚本失败：{{error}}",
-        "exportFailed": "导出脚本失败：{{error}}",
-        "importFailed": "导入脚本失败：{{error}}"
-      },
-      "confirm": {
-        "deleteTitle": "删除脚本？",
-        "deleteDescription": "“{{name}}”将被永久删除。此操作无法撤销。",
-        "exportVariables": "This flow contains variables. Exporting writes their values into the .donutflow file. Continue?",
-        "overwriteImport": "已存在名为“{{name}}”的脚本。要覆盖它吗？"
-      }
-    }
-  },
   "encryption": {
     "required": {
       "title": "同步已暂停 — 需要密码",
@@ -2455,5 +2178,67 @@
     "deleteConfirmDesc": "您确定要删除标签“{{tag}}”吗？这将从所有配置和全局系统中将其删除。",
     "deleteSuccess": "标签“{{tag}}”已成功删除",
     "deleteFailed": "删除标签失败: {{error}}"
+  },
+  "automation": {
+    "cleanupMode": {
+      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
+      "fullDesc": "Delete the entire profile directory",
+      "cookiesAndCache": "Cookies & Cache Only",
+      "full": "Full Profile Deletion"
+    },
+    "title": "Automation",
+    "addNode": "Add Task",
+    "securityWarning": {
+      "title": "Security Warning",
+      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    },
+    "afterClose": {
+      "description": "Tasks to execute after the browser closes",
+      "title": "After Closing Profile"
+    },
+    "masterSwitch": "Enable Automation",
+    "fields": {
+      "allowedCountries": "Allowed Countries",
+      "protocol": "Protocol",
+      "requestBody": "Request Body",
+      "message": "Message",
+      "timeoutSeconds": "Timeout (seconds)",
+      "label": "Label",
+      "jsonPathPort": "JSON Path for Port",
+      "apiUrl": "API URL",
+      "maxFraudScore": "Max Fraud Score",
+      "cleanupMode": "Cleanup Mode",
+      "jsonPathIp": "JSON Path for IP",
+      "chatId": "Chat ID",
+      "timeout": "Timeout (seconds)",
+      "botToken": "Bot Token",
+      "variablesAvailable": "Available variables",
+      "webhookUrl": "Webhook URL",
+      "method": "HTTP Method",
+      "labelPlaceholder": "My Task",
+      "responseFormat": "Response Format",
+      "maxAttempts": "Max Retry Attempts",
+      "command": "Command"
+    },
+    "noNodes": "No automation tasks configured yet",
+    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
+    "warnings": {
+      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
+      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    },
+    "beforeOpen": {
+      "description": "Tasks to execute before the browser launches",
+      "title": "Before Opening Profile"
+    },
+    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
+    "nodeTypes": {
+      "ipCheck": "IP Check",
+      "webhook": "Webhook",
+      "localCommand": "Local Command",
+      "cleanup": "Cleanup",
+      "dynamicProxy": "Dynamic Proxy",
+      "telegramAlert": "Telegram Alert"
+    },
+    "dependencyWarning": "Dependency issue"
   }
 }

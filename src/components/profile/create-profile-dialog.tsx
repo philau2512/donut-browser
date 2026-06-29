@@ -37,6 +37,7 @@ import type {
   WayfernConfig,
   WayfernOS,
 } from "@/types";
+import { AutomationTab } from "./sub-components/automation-tab";
 import { BaseInfoTab } from "./sub-components/base-info-tab";
 import { BookmarkTab } from "./sub-components/bookmark-tab";
 import { CommandTab } from "./sub-components/command-tab";
@@ -617,6 +618,15 @@ export function CreateProfileDialog({
                     setPasswordConfirm={setPasswordConfirm}
                     passwordError={passwordError}
                     setPasswordError={setPasswordError}
+                  />
+                </TabsContent>
+
+                <TabsContent value="automation" className="m-0 space-y-4">
+                  <AutomationTab
+                    automation={profileData.automation}
+                    onChange={(automation) =>
+                      setProfileData({ ...profileData, automation })
+                    }
                   />
                 </TabsContent>
               </div>

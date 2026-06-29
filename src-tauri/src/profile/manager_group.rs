@@ -403,6 +403,7 @@ impl ProfileManager {
       proxy_id: source.proxy_id,
       vpn_id: source.vpn_id,
       launch_hook: source.launch_hook,
+      automation: source.automation,
       process_id: None,
       last_launch: None,
       release_type: source.release_type,

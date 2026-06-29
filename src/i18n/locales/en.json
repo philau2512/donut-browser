@@ -1981,506 +1981,6 @@
     "shortcuts": "Keyboard shortcuts",
     "automation": "Automation"
   },
-  "automation": {
-    "flow": {
-      "label": "Flow",
-      "placeholder": "Select a flow",
-      "refresh": "Refresh flows",
-      "empty": "No .donutflow files found in the flows directory."
-    },
-    "profiles": {
-      "label": "Profiles ({{count}})",
-      "selectAll": "Select all",
-      "deselectAll": "Deselect all",
-      "empty": "No profiles available."
-    },
-    "settings": {
-      "title": "Run settings",
-      "concurrency": "Concurrency",
-      "concurrencyHint": "Max profiles running in parallel.",
-      "delayOpen": "Delay open (s)",
-      "delayOpenHint": "Seconds to stagger between launches.",
-      "headless": "Headless",
-      "headlessHint": "Run without a visible browser window.",
-      "noOverlapping": "No overlapping profiles",
-      "noOverlappingHint": "Skip a profile that is already running.",
-      "closeOnComplete": "Close on complete",
-      "closeOnCompleteHint": "Close the browser after the flow finishes.",
-      "writeLogs": "Write logs",
-      "writeLogsHint": "Save per-profile log files to disk."
-    },
-    "actions": {
-      "run": "Run",
-      "starting": "Starting…",
-      "stopAll": "Stop all"
-    },
-    "grid": {
-      "empty": "Select a flow and profiles, then run.",
-      "stopProfile": "Stop {{name}}"
-    },
-    "status": {
-      "idle": "Idle",
-      "launching": "Launching",
-      "running": "Running",
-      "done": "Done",
-      "doneWithErrors": "Done with errors",
-      "error": "Error",
-      "skipped": "Skipped",
-      "stopped": "Stopped"
-    },
-    "log": {
-      "title": "Logs",
-      "allProfiles": "All profiles",
-      "scrollLock": "Lock scroll to newest",
-      "scrollUnlock": "Unlock scroll",
-      "openFile": "Open log file",
-      "empty": "No log output yet."
-    },
-    "runInfo": "Running flow: {{name}}",
-    "errors": {
-      "readFlowFailed": "Failed to read flow: {{error}}",
-      "startFailed": "Failed to start run: {{error}}",
-      "stopFailed": "Failed to stop run: {{error}}"
-    },
-    "editor": {
-      "comingSoon": "The visual editor is coming soon.",
-      "start": "Start",
-      "palette": "Node palette",
-      "paletteHint": "Drag nodes onto the canvas, then connect them in a line.",
-      "searchNodes": "Search nodes…",
-      "linearHint": "Linear mode: each node can have one outgoing edge.",
-      "name": "Flow name",
-      "namePlaceholder": "Flow name",
-      "saving": "Saving…",
-      "selectNode": "Select a node to edit its properties.",
-      "booleanEnabled": "Enabled",
-      "properties": {
-        "options": "Options",
-        "setting": "Setting",
-        "document": "Document",
-        "continueOnError": "Continue on error",
-        "continueOnErrorHint": "If this node fails, continue with the next node in the line."
-      },
-      "variables": {
-        "title": "Variables",
-        "description": "Use variables in string fields with {{VAR}} syntax.",
-        "add": "Add variable",
-        "autoInjected": "Auto",
-        "reserved": "PROFILE_ID and PROFILE_NAME are injected at run time."
-      },
-      "groups": {
-        "navigator": "Navigator",
-        "interaction": "Interaction",
-        "utility": "Utility"
-      },
-      "toast": {
-        "saved": "Saved \"{{name}}\"."
-      },
-      "errors": {
-        "loadFailed": "Failed to load flow: {{error}}",
-        "saveFailed": "Failed to save flow: {{error}}"
-      },
-      "toolbar": {
-        "edit": "Edit parameters",
-        "startFromHere": "Start from here",
-        "delete": "Delete node"
-      },
-      "comment": {
-        "title": "Add comment",
-        "placeholder": "Type a comment...",
-        "characters": "characters"
-      }
-    },
-    "nodes": {
-      "openUrl": {
-        "label": "Open URL",
-        "description": "Navigate the browser to a URL.",
-        "document": "Navigate the browser to a URL. Literal URLs are checked by the engine validator; templated URLs are checked again at run time after variables are interpolated."
-      },
-      "click": {
-        "label": "Click",
-        "description": "Click an element by selector.",
-        "document": "Click an element matched by a Playwright selector. Keep selectors stable and specific so the click lands on the intended element."
-      },
-      "type": {
-        "label": "Type",
-        "description": "Type text into an input or editable element.",
-        "document": "Type text into an input or editable element. Text fields can include variables like {{EMAIL}}."
-      },
-      "wait": {
-        "label": "Wait",
-        "description": "Wait for a selector or fixed timeout.",
-        "document": "Wait for a selector state or a fixed timeout. Use this before interactions that depend on slow page rendering."
-      },
-      "scroll": {
-        "label": "Scroll",
-        "description": "Scroll the page or an element.",
-        "document": "Scroll the page or a selected element by x/y pixels."
-      },
-      "screenshot": {
-        "label": "Screenshot",
-        "description": "Capture a screenshot during the run.",
-        "document": "Capture a screenshot during the run. Paths can include variables to separate output per profile."
-      },
-      "log": {
-        "label": "Log",
-        "description": "Write a message to the run log.",
-        "document": "Write a message to the automation log. Useful for debugging and milestone markers.",
-        "params": {
-          "color": "Text Color"
-        }
-      },
-      "delay": {
-        "label": "Delay",
-        "description": "Pause for a fixed number of milliseconds.",
-        "document": "Pause for a fixed number of milliseconds before continuing to the next node."
-      },
-      "newTab": {
-        "label": "New Tab",
-        "description": "Open a new browser tab.",
-        "document": "Open a new tab in the browser context. Optionally navigate to a URL. The automation will switch to the new tab automatically."
-      },
-      "switchTab": {
-        "label": "Active tab",
-        "description": "Switch tab by number (1-based), URL, or title — Hidemium Active tab.",
-        "document": "Hidemium Active tab: tabIndex is 1-based (first tab = 1). Filter by urlFilter/urlMode (equal or contain) and titleFilter/titleMode. Legacy index (0-based) and urlPattern still work.",
-        "tabIndexHelp": "Tab number (1 = first tab), like Hidemium"
-      },
-      "closeTab": {
-        "label": "Close Tab",
-        "description": "Close the current tab.",
-        "document": "Close the current browser tab. If other tabs remain open, the automation will switch to the first available tab."
-      },
-      "reloadPage": {
-        "label": "Reload Page",
-        "description": "Reload the current page.",
-        "document": "Reload the current page and wait for it to load completely."
-      },
-      "goBack": {
-        "label": "Go Back",
-        "description": "Navigate back in browser history.",
-        "document": "Navigate back one step in the browser's history, like clicking the back button."
-      },
-      "goForward": {
-        "label": "Go Forward",
-        "description": "Navigate forward in browser history.",
-        "document": "Navigate forward one step in the browser's history, like clicking the forward button."
-      },
-      "switchFrame": {
-        "label": "Switch Frame",
-        "description": "Switch to an iframe by selector.",
-        "document": "Switch the automation context to an iframe element. Subsequent actions will target elements inside the frame."
-      },
-      "hover": {
-        "label": "Hover",
-        "description": "Hover over an element.",
-        "document": "Move the mouse over an element without clicking. Useful for triggering hover menus or tooltips."
-      },
-      "dragAndDrop": {
-        "label": "Drag & Drop",
-        "description": "Drag an element to another location.",
-        "document": "Drag an element from a source selector to a target selector. Useful for drag-and-drop interfaces."
-      },
-      "clickDown": {
-        "label": "Click Down",
-        "description": "Press mouse button down on an element.",
-        "document": "Press and hold the mouse button on an element without releasing. Use with Click Up for custom mouse interactions."
-      },
-      "clickUp": {
-        "label": "Click Up",
-        "description": "Release mouse button on an element.",
-        "document": "Release the mouse button on an element. Typically used after Click Down for custom mouse interactions."
-      },
-      "pressKey": {
-        "label": "Press Key",
-        "description": "Press a keyboard key.",
-        "document": "Press a keyboard key like Enter, Tab, Escape, etc. Optionally target a specific element first."
-      },
-      "clearInput": {
-        "label": "Clear Input",
-        "description": "Clear an input field.",
-        "document": "Clear the contents of an input or textarea field. More reliable than selecting all and deleting."
-      },
-      "getCookies": {
-        "label": "Get Cookies",
-        "description": "Read cookies from the browser.",
-        "document": "Read cookies from the browser context and save them as JSON to a variable. Optionally filter by domain."
-      },
-      "setCookies": {
-        "label": "Set Cookies",
-        "description": "Set cookies in the browser.",
-        "document": "Set cookies in the browser context from a JSON array. Use this to restore saved cookies or inject authentication."
-      },
-      "clearCookies": {
-        "label": "Clear Cookies",
-        "description": "Clear all cookies.",
-        "document": "Clear all cookies from the browser context. Useful for testing logout flows or resetting state."
-      },
-      "ifCondition": {
-        "label": "If Condition",
-        "description": "Branch based on a condition.",
-        "document": "Compare two values and branch to 'true' or 'false' paths. Supports ===, !==, contains, >, < operators."
-      },
-      "loopFor": {
-        "label": "Loop For",
-        "description": "Loop a fixed number of times.",
-        "document": "Loop a fixed number of times. The current iteration index is stored in a variable (default: 'index'). Connect the 'loop' handle back to repeat, and 'done' handle to continue after the loop."
-      },
-      "loopElements": {
-        "label": "Loop Elements",
-        "description": "Loop through elements matched by a selector.",
-        "document": "Loop through all elements matching a selector. The current element index is stored in a variable. Connect the 'loop' handle back to repeat for each element."
-      },
-      "evalJs": {
-        "label": "Eval JS",
-        "description": "Execute JavaScript in the page context.",
-        "document": "Execute custom JavaScript code in the page context. The return value can be saved to a variable for use in later nodes."
-      },
-      "setVariable": {
-        "label": "Set Variable",
-        "description": "Store a value in a variable.",
-        "document": "Store a value in a variable for use in later nodes. Use {{VAR_NAME}} syntax to reference variables in other node parameters."
-      },
-      "readCsv": {
-        "label": "Read CSV",
-        "description": "Read data from a CSV file.",
-        "document": "Read a CSV file and parse it as a JSON array. Each row becomes an object with column names as keys. Saved to a variable as JSON."
-      },
-      "writeCsv": {
-        "label": "Write CSV",
-        "description": "Write data to a CSV file.",
-        "document": "Write a JSON array to a CSV file. Each object in the array becomes a row, with object keys as column names."
-      },
-      "downloadFile": {
-        "label": "Download File",
-        "description": "Download a file from a URL.",
-        "document": "Download a file from a URL and save it to disk. The file is saved in the artifacts directory for the current run."
-      },
-      "getText": {
-        "label": "Get Text",
-        "description": "Read text content from an element.",
-        "document": "Read the direct text content of an element (excludes nested child text). Waits for the selector to appear before reading.",
-        "params": {
-          "selector": "Selector",
-          "saveToVar": "Save to variable",
-          "timeout": "Timeout (ms)"
-        },
-        "help": {
-          "selector": "CSS or XPath selector for the target element.",
-          "saveToVar": "Variable name to store the extracted text."
-        }
-      },
-      "getAttributeValue": {
-        "label": "Get Attribute",
-        "description": "Read an HTML attribute from an element.",
-        "document": "Read an attribute value (e.g. href, src, data-id) from an element. Throws if the attribute does not exist on the element.",
-        "params": {
-          "selector": "Selector",
-          "attribute": "Attribute name",
-          "saveToVar": "Save to variable",
-          "timeout": "Timeout (ms)"
-        }
-      },
-      "getValue": {
-        "label": "Get Value",
-        "description": "Read the value of a form input.",
-        "document": "Read the current value of an input, textarea, or select element. Throws if the element is not a form input.",
-        "params": {
-          "selector": "Selector",
-          "saveToVar": "Save to variable",
-          "timeout": "Timeout (ms)"
-        }
-      },
-      "elementExists": {
-        "label": "Element Exists",
-        "description": "Check if an element exists on the page.",
-        "document": "Check whether an element matching the selector exists with the desired visibility. Routes to 'true' or 'false' output handle.",
-        "params": {
-          "selector": "Selector",
-          "visibility": "Visibility",
-          "timeout": "Timeout (ms)"
-        },
-        "options": {
-          "visible": "Visible",
-          "hidden": "Hidden",
-          "any": "Any (exists in DOM)"
-        }
-      },
-      "extractionInText": {
-        "label": "Extract from Text",
-        "description": "Extract a substring from text using a regular expression.",
-        "document": "Run a regular expression against a text value and save the full match to a variable. If no match, saves an empty string.",
-        "params": {
-          "text": "Input text",
-          "regex": "Regular expression",
-          "saveToVar": "Save to variable",
-          "flags": "Flags (e.g. i, g)"
-        }
-      },
-      "random": {
-        "label": "Random",
-        "description": "Generate a random value.",
-        "document": "Generate a random value of the selected type and save it to a variable. Type determines which extra params are required.",
-        "params": {
-          "type": "Type",
-          "saveToVar": "Save to variable",
-          "domain": "Email domain",
-          "quantity": "Letter count",
-          "length": "Password length",
-          "min": "Min (number)",
-          "max": "Max (number)"
-        },
-        "options": {
-          "email": "Email",
-          "fullName": "Full Name",
-          "randomLetters": "Random Letters",
-          "password": "Password",
-          "firstName": "First Name",
-          "lastName": "Last Name",
-          "number": "Number"
-        },
-        "help": {
-          "domain": "Required for email type (e.g. example.com)"
-        }
-      },
-      "http": {
-        "label": "HTTP Request",
-        "description": "Make an HTTP request.",
-        "document": "Send an HTTP request and save the response body to a variable. Supports GET, POST, PUT, PATCH, DELETE. Headers and body support {{VAR}} interpolation.",
-        "params": {
-          "url": "URL",
-          "method": "Method",
-          "headers": "Headers (JSON)",
-          "body": "Body",
-          "saveToVar": "Save response to variable",
-          "timeout": "Timeout (ms)"
-        }
-      },
-      "setUserAgent": {
-        "label": "Set User Agent",
-        "description": "Override the browser user agent string.",
-        "document": "Set a custom user agent for all subsequent requests in this browser context. Useful for testing or spoofing browser identity.",
-        "params": {
-          "userAgent": "User agent string"
-        }
-      },
-      "getUrl": {
-        "label": "Get URL",
-        "description": "Get the current page URL.",
-        "document": "Read the current page URL and save it to a variable.",
-        "params": {
-          "saveToVar": "Save to variable"
-        }
-      },
-      "convertingJson": {
-        "label": "JSON Convert",
-        "description": "Parse or stringify JSON data.",
-        "document": "Parse a JSON string into an object (parse) or convert a value into a JSON string (stringify). Saves the result to a variable.",
-        "params": {
-          "input": "Input value",
-          "operation": "Operation",
-          "saveToVar": "Save to variable"
-        },
-        "options": {
-          "parse": "Parse (string → object)",
-          "stringify": "Stringify (object → string)"
-        }
-      },
-      "imageSearch": {
-        "label": "Image Search",
-        "description": "Find an image on the page using template matching.",
-        "document": "Search the current page screenshot for a reference image using pixel template matching. Saves the match coordinates {x, y, found} to a variable.",
-        "params": {
-          "imagePath": "Reference image path",
-          "saveToVar": "Save result to variable",
-          "threshold": "Match threshold (0–1)"
-        }
-      },
-      "while": {
-        "label": "While Loop",
-        "description": "Loop while a condition is true.",
-        "document": "Evaluate a condition each iteration. Routes to 'loop' while the condition holds, and 'done' when it becomes false. Use Stop Loop inside to break early.",
-        "params": {
-          "leftValue": "Left value",
-          "operator": "Operator",
-          "rightValue": "Right value"
-        }
-      },
-      "stopLoop": {
-        "label": "Stop Loop",
-        "description": "Break out of the current loop.",
-        "document": "Immediately exit the enclosing loop. Connect the 'done' output to the node that should run after the loop.",
-        "params": {}
-      },
-      "runOtherScript": {
-        "label": "Run Script",
-        "description": "Execute another .donutflow script.",
-        "document": "Load and run another script from the same flows directory. The sub-script shares the current variable scope. Execution continues in the current script when the sub-script completes.",
-        "params": {
-          "scriptName": "Script name (without .donutflow)",
-          "vars": "Extra variables (JSON)"
-        }
-      },
-      "addLog": {
-        "label": "Add Log",
-        "description": "Write a message to the run log.",
-        "document": "Write a custom message to the automation log. Supports {{VAR}} interpolation. Useful for progress markers and debugging.",
-        "params": {
-          "message": "Message",
-          "level": "Log level"
-        }
-      },
-      "addComment": {
-        "label": "Comment",
-        "description": "Add a visual comment annotation.",
-        "document": "A no-op annotation node. Adds a visible comment to the flow canvas without affecting execution.",
-        "params": {
-          "comment": "Comment text"
-        }
-      }
-    },
-    "review": {
-      "title": "Review flow: {{name}}",
-      "description": "This flow has not been reviewed for its current contents. Check destinations and selectors before running it on logged-in profiles.",
-      "urls": "URLs opened by this flow",
-      "noUrls": "No openUrl nodes found.",
-      "selectors": "Selectors used by this flow",
-      "noSelectors": "No selectors found.",
-      "templatedOrInvalidHost": "Templated or invalid host",
-      "confirm": "I reviewed this flow, run it"
-    },
-    "script": {
-      "add": "Add Script",
-      "import": "Import script",
-      "edit": "Edit",
-      "duplicate": "Duplicate",
-      "export": "Export",
-      "delete": "Delete",
-      "searchPlaceholder": "Search scripts by name…",
-      "loading": "Loading scripts…",
-      "empty": "No scripts yet. Add one to get started.",
-      "noMatches": "No scripts match your search.",
-      "modifiedAt": "Modified {{date}}",
-      "toast": {
-        "duplicated": "Duplicated as \"{{name}}\".",
-        "exported": "Exported \"{{name}}\".",
-        "imported": "Imported \"{{name}}\".",
-        "deleted": "Deleted \"{{name}}\"."
-      },
-      "errors": {
-        "deleteFailed": "Failed to delete script: {{error}}",
-        "duplicateFailed": "Failed to duplicate script: {{error}}",
-        "exportFailed": "Failed to export script: {{error}}",
-        "importFailed": "Failed to import script: {{error}}"
-      },
-      "confirm": {
-        "deleteTitle": "Delete script?",
-        "deleteDescription": "\"{{name}}\" will be permanently deleted. This cannot be undone.",
-        "exportVariables": "This flow contains variables. Exporting writes their values into the .donutflow file. Continue?",
-        "overwriteImport": "A script named \"{{name}}\" already exists. Overwrite it?"
-      }
-    }
-  },
   "encryption": {
     "required": {
       "title": "Sync paused — password required",
@@ -2682,5 +2182,67 @@
     "deleteConfirmDesc": "Are you sure you want to delete the tag \"{{tag}}\"? This will remove it from all profiles and the system globally.",
     "deleteSuccess": "Tag \"{{tag}}\" deleted successfully",
     "deleteFailed": "Failed to delete tag: {{error}}"
+  },
+  "automation": {
+    "cleanupMode": {
+      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
+      "fullDesc": "Delete the entire profile directory",
+      "cookiesAndCache": "Cookies & Cache Only",
+      "full": "Full Profile Deletion"
+    },
+    "title": "Automation",
+    "addNode": "Add Task",
+    "securityWarning": {
+      "title": "Security Warning",
+      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    },
+    "afterClose": {
+      "description": "Tasks to execute after the browser closes",
+      "title": "After Closing Profile"
+    },
+    "masterSwitch": "Enable Automation",
+    "fields": {
+      "allowedCountries": "Allowed Countries",
+      "protocol": "Protocol",
+      "requestBody": "Request Body",
+      "message": "Message",
+      "timeoutSeconds": "Timeout (seconds)",
+      "label": "Label",
+      "jsonPathPort": "JSON Path for Port",
+      "apiUrl": "API URL",
+      "maxFraudScore": "Max Fraud Score",
+      "cleanupMode": "Cleanup Mode",
+      "jsonPathIp": "JSON Path for IP",
+      "chatId": "Chat ID",
+      "timeout": "Timeout (seconds)",
+      "botToken": "Bot Token",
+      "variablesAvailable": "Available variables",
+      "webhookUrl": "Webhook URL",
+      "method": "HTTP Method",
+      "labelPlaceholder": "My Task",
+      "responseFormat": "Response Format",
+      "maxAttempts": "Max Retry Attempts",
+      "command": "Command"
+    },
+    "noNodes": "No automation tasks configured yet",
+    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
+    "warnings": {
+      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
+      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    },
+    "beforeOpen": {
+      "description": "Tasks to execute before the browser launches",
+      "title": "Before Opening Profile"
+    },
+    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
+    "nodeTypes": {
+      "ipCheck": "IP Check",
+      "webhook": "Webhook",
+      "localCommand": "Local Command",
+      "cleanup": "Cleanup",
+      "dynamicProxy": "Dynamic Proxy",
+      "telegramAlert": "Telegram Alert"
+    },
+    "dependencyWarning": "Dependency issue"
   }
 }

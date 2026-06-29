@@ -1,3 +1,4 @@
+use crate::automation::pipeline::types::ProfileAutomation;
 use crate::browser::camoufox_manager::CamoufoxConfig;
 use crate::browser::wayfern_manager::WayfernConfig;
 use serde::{Deserialize, Serialize};
@@ -33,6 +34,8 @@ pub struct BrowserProfile {
   pub vpn_id: Option<String>, // Reference to stored VPN config
   #[serde(default)]
   pub launch_hook: Option<String>,
+  #[serde(default)]
+  pub automation: Option<ProfileAutomation>, // Automation pipeline config (before_open/after_close)
   #[serde(default)]
   pub process_id: Option<u32>,
   #[serde(default)]
