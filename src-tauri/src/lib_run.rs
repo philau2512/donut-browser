@@ -290,6 +290,8 @@ pub fn run() {
       crate::automation::commands::delete_automation_flow,
       crate::automation::commands::mark_automation_flow_reviewed,
       crate::automation::commands::validate_automation_flow,
+      crate::commands::automation_profile::open_profile_with_automation,
+      crate::commands::automation_profile::close_profile_with_cleanup,
     ])
     .build(tauri::generate_context!())
     .expect("error while building tauri application")

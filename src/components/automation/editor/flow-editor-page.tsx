@@ -340,6 +340,8 @@ export function FlowEditorPage({
 
       <NodePropertiesDialog
         node={editingNode}
+        nodes={nodes}
+        edges={edges}
         variables={variables}
         onOpenChange={(open) => {
           if (!open) setEditingNodeId(null);

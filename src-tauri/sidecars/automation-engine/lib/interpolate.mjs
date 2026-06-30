@@ -22,11 +22,28 @@ const PLACEHOLDER_RE = /\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g;
  * @param {{ strict?: boolean }} [opts]
  * @returns {string}
  */
+function lookupVar(vars, key) {
+  if (!vars || typeof vars !== "object") return undefined;
+  if (Object.prototype.hasOwnProperty.call(vars, key)) {
+    return vars[key];
+  }
+  const upper = key.toUpperCase();
+  if (Object.prototype.hasOwnProperty.call(vars, upper)) {
+    return vars[upper];
+  }
+  const lower = key.toLowerCase();
+  if (Object.prototype.hasOwnProperty.call(vars, lower)) {
+    return vars[lower];
+  }
+  return undefined;
+}
+
 export function interpolateString(str, vars, opts = {}) {
   if (typeof str !== "string") return str;
   return str.replace(PLACEHOLDER_RE, (match, key) => {
-    if (Object.prototype.hasOwnProperty.call(vars ?? {}, key)) {
-      return String(vars[key] ?? "");
+    const value = lookupVar(vars, key);
+    if (value !== undefined) {
+      return String(value ?? "");
     }
     if (opts.strict) {
       throw new Error(`Unknown variable in template: ${key}`);

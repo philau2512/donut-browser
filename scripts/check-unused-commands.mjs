@@ -21,6 +21,8 @@ const mcpOnlyCommands = [
   // Server-side only: called inside write_automation_flow as the validation
   // gate, never invoked directly from the frontend.
   "validate_automation_flow",
+  "open_profile_with_automation",
+  "close_profile_with_cleanup",
 ];
 
 const verbose = process.argv.includes('--verbose') || process.argv.includes('-v');

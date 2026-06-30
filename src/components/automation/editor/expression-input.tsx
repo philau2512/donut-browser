@@ -19,7 +19,7 @@ interface ExpressionInputProps {
   variables: Record<string, string>;
 }
 
-const RESERVED_VARIABLES = ["PROFILE_ID", "PROFILE_NAME"];
+import { RESERVED_FLOW_VARIABLES } from "@/lib/automation/flow-variables";
 
 export function ExpressionInput({
   value,
@@ -32,7 +32,7 @@ export function ExpressionInput({
   const [search, setSearch] = useState("");
 
   const names = useMemo(() => {
-    return [...RESERVED_VARIABLES, ...Object.keys(variables).sort()];
+    return [...RESERVED_FLOW_VARIABLES, ...Object.keys(variables).sort()];
   }, [variables]);
 
   const filteredNames = useMemo(() => {

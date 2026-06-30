@@ -13,12 +13,17 @@ import {
 } from "@/components/ui/select";
 import type { AutomationNodeCatalogItem } from "@/lib/automation/node-catalog";
 import { ExpressionInput } from "./expression-input";
+import {
+  ValidationBadge,
+  type ValidationWarning,
+} from "./nodes/forms/validation-badge";
 import type { AutomationCanvasNode } from "./serialize";
 
 interface PropertyFormProps {
   catalog: AutomationNodeCatalogItem;
   node: AutomationCanvasNode;
   variables: Record<string, string>;
+  variableWarnings?: ValidationWarning[];
   onParamChange: (key: string, value: string | number | boolean) => void;
 }
 
@@ -26,12 +31,14 @@ export function PropertyForm({
   catalog,
   node,
   variables,
+  variableWarnings = [],
   onParamChange,
 }: PropertyFormProps) {
   const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
+      <ValidationBadge warnings={variableWarnings} />
       {catalog.params.map((param) => {
         const value = node.data.params[param.key];
         const label = param.labelKey ? t(param.labelKey) : param.key;

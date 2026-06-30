@@ -14,7 +14,16 @@ describe("ExpressionInput", () => {
 
     expect(
       screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["PROFILE_ID", "PROFILE_NAME", "EMAIL", "ZED"]);
+    ).toEqual([
+      "PROFILE_ID",
+      "PROFILE_NAME",
+      "CDP_PORT",
+      "PROXY_IP",
+      "IP_COUNTRY",
+      "BROWSER_PID",
+      "EMAIL",
+      "ZED",
+    ]);
   });
 
   it("inserts variable expressions with safe spacing", () => {

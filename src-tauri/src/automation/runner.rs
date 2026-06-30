@@ -228,11 +228,38 @@ async fn run_one_profile(
   });
 
   // 2. Spawn the sidecar engine.
-  let vars = serde_json::json!({
-    "PROFILE_ID": profile_id,
-    "PROFILE_NAME": profile.name,
-  })
-  .to_string();
+  let mut vars_map = serde_json::Map::new();
+  vars_map.insert(
+    "PROFILE_ID".into(),
+    serde_json::Value::String(profile_id.clone()),
+  );
+  vars_map.insert(
+    "PROFILE_NAME".into(),
+    serde_json::Value::String(profile.name.clone()),
+  );
+  vars_map.insert(
+    "CDP_PORT".into(),
+    serde_json::Value::String(port.to_string()),
+  );
+  if let Ok(raw) = std::fs::read_to_string(&flow_path) {
+    if let Ok(flow_val) = serde_json::from_str::<serde_json::Value>(&raw) {
+      if let Some(custom) = flow_val.get("variables").and_then(|v| v.as_object()) {
+        for (k, v) in custom {
+          if k.eq_ignore_ascii_case("PROFILE_ID") || k.eq_ignore_ascii_case("PROFILE_NAME") {
+            continue;
+          }
+          let val = match v {
+            serde_json::Value::String(s) => serde_json::Value::String(s.clone()),
+            serde_json::Value::Number(n) => serde_json::Value::String(n.to_string()),
+            serde_json::Value::Bool(b) => serde_json::Value::String(b.to_string()),
+            other => serde_json::Value::String(other.to_string()),
+          };
+          vars_map.insert(k.clone(), val);
+        }
+      }
+    }
+  }
+  let vars = serde_json::Value::Object(vars_map).to_string();
 
   let args = SidecarArgs {
     flow_path: flow_path.clone(),

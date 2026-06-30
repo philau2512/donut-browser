@@ -30,6 +30,7 @@ pub use mcp::{mcp_integrations, mcp_server};
 pub mod vpn;
 
 pub mod automation;
+pub mod commands;
 
 // Background task modules (extracted from lib_setup.rs for domain separation)
 pub mod lib_setup_background_cleanup;

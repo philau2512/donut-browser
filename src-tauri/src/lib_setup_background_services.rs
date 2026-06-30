@@ -11,11 +11,22 @@ use tauri::AppHandle;
 /// * `app` - The Tauri app handle for accessing app resources
 /// * `startup_url` - Optional startup URL from command line arguments
 pub fn spawn_service_tasks(app: &AppHandle, _startup_url: Option<String>) {
+  crate::automation::app_handle_store::set_automation_app_handle(app.clone());
+  spawn_automation_engine_host();
   spawn_mcp_autostart(app);
   spawn_status_broadcast(app);
   spawn_api_server_startup(app);
   spawn_sync_subscription(app);
   spawn_cloud_auth_refresh(app);
+}
+
+fn spawn_automation_engine_host() {
+  tauri::async_runtime::spawn(async move {
+    match crate::automation::engine_host::start_automation_engine_host().await {
+      Ok(url) => log::info!("Automation engine host ready at {url}"),
+      Err(e) => log::warn!("Automation engine host failed to start: {e}"),
+    }
+  });
 }
 
 // Auto-start MCP server if it was previously enabled in settings.

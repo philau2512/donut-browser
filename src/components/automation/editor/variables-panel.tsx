@@ -6,16 +6,18 @@ import { LuPlus, LuTrash2 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  isReservedFlowVariable,
+  RESERVED_FLOW_VARIABLES,
+} from "@/lib/automation/flow-variables";
 
 interface VariablesPanelProps {
   variables: Record<string, string>;
   onChange: (variables: Record<string, string>) => void;
 }
 
-const RESERVED_VARIABLES = ["PROFILE_ID", "PROFILE_NAME"];
-
 function isReservedVariable(key: string) {
-  return RESERVED_VARIABLES.includes(key.trim().toUpperCase());
+  return isReservedFlowVariable(key);
 }
 
 export function VariablesPanel({ variables, onChange }: VariablesPanelProps) {
@@ -56,7 +58,7 @@ export function VariablesPanel({ variables, onChange }: VariablesPanelProps) {
       </div>
 
       <div className="space-y-2 rounded-md border border-border p-2">
-        {RESERVED_VARIABLES.map((key) => (
+        {RESERVED_FLOW_VARIABLES.map((key) => (
           <div key={key} className="grid grid-cols-[1fr_1fr] gap-2">
             <Input value={key} readOnly className="text-xs" />
             <Input

@@ -250,6 +250,15 @@ export const NODE_SCHEMAS = {
     required: {},
     optional: { mode: "string", selector: "string", timeout: "number" },
   },
+
+  openProfile: {
+    required: { profileId: "string" },
+    optional: { automation: "string" },
+  },
+  closeProfile: {
+    required: { profileId: "string" },
+    optional: { cleanupMode: "string" },
+  },
 };
 
 export const ALLOWED_NODE_TYPES = Object.freeze(Object.keys(NODE_SCHEMAS));

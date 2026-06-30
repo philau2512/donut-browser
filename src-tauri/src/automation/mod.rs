@@ -8,11 +8,14 @@
 // launch_browser_profile_impl directly rather than the REST /run path, so it
 // bypasses can_use_browser_automation. See plan.md finding #13.
 
+pub mod app_handle_store;
 pub mod commands;
+pub mod engine_host;
 pub mod log_sink;
 pub mod pids;
 pub mod pipeline;
 pub mod process_kill;
+pub mod profile_node;
 pub mod reaper;
 pub mod run_state;
 pub mod runner;

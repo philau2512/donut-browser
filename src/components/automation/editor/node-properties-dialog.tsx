@@ -1,5 +1,7 @@
 "use client";
 
+import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -15,11 +17,21 @@ import {
   AUTOMATION_NODE_BY_TYPE,
   type AutomationNodeType,
 } from "@/lib/automation/node-catalog";
+import { validateNodeVariableRefs } from "@/lib/automation/validate-node-variables";
+import type { BrowserProfile } from "@/types";
+import { CloseProfileForm } from "./nodes/forms/close-profile-form";
+import { OpenProfileForm } from "./nodes/forms/open-profile-form";
 import { PropertyForm } from "./property-form";
-import { type AutomationCanvasNode, START_NODE_ID } from "./serialize";
+import {
+  type AutomationCanvasEdge,
+  type AutomationCanvasNode,
+  START_NODE_ID,
+} from "./serialize";
 
 interface NodePropertiesDialogProps {
   node: AutomationCanvasNode | null;
+  nodes: AutomationCanvasNode[];
+  edges: AutomationCanvasEdge[];
   variables: Record<string, string>;
   onOpenChange: (open: boolean) => void;
   onParamChange: (key: string, value: string | number | boolean) => void;
@@ -28,6 +40,8 @@ interface NodePropertiesDialogProps {
 
 export function NodePropertiesDialog({
   node,
+  nodes,
+  edges,
   variables,
   onOpenChange,
   onParamChange,
@@ -39,6 +53,18 @@ export function NodePropertiesDialog({
       ? node
       : null;
   const open = Boolean(editableNode);
+  const [profiles, setProfiles] = useState<BrowserProfile[]>([]);
+
+  // Load profiles for profile node forms
+  useEffect(() => {
+    if (!editableNode) return;
+    const nodeType = editableNode.data.nodeType;
+    if (nodeType === "openProfile" || nodeType === "closeProfile") {
+      invoke<BrowserProfile[]>("list_browser_profiles")
+        .then(setProfiles)
+        .catch(() => setProfiles([]));
+    }
+  }, [editableNode]);
 
   if (!editableNode) {
     return <Dialog open={false} onOpenChange={onOpenChange} />;
@@ -46,6 +72,71 @@ export function NodePropertiesDialog({
 
   const type = editableNode.data.nodeType as AutomationNodeType;
   const catalog = AUTOMATION_NODE_BY_TYPE[type];
+  const variableWarnings = validateNodeVariableRefs(
+    editableNode,
+    nodes,
+    edges,
+    variables,
+  );
+
+  // Special form rendering for profile nodes
+  const renderOptionsContent = () => {
+    if (type === "openProfile") {
+      return (
+        <OpenProfileForm
+          value={{
+            profileId: String(editableNode.data.params.profileId ?? ""),
+            automation: String(editableNode.data.params.automation ?? ""),
+          }}
+          onChange={(val) => {
+            if (val.profileId !== editableNode.data.params.profileId) {
+              onParamChange("profileId", val.profileId);
+            }
+            if (val.automation !== editableNode.data.params.automation) {
+              onParamChange("automation", val.automation ?? "");
+            }
+          }}
+          profiles={profiles}
+          variables={variables}
+          variableWarnings={variableWarnings}
+        />
+      );
+    }
+
+    if (type === "closeProfile") {
+      return (
+        <CloseProfileForm
+          value={{
+            profileId: String(editableNode.data.params.profileId ?? ""),
+            cleanupMode:
+              (editableNode.data.params.cleanupMode as "cookies" | "full") ??
+              "cookies",
+          }}
+          onChange={(val) => {
+            if (val.profileId !== editableNode.data.params.profileId) {
+              onParamChange("profileId", val.profileId);
+            }
+            if (val.cleanupMode !== editableNode.data.params.cleanupMode) {
+              onParamChange("cleanupMode", val.cleanupMode);
+            }
+          }}
+          profiles={profiles}
+          variableWarnings={variableWarnings}
+        />
+      );
+    }
+
+    // Default: use generic PropertyForm
+    return (
+      <PropertyForm
+        catalog={catalog}
+        node={editableNode}
+        variables={variables}
+        variableWarnings={variableWarnings}
+        onParamChange={onParamChange}
+      />
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,12 +178,7 @@ export function NodePropertiesDialog({
             value="options"
             className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0"
           >
-            <PropertyForm
-              catalog={catalog}
-              node={editableNode}
-              variables={variables}
-              onParamChange={onParamChange}
-            />
+            {renderOptionsContent()}
           </TabsContent>
           <TabsContent
             value="setting"

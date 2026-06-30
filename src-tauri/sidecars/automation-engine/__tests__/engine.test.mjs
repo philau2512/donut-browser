@@ -58,6 +58,27 @@ test("interpolateParams recurses nested objects + arrays", () => {
   assert.deepEqual(out, { url: "https://x/7", list: ["7", "static"] });
 });
 
+test("interpolate resolves snake_case keys against uppercase vars", () => {
+  assert.equal(
+    interpolateString("{{proxy_ip}}", { PROXY_IP: "9.9.9.9" }),
+    "9.9.9.9",
+  );
+});
+
+test("interpolate profile flow vars (uppercase keys)", () => {
+  const vars = {
+    PROFILE_ID: "p1",
+    CDP_PORT: "9222",
+    PROXY_IP: "1.2.3.4",
+    IP_COUNTRY: "US",
+  };
+  assert.equal(
+    interpolateString("{{PROFILE_ID}} @ {{CDP_PORT}}", vars),
+    "p1 @ 9222",
+  );
+  assert.equal(interpolateString("ip={{PROXY_IP}} cc={{IP_COUNTRY}}", vars), "ip=1.2.3.4 cc=US");
+});
+
 // ---- validate (closed schema #7b) -----------------------------------------
 
 const goodFlow = {

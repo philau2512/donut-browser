@@ -167,6 +167,7 @@ path = "tests/vpn_integration.rs"
 codegen-units = 256
 incremental = true
 opt-level = 0
+debug = 1
 # Split debuginfo on macOS for faster linking (ignored on other platforms)
 split-debuginfo = "unpacked"
 
@@ -181,6 +182,7 @@ split-debuginfo = "unpacked"
 # Optimize test builds for faster compilation
 codegen-units = 256
 incremental = true
+debug = 1
 
 [features]
 # by default Tauri runs in production mode

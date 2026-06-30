@@ -8,6 +8,7 @@ import { getText, getAttributeValue, getValue, elementExists, extractionInText, 
 import { http, setUserAgent, getUrl, convertingJson, imageSearch } from "./network.mjs";
 import { whileLoop, stopLoop, runOtherScript, addLog, addComment } from "./control-flow.mjs";
 import { switchExtensionPopup } from "./extension.mjs";
+import { openProfile, closeProfile } from "./profile-flow.mjs";
 
 export const handlers = {
   // Navigator
@@ -80,6 +81,9 @@ export const handlers = {
 
   // Extension (spike)
   switchExtensionPopup,
+
+  openProfile,
+  closeProfile,
 };
 
 export const NODE_TYPES = Object.keys(handlers);

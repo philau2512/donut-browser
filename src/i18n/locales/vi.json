@@ -2430,6 +2430,21 @@
         "document": "Đóng tab trình duyệt đang hoạt động.",
         "label": "Đóng Tab"
       },
+      "closeProfile": {
+        "description": "Đóng profile trình duyệt với tùy chọn dọn dẹp",
+        "document": "Đóng profile trình duyệt và thực hiện dọn dẹp: chế độ cookies chỉ xóa dữ liệu duyệt, chế độ full xóa toàn bộ thư mục profile.",
+        "label": "Đóng Profile",
+        "params": {
+          "profileId": "Profile",
+          "profileIdHelp": "Chọn profile trình duyệt để đóng",
+          "cleanupMode": "Chế độ dọn dẹp",
+          "cleanupModeHelp": "Cookies: chỉ xóa dữ liệu duyệt. Full: xóa toàn bộ thư mục profile"
+        },
+        "cleanupMode": {
+          "cookies": "Chỉ Cookies & Cache",
+          "full": "Toàn Bộ Thư Mục"
+        }
+      },
       "convertingJson": {
         "description": "Parse hoặc stringify JSON",
         "document": "Chuyển đổi giữa chuỗi JSON và đối tượng JavaScript.",
@@ -2602,6 +2617,17 @@
         "document": "Mở URL trong tab hiện tại hoặc tab mới.",
         "label": "Mở URL"
       },
+      "openProfile": {
+        "description": "Mở profile trình duyệt với automation (proxy, IP check, webhooks)",
+        "document": "Mở profile trình duyệt với automation tích hợp: fetch proxy động, validate IP, webhooks, và thông báo Telegram. Xuất variables cho các node downstream.",
+        "label": "Mở Profile",
+        "params": {
+          "profileId": "Profile",
+          "profileIdHelp": "Chọn profile trình duyệt để mở",
+          "automation": "Cấu hình Automation",
+          "automationHelp": "JSON cấu hình automation (proxy, IP check, webhooks, telegram)"
+        }
+      },
       "pressKey": {
         "description": "Nhấn phím",
         "document": "Mô phỏng nhấn phím hoặc tổ hợp phím.",
@@ -2732,6 +2758,11 @@
         "document": "Ghi dữ liệu ra file CSV.",
         "label": "Ghi CSV"
       }
+    },
+    "validation": {
+      "profileRequired": "Phải chọn profile",
+      "ipCheckNeedsProxy": "Kiểm tra IP yêu cầu phải cấu hình proxy động",
+      "profileNotFound": "Không tìm thấy profile: {{profileId}}"
     }
   }
 }

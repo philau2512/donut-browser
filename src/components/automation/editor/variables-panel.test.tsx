@@ -14,7 +14,7 @@ describe("VariablesPanel", () => {
     expect(screen.getByDisplayValue("PROFILE_NAME")).toBeInTheDocument();
     expect(
       screen.getAllByDisplayValue("automation.editor.variables.autoInjected"),
-    ).toHaveLength(2);
+    ).toHaveLength(6);
   });
 
   it("adds a trimmed variable and clears draft inputs", () => {
