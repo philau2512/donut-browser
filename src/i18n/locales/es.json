@@ -35,7 +35,8 @@
       "saved": "Guardado",
       "copied": "Copiado",
       "learnMore": "Más información",
-      "toggleTheme": "Cambiar tema"
+      "toggleTheme": "Cambiar tema",
+      "run": "Ejecutar"
     },
     "status": {
       "active": "Activo",
@@ -2240,6 +2241,64 @@
       "telegramAlert": "Telegram Alert",
       "openProfile": "Browser Settings"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "editor": {
+      "groups": {
+        "interaction": "Interacción",
+        "utility": "Utilidad",
+        "network": "Red"
+      },
+      "variables": {
+        "search": "Buscar variables...",
+        "system": "Variables del Sistema",
+        "user": "Variables de Usuario",
+        "empty": "No hay variables definidas"
+      },
+      "properties": {
+        "selectNodeHint": "Selecciona un nodo en el lienzo para ver sus propiedades"
+      },
+      "logs": {
+        "title": "Registro",
+        "timeline": "Línea de Tiempo de Ejecución",
+        "noSteps": "Aún no se han ejecutado pasos",
+        "variablesState": "Estado de Variables",
+        "noVariables": "Sin variables en el ámbito",
+        "console": "Salida de Consola",
+        "consoleEmpty": "Sin salida de registro"
+      },
+      "comment": {
+        "placeholder": "Ingrese su comentario..."
+      },
+      "controls": {
+        "zoomIn": "Acercar",
+        "zoomOut": "Alejar",
+        "fitView": "Ajustar Vista",
+        "lock": "Bloquear Lienzo",
+        "unlock": "Desbloquear Lienzo"
+      },
+      "tabs": {
+        "properties": "Propiedades",
+        "variables": "Variables",
+        "resources": "Recursos"
+      },
+      "actions": {
+        "run": "Ejecutar",
+        "running": "Ejecutando...",
+        "stop": "Detener"
+      },
+      "sidebar": {
+        "collapse": "Colapsar Barra Lateral",
+        "showLogs": "Mostrar Registros",
+        "hideLogs": "Ocultar Registros",
+        "settings": "Configuración"
+      },
+      "resources": {
+        "generalSettings": "Configuración General",
+        "saveLayout": "Guardar diseño al cerrar",
+        "autoAlign": "Alinear nodos automáticamente",
+        "title": "Recursos del Flujo",
+        "empty": "No hay recursos adicionales cargados en este flujo."
+      }
+    }
   }
 }

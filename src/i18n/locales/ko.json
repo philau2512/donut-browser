@@ -35,7 +35,8 @@
       "saved": "저장됨",
       "copied": "복사됨",
       "learnMore": "자세히 알아보기",
-      "toggleTheme": "테마 전환"
+      "toggleTheme": "테마 전환",
+      "run": "실행"
     },
     "status": {
       "active": "활성",
@@ -2240,6 +2241,64 @@
       "telegramAlert": "Telegram Alert",
       "openProfile": "Browser Settings"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "editor": {
+      "groups": {
+        "interaction": "상호작용",
+        "utility": "유틸리티",
+        "network": "네트워크"
+      },
+      "variables": {
+        "search": "변수 검색...",
+        "system": "시스템 변수",
+        "user": "사용자 변수",
+        "empty": "정의된 변수 없음"
+      },
+      "properties": {
+        "selectNodeHint": "속성을 보려면 캔버스에서 노드를 선택하세요"
+      },
+      "logs": {
+        "title": "로그",
+        "timeline": "실행 타임라인",
+        "noSteps": "아직 실행된 단계 없음",
+        "variablesState": "변수 상태",
+        "noVariables": "범위에 변수 없음",
+        "console": "콘솔 출력",
+        "consoleEmpty": "로그 출력 없음"
+      },
+      "comment": {
+        "placeholder": "댓글을 입력하세요..."
+      },
+      "controls": {
+        "zoomIn": "확대",
+        "zoomOut": "축소",
+        "fitView": "화면에 맞추기",
+        "lock": "캔버스 잠금",
+        "unlock": "캔버스 잠금 해제"
+      },
+      "tabs": {
+        "properties": "속성",
+        "variables": "변수",
+        "resources": "리소스"
+      },
+      "actions": {
+        "run": "실행",
+        "running": "실행 중...",
+        "stop": "중지"
+      },
+      "sidebar": {
+        "collapse": "사이드바 접기",
+        "showLogs": "로그 표시",
+        "hideLogs": "로그 숨기기",
+        "settings": "설정"
+      },
+      "resources": {
+        "generalSettings": "일반 설정",
+        "saveLayout": "닫을 때 레이아웃 저장",
+        "autoAlign": "노드 자동 정렬",
+        "title": "플로우 리소스",
+        "empty": "이 플로우에 추가 리소스가 없습니다."
+      }
+    }
   }
 }

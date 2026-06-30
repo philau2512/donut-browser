@@ -35,7 +35,8 @@
       "saved": "Сохранено",
       "copied": "Скопировано",
       "learnMore": "Подробнее",
-      "toggleTheme": "Переключить тему"
+      "toggleTheme": "Переключить тему",
+      "run": "Запустить"
     },
     "status": {
       "active": "Активен",
@@ -2240,6 +2241,64 @@
       "telegramAlert": "Telegram Alert",
       "openProfile": "Browser Settings"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "editor": {
+      "groups": {
+        "interaction": "Взаимодействие",
+        "utility": "Утилиты",
+        "network": "Сеть"
+      },
+      "variables": {
+        "search": "Поиск переменных...",
+        "system": "Системные Переменные",
+        "user": "Пользовательские Переменные",
+        "empty": "Переменные не определены"
+      },
+      "properties": {
+        "selectNodeHint": "Выберите узел на холсте для просмотра свойств"
+      },
+      "logs": {
+        "title": "Журнал",
+        "timeline": "Хронология Выполнения",
+        "noSteps": "Шаги ещё не выполнялись",
+        "variablesState": "Состояние Переменных",
+        "noVariables": "Переменные в области видимости отсутствуют",
+        "console": "Вывод Консоли",
+        "consoleEmpty": "Нет вывода журнала"
+      },
+      "comment": {
+        "placeholder": "Введите ваш комментарий..."
+      },
+      "controls": {
+        "zoomIn": "Увеличить",
+        "zoomOut": "Уменьшить",
+        "fitView": "Вписать в экран",
+        "lock": "Заблокировать Холст",
+        "unlock": "Разблокировать Холст"
+      },
+      "tabs": {
+        "properties": "Свойства",
+        "variables": "Переменные",
+        "resources": "Ресурсы"
+      },
+      "actions": {
+        "run": "Запустить",
+        "running": "Выполняется...",
+        "stop": "Остановить"
+      },
+      "sidebar": {
+        "collapse": "Свернуть боковую панель",
+        "showLogs": "Показать журналы",
+        "hideLogs": "Скрыть журналы",
+        "settings": "Настройки"
+      },
+      "resources": {
+        "generalSettings": "Общие настройки",
+        "saveLayout": "Сохранять расположение при закрытии",
+        "autoAlign": "Автоматическое выравнивание узлов",
+        "title": "Ресурсы потока",
+        "empty": "Дополнительные ресурсы в этом потоке не загружены."
+      }
+    }
   }
 }

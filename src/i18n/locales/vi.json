@@ -35,7 +35,8 @@
       "saved": "Đã lưu",
       "copied": "Đã sao chép",
       "learnMore": "Tìm hiểu thêm",
-      "toggleTheme": "Chuyển đổi giao diện"
+      "toggleTheme": "Chuyển đổi giao diện",
+      "run": "Chạy"
     },
     "status": {
       "active": "Đang hoạt động",
@@ -2283,13 +2284,17 @@
         "navigator": "Điều hướng",
         "mouse": "Chuột",
         "keyboard": "Bàn phím",
-        "data": "Dữ liệu"
+        "data": "Dữ liệu",
+        "interaction": "Tương tác",
+        "utility": "Tiện ích",
+        "network": "Mạng"
       },
       "start": "Bắt đầu",
       "booleanEnabled": "Bật",
       "comment": {
         "characters": "ký tự",
-        "title": "Chú thích"
+        "title": "Chú thích",
+        "placeholder": "Nhập nhận xét của bạn..."
       },
       "errors": {
         "loadFailed": "Tải script thất bại",
@@ -2303,7 +2308,8 @@
         "continueOnErrorHint": "Bỏ qua lỗi và tiếp tục các bước tiếp theo",
         "document": "Tài liệu",
         "options": "Tùy chọn",
-        "setting": "Cài đặt"
+        "setting": "Cài đặt",
+        "selectNodeHint": "Chọn một node trên canvas để xem thuộc tính"
       },
       "saving": "Đang lưu...",
       "toast": {
@@ -2320,7 +2326,50 @@
         "autoInjected": "Tự động inject",
         "description": "Mô tả",
         "reserved": "Biến hệ thống",
-        "title": "Biến"
+        "title": "Biến",
+        "search": "Tìm kiếm biến...",
+        "system": "Biến Hệ Thống",
+        "user": "Biến Người Dùng",
+        "empty": "Chưa có biến nào"
+      },
+      "logs": {
+        "title": "Nhật ký",
+        "timeline": "Dòng Thời Gian Thực Thi",
+        "noSteps": "Chưa có bước nào được thực thi",
+        "variablesState": "Trạng Thái Biến",
+        "noVariables": "Không có biến trong phạm vi",
+        "console": "Đầu Ra Console",
+        "consoleEmpty": "Không có đầu ra nhật ký"
+      },
+      "controls": {
+        "zoomIn": "Phóng To",
+        "zoomOut": "Thu Nhỏ",
+        "fitView": "Vừa Màn Hình",
+        "lock": "Khóa Canvas",
+        "unlock": "Mở Khóa Canvas"
+      },
+      "tabs": {
+        "properties": "Thuộc Tính",
+        "variables": "Biến",
+        "resources": "Tài Nguyên"
+      },
+      "actions": {
+        "run": "Chạy",
+        "running": "Đang chạy...",
+        "stop": "Dừng"
+      },
+      "sidebar": {
+        "collapse": "Thu gọn Sidebar",
+        "showLogs": "Hiện Nhật Ký",
+        "hideLogs": "Ẩn Nhật Ký",
+        "settings": "Cài Đặt"
+      },
+      "resources": {
+        "generalSettings": "Cài Đặt Chung",
+        "saveLayout": "Lưu bố cục khi đóng",
+        "autoAlign": "Tự động căn chỉnh node",
+        "title": "Tài Nguyên Flow",
+        "empty": "Không có tài nguyên bổ sung nào được tải trong flow này."
       }
     },
     "actions": {

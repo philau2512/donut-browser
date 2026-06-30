@@ -10,8 +10,14 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { LuSave } from "react-icons/lu";
+import { LuChevronRight, LuMenu, LuPlay, LuSave } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,9 +27,14 @@ import {
 } from "@/lib/automation/node-catalog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { FlowCanvas } from "./flow-canvas";
+import {
+  type FlowExecutionStep,
+  type FlowLogLine,
+  FlowLogPanel,
+} from "./flow-log-panel";
 import { NodeCommentDialog } from "./node-comment-dialog";
 import { NodePalette } from "./node-palette";
-import { NodePropertiesDialog } from "./node-properties-dialog";
+import { NodePropertiesPanel } from "./node-properties-panel";
 import {
   type AutomationCanvasEdge,
   type AutomationCanvasNode,
@@ -31,6 +42,7 @@ import {
   type DonutFlowV1,
   type FlowLayoutSidecarV1,
   fromDonutFlow,
+  START_NODE_ID,
   toDonutFlow,
   toLayoutSidecar,
 } from "./serialize";
@@ -54,8 +66,21 @@ export function FlowEditorPage({
   const [edges, setEdges, onEdgesChange] = useEdgesState<AutomationCanvasEdge>(
     [],
   );
+
+  // Workspace UI states
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
+  const [activeRightTab, setActiveRightTab] = useState<
+    "properties" | "variables" | "resources"
+  >("variables");
+  const [isLogPanelOpen, setIsLogPanelOpen] = useState(false);
+  const [isCanvasLocked, setIsCanvasLocked] = useState(false);
+
+  // Execution Simulation states
+  const [isFlowRunning, setIsFlowRunning] = useState(false);
+  const [logSteps, setLogSteps] = useState<FlowExecutionStep[]>([]);
+  const [flowLogs, setFlowLogs] = useState<FlowLogLine[]>([]);
+
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [commentingNodeId, setCommentingNodeId] = useState<string | null>(null);
   const [flowName, setFlowName] = useState("Untitled flow");
   const [variables, setVariables] = useState<Record<string, string>>({});
@@ -63,14 +88,9 @@ export function FlowEditorPage({
   const [isSaving, setIsSaving] = useState(false);
   const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
 
-  const _selectedNode = useMemo(
+  const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
     [nodes, selectedNodeId],
-  );
-
-  const editingNode = useMemo(
-    () => nodes.find((node) => node.id === editingNodeId) ?? null,
-    [nodes, editingNodeId],
   );
 
   const commentingNode = useMemo(
@@ -79,7 +99,9 @@ export function FlowEditorPage({
   );
 
   const handleEditNode = useCallback((nodeId: string) => {
-    setEditingNodeId(nodeId);
+    setSelectedNodeId(nodeId);
+    setActiveRightTab("properties");
+    setIsRightSidebarOpen(true);
   }, []);
 
   const handleCommentNode = useCallback((nodeId: string) => {
@@ -114,14 +136,8 @@ export function FlowEditorPage({
       if (selectedNodeId === nodeId) {
         setSelectedNodeId(null);
       }
-      if (editingNodeId === nodeId) {
-        setEditingNodeId(null);
-      }
-      if (commentingNodeId === nodeId) {
-        setCommentingNodeId(null);
-      }
     },
-    [selectedNodeId, editingNodeId, commentingNodeId, setEdges, setNodes],
+    [selectedNodeId, setEdges, setNodes],
   );
 
   const handleStartFromHere = useCallback(
@@ -223,10 +239,10 @@ export function FlowEditorPage({
     key: string,
     value: string | number | boolean,
   ) => {
-    if (!editingNode) return;
+    if (!selectedNodeId) return;
     setNodes((current) =>
       current.map((node) =>
-        node.id === editingNode.id
+        node.id === selectedNodeId
           ? {
               ...node,
               data: {
@@ -240,10 +256,10 @@ export function FlowEditorPage({
   };
 
   const updateSelectedContinueOnError = (value: boolean) => {
-    if (!editingNode) return;
+    if (!selectedNodeId) return;
     setNodes((current) =>
       current.map((node) =>
-        node.id === editingNode.id
+        node.id === selectedNodeId
           ? { ...node, data: { ...node.data, continueOnError: value } }
           : node,
       ),
@@ -296,8 +312,94 @@ export function FlowEditorPage({
     }
   };
 
+  // Run flow simulation
+  const handleRunFlow = useCallback(() => {
+    if (nodes.length === 0 || isFlowRunning) return;
+    setIsFlowRunning(true);
+    setIsLogPanelOpen(true);
+    setFlowLogs([]);
+
+    // Build steps based on nodes on canvas
+    const executionSteps: FlowExecutionStep[] = nodes.map((n) => ({
+      id: n.id,
+      label:
+        n.id === START_NODE_ID
+          ? "Start"
+          : t(
+              AUTOMATION_NODE_BY_TYPE[n.data.nodeType as AutomationNodeType]
+                ?.labelKey || "",
+            ) || n.id,
+      status: "idle",
+    }));
+    setLogSteps(executionSteps);
+
+    // Simulate step-by-step execution
+    let currentIdx = 0;
+    const runNextStep = () => {
+      if (currentIdx >= executionSteps.length) {
+        setFlowLogs((prev) => [
+          ...prev,
+          {
+            id: `log-end`,
+            type: "info",
+            message: "Script completed successfully.",
+          },
+        ]);
+        setIsFlowRunning(false);
+        return;
+      }
+
+      const step = executionSteps[currentIdx];
+      // Mark step as running
+      setLogSteps((prev) =>
+        prev.map((s, idx) =>
+          idx === currentIdx ? { ...s, status: "running" } : s,
+        ),
+      );
+      setFlowLogs((prev) => [
+        ...prev,
+        {
+          id: `log-run-${step.id}`,
+          type: "info",
+          message: `Executing action: ${step.label}`,
+        },
+      ]);
+
+      setTimeout(() => {
+        // Mark step as success
+        setLogSteps((prev) =>
+          prev.map((s, idx) =>
+            idx === currentIdx ? { ...s, status: "success" } : s,
+          ),
+        );
+        setFlowLogs((prev) => [
+          ...prev,
+          {
+            id: `log-success-${step.id}`,
+            type: "success",
+            message: `${step.label} execution succeeded`,
+            duration: Math.floor(Math.random() * 200) + 50,
+          },
+        ]);
+        currentIdx++;
+        runNextStep();
+      }, 1000);
+    };
+
+    runNextStep();
+  }, [nodes, isFlowRunning, t]);
+
+  const selectNodeAndFocus = (nodeId: string | null) => {
+    setSelectedNodeId(nodeId);
+    if (nodeId) {
+      setActiveRightTab("properties");
+      setIsRightSidebarOpen(true);
+    }
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
+      {/* Top Header Bar */}
       <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card p-3">
         <Button type="button" variant="ghost" onClick={onBack}>
           {t("common.buttons.back")}
@@ -313,42 +415,201 @@ export function FlowEditorPage({
             placeholder={t("automation.editor.namePlaceholder")}
           />
         </div>
-        <Button
-          type="button"
-          disabled={isSaving || isLoading}
-          onClick={() => void handleSave()}
-        >
-          <LuSave className="mr-2 size-4" />
-          {isSaving ? t("automation.editor.saving") : t("common.buttons.save")}
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          {/* Quick Actions */}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isFlowRunning || isLoading}
+            onClick={handleRunFlow}
+          >
+            <LuPlay className="mr-2 size-4 text-emerald-500 fill-emerald-500/20" />
+            {t("common.buttons.run") || "Run"}
+          </Button>
+          <Button
+            type="button"
+            disabled={isSaving || isLoading}
+            onClick={() => void handleSave()}
+          >
+            <LuSave className="mr-2 size-4" />
+            {isSaving
+              ? t("automation.editor.saving")
+              : t("common.buttons.save")}
+          </Button>
+
+          {/* Settings & Logs Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-9"
+              >
+                <LuMenu className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => setIsLogPanelOpen((prev) => !prev)}
+              >
+                {isLogPanelOpen
+                  ? t("automation.editor.sidebar.hideLogs")
+                  : t("automation.editor.sidebar.showLogs")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setIsRightSidebarOpen(true);
+                  setActiveRightTab("variables");
+                }}
+              >
+                {t("automation.editor.tabs.variables")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setIsRightSidebarOpen(true);
+                  setActiveRightTab("resources");
+                }}
+              >
+                {t("automation.editor.sidebar.settings")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-3">
+      {/* Main Workspace Layout */}
+      <div className="flex min-h-0 flex-1 gap-3 relative">
+        {/* Left Action Palette */}
         <NodePalette onDragStart={handleDragStart} />
-        <FlowCanvas
-          nodes={nodesWithCallbacks}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          setNodes={setNodes}
-          setEdges={setEdges}
-          onSelectNode={setSelectedNodeId}
-          draggedNodeType={draggedNodeType}
-        />
-        <VariablesPanel variables={variables} onChange={setVariables} />
-      </div>
 
-      <NodePropertiesDialog
-        node={editingNode}
-        nodes={nodes}
-        edges={edges}
-        variables={variables}
-        onOpenChange={(open) => {
-          if (!open) setEditingNodeId(null);
-        }}
-        onParamChange={updateSelectedParam}
-        onContinueOnErrorChange={updateSelectedContinueOnError}
-      />
+        {/* Center Section: Canvas & Bottom Log Panel */}
+        <div className="flex-1 flex flex-col min-h-0 gap-3">
+          <FlowCanvas
+            nodes={nodesWithCallbacks}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            setNodes={setNodes}
+            setEdges={setEdges}
+            onSelectNode={selectNodeAndFocus}
+            draggedNodeType={draggedNodeType}
+            isLocked={isCanvasLocked}
+            onToggleLock={() => setIsCanvasLocked((v) => !v)}
+          />
+
+          {isLogPanelOpen && (
+            <FlowLogPanel
+              logs={flowLogs}
+              steps={logSteps}
+              variables={variables}
+              onClose={() => setIsLogPanelOpen(false)}
+            />
+          )}
+        </div>
+
+        {/* Right Sidebar: Multi-Tab Properties & Variables */}
+        {isRightSidebarOpen && (
+          <aside className="w-80 shrink-0 border border-border bg-card rounded-lg flex flex-col overflow-hidden shadow-md">
+            {/* Sidebar Tab Header */}
+            <div className="shrink-0 flex items-center justify-between border-b border-border bg-muted/40 p-2">
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={
+                    activeRightTab === "properties" ? "secondary" : "ghost"
+                  }
+                  className="h-7 text-xs px-2.5 font-semibold"
+                  onClick={() => setActiveRightTab("properties")}
+                >
+                  {t("automation.editor.tabs.properties")}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={
+                    activeRightTab === "variables" ? "secondary" : "ghost"
+                  }
+                  className="h-7 text-xs px-2.5 font-semibold"
+                  onClick={() => setActiveRightTab("variables")}
+                >
+                  {t("automation.editor.tabs.variables")}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={
+                    activeRightTab === "resources" ? "secondary" : "ghost"
+                  }
+                  className="h-7 text-xs px-2.5 font-semibold"
+                  onClick={() => setActiveRightTab("resources")}
+                >
+                  {t("automation.editor.tabs.resources")}
+                </Button>
+              </div>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-6 text-muted-foreground hover:text-foreground"
+                onClick={() => setIsRightSidebarOpen(false)}
+                title={t("automation.editor.sidebar.collapse")}
+              >
+                <LuChevronRight className="size-4" />
+              </Button>
+            </div>
+
+            {/* Sidebar Tab Content */}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              {activeRightTab === "properties" && (
+                <NodePropertiesPanel
+                  node={selectedNode}
+                  nodes={nodes}
+                  edges={edges}
+                  variables={variables}
+                  onParamChange={updateSelectedParam}
+                  onContinueOnErrorChange={updateSelectedContinueOnError}
+                />
+              )}
+              {activeRightTab === "variables" && (
+                <VariablesPanel variables={variables} onChange={setVariables} />
+              )}
+              {activeRightTab === "resources" && (
+                <div className="p-4 space-y-4 text-xs">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {t("automation.editor.resources.generalSettings")}
+                    </Label>
+                    <div className="rounded-md border border-border p-3 space-y-3 bg-background/50">
+                      <div className="flex items-center justify-between">
+                        <span>
+                          {t("automation.editor.resources.saveLayout")}
+                        </span>
+                        <input type="checkbox" defaultChecked />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>
+                          {t("automation.editor.resources.autoAlign")}
+                        </span>
+                        <input type="checkbox" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {t("automation.editor.resources.title")}
+                    </Label>
+                    <p className="text-muted-foreground italic">
+                      {t("automation.editor.resources.empty")}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
+      </div>
 
       <NodeCommentDialog
         key={commentingNodeId || "none"}

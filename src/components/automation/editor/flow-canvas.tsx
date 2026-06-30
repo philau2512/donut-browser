@@ -4,7 +4,6 @@ import {
   addEdge,
   Background,
   type Connection,
-  Controls,
   type EdgeChange,
   type IsValidConnection,
   type NodeChange,
@@ -22,6 +21,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { isAutomationNodeType } from "@/lib/automation/node-catalog";
+import { FlowControlsOverlay } from "./flow-controls-overlay";
 import { AutomationNode } from "./nodes/automation-node";
 import {
   type AutomationCanvasEdge,
@@ -42,6 +42,8 @@ interface FlowCanvasProps {
   /** Node type being dragged from the palette — bypasses DataTransfer which
    * is blocked by WebView2 security policy on Windows. */
   draggedNodeType: string | null;
+  isLocked: boolean;
+  onToggleLock: () => void;
 }
 
 function FlowCanvasInner({
@@ -53,6 +55,8 @@ function FlowCanvasInner({
   setEdges,
   onSelectNode,
   draggedNodeType,
+  isLocked,
+  onToggleLock,
 }: FlowCanvasProps) {
   const { t } = useTranslation();
   const [instance, setInstance] = useState<ReactFlowInstance<
@@ -216,10 +220,14 @@ function FlowCanvasInner({
           stroke: draggingHandleId === "fail" ? "#ef4444" : "#22c55e",
           strokeWidth: 2.5,
         }}
+        nodesDraggable={!isLocked}
+        nodesConnectable={!isLocked}
+        elementsSelectable={true}
+        panOnDrag={!isLocked}
         fitView
       >
         <Background />
-        <Controls />
+        <FlowControlsOverlay isLocked={isLocked} onToggleLock={onToggleLock} />
       </ReactFlow>
       <div className="pointer-events-none absolute right-3 bottom-3 rounded-md border border-border bg-card/90 px-2 py-1 text-[11px] text-muted-foreground">
         {t("automation.editor.linearHint")}

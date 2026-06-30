@@ -35,7 +35,8 @@
       "saved": "已保存",
       "copied": "已复制",
       "learnMore": "了解更多",
-      "toggleTheme": "切换主题"
+      "toggleTheme": "切换主题",
+      "run": "运行"
     },
     "status": {
       "active": "活跃",
@@ -2240,6 +2241,64 @@
       "telegramAlert": "Telegram Alert",
       "openProfile": "Browser Settings"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "editor": {
+      "groups": {
+        "interaction": "交互",
+        "utility": "实用工具",
+        "network": "网络"
+      },
+      "variables": {
+        "search": "搜索变量...",
+        "system": "系统变量",
+        "user": "用户变量",
+        "empty": "尚未定义变量"
+      },
+      "properties": {
+        "selectNodeHint": "在画布上选择一个节点以查看其属性"
+      },
+      "logs": {
+        "title": "日志",
+        "timeline": "执行时间线",
+        "noSteps": "尚未执行任何步骤",
+        "variablesState": "变量状态",
+        "noVariables": "作用域中没有变量",
+        "console": "控制台输出",
+        "consoleEmpty": "无日志输出"
+      },
+      "comment": {
+        "placeholder": "输入您的注释..."
+      },
+      "controls": {
+        "zoomIn": "放大",
+        "zoomOut": "缩小",
+        "fitView": "适合视图",
+        "lock": "锁定画布",
+        "unlock": "解锁画布"
+      },
+      "tabs": {
+        "properties": "属性",
+        "variables": "变量",
+        "resources": "资源"
+      },
+      "actions": {
+        "run": "运行",
+        "running": "运行中...",
+        "stop": "停止"
+      },
+      "sidebar": {
+        "collapse": "折叠侧边栏",
+        "showLogs": "显示日志",
+        "hideLogs": "隐藏日志",
+        "settings": "设置"
+      },
+      "resources": {
+        "generalSettings": "常规设置",
+        "saveLayout": "关闭时保存布局",
+        "autoAlign": "自动对齐节点",
+        "title": "流程资源",
+        "empty": "此流程中未加载额外资源。"
+      }
+    }
   }
 }

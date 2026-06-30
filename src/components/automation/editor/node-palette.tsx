@@ -3,6 +3,12 @@
 import { type DragEvent, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuSearch } from "react-icons/lu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import {
   AUTOMATION_NODE_CATALOG,
@@ -60,42 +66,49 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
           className="pl-8"
         />
       </div>
-      <div className="space-y-4">
+      <Accordion
+        type="multiple"
+        defaultValue={["navigator"]}
+        className="w-full"
+      >
         {GROUPS.map((group) => {
           const items = filtered.filter((item) => item.group === group);
           if (items.length === 0) return null;
           return (
-            <details key={group} open className="group space-y-2">
-              <summary className="flex cursor-pointer items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground list-none select-none hover:text-foreground [&::-webkit-details-marker]:hidden">
-                <span>{t(`automation.editor.groups.${group}`)}</span>
-                <span className="text-[9px] text-muted-foreground transition-transform group-open:rotate-180">
-                  ▼
-                </span>
-              </summary>
-              <div className="grid grid-cols-2 gap-2 pt-1.5">
-                {items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.type}
-                      role="button"
-                      tabIndex={0}
-                      draggable
-                      onDragStart={(event) => onDragStart(event, item)}
-                      className="flex cursor-grab items-center gap-1.5 rounded-md border border-border bg-background/50 p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing min-w-0 select-none"
-                    >
-                      <Icon className="size-3.5 shrink-0 text-primary" />
-                      <span className="truncate text-[11px] font-semibold">
-                        {t(item.labelKey)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </details>
+            <AccordionItem
+              key={group}
+              value={group}
+              className="border-b-0 py-1"
+            >
+              <AccordionTrigger className="py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:no-underline hover:text-foreground">
+                {t(`automation.editor.groups.${group}`)}
+              </AccordionTrigger>
+              <AccordionContent className="pb-2">
+                <div className="grid grid-cols-2 gap-2 pt-1.5">
+                  {items.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div
+                        key={item.type}
+                        role="button"
+                        tabIndex={0}
+                        draggable
+                        onDragStart={(event) => onDragStart(event, item)}
+                        className="flex cursor-grab items-center gap-1.5 rounded-md border border-border bg-background/50 p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing min-w-0 select-none"
+                      >
+                        <Icon className="size-3.5 shrink-0 text-primary" />
+                        <span className="truncate text-[11px] font-semibold">
+                          {t(item.labelKey)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           );
         })}
-      </div>
+      </Accordion>
     </aside>
   );
 }

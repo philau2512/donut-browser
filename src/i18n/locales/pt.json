@@ -35,7 +35,8 @@
       "saved": "Salvo",
       "copied": "Copiado",
       "learnMore": "Saiba mais",
-      "toggleTheme": "Alternar tema"
+      "toggleTheme": "Alternar tema",
+      "run": "Executar"
     },
     "status": {
       "active": "Ativo",
@@ -2240,6 +2241,64 @@
       "telegramAlert": "Telegram Alert",
       "openProfile": "Browser Settings"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "editor": {
+      "groups": {
+        "interaction": "Interação",
+        "utility": "Utilitário",
+        "network": "Rede"
+      },
+      "variables": {
+        "search": "Pesquisar variáveis...",
+        "system": "Variáveis do Sistema",
+        "user": "Variáveis do Usuário",
+        "empty": "Nenhuma variável definida"
+      },
+      "properties": {
+        "selectNodeHint": "Selecione um nó no canvas para ver suas propriedades"
+      },
+      "logs": {
+        "title": "Registro",
+        "timeline": "Linha do Tempo de Execução",
+        "noSteps": "Nenhuma etapa executada ainda",
+        "variablesState": "Estado das Variáveis",
+        "noVariables": "Sem variáveis no escopo",
+        "console": "Saída do Console",
+        "consoleEmpty": "Sem saída de registro"
+      },
+      "comment": {
+        "placeholder": "Digite seu comentário..."
+      },
+      "controls": {
+        "zoomIn": "Ampliar",
+        "zoomOut": "Reduzir",
+        "fitView": "Ajustar Vista",
+        "lock": "Bloquear Canvas",
+        "unlock": "Desbloquear Canvas"
+      },
+      "tabs": {
+        "properties": "Propriedades",
+        "variables": "Variáveis",
+        "resources": "Recursos"
+      },
+      "actions": {
+        "run": "Executar",
+        "running": "Executando...",
+        "stop": "Parar"
+      },
+      "sidebar": {
+        "collapse": "Recolher Barra Lateral",
+        "showLogs": "Mostrar Registros",
+        "hideLogs": "Ocultar Registros",
+        "settings": "Configurações"
+      },
+      "resources": {
+        "generalSettings": "Configurações Gerais",
+        "saveLayout": "Salvar layout ao fechar",
+        "autoAlign": "Alinhar nós automaticamente",
+        "title": "Recursos do Fluxo",
+        "empty": "Nenhum recurso extra carregado neste fluxo."
+      }
+    }
   }
 }

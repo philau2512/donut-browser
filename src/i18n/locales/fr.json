@@ -35,7 +35,8 @@
       "saved": "Enregistré",
       "copied": "Copié",
       "learnMore": "En savoir plus",
-      "toggleTheme": "Changer de thème"
+      "toggleTheme": "Changer de thème",
+      "run": "Exécuter"
     },
     "status": {
       "active": "Actif",
@@ -2240,6 +2241,64 @@
       "telegramAlert": "Telegram Alert",
       "openProfile": "Browser Settings"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "editor": {
+      "groups": {
+        "interaction": "Interaction",
+        "utility": "Utilitaire",
+        "network": "Réseau"
+      },
+      "variables": {
+        "search": "Rechercher des variables...",
+        "system": "Variables Système",
+        "user": "Variables Utilisateur",
+        "empty": "Aucune variable définie"
+      },
+      "properties": {
+        "selectNodeHint": "Sélectionnez un nœud sur le canevas pour voir ses propriétés"
+      },
+      "logs": {
+        "title": "Journal",
+        "timeline": "Chronologie d'Exécution",
+        "noSteps": "Aucune étape exécutée pour l'instant",
+        "variablesState": "État des Variables",
+        "noVariables": "Aucune variable dans la portée",
+        "console": "Sortie Console",
+        "consoleEmpty": "Aucune sortie de journal"
+      },
+      "comment": {
+        "placeholder": "Saisissez votre commentaire..."
+      },
+      "controls": {
+        "zoomIn": "Zoom Avant",
+        "zoomOut": "Zoom Arrière",
+        "fitView": "Ajuster la Vue",
+        "lock": "Verrouiller le Canevas",
+        "unlock": "Déverrouiller le Canevas"
+      },
+      "tabs": {
+        "properties": "Propriétés",
+        "variables": "Variables",
+        "resources": "Ressources"
+      },
+      "actions": {
+        "run": "Exécuter",
+        "running": "Exécution...",
+        "stop": "Arrêter"
+      },
+      "sidebar": {
+        "collapse": "Réduire la Barre Latérale",
+        "showLogs": "Afficher les Journaux",
+        "hideLogs": "Masquer les Journaux",
+        "settings": "Paramètres"
+      },
+      "resources": {
+        "generalSettings": "Paramètres Généraux",
+        "saveLayout": "Enregistrer la mise en page à la fermeture",
+        "autoAlign": "Aligner automatiquement les nœuds",
+        "title": "Ressources du Flux",
+        "empty": "Aucune ressource supplémentaire chargée dans ce flux."
+      }
+    }
   }
 }

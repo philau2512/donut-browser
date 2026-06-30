@@ -97,6 +97,8 @@ function renderCanvas(options?: {
       setEdges={setEdges}
       onSelectNode={vi.fn()}
       draggedNodeType={options?.draggedNodeType ?? null}
+      isLocked={false}
+      onToggleLock={vi.fn()}
     />,
   );
 

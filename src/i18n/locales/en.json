@@ -35,7 +35,8 @@
       "saved": "Saved",
       "copied": "Copied",
       "learnMore": "Learn more",
-      "toggleTheme": "Toggle Theme"
+      "toggleTheme": "Toggle Theme",
+      "run": "Run"
     },
     "status": {
       "active": "Active",
@@ -2285,13 +2286,17 @@
         "navigator": "Navigation",
         "mouse": "Mouse",
         "keyboard": "Keyboard",
-        "data": "Data"
+        "data": "Data",
+        "interaction": "Interaction",
+        "utility": "Utility",
+        "network": "Network"
       },
       "start": "Start",
       "booleanEnabled": "Enabled",
       "comment": {
         "characters": "characters",
-        "title": "Comment"
+        "title": "Comment",
+        "placeholder": "Enter your comment..."
       },
       "errors": {
         "loadFailed": "Failed to load script",
@@ -2305,7 +2310,8 @@
         "continueOnErrorHint": "Skip errors and continue to next steps",
         "document": "Documentation",
         "options": "Options",
-        "setting": "Settings"
+        "setting": "Settings",
+        "selectNodeHint": "Select a node on the canvas to view its properties"
       },
       "saving": "Saving...",
       "toast": {
@@ -2322,7 +2328,50 @@
         "autoInjected": "Auto-injected",
         "description": "Description",
         "reserved": "System Variables",
-        "title": "Variables"
+        "title": "Variables",
+        "search": "Search variables...",
+        "system": "System Variables",
+        "user": "User Variables",
+        "empty": "No variables defined"
+      },
+      "logs": {
+        "title": "Log",
+        "timeline": "Execution Timeline",
+        "noSteps": "No steps executed yet",
+        "variablesState": "Variables State",
+        "noVariables": "No variables in scope",
+        "console": "Console Output",
+        "consoleEmpty": "No log output"
+      },
+      "controls": {
+        "zoomIn": "Zoom In",
+        "zoomOut": "Zoom Out",
+        "fitView": "Fit View",
+        "lock": "Lock Canvas",
+        "unlock": "Unlock Canvas"
+      },
+      "tabs": {
+        "properties": "Properties",
+        "variables": "Variables",
+        "resources": "Resources"
+      },
+      "actions": {
+        "run": "Run",
+        "running": "Running...",
+        "stop": "Stop"
+      },
+      "sidebar": {
+        "collapse": "Collapse Sidebar",
+        "showLogs": "Show Logs",
+        "hideLogs": "Hide Logs",
+        "settings": "Settings"
+      },
+      "resources": {
+        "generalSettings": "General Settings",
+        "saveLayout": "Save layout on close",
+        "autoAlign": "Auto-align nodes",
+        "title": "Flow Resources",
+        "empty": "No extra resources loaded in this flow."
       }
     },
     "actions": {

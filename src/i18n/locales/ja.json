@@ -35,7 +35,8 @@
       "saved": "保存しました",
       "copied": "コピーしました",
       "learnMore": "詳細",
-      "toggleTheme": "テーマの切り替え"
+      "toggleTheme": "テーマの切り替え",
+      "run": "実行"
     },
     "status": {
       "active": "アクティブ",
@@ -2240,6 +2241,64 @@
       "telegramAlert": "Telegram Alert",
       "openProfile": "Browser Settings"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "editor": {
+      "groups": {
+        "interaction": "インタラクション",
+        "utility": "ユーティリティ",
+        "network": "ネットワーク"
+      },
+      "variables": {
+        "search": "変数を検索...",
+        "system": "システム変数",
+        "user": "ユーザー変数",
+        "empty": "変数が定義されていません"
+      },
+      "properties": {
+        "selectNodeHint": "キャンバス上のノードを選択してプロパティを表示"
+      },
+      "logs": {
+        "title": "ログ",
+        "timeline": "実行タイムライン",
+        "noSteps": "まだステップが実行されていません",
+        "variablesState": "変数の状態",
+        "noVariables": "スコープ内に変数がありません",
+        "console": "コンソール出力",
+        "consoleEmpty": "ログ出力がありません"
+      },
+      "comment": {
+        "placeholder": "コメントを入力してください..."
+      },
+      "controls": {
+        "zoomIn": "拡大",
+        "zoomOut": "縮小",
+        "fitView": "画面に合わせる",
+        "lock": "キャンバスをロック",
+        "unlock": "キャンバスのロックを解除"
+      },
+      "tabs": {
+        "properties": "プロパティ",
+        "variables": "変数",
+        "resources": "リソース"
+      },
+      "actions": {
+        "run": "実行",
+        "running": "実行中...",
+        "stop": "停止"
+      },
+      "sidebar": {
+        "collapse": "サイドバーを折りたたむ",
+        "showLogs": "ログを表示",
+        "hideLogs": "ログを非表示",
+        "settings": "設定"
+      },
+      "resources": {
+        "generalSettings": "一般設定",
+        "saveLayout": "閉じるときにレイアウトを保存",
+        "autoAlign": "ノードを自動整列",
+        "title": "フローリソース",
+        "empty": "このフローには追加リソースはありません。"
+      }
+    }
   }
 }
