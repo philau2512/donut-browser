@@ -123,19 +123,50 @@ function FlowCanvasInner({
   const onDrop = useCallback(
     (event: DragEvent) => {
       event.preventDefault();
-      if (!instance) return;
-      // Prefer the React-state copy (set by the parent on dragstart) because
-      // WebView2 on Windows blocks DataTransfer.getData() in drop handlers.
-      const type =
-        draggedNodeType ||
+      if (!instance) {
+        console.warn("FlowCanvas onDrop: ReactFlow instance is not ready");
+        return;
+      }
+      // Try DataTransfer first (works on macOS/Linux), fall back to React state
+      // only if empty (needed for WebView2 on Windows which blocks DataTransfer).
+      const rawType =
         event.dataTransfer.getData("application/donut-node-type") ||
         event.dataTransfer.getData("text/plain");
-      if (!isAutomationNodeType(type)) return;
+      const type = isAutomationNodeType(rawType) ? rawType : draggedNodeType;
+
+      console.log("FlowCanvas onDrop details:", {
+        rawType,
+        draggedNodeType,
+        resolvedType: type,
+        isAutomationNode: isAutomationNodeType(type),
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
+
+      if (!isAutomationNodeType(type)) {
+        console.warn(
+          "FlowCanvas onDrop: Resolved type is not a valid automation node type:",
+          type,
+        );
+        return;
+      }
       const position = instance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       });
-      setNodes((current) => [...current, createAutomationNode(type, position)]);
+      console.log("FlowCanvas onDrop: calculated position", position);
+
+      const newNode = createAutomationNode(type, position);
+      console.log("FlowCanvas onDrop: adding new node", newNode);
+
+      setNodes((current) => {
+        const next = [...current, newNode];
+        console.log(
+          "FlowCanvas onDrop: setNodes updating nodes array to:",
+          next,
+        );
+        return next;
+      });
     },
     [instance, draggedNodeType, setNodes],
   );
@@ -161,10 +192,11 @@ function FlowCanvasInner({
   }, [edges]);
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: dragOver preventDefault required on wrapper to show drop cursor in WebView2
+    // biome-ignore lint/a11y/noStaticElementInteractions: dragOver preventDefault required on wrapper to show drop cursor
     <div
       className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-background"
       onDragOver={onDragOver}
+      onDrop={onDrop}
     >
       <ReactFlow
         nodes={nodes}
@@ -177,8 +209,6 @@ function FlowCanvasInner({
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
         onEdgeDoubleClick={onEdgeDoubleClick}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
         onNodeClick={(_, node) => onSelectNode(node.id)}
         onPaneClick={() => onSelectNode(null)}
         isValidConnection={isValidConnection}

@@ -125,7 +125,7 @@ describe("FlowCanvas", () => {
     ) => AutomationCanvasNode[];
     const next = updater([]);
     expect(next[0]).toMatchObject({
-      id: "openUrl-uuid-1",
+      id: expect.stringMatching(/^openUrl-\d{9}$/),
       position: { x: 50, y: 60 },
       data: { nodeType: "openUrl" },
     });
@@ -148,6 +148,29 @@ describe("FlowCanvas", () => {
       dataTransfer: dataTransfer({ "text/plain": "not-a-node" }),
     });
     expect(setNodes).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to draggedNodeType when text/plain is invalid but draggedNodeType is valid", async () => {
+    const { setNodes } = renderCanvas({ draggedNodeType: "openUrl" });
+    await waitFor(() => expect(flowMock.latestProps).toBeTruthy());
+
+    const dt = dataTransfer({ "text/plain": "Open URL" });
+    const dropEvent = createEvent.drop(screen.getByTestId("flow-canvas"));
+    Object.defineProperty(dropEvent, "dataTransfer", { value: dt });
+    Object.defineProperty(dropEvent, "clientX", { value: 150 });
+    Object.defineProperty(dropEvent, "clientY", { value: 260 });
+    fireEvent(screen.getByTestId("flow-canvas"), dropEvent);
+
+    expect(setNodes).toHaveBeenCalledTimes(1);
+    const updater = setNodes.mock.calls[0][0] as (
+      current: AutomationCanvasNode[],
+    ) => AutomationCanvasNode[];
+    const next = updater([]);
+    expect(next[0]).toMatchObject({
+      id: expect.stringMatching(/^openUrl-\d{9}$/),
+      position: { x: 50, y: 60 },
+      data: { nodeType: "openUrl" },
+    });
   });
 
   it("marks drag over as copy", async () => {
