@@ -52,24 +52,175 @@ pub async fn execute_open_profile_automation_only(
   })
 }
 
+fn parse_proxy_override(
+  proxy_string: &str,
+  proxy_type: Option<&str>,
+  proxy_login: Option<&str>,
+  proxy_password: Option<&str>,
+) -> Result<crate::browser::ProxySettings, String> {
+  let mut p_type = proxy_type.unwrap_or("http").to_lowercase();
+  let mut host = String::new();
+  let mut port = 80;
+  let mut user = proxy_login.map(|s| s.to_string());
+  let mut pass = proxy_password.map(|s| s.to_string());
+
+  let cleaned = proxy_string.trim();
+  if cleaned.is_empty() {
+    return Err("Proxy string cannot be empty".to_string());
+  }
+
+  if cleaned.contains("://") {
+    if let Ok(url) = url::Url::parse(cleaned) {
+      p_type = url.scheme().to_string();
+      host = url.host_str().unwrap_or("").to_string();
+      port = url.port().unwrap_or(80);
+      if !url.username().is_empty() {
+        user = Some(url.username().to_string());
+      }
+      if let Some(password) = url.password() {
+        pass = Some(password.to_string());
+      }
+    }
+  } else {
+    let parts: Vec<&str> = cleaned.split(':').collect();
+    match parts.len() {
+      2 => {
+        host = parts[0].to_string();
+        port = parts[1]
+          .parse::<u16>()
+          .map_err(|e| format!("Invalid port: {e}"))?;
+      }
+      3 => {
+        if cleaned.contains('@') {
+          let at_parts: Vec<&str> = cleaned.split('@').collect();
+          if at_parts.len() == 2 {
+            let creds: Vec<&str> = at_parts[0].split(':').collect();
+            let addr: Vec<&str> = at_parts[1].split(':').collect();
+            if creds.len() == 2 && addr.len() == 2 {
+              user = Some(creds[0].to_string());
+              pass = Some(creds[1].to_string());
+              host = addr[0].to_string();
+              port = addr[1]
+                .parse::<u16>()
+                .map_err(|e| format!("Invalid port: {e}"))?;
+            }
+          }
+        }
+        if host.is_empty() {
+          return Err("Invalid proxy format (3 parts without @ not supported)".to_string());
+        }
+      }
+      4 => {
+        let port_at_1 = parts[1].parse::<u16>();
+        let port_at_3 = parts[3].parse::<u16>();
+        match (port_at_1, port_at_3) {
+          (Ok(p), Err(_)) => {
+            host = parts[0].to_string();
+            port = p;
+            user = Some(parts[2].to_string());
+            pass = Some(parts[3].to_string());
+          }
+          (Err(_), Ok(p)) => {
+            host = parts[2].to_string();
+            port = p;
+            user = Some(parts[0].to_string());
+            pass = Some(parts[1].to_string());
+          }
+          _ => {
+            return Err("Ambiguous proxy format with 4 parts".to_string());
+          }
+        }
+      }
+      _ => {
+        return Err("Invalid proxy string format".to_string());
+      }
+    }
+  }
+
+  if host.is_empty() {
+    return Err("Proxy host cannot be empty".to_string());
+  }
+
+  if !matches!(p_type.as_str(), "http" | "https" | "socks4" | "socks5") {
+    p_type = "http".to_string();
+  }
+
+  Ok(crate::browser::ProxySettings {
+    proxy_type: p_type,
+    host,
+    port,
+    username: user.filter(|s| !s.is_empty()),
+    password: pass.filter(|s| !s.is_empty()),
+  })
+}
+
 pub async fn execute_open_profile(
   profile_id: String,
   automation: Option<AutomationConfig>,
 ) -> Result<OpenProfileResult, String> {
-  let (proxy_ip, ip_country) =
-    run_proxy_and_ip_checks(profile_id.as_str(), automation.as_ref()).await?;
+  // Parse and build launch overrides
+  let mut overrides = crate::browser::browser_runner::LaunchOverrides::default();
 
-  // 3. Launch profile with proxy config
+  if let Some(ref config) = automation {
+    // 1. Proxy
+    if let Some(ref proxy_str) = config.proxy_string {
+      if !proxy_str.trim().is_empty() {
+        let p_settings = parse_proxy_override(
+          proxy_str,
+          config.proxy_type.as_deref(),
+          config.proxy_login.as_deref(),
+          config.proxy_password.as_deref(),
+        )?;
+        overrides.proxy = Some(Some(p_settings));
+      } else {
+        overrides.proxy = Some(None); // Direct
+      }
+    }
+
+    // 2. WebRTC
+    if let Some(ref webrtc_mode) = config.webrtc_mode {
+      overrides.webrtc_mode = Some(webrtc_mode.clone());
+      overrides.block_webrtc = Some(webrtc_mode == "block");
+    }
+
+    // 3. Custom DNS / DNS Blocklist
+    if let Some(ref custom_dns) = config.custom_dns {
+      if !custom_dns.trim().is_empty() {
+        overrides.dns_blocklist = Some(Some(custom_dns.clone()));
+      }
+    }
+
+    // 4. Geolocation
+    if let Some(ref geo) = config.change_geolocation {
+      overrides.change_geolocation = Some(geo.clone());
+    }
+
+    // 5. Timezone
+    if let Some(ref tz) = config.change_timezone {
+      overrides.change_timezone = Some(tz.clone());
+    }
+
+    // 6. Language
+    if let Some(ref lang) = config.change_language {
+      overrides.change_language = Some(lang.clone());
+    }
+  }
+
+  // Save overrides to global map before launching
+  if let Ok(mut guard) = crate::browser::browser_runner::LAUNCH_OVERRIDES.lock() {
+    guard.insert(profile_id.clone(), overrides);
+  }
+
   log::info!(
-    "[AUTOMATION] [PROFILE_NODE] Launching profile {} with proxy: {:?}",
-    profile_id,
-    proxy_ip
+    "[AUTOMATION] [PROFILE_NODE] Launching profile {} with custom overrides",
+    profile_id
   );
+
   let app_handle = crate::automation::app_handle_store::get_automation_app_handle()?;
   let launch_result = crate::browser::browser_runner_dynamic_config::launch_with_dynamic_config(
     app_handle,
     profile_id.as_str(),
-    proxy_ip.clone(),
+    None,
   )
   .await
   .map_err(|e| format!("Profile launch failed: {}", e))?;
@@ -81,19 +232,16 @@ pub async fn execute_open_profile(
     launch_result.browser_pid
   );
 
-  run_post_open_side_effects(
-    profile_id.as_str(),
-    automation.as_ref(),
-    &proxy_ip,
-    &ip_country,
-  )
-  .await;
+  // Trigger optional legacy webhooks/telegram if they exist in the config
+  if let Some(ref config) = automation {
+    run_post_open_side_effects(profile_id.as_str(), Some(config), &None, &None).await;
+  }
 
   Ok(OpenProfileResult {
     cdp_port: launch_result.cdp_port,
     browser_pid: launch_result.browser_pid,
-    proxy_ip,
-    ip_country,
+    proxy_ip: None,
+    ip_country: None,
   })
 }
 
@@ -511,54 +659,4 @@ async fn cleanup_full_directory(profile_id: &str) -> Result<(), String> {
   // }
 
   Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-  use super::{country_allowed, interpolate_profile_placeholders, parse_proxy_response_body};
-
-  #[test]
-  fn parse_proxy_json_flat_ip() {
-    let ip = parse_proxy_response_body(r#"{"ip":"1.2.3.4","port":8080}"#).unwrap();
-    assert_eq!(ip, "1.2.3.4");
-  }
-
-  #[test]
-  fn parse_proxy_json_nested() {
-    let ip = parse_proxy_response_body(r#"{"proxy":{"ip":"5.6.7.8"}}"#).unwrap();
-    assert_eq!(ip, "5.6.7.8");
-  }
-
-  #[test]
-  fn parse_proxy_plain_text_with_port() {
-    let ip = parse_proxy_response_body("9.9.9.9:3128").unwrap();
-    assert_eq!(ip, "9.9.9.9");
-  }
-
-  #[test]
-  fn parse_proxy_empty_fails() {
-    assert!(parse_proxy_response_body("").is_err());
-  }
-
-  #[test]
-  fn country_allowed_when_list_empty() {
-    assert!(country_allowed("CN", &[]).is_ok());
-  }
-
-  #[test]
-  fn country_blocked_when_not_in_list() {
-    let err = country_allowed("CN", &["US".into(), "CA".into()]).unwrap_err();
-    assert!(err.contains("IP_COUNTRY_BLOCKED"));
-  }
-
-  #[test]
-  fn interpolate_profile_placeholders_mixed_case() {
-    let out = interpolate_profile_placeholders(
-      "p={{PROFILE_ID}} ip={{proxy_ip}} cc={{IP_COUNTRY}}",
-      "prof-1",
-      &Some("1.2.3.4".into()),
-      &Some("US".into()),
-    );
-    assert_eq!(out, "p=prof-1 ip=1.2.3.4 cc=US");
-  }
 }

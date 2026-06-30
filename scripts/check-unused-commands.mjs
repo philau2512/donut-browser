@@ -72,7 +72,7 @@ function getFrontendFiles(dir) {
   for (const file of list) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
+    if (stat?.isDirectory()) {
       files = files.concat(getFrontendFiles(filePath));
     } else {
       const ext = path.extname(filePath);

@@ -14,8 +14,30 @@
 use serde::{Deserialize, Serialize};
 use tauri::command;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct AutomationConfig {
+  #[serde(rename = "proxyString")]
+  pub proxy_string: Option<String>,
+  #[serde(rename = "proxyType")]
+  pub proxy_type: Option<String>,
+  #[serde(rename = "proxyLogin")]
+  pub proxy_login: Option<String>,
+  #[serde(rename = "proxyPassword")]
+  pub proxy_password: Option<String>,
+  #[serde(rename = "changeTimezone")]
+  pub change_timezone: Option<String>,
+  #[serde(rename = "changeGeolocation")]
+  pub change_geolocation: Option<String>,
+  #[serde(rename = "changeLanguage")]
+  pub change_language: Option<String>,
+  #[serde(rename = "webrtcMode")]
+  pub webrtc_mode: Option<String>,
+  #[serde(rename = "customDns")]
+  pub custom_dns: Option<String>,
+  #[serde(rename = "ipDetection")]
+  pub ip_detection: Option<bool>,
+
+  // Backwards compatibility
   #[serde(rename = "dynamicProxy")]
   pub dynamic_proxy: Option<DynamicProxyConfig>,
   #[serde(rename = "ipCheck")]
@@ -24,12 +46,12 @@ pub struct AutomationConfig {
   pub telegram: Option<TelegramConfig>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct DynamicProxyConfig {
   pub url: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct IpCheckConfig {
   #[serde(rename = "allowedCountries")]
   pub allowed_countries: Vec<String>,
@@ -37,14 +59,14 @@ pub struct IpCheckConfig {
   pub max_fraud_score: u8,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct WebhookConfig {
   pub url: String,
   pub method: String, // "GET" | "POST"
   pub body: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TelegramConfig {
   #[serde(rename = "chatId")]
   pub chat_id: String,

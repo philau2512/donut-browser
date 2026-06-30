@@ -2240,7 +2240,8 @@
       "localCommand": "Local Command",
       "cleanup": "Cleanup",
       "dynamicProxy": "Dynamic Proxy",
-      "telegramAlert": "Telegram Alert"
+      "telegramAlert": "Telegram Alert",
+      "openProfile": "Browser Settings"
     },
     "dependencyWarning": "Dependency issue",
     "script": {
@@ -2618,14 +2619,14 @@
         "label": "Mở URL"
       },
       "openProfile": {
-        "description": "Mở profile trình duyệt với automation (proxy, IP check, webhooks)",
-        "document": "Mở profile trình duyệt với automation tích hợp: fetch proxy động, validate IP, webhooks, và thông báo Telegram. Xuất variables cho các node downstream.",
-        "label": "Mở Profile",
+        "description": "Cấu hình proxy và cài đặt trình duyệt trước khi chạy",
+        "document": "Áp dụng cấu hình proxy, múi giờ, định vị, ngôn ngữ, WebRTC, DNS tùy chỉnh trước khi mở profile.",
+        "label": "Browser Settings",
         "params": {
-          "profileId": "Profile",
-          "profileIdHelp": "Chọn profile trình duyệt để mở",
-          "automation": "Cấu hình Automation",
-          "automationHelp": "JSON cấu hình automation (proxy, IP check, webhooks, telegram)"
+          "profileId": "Profile Ghi đè",
+          "profileIdHelp": "Chọn profile để ghi đè, hoặc để trống để dùng profile hiện tại",
+          "automation": "Cấu hình Cài đặt",
+          "automationHelp": "JSON cấu hình ghi đè proxy và fingerprint"
         }
       },
       "pressKey": {

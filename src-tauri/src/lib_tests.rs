@@ -31,6 +31,8 @@ mod tests {
       "cloud_refresh_wayfern_token",
       "lock_profile",
       "validate_automation_flow",
+      "open_profile_with_automation",
+      "close_profile_with_cleanup",
     ];
     let lib_rs_content = fs::read_to_string("src/lib_run.rs").expect("Failed to read lib_run.rs");
     let commands = extract_tauri_commands(&lib_rs_content);

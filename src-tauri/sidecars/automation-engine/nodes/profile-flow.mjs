@@ -50,12 +50,19 @@ function applyOpenProfileVars(ctx, profileId, result) {
 
 /** openProfile: proxy/IP/webhooks; reuses run CDP when profile matches orchestrator target. */
 export async function openProfile(node, _page, ctx) {
-  const { profileId, automation } = node.params ?? {};
+  let { profileId, automation } = node.params ?? {};
+  const runProfileId = process.env.AUTOMATION_RUN_PROFILE_ID;
+
   if (typeof profileId !== "string" || profileId.trim() === "") {
-    throw new Error("openProfile: profileId is required");
+    if (runProfileId) {
+      profileId = runProfileId;
+    } else {
+      throw new Error("openProfile: profileId is required when running standalone");
+    }
+  } else if (profileId.includes("{{PROFILE_ID}}")) {
+    profileId = profileId.replace("{{PROFILE_ID}}", runProfileId || "");
   }
 
-  const runProfileId = process.env.AUTOMATION_RUN_PROFILE_ID;
   const cdpPortRaw = process.env.AUTOMATION_RUN_CDP_PORT;
   const cdpPort =
     cdpPortRaw != null && cdpPortRaw !== "" ? Number.parseInt(String(cdpPortRaw), 10) : undefined;

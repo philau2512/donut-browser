@@ -66,6 +66,11 @@ pub async fn launch_with_dynamic_config(
     .await
     .map_err(|e| format!("Profile launch failed: {e}"))?;
 
+  // Clean up launch overrides
+  if let Ok(mut guard) = crate::browser::browser_runner::LAUNCH_OVERRIDES.lock() {
+    guard.remove(profile_id);
+  }
+
   let browser_pid = launched.process_id.unwrap_or(0);
   let cdp_port = resolve_and_verify_cdp_port(&launched).await.unwrap_or(9222);
 

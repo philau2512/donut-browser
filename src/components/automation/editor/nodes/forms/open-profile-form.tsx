@@ -10,27 +10,21 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import type { BrowserProfile } from "@/types";
 import { ValidationBadge, type ValidationWarning } from "./validation-badge";
 
 interface OpenProfileAutomationConfig {
-  dynamicProxy?: {
-    url: string;
-  };
-  ipCheck?: {
-    allowedCountries?: string[];
-    maxFraudScore?: number;
-  };
-  webhooks?: Array<{
-    url: string;
-    method?: string;
-    body?: string;
-  }>;
-  telegram?: {
-    chatId: string;
-    message: string;
-  };
+  proxyString?: string;
+  proxyType?: string;
+  proxyLogin?: string;
+  proxyPassword?: string;
+  changeTimezone?: string;
+  changeGeolocation?: string;
+  changeLanguage?: string;
+  webrtcMode?: string;
+  customDns?: string;
+  ipDetection?: boolean;
 }
 
 interface OpenProfileNodeData {
@@ -50,7 +44,7 @@ export function OpenProfileForm({
   value,
   onChange,
   profiles: _profiles,
-  variables = {},
+  variables: _variables = {},
   variableWarnings = [],
 }: OpenProfileFormProps) {
   const { t } = useTranslation();
@@ -68,58 +62,60 @@ export function OpenProfileForm({
         setParsedAutomation({});
       }
     } else {
-      setParsedAutomation({});
+      setParsedAutomation({
+        proxyType: "http",
+        changeTimezone: "true",
+        changeGeolocation: "false",
+        changeLanguage: "true",
+        webrtcMode: "alter",
+        ipDetection: true,
+      });
     }
   }, [value.automation]);
 
   // Validation
   useEffect(() => {
     const newWarnings: ValidationWarning[] = [];
-
-    if (!value.profileId) {
-      newWarnings.push({
-        type: "error",
-        message:
-          t("automation.validation.profileRequired") || "Profile is required",
-      });
-    }
-
-    // Warn if IP check configured without dynamic proxy
-    if (
-      parsedAutomation.ipCheck?.allowedCountries?.length &&
-      !parsedAutomation.dynamicProxy?.url
-    ) {
-      newWarnings.push({
-        type: "warning",
-        message:
-          t("automation.validation.ipCheckNeedsProxy") ||
-          "IP check requires dynamic proxy to be configured",
-      });
-    }
-
     for (const w of variableWarnings) {
       newWarnings.push(w);
     }
-
     setWarnings(newWarnings);
-  }, [value, parsedAutomation, t, variableWarnings]);
+  }, [variableWarnings]);
 
   const updateAutomation = (updates: Partial<OpenProfileAutomationConfig>) => {
-    const newAutomation = { ...parsedAutomation, ...updates };
-    // Remove empty sections
-    const cleaned: OpenProfileAutomationConfig = {};
-    if (newAutomation.dynamicProxy?.url) {
-      cleaned.dynamicProxy = newAutomation.dynamicProxy;
-    }
-    if (newAutomation.ipCheck?.allowedCountries?.length) {
-      cleaned.ipCheck = newAutomation.ipCheck;
-    }
-    if (newAutomation.webhooks?.some((w) => w.url)) {
-      cleaned.webhooks = newAutomation.webhooks.filter((w) => w.url);
-    }
-    if (newAutomation.telegram?.chatId) {
-      cleaned.telegram = newAutomation.telegram;
-    }
+    const newAutomation = {
+      proxyType: "http",
+      changeTimezone: "true",
+      changeGeolocation: "false",
+      changeLanguage: "true",
+      webrtcMode: "alter",
+      ipDetection: true,
+      ...parsedAutomation,
+      ...updates,
+    };
+
+    // Clean up empty fields
+    const cleaned: Partial<OpenProfileAutomationConfig> = {};
+    if (newAutomation.proxyString !== undefined)
+      cleaned.proxyString = newAutomation.proxyString;
+    if (newAutomation.proxyType !== undefined)
+      cleaned.proxyType = newAutomation.proxyType;
+    if (newAutomation.proxyLogin !== undefined)
+      cleaned.proxyLogin = newAutomation.proxyLogin;
+    if (newAutomation.proxyPassword !== undefined)
+      cleaned.proxyPassword = newAutomation.proxyPassword;
+    if (newAutomation.changeTimezone !== undefined)
+      cleaned.changeTimezone = newAutomation.changeTimezone;
+    if (newAutomation.changeGeolocation !== undefined)
+      cleaned.changeGeolocation = newAutomation.changeGeolocation;
+    if (newAutomation.changeLanguage !== undefined)
+      cleaned.changeLanguage = newAutomation.changeLanguage;
+    if (newAutomation.webrtcMode !== undefined)
+      cleaned.webrtcMode = newAutomation.webrtcMode;
+    if (newAutomation.customDns !== undefined)
+      cleaned.customDns = newAutomation.customDns;
+    if (newAutomation.ipDetection !== undefined)
+      cleaned.ipDetection = newAutomation.ipDetection;
 
     const automationStr =
       Object.keys(cleaned).length > 0 ? JSON.stringify(cleaned, null, 2) : "";
@@ -130,60 +126,13 @@ export function OpenProfileForm({
     });
   };
 
-  const updateProxyUrl = (url: string) => {
-    updateAutomation({
-      dynamicProxy: url ? { url } : undefined,
-    });
-  };
-
-  const updateTelegram = (field: "chatId" | "message", val: string) => {
-    const current = parsedAutomation.telegram || { chatId: "", message: "" };
-    const updated = { ...current, [field]: val };
-    // Only keep if chatId is set
-    updateAutomation({
-      telegram: updated.chatId ? updated : undefined,
-    });
-  };
-
-  const addWebhook = () => {
-    const current = parsedAutomation.webhooks || [];
-    updateAutomation({
-      webhooks: [...current, { url: "", method: "POST" }],
-    });
-  };
-
-  const updateWebhook = (index: number, field: string, val: string) => {
-    const current = [...(parsedAutomation.webhooks || [])];
-    if (current[index]) {
-      current[index] = { ...current[index], [field]: val };
-      updateAutomation({ webhooks: current });
-    }
-  };
-
-  const removeWebhook = (index: number) => {
-    const current = [...(parsedAutomation.webhooks || [])];
-    current.splice(index, 1);
-    updateAutomation({ webhooks: current.length ? current : undefined });
-  };
-
-  // Available variables for autocomplete hint
-  const availableVars = [
-    "PROFILE_ID",
-    "PROFILE_NAME",
-    "CDP_PORT",
-    "PROXY_IP",
-    "IP_COUNTRY",
-    "BROWSER_PID",
-    ...Object.keys(variables),
-  ];
-
   return (
     <div className="space-y-4 p-4">
       {/* Profile Selection */}
       <div className="space-y-1.5">
         <Label className="text-xs">
-          {t("automation.nodes.openProfile.params.profileId")}
-          <span className="text-destructive"> *</span>
+          {t("automation.nodes.openProfile.params.profileId") ||
+            "Profile Override"}
         </Label>
         <Input
           value={value.profileId}
@@ -192,175 +141,205 @@ export function OpenProfileForm({
           className="font-mono text-sm"
         />
         <p className="text-[11px] text-muted-foreground">
-          {t("automation.nodes.openProfile.params.profileIdHelp")}
+          {t("automation.nodes.openProfile.params.profileIdHelp") ||
+            "Select a profile to override, or leave blank to use the current profile"}
         </p>
       </div>
 
-      {/* Automation Accordion */}
+      {/* Settings Accordion */}
       <div className="space-y-2">
-        <Label className="text-xs">Automation (Optional)</Label>
-        <Accordion type="multiple" className="w-full border rounded-md">
-          {/* Dynamic Proxy */}
-          <AccordionItem value="proxy" className="border-b-0 px-3">
+        <Label className="text-xs">Browser Settings Override</Label>
+        <Accordion
+          type="multiple"
+          defaultValue={["proxy"]}
+          className="w-full border rounded-md"
+        >
+          {/* Proxy Config */}
+          <AccordionItem value="proxy" className="border-b px-3">
             <AccordionTrigger className="py-2 text-sm hover:no-underline">
-              Dynamic Proxy
+              Proxy settings
             </AccordionTrigger>
-            <AccordionContent className="pb-3">
+            <AccordionContent className="pb-3 space-y-3">
               <div className="space-y-1.5">
+                <Label className="text-xs">Proxy String</Label>
                 <Input
-                  value={parsedAutomation.dynamicProxy?.url || ""}
-                  onChange={(e) => updateProxyUrl(e.target.value)}
-                  placeholder="https://api.example.com/proxy"
-                  className="text-sm"
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  URL to fetch proxy from. Use {`{{PROFILE_ID}}`} for
-                  interpolation.
-                </p>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* IP Check */}
-          <AccordionItem value="ipCheck" className="border-b-0 px-3">
-            <AccordionTrigger className="py-2 text-sm hover:no-underline">
-              IP Check
-            </AccordionTrigger>
-            <AccordionContent className="pb-3 space-y-2">
-              <div className="space-y-1.5">
-                <Label className="text-xs">
-                  Allowed Countries (comma-separated)
-                </Label>
-                <Input
-                  value={
-                    parsedAutomation.ipCheck?.allowedCountries?.join(", ") || ""
-                  }
+                  value={parsedAutomation.proxyString || ""}
                   onChange={(e) =>
-                    updateAutomation({
-                      ipCheck: {
-                        ...parsedAutomation.ipCheck,
-                        allowedCountries: e.target.value
-                          .split(",")
-                          .map((s) => s.trim().toUpperCase())
-                          .filter(Boolean),
-                      },
-                    })
+                    updateAutomation({ proxyString: e.target.value })
                   }
-                  placeholder="US, GB, DE"
-                  className="text-sm"
+                  placeholder="ip:port:user:pass or http://user:pass@ip:port"
+                  className="text-sm font-mono"
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  Leave empty to allow all countries.
-                </p>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Max Fraud Score (0-100)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={parsedAutomation.ipCheck?.maxFraudScore ?? 100}
-                  onChange={(e) =>
-                    updateAutomation({
-                      ipCheck: {
-                        ...parsedAutomation.ipCheck,
-                        maxFraudScore: parseInt(e.target.value, 10) || 100,
-                      },
-                    })
-                  }
-                  className="text-sm"
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  Set to 100 to disable fraud score check.
-                </p>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
 
-          {/* Webhooks */}
-          <AccordionItem value="webhooks" className="border-b-0 px-3">
-            <AccordionTrigger className="py-2 text-sm hover:no-underline">
-              Webhooks ({parsedAutomation.webhooks?.length || 0})
-            </AccordionTrigger>
-            <AccordionContent className="pb-3 space-y-2">
-              {(parsedAutomation.webhooks || []).map((webhook, i) => (
-                <div key={i} className="space-y-1.5 p-2 border rounded">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs">Webhook {i + 1}</Label>
-                    <button
-                      type="button"
-                      onClick={() => removeWebhook(i)}
-                      className="text-xs text-destructive hover:underline"
-                    >
-                      Remove
-                    </button>
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Proxy Type</Label>
+                  <select
+                    value={parsedAutomation.proxyType || "http"}
+                    onChange={(e) =>
+                      updateAutomation({ proxyType: e.target.value })
+                    }
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="http">http</option>
+                    <option value="socks5">socks5</option>
+                    <option value="socks4">socks4</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Proxy Login</Label>
                   <Input
-                    value={webhook.url}
-                    onChange={(e) => updateWebhook(i, "url", e.target.value)}
-                    placeholder="https://example.com/webhook"
+                    value={parsedAutomation.proxyLogin || ""}
+                    onChange={(e) =>
+                      updateAutomation({ proxyLogin: e.target.value })
+                    }
+                    placeholder="Login"
                     className="text-sm"
                   />
-                  <div className="flex gap-2">
-                    <Input
-                      value={webhook.method || "POST"}
-                      onChange={(e) =>
-                        updateWebhook(i, "method", e.target.value)
-                      }
-                      placeholder="POST"
-                      className="text-sm w-24"
-                    />
-                    <Input
-                      value={webhook.body || ""}
-                      onChange={(e) => updateWebhook(i, "body", e.target.value)}
-                      placeholder="Body (optional)"
-                      className="text-sm flex-1"
-                    />
-                  </div>
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={addWebhook}
-                className="text-xs text-primary hover:underline"
-              >
-                + Add Webhook
-              </button>
-            </AccordionContent>
-          </AccordionItem>
+              </div>
 
-          {/* Telegram */}
-          <AccordionItem value="telegram" className="px-3">
-            <AccordionTrigger className="py-2 text-sm hover:no-underline">
-              Telegram Alert
-            </AccordionTrigger>
-            <AccordionContent className="pb-3 space-y-2">
               <div className="space-y-1.5">
-                <Label className="text-xs">Chat ID</Label>
+                <Label className="text-xs">Proxy password</Label>
                 <Input
-                  value={parsedAutomation.telegram?.chatId || ""}
-                  onChange={(e) => updateTelegram("chatId", e.target.value)}
-                  placeholder="-1001234567890"
+                  type="password"
+                  value={parsedAutomation.proxyPassword || ""}
+                  onChange={(e) =>
+                    updateAutomation({ proxyPassword: e.target.value })
+                  }
+                  placeholder="Password"
                   className="text-sm"
                 />
               </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Security settings */}
+          <AccordionItem value="security" className="border-b px-3">
+            <AccordionTrigger className="py-2 text-sm hover:no-underline">
+              Security settings
+            </AccordionTrigger>
+            <AccordionContent className="pb-3 space-y-3">
+              <p className="text-[11px] text-muted-foreground">
+                Options below will help you to adjust different browser settings
+                to match new proxy, for example: timezone and geolocation.
+                Default settings will work fine.
+              </p>
+
               <div className="space-y-1.5">
-                <Label className="text-xs">Message</Label>
-                <Textarea
-                  value={parsedAutomation.telegram?.message || ""}
-                  onChange={(e) => updateTelegram("message", e.target.value)}
-                  placeholder="Profile {{PROFILE_ID}} opened with IP {{proxy_ip}}"
-                  className="text-sm min-h-[60px]"
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  Variables:{" "}
-                  {availableVars
-                    .slice(0, 5)
-                    .map((v) => `{{${v}}}`)
-                    .join(", ")}
-                  {availableVars.length > 5 ? "..." : ""}
-                </p>
+                <Label className="text-xs">Change timezone</Label>
+                <select
+                  value={parsedAutomation.changeTimezone || "true"}
+                  onChange={(e) =>
+                    updateAutomation({ changeTimezone: e.target.value })
+                  }
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
               </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Change geolocation</Label>
+                <select
+                  value={parsedAutomation.changeGeolocation || "false"}
+                  onChange={(e) =>
+                    updateAutomation({ changeGeolocation: e.target.value })
+                  }
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Change browser language</Label>
+                <select
+                  value={parsedAutomation.changeLanguage || "true"}
+                  onChange={(e) =>
+                    updateAutomation({ changeLanguage: e.target.value })
+                  }
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* WebRTC settings */}
+          <AccordionItem value="webrtc" className="border-b px-3">
+            <AccordionTrigger className="py-2 text-sm hover:no-underline">
+              WebRTC settings
+            </AccordionTrigger>
+            <AccordionContent className="pb-3 space-y-1.5">
+              <Label className="text-xs">WebRTC mode</Label>
+              <select
+                value={parsedAutomation.webrtcMode || "alter"}
+                onChange={(e) =>
+                  updateAutomation({ webrtcMode: e.target.value })
+                }
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="alter">alter</option>
+                <option value="block">block</option>
+                <option value="forward">forward</option>
+              </select>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Custom DNS */}
+          <AccordionItem value="dns" className="border-b px-3">
+            <AccordionTrigger className="py-2 text-sm hover:no-underline">
+              Custom DNS
+            </AccordionTrigger>
+            <AccordionContent className="pb-3 space-y-1.5">
+              <Label className="text-xs">DNS Address</Label>
+              <Input
+                value={parsedAutomation.customDns || ""}
+                onChange={(e) =>
+                  updateAutomation({ customDns: e.target.value })
+                }
+                placeholder="e.g. 8.8.8.8"
+                className="text-sm font-mono"
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* IP detection */}
+          <AccordionItem value="ipDetect" className="border-b px-3">
+            <AccordionTrigger className="py-2 text-sm hover:no-underline">
+              IP detection
+            </AccordionTrigger>
+            <AccordionContent className="pb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Enable IP fraud check before opening
+                </span>
+                <Switch
+                  checked={parsedAutomation.ipDetection !== false}
+                  onCheckedChange={(checked) =>
+                    updateAutomation({ ipDetection: checked })
+                  }
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* IP information */}
+          <AccordionItem value="ipInfo" className="px-3">
+            <AccordionTrigger className="py-2 text-sm hover:no-underline">
+              IP information
+            </AccordionTrigger>
+            <AccordionContent className="pb-3">
+              <p className="text-xs text-muted-foreground italic">
+                IP and geo coordinates will be resolved from proxy at launch.
+              </p>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

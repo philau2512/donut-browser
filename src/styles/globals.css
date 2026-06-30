@@ -155,6 +155,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  select,
+  option {
+    @apply bg-background text-foreground;
+  }
   /* Interactive elements show a pointer cursor app-wide, so cursor behavior is
      consistent everywhere without per-element classes — and there's no lingering
      "fix the cursor" surface for drive-by PRs. Disabled controls rely on

@@ -21,7 +21,7 @@ export const PROFILE_CATALOG: AutomationNodeCatalogItem[] = [
       {
         key: "profileId",
         kind: "string",
-        required: true,
+        required: false,
         supportsExpression: true,
         placeholder: "{{PROFILE_ID}} or profile name",
         labelKey: "automation.nodes.openProfile.params.profileId",

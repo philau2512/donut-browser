@@ -45,7 +45,7 @@ pub async fn launch_browser_profile_impl(
   let browser_runner = BrowserRunner::instance();
 
   // Resolve the most up-to-date profile from disk by ID to avoid using stale proxy_id/browser state
-  let profile_for_launch = match browser_runner
+  let mut profile_for_launch = match browser_runner
     .profile_manager
     .list_profiles()
     .map_err(|e| format!("Failed to list profiles: {e}"))
@@ -58,6 +58,67 @@ pub async fn launch_browser_profile_impl(
       return Err(e);
     }
   };
+
+  // Apply active launch overrides from LAUNCH_OVERRIDES if present
+  let profile_id_str = profile_for_launch.id.to_string();
+  if let Ok(guard) = LAUNCH_OVERRIDES.lock() {
+    if let Some(overrides) = guard.get(&profile_id_str) {
+      log::info!(
+        "[AUTOMATION] [LAUNCH] Applying active launch overrides for profile {}: {:?}",
+        profile_for_launch.name,
+        overrides
+      );
+
+      // Overwrite dns blocklist
+      if let Some(ref dns_opt) = overrides.dns_blocklist {
+        profile_for_launch.dns_blocklist = dns_opt.clone();
+      }
+
+      // Overwrite proxy/VPN fields so they don't overwrite or conflict
+      if overrides.proxy.is_some() {
+        profile_for_launch.proxy_id = None;
+        profile_for_launch.vpn_id = None;
+      }
+
+      // Overwrite Wayfern config fields
+      if let Some(ref mut wayfern_config) = profile_for_launch.wayfern_config {
+        if let Some(block) = overrides.block_webrtc {
+          wayfern_config.block_webrtc = Some(block);
+        }
+        if let Some(ref mode) = overrides.webrtc_mode {
+          wayfern_config.webrtc_mode = Some(mode.clone());
+        }
+        if let Some(ref geo) = overrides.change_geolocation {
+          if geo == "false" {
+            wayfern_config.geoip = Some(serde_json::Value::Bool(false));
+          } else if geo != "true" {
+            wayfern_config.geoip = Some(serde_json::Value::String(geo.clone()));
+          } else {
+            wayfern_config.geoip = Some(serde_json::Value::Bool(true));
+          }
+        }
+      }
+
+      // Overwrite Camoufox config fields
+      if let Some(ref mut camoufox_config) = profile_for_launch.camoufox_config {
+        if let Some(block) = overrides.block_webrtc {
+          camoufox_config.block_webrtc = Some(block);
+        }
+        if let Some(ref mode) = overrides.webrtc_mode {
+          camoufox_config.webrtc_mode = Some(mode.clone());
+        }
+        if let Some(ref geo) = overrides.change_geolocation {
+          if geo == "false" {
+            camoufox_config.geoip = Some(serde_json::Value::Bool(false));
+          } else if geo != "true" {
+            camoufox_config.geoip = Some(serde_json::Value::String(geo.clone()));
+          } else {
+            camoufox_config.geoip = Some(serde_json::Value::Bool(true));
+          }
+        }
+      }
+    }
+  }
 
   log::info!(
     "Resolved profile for launch: {} (ID: {})",
@@ -264,6 +325,17 @@ pub async fn open_url_with_profile(
     .await
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct LaunchOverrides {
+  pub proxy: Option<Option<ProxySettings>>, // Some(None) = Direct/No proxy, Some(Some(p)) = Override proxy, None = No override (use db/original)
+  pub block_webrtc: Option<bool>,
+  pub webrtc_mode: Option<String>,
+  pub change_timezone: Option<String>,
+  pub change_geolocation: Option<String>,
+  pub change_language: Option<String>,
+  pub dns_blocklist: Option<Option<String>>, // Some(None) = Disable blocklist, Some(Some(d)) = Override blocklist, None = No override
+}
+
 // Global singleton instance
 lazy_static::lazy_static! {
   static ref BROWSER_RUNNER: BrowserRunner = BrowserRunner::new();
@@ -271,5 +343,7 @@ lazy_static::lazy_static! {
     std::sync::Mutex::new(std::collections::HashMap::new());
   pub static ref EXPECTED_PROFILE_STOPS: std::sync::Mutex<std::collections::HashSet<String>> =
     std::sync::Mutex::new(std::collections::HashSet::new());
+  pub static ref LAUNCH_OVERRIDES: std::sync::Mutex<std::collections::HashMap<String, LaunchOverrides>> =
+    std::sync::Mutex::new(std::collections::HashMap::new());
 }
 

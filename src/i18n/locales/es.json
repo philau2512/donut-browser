@@ -2237,7 +2237,8 @@
       "localCommand": "Local Command",
       "cleanup": "Cleanup",
       "dynamicProxy": "Dynamic Proxy",
-      "telegramAlert": "Telegram Alert"
+      "telegramAlert": "Telegram Alert",
+      "openProfile": "Browser Settings"
     },
     "dependencyWarning": "Dependency issue"
   }

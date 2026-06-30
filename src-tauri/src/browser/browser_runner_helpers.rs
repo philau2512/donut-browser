@@ -127,6 +127,19 @@ async fn resolve_launch_proxy(
   &self,
   profile: &BrowserProfile,
 ) -> Result<Option<ProxySettings>, String> {
+  // Check launch overrides first
+  if let Ok(guard) = LAUNCH_OVERRIDES.lock() {
+    if let Some(overrides) = guard.get(&profile.id.to_string()) {
+      if let Some(ref proxy_opt) = overrides.proxy {
+        log::info!(
+          "[AUTOMATION] [LAUNCH] Using overridden proxy from LAUNCH_OVERRIDES: {:?}",
+          proxy_opt
+        );
+        return Ok(proxy_opt.clone());
+      }
+    }
+  }
+
   Self::fire_launch_hook(profile);
 
   // Run before_open automation pipeline if configured

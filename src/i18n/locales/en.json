@@ -2242,7 +2242,7 @@
       "cleanup": "Cleanup",
       "dynamicProxy": "Dynamic Proxy",
       "telegramAlert": "Telegram Alert",
-      "openProfile": "Open Profile",
+      "openProfile": "Browser Settings",
       "closeProfile": "Close Profile"
     },
     "dependencyWarning": "Dependency issue",
@@ -2621,14 +2621,14 @@
         "label": "Open URL"
       },
       "openProfile": {
-        "description": "Open browser profile with automation (proxy, IP check, webhooks)",
-        "document": "Opens a browser profile with built-in automation: dynamic proxy fetching, IP validation, webhooks, and Telegram notifications. Outputs variables for downstream nodes.",
-        "label": "Open Profile",
+        "description": "Configure proxy and browser settings before launch",
+        "document": "Applies custom proxy settings, timezone, geolocation, language, WebRTC, and DNS settings before opening the browser profile.",
+        "label": "Browser Settings",
         "params": {
-          "profileId": "Profile",
-          "profileIdHelp": "Select the browser profile to open",
-          "automation": "Automation Config",
-          "automationHelp": "JSON configuration for automation (proxy, IP check, webhooks, telegram)"
+          "profileId": "Profile Override",
+          "profileIdHelp": "Select a profile to override, or leave blank to use the current profile",
+          "automation": "Browser Settings Config",
+          "automationHelp": "JSON configuration for browser proxy and fingerprint overrides"
         }
       },
       "pressKey": {
