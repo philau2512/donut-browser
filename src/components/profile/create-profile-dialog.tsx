@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 import type {
   BrowserProfile,
   CamoufoxConfig,
+  ProfileAutomation,
   WayfernConfig,
   WayfernOS,
 } from "@/types";
@@ -134,6 +135,11 @@ export function CreateProfileDialog({
 
   // Camoufox Config (for batch/single creation)
   const [camoufoxConfig, _setCamoufoxConfig] = useState<CamoufoxConfig>({});
+
+  // Automation Config
+  const [automation, setAutomation] = useState<ProfileAutomation | undefined>(
+    undefined,
+  );
 
   // Loading States
   const [showProxyForm, setShowProxyForm] = useState(false);
@@ -623,10 +629,8 @@ export function CreateProfileDialog({
 
                 <TabsContent value="automation" className="m-0 space-y-4">
                   <AutomationTab
-                    automation={profileData.automation}
-                    onChange={(automation) =>
-                      setProfileData({ ...profileData, automation })
-                    }
+                    automation={automation}
+                    onChange={setAutomation}
                   />
                 </TabsContent>
               </div>

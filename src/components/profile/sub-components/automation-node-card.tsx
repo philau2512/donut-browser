@@ -103,7 +103,7 @@ export function AutomationNodeCard({
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{getNodeTypeLabel(node.type)}</Badge>
                 {hasOrderingIssue && (
-                  <Badge variant="warning" className="gap-1">
+                  <Badge variant="outline" className="gap-1">
                     <AlertTriangle className="h-3 w-3" />
                     {t("automation.dependencyWarning")}
                   </Badge>
@@ -157,7 +157,7 @@ export function AutomationNodeCard({
           <CollapsibleContent>
             <CardContent className="pt-0">
               {hasOrderingIssue && orderingWarning && (
-                <Alert variant="warning" className="mb-4">
+                <Alert variant="destructive" className="mb-4">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>{orderingWarning}</AlertDescription>
                 </Alert>

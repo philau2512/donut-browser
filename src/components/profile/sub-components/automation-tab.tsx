@@ -113,7 +113,6 @@ export function AutomationTab({ automation, onChange }: AutomationTabProps) {
           label: t("automation.nodeTypes.localCommand"),
           command: "",
           env_vars: {},
-          timeout_seconds: 300,
           ...baseConfig,
         };
       case "webhook":
@@ -256,7 +255,7 @@ export function AutomationTab({ automation, onChange }: AutomationTabProps) {
     };
 
   const checkVariableDependency = (
-    node: AutomationNodeConfig,
+    node: NodeWithId,
     stage: "before_open" | "after_close",
   ): {
     hasIssue: boolean;
