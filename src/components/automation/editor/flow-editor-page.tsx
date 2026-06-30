@@ -10,14 +10,8 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { LuChevronRight, LuMenu, LuPlay, LuSave } from "react-icons/lu";
+import { LuList, LuPlay, LuSave, LuVariable } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -34,7 +28,7 @@ import {
 } from "./flow-log-panel";
 import { NodeCommentDialog } from "./node-comment-dialog";
 import { NodePalette } from "./node-palette";
-import { NodePropertiesPanel } from "./node-properties-panel";
+import { NodePropertiesDialog } from "./node-properties-dialog";
 import {
   type AutomationCanvasEdge,
   type AutomationCanvasNode,
@@ -68,10 +62,8 @@ export function FlowEditorPage({
   );
 
   // Workspace UI states
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
-  const [activeRightTab, setActiveRightTab] = useState<
-    "properties" | "variables" | "resources"
-  >("variables");
+  const [isVariablesPanelOpen, setIsVariablesPanelOpen] = useState(false);
+  const [isPropertiesDialogOpen, setIsPropertiesDialogOpen] = useState(false);
   const [isLogPanelOpen, setIsLogPanelOpen] = useState(false);
   const [isCanvasLocked, setIsCanvasLocked] = useState(false);
 
@@ -100,8 +92,7 @@ export function FlowEditorPage({
 
   const handleEditNode = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
-    setActiveRightTab("properties");
-    setIsRightSidebarOpen(true);
+    setIsPropertiesDialogOpen(true);
   }, []);
 
   const handleCommentNode = useCallback((nodeId: string) => {
@@ -391,10 +382,6 @@ export function FlowEditorPage({
 
   const selectNodeAndFocus = (nodeId: string | null) => {
     setSelectedNodeId(nodeId);
-    if (nodeId) {
-      setActiveRightTab("properties");
-      setIsRightSidebarOpen(true);
-    }
   };
 
   return (
@@ -416,7 +403,31 @@ export function FlowEditorPage({
           />
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {/* Quick Actions */}
+          {/* Toggle Variables Panel */}
+          <Button
+            type="button"
+            variant={isVariablesPanelOpen ? "secondary" : "outline"}
+            size="icon"
+            className="size-9"
+            title={t("automation.editor.tabs.variables")}
+            onClick={() => setIsVariablesPanelOpen((v) => !v)}
+          >
+            <LuVariable className="size-4" />
+          </Button>
+
+          {/* Toggle Log Panel */}
+          <Button
+            type="button"
+            variant={isLogPanelOpen ? "secondary" : "outline"}
+            size="icon"
+            className="size-9"
+            title={t("automation.editor.sidebar.showLogs")}
+            onClick={() => setIsLogPanelOpen((v) => !v)}
+          >
+            <LuList className="size-4" />
+          </Button>
+
+          {/* Run */}
           <Button
             type="button"
             variant="outline"
@@ -424,8 +435,10 @@ export function FlowEditorPage({
             onClick={handleRunFlow}
           >
             <LuPlay className="mr-2 size-4 text-emerald-500 fill-emerald-500/20" />
-            {t("common.buttons.run") || "Run"}
+            {t("common.buttons.run")}
           </Button>
+
+          {/* Save */}
           <Button
             type="button"
             disabled={isSaving || isLoading}
@@ -436,45 +449,6 @@ export function FlowEditorPage({
               ? t("automation.editor.saving")
               : t("common.buttons.save")}
           </Button>
-
-          {/* Settings & Logs Dropdown Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-9"
-              >
-                <LuMenu className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => setIsLogPanelOpen((prev) => !prev)}
-              >
-                {isLogPanelOpen
-                  ? t("automation.editor.sidebar.hideLogs")
-                  : t("automation.editor.sidebar.showLogs")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setIsRightSidebarOpen(true);
-                  setActiveRightTab("variables");
-                }}
-              >
-                {t("automation.editor.tabs.variables")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setIsRightSidebarOpen(true);
-                  setActiveRightTab("resources");
-                }}
-              >
-                {t("automation.editor.sidebar.settings")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 
@@ -508,108 +482,27 @@ export function FlowEditorPage({
           )}
         </div>
 
-        {/* Right Sidebar: Multi-Tab Properties & Variables */}
-        {isRightSidebarOpen && (
-          <aside className="w-80 shrink-0 border border-border bg-card rounded-lg flex flex-col overflow-hidden shadow-md">
-            {/* Sidebar Tab Header */}
-            <div className="shrink-0 flex items-center justify-between border-b border-border bg-muted/40 p-2">
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={
-                    activeRightTab === "properties" ? "secondary" : "ghost"
-                  }
-                  className="h-7 text-xs px-2.5 font-semibold"
-                  onClick={() => setActiveRightTab("properties")}
-                >
-                  {t("automation.editor.tabs.properties")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={
-                    activeRightTab === "variables" ? "secondary" : "ghost"
-                  }
-                  className="h-7 text-xs px-2.5 font-semibold"
-                  onClick={() => setActiveRightTab("variables")}
-                >
-                  {t("automation.editor.tabs.variables")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={
-                    activeRightTab === "resources" ? "secondary" : "ghost"
-                  }
-                  className="h-7 text-xs px-2.5 font-semibold"
-                  onClick={() => setActiveRightTab("resources")}
-                >
-                  {t("automation.editor.tabs.resources")}
-                </Button>
-              </div>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="size-6 text-muted-foreground hover:text-foreground"
-                onClick={() => setIsRightSidebarOpen(false)}
-                title={t("automation.editor.sidebar.collapse")}
-              >
-                <LuChevronRight className="size-4" />
-              </Button>
-            </div>
-
-            {/* Sidebar Tab Content */}
-            <div className="flex-1 min-h-0 overflow-hidden">
-              {activeRightTab === "properties" && (
-                <NodePropertiesPanel
-                  node={selectedNode}
-                  nodes={nodes}
-                  edges={edges}
-                  variables={variables}
-                  onParamChange={updateSelectedParam}
-                  onContinueOnErrorChange={updateSelectedContinueOnError}
-                />
-              )}
-              {activeRightTab === "variables" && (
-                <VariablesPanel variables={variables} onChange={setVariables} />
-              )}
-              {activeRightTab === "resources" && (
-                <div className="p-4 space-y-4 text-xs">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      {t("automation.editor.resources.generalSettings")}
-                    </Label>
-                    <div className="rounded-md border border-border p-3 space-y-3 bg-background/50">
-                      <div className="flex items-center justify-between">
-                        <span>
-                          {t("automation.editor.resources.saveLayout")}
-                        </span>
-                        <input type="checkbox" defaultChecked />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>
-                          {t("automation.editor.resources.autoAlign")}
-                        </span>
-                        <input type="checkbox" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      {t("automation.editor.resources.title")}
-                    </Label>
-                    <p className="text-muted-foreground italic">
-                      {t("automation.editor.resources.empty")}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Right Sidebar: Variables Panel */}
+        {isVariablesPanelOpen && (
+          <aside className="w-72 shrink-0 border border-border bg-card rounded-lg flex flex-col overflow-hidden shadow-md">
+            <VariablesPanel variables={variables} onChange={setVariables} />
           </aside>
         )}
       </div>
+
+      {/* Node Properties Dialog (modal) */}
+      <NodePropertiesDialog
+        node={selectedNode}
+        nodes={nodes}
+        edges={edges}
+        variables={variables}
+        onOpenChange={(open) => {
+          setIsPropertiesDialogOpen(open);
+          if (!open) setSelectedNodeId(null);
+        }}
+        onParamChange={updateSelectedParam}
+        onContinueOnErrorChange={updateSelectedContinueOnError}
+      />
 
       <NodeCommentDialog
         key={commentingNodeId || "none"}
