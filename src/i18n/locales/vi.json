@@ -2242,6 +2242,496 @@
       "dynamicProxy": "Dynamic Proxy",
       "telegramAlert": "Telegram Alert"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "script": {
+      "searchPlaceholder": "Tìm kiếm script...",
+      "import": "Nhập script",
+      "add": "Thêm script",
+      "empty": "Chưa có script tự động hóa nào",
+      "confirm": {
+        "deleteDescription": "Bạn có chắc muốn xóa script này?",
+        "deleteTitle": "Xóa script",
+        "exportVariables": "Script này chứa biến. Xuất luôn các biến?",
+        "overwriteImport": "Script '{name}' đã tồn tại. Ghi đè?"
+      },
+      "delete": "Xóa",
+      "duplicate": "Nhân bản",
+      "edit": "Chỉnh sửa",
+      "errors": {
+        "deleteFailed": "Xóa script thất bại: {error}",
+        "duplicateFailed": "Nhân bản script thất bại: {error}",
+        "exportFailed": "Xuất script thất bại: {error}",
+        "importFailed": "Nhập script thất bại: {error}"
+      },
+      "export": "Xuất",
+      "loading": "Đang tải...",
+      "modifiedAt": "Sửa lần cuối: {date}",
+      "noMatches": "Không tìm thấy script nào",
+      "toast": {
+        "deleted": "Đã xóa script '{name}'",
+        "duplicated": "Đã nhân bản script thành '{name}'",
+        "exported": "Đã xuất script '{name}'",
+        "imported": "Đã nhập script '{name}'"
+      }
+    },
+    "editor": {
+      "palette": "Bảng lệnh",
+      "paletteHint": "Chọn một hành động để thêm vào script",
+      "searchNodes": "Tìm kiếm hành động...",
+      "groups": {
+        "navigator": "Điều hướng",
+        "mouse": "Chuột",
+        "keyboard": "Bàn phím",
+        "data": "Dữ liệu"
+      },
+      "start": "Bắt đầu",
+      "booleanEnabled": "Bật",
+      "comment": {
+        "characters": "ký tự",
+        "title": "Chú thích"
+      },
+      "errors": {
+        "loadFailed": "Tải script thất bại",
+        "saveFailed": "Lưu script thất bại"
+      },
+      "linearHint": "Chế độ tuyến tính",
+      "name": "Tên script",
+      "namePlaceholder": "Nhập tên script...",
+      "properties": {
+        "continueOnError": "Tiếp tục khi lỗi",
+        "continueOnErrorHint": "Bỏ qua lỗi và tiếp tục các bước tiếp theo",
+        "document": "Tài liệu",
+        "options": "Tùy chọn",
+        "setting": "Cài đặt"
+      },
+      "saving": "Đang lưu...",
+      "toast": {
+        "saved": "Đã lưu script",
+        "startFromHere": "Bắt đầu từ đây"
+      },
+      "toolbar": {
+        "delete": "Xóa",
+        "edit": "Chỉnh sửa",
+        "startFromHere": "Bắt đầu từ đây"
+      },
+      "variables": {
+        "add": "Thêm biến",
+        "autoInjected": "Tự động inject",
+        "description": "Mô tả",
+        "reserved": "Biến hệ thống",
+        "title": "Biến"
+      }
+    },
+    "actions": {
+      "run": "Chạy",
+      "starting": "Đang bắt đầu...",
+      "stopAll": "Dừng tất cả"
+    },
+    "errors": {
+      "readFlowFailed": "Đọc script thất bại",
+      "startFailed": "Khởi động script thất bại",
+      "stopFailed": "Dừng script thất bại"
+    },
+    "flow": {
+      "empty": "Script trống",
+      "label": "Nhãn",
+      "placeholder": "Nhập nhãn...",
+      "refresh": "Làm mới"
+    },
+    "grid": {
+      "empty": "Chưa có script nào",
+      "stopProfile": "Dừng profile"
+    },
+    "log": {
+      "allProfiles": "Tất cả profile",
+      "empty": "Chưa có log nào",
+      "openFile": "Mở file",
+      "scrollLock": "Khóa cuộn",
+      "scrollUnlock": "Mở khóa cuộn",
+      "title": "Nhật ký"
+    },
+    "profiles": {
+      "deselectAll": "Bỏ chọn tất cả",
+      "empty": "Không có profile",
+      "label": "Profile",
+      "selectAll": "Chọn tất cả"
+    },
+    "review": {
+      "confirm": "Xác nhận",
+      "description": "Mô tả",
+      "noSelectors": "Không có selector",
+      "noUrls": "Không có URL",
+      "selectors": "Selector",
+      "templatedOrInvalidHost": "Host không hợp lệ hoặc có template",
+      "title": "Xem lại",
+      "urls": "URL"
+    },
+    "runInfo": "Thông tin chạy",
+    "settings": {
+      "closeOnComplete": "Đóng khi hoàn tất",
+      "closeOnCompleteHint": "Tự động đóng trình duyệt sau khi script hoàn tất",
+      "concurrency": "Số profile chạy đồng thời",
+      "concurrencyHint": "Số lượng profile tối đa chạy cùng lúc",
+      "delayOpen": "Độ trễ mở profile (ms)",
+      "delayOpenHint": "Đợi bao lâu trước khi mở profile tiếp theo",
+      "headless": "Chế độ headless",
+      "headlessHint": "Chạy trình duyệt ẩn (không hiển thị cửa sổ)",
+      "noOverlapping": "Không chồng chéo",
+      "noOverlappingHint": "Không chạy nhiều script trên cùng profile",
+      "title": "Cài đặt",
+      "writeLogs": "Ghi log",
+      "writeLogsHint": "Lưu nhật ký chi tiết vào file"
+    },
+    "nodes": {
+      "addComment": {
+        "description": "Thêm chú thích",
+        "document": "Thêm chú thích không thực thi để ghi chú script.",
+        "label": "Thêm Chú Thích",
+        "params": {
+          "comment": "Chú thích"
+        }
+      },
+      "addLog": {
+        "description": "Ghi vào log",
+        "document": "Ghi một thông điệp vào log automation.",
+        "label": "Ghi Log",
+        "params": {
+          "level": "Cấp độ",
+          "message": "Thông điệp"
+        }
+      },
+      "clearCookies": {
+        "description": "Xóa cookies",
+        "document": "Xóa tất cả cookies khỏi trình duyệt.",
+        "label": "Xóa Cookies"
+      },
+      "clearInput": {
+        "description": "Xóa trường nhập",
+        "document": "Xóa giá trị của trường nhập liệu.",
+        "label": "Xóa Input"
+      },
+      "click": {
+        "description": "Click phần tử",
+        "document": "Click vào phần tử khớp với selector đã chỉ định.",
+        "label": "Click"
+      },
+      "clickDown": {
+        "description": "Giữ nút chuột",
+        "document": "Nhấn và giữ nút chuột tại vị trí đã chỉ định.",
+        "label": "Nhấn Chuột"
+      },
+      "clickUp": {
+        "description": "Thả nút chuột",
+        "document": "Thả nút chuột đã nhấn trước đó.",
+        "label": "Thả Chuột"
+      },
+      "closeTab": {
+        "description": "Đóng tab hiện tại",
+        "document": "Đóng tab trình duyệt đang hoạt động.",
+        "label": "Đóng Tab"
+      },
+      "convertingJson": {
+        "description": "Parse hoặc stringify JSON",
+        "document": "Chuyển đổi giữa chuỗi JSON và đối tượng JavaScript.",
+        "label": "Chuyển Đổi JSON",
+        "options": {
+          "parse": "Parse",
+          "stringify": "Stringify"
+        },
+        "params": {
+          "input": "Đầu vào",
+          "operation": "Thao tác",
+          "saveToVar": "Lưu vào biến"
+        }
+      },
+      "delay": {
+        "description": "Tạm dừng thực thi",
+        "document": "Tạm dừng thực thi script trong khoảng thời gian nhất định.",
+        "label": "Tạm Dừng"
+      },
+      "downloadFile": {
+        "description": "Tải file",
+        "document": "Tải file từ URL về hệ thống.",
+        "label": "Tải File"
+      },
+      "dragAndDrop": {
+        "description": "Kéo phần tử đến đích",
+        "document": "Kéo phần tử từ nguồn đến vị trí đích.",
+        "label": "Kéo Thả"
+      },
+      "elementExists": {
+        "description": "Kiểm tra phần tử tồn tại",
+        "document": "Kiểm tra xem phần tử khớp với selector có tồn tại không.",
+        "label": "Kiểm Tra Phần Tử",
+        "options": {
+          "any": "Bất kỳ",
+          "hidden": "Ẩn",
+          "visible": "Hiển thị"
+        },
+        "params": {
+          "selector": "Selector",
+          "timeout": "Thời gian chờ (ms)",
+          "visibility": "Hiển thị"
+        }
+      },
+      "evalJs": {
+        "description": "Chạy code JS",
+        "document": "Thực thi code JavaScript tùy ý trong context trang.",
+        "label": "Chạy JavaScript"
+      },
+      "extractionInText": {
+        "description": "Trích xuất bằng regex",
+        "document": "Trích xuất văn bản khớp với mẫu biểu thức chính quy.",
+        "label": "Trích Xuất",
+        "params": {
+          "flags": "Cờ Regex",
+          "regex": "Mẫu Regex",
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "text": "Văn bản đầu vào"
+        }
+      },
+      "getAttributeValue": {
+        "description": "Lấy thuộc tính phần tử",
+        "document": "Lấy giá trị thuộc tính cụ thể từ phần tử.",
+        "label": "Lấy Thuộc Tính",
+        "params": {
+          "attribute": "Tên thuộc tính",
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "selector": "Selector",
+          "timeout": "Thời gian chờ (ms)"
+        }
+      },
+      "getCookies": {
+        "description": "Lấy cookies",
+        "document": "Lấy cookies của domain hiện tại.",
+        "label": "Lấy Cookies"
+      },
+      "getText": {
+        "description": "Trích xuất văn bản",
+        "document": "Lấy nội dung văn bản từ phần tử và lưu vào biến.",
+        "label": "Lấy Văn Bản",
+        "params": {
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "selector": "Selector",
+          "timeout": "Thời gian chờ (ms)"
+        }
+      },
+      "getUrl": {
+        "description": "Lấy URL trang hiện tại",
+        "document": "Lấy URL của trang hiện tại và lưu vào biến.",
+        "label": "Lấy URL",
+        "params": {
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]"
+        }
+      },
+      "getValue": {
+        "description": "Lấy giá trị input",
+        "document": "Lấy giá trị của trường nhập liệu.",
+        "label": "Lấy Giá Trị",
+        "params": {
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "selector": "Selector",
+          "timeout": "Thời gian chờ (ms)"
+        }
+      },
+      "goBack": {
+        "description": "Điều hướng lịch sử",
+        "document": "Điều hướng đến trang trước trong lịch sử trình duyệt.",
+        "label": "Quay Lại"
+      },
+      "goForward": {
+        "description": "Điều hướng lịch sử",
+        "document": "Điều hướng đến trang tiếp theo trong lịch sử trình duyệt.",
+        "label": "Tiến Tới"
+      },
+      "hover": {
+        "description": "Di chuột qua phần tử",
+        "document": "Di chuyển con trỏ chuột qua phần tử mà không click.",
+        "label": "Di Chuột"
+      },
+      "http": {
+        "description": "Gửi request HTTP",
+        "document": "Thực hiện request HTTP và lưu response nếu cần.",
+        "label": "Yêu Cầu HTTP",
+        "params": {
+          "body": "Nội dung request",
+          "headers": "Headers",
+          "method": "Phương thức",
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "timeout": "Thời gian chờ (ms)",
+          "url": "URL"
+        }
+      },
+      "ifCondition": {
+        "description": "Rẽ nhánh có điều kiện",
+        "document": "Thực thi các nhánh khác nhau dựa trên điều kiện.",
+        "label": "Điều Kiện If"
+      },
+      "imageSearch": {
+        "description": "Tìm ảnh trên màn hình",
+        "document": "Tìm kiếm ảnh trên màn hình bằng template matching.",
+        "label": "Tìm Ảnh",
+        "params": {
+          "imagePath": "Đường dẫn ảnh",
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "threshold": "Ngưỡng"
+        }
+      },
+      "log": {
+        "description": "Ghi console",
+        "document": "Ghi thông điệp vào console trình duyệt.",
+        "label": "Log Console"
+      },
+      "loopElements": {
+        "description": "Duyệt qua phần tử",
+        "document": "Duyệt qua tất cả phần tử khớp với selector.",
+        "label": "Lặp Phần Tử"
+      },
+      "loopFor": {
+        "description": "Lặp N lần",
+        "document": "Thực thi khối lệnh một số lần nhất định.",
+        "label": "Vòng Lặp For"
+      },
+      "newTab": {
+        "description": "Mở tab mới",
+        "document": "Mở tab trình duyệt mới với URL tùy chọn.",
+        "label": "Tab Mới"
+      },
+      "openUrl": {
+        "description": "Điều hướng đến URL",
+        "document": "Mở URL trong tab hiện tại hoặc tab mới.",
+        "label": "Mở URL"
+      },
+      "pressKey": {
+        "description": "Nhấn phím",
+        "document": "Mô phỏng nhấn phím hoặc tổ hợp phím.",
+        "label": "Nhấn Phím"
+      },
+      "random": {
+        "description": "Tạo dữ liệu ngẫu nhiên",
+        "document": "Tạo giá trị ngẫu nhiên các loại khác nhau.",
+        "label": "Giá Trị Ngẫu Nhiên",
+        "options": {
+          "email": "Email",
+          "firstName": "Tên",
+          "fullName": "Họ và tên",
+          "lastName": "Họ",
+          "number": "Số",
+          "password": "Mật khẩu",
+          "randomLetters": "Chữ ngẫu nhiên"
+        },
+        "params": {
+          "domain": "Domain",
+          "length": "Độ dài",
+          "max": "Tối đa",
+          "min": "Tối thiểu",
+          "quantity": "Số lượng",
+          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "type": "[TODO: Thêm bản dịch tiếng Việt]"
+        }
+      },
+      "readCsv": {
+        "description": "Đọc file CSV",
+        "document": "Đọc và parse file CSV.",
+        "label": "Đọc CSV"
+      },
+      "reloadPage": {
+        "description": "Tải lại trang",
+        "document": "Tải lại trang hiện tại, bỏ qua cache nếu cần.",
+        "label": "Tải Lại"
+      },
+      "runOtherScript": {
+        "description": "Thực thi script khác",
+        "document": "Chạy script automation khác từ trong script này.",
+        "label": "Chạy Script Khác",
+        "params": {
+          "scriptName": "Tên script",
+          "vars": "Biến"
+        }
+      },
+      "screenshot": {
+        "description": "Chụp ảnh màn hình",
+        "document": "Chụp ảnh màn hình trang hiện tại hoặc phần tử.",
+        "label": "Chụp Màn Hình"
+      },
+      "scroll": {
+        "description": "Cuộn trang",
+        "document": "Cuộn trang để hiển thị thêm nội dung.",
+        "label": "Cuộn"
+      },
+      "sendTextToSelector": {
+        "description": "Gửi văn bản đến phần tử",
+        "document": "Gửi văn bản đến phần tử khớp với selector.",
+        "label": "Gửi Văn Bản"
+      },
+      "setCookies": {
+        "description": "Đặt cookies",
+        "document": "Đặt cookies cho domain hiện tại.",
+        "label": "Đặt Cookies"
+      },
+      "setUserAgent": {
+        "description": "Ghi đè user agent",
+        "document": "Đặt chuỗi User-Agent tùy chỉnh cho các request.",
+        "label": "Đặt User Agent",
+        "params": {
+          "userAgent": "User Agent"
+        }
+      },
+      "setVariable": {
+        "description": "Lưu giá trị",
+        "document": "Lưu giá trị vào biến script.",
+        "label": "Đặt Biến"
+      },
+      "stopLoop": {
+        "description": "Thoát vòng lặp",
+        "document": "Thoát khỏi vòng lặp hiện tại ngay lập tức.",
+        "label": "Dừng Vòng Lặp"
+      },
+      "switchExtensionPopup": {
+        "description": "Mở popup extension",
+        "document": "Chuyển context sang trang popup của extension.",
+        "label": "Chuyển Popup Extension"
+      },
+      "switchFrame": {
+        "description": "Chuyển sang iframe",
+        "document": "Chuyển context sang iframe để thực hiện các thao tác tiếp theo.",
+        "label": "Chuyển Frame"
+      },
+      "switchTab": {
+        "description": "Chuyển sang tab khác",
+        "document": "Chuyển focus sang tab trình duyệt khác theo chỉ số.",
+        "label": "Chuyển Tab"
+      },
+      "type": {
+        "description": "Gõ văn bản",
+        "document": "Gõ văn bản vào phần tử đang được focus.",
+        "label": "Gõ"
+      },
+      "typeText": {
+        "description": "Gõ vào phần tử",
+        "document": "Gõ văn bản vào phần tử khớp với selector.",
+        "label": "Gõ Văn Bản"
+      },
+      "wait": {
+        "description": "Đợi điều kiện",
+        "document": "Đợi một điều kiện cụ thể trước khi tiếp tục.",
+        "label": "Đợi"
+      },
+      "while": {
+        "description": "Lặp khi điều kiện đúng",
+        "document": "Thực thi khối lệnh lặp lại khi điều kiện còn đúng.",
+        "label": "Vòng Lặp While",
+        "params": {
+          "leftValue": "Giá trị trái",
+          "operator": "Toán tử",
+          "rightValue": "Giá trị phải"
+        }
+      },
+      "writeCsv": {
+        "description": "Ghi file CSV",
+        "document": "Ghi dữ liệu ra file CSV.",
+        "label": "Ghi CSV"
+      }
+    }
   }
 }

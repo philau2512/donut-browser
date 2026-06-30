@@ -2243,6 +2243,496 @@
       "dynamicProxy": "Dynamic Proxy",
       "telegramAlert": "Telegram Alert"
     },
-    "dependencyWarning": "Dependency issue"
+    "dependencyWarning": "Dependency issue",
+    "script": {
+      "searchPlaceholder": "Search scripts...",
+      "import": "Import Script",
+      "add": "Add Script",
+      "empty": "No automation scripts yet",
+      "confirm": {
+        "deleteDescription": "[TODO: Add English translation]",
+        "deleteTitle": "[TODO: Add English translation]",
+        "exportVariables": "[TODO: Add English translation]",
+        "overwriteImport": "[TODO: Add English translation]"
+      },
+      "delete": "[TODO: Add English translation]",
+      "duplicate": "[TODO: Add English translation]",
+      "edit": "[TODO: Add English translation]",
+      "errors": {
+        "deleteFailed": "[TODO: Add English translation]",
+        "duplicateFailed": "[TODO: Add English translation]",
+        "exportFailed": "[TODO: Add English translation]",
+        "importFailed": "[TODO: Add English translation]"
+      },
+      "export": "[TODO: Add English translation]",
+      "loading": "[TODO: Add English translation]",
+      "modifiedAt": "[TODO: Add English translation]",
+      "noMatches": "[TODO: Add English translation]",
+      "toast": {
+        "deleted": "[TODO: Add English translation]",
+        "duplicated": "[TODO: Add English translation]",
+        "exported": "[TODO: Add English translation]",
+        "imported": "[TODO: Add English translation]"
+      }
+    },
+    "editor": {
+      "palette": "Palette",
+      "paletteHint": "Select an action to add to your script",
+      "searchNodes": "Search actions...",
+      "groups": {
+        "navigator": "Navigation",
+        "mouse": "Mouse",
+        "keyboard": "Keyboard",
+        "data": "Data"
+      },
+      "start": "Start",
+      "booleanEnabled": "[TODO: Add English translation]",
+      "comment": {
+        "characters": "[TODO: Add English translation]",
+        "title": "[TODO: Add English translation]"
+      },
+      "errors": {
+        "loadFailed": "[TODO: Add English translation]",
+        "saveFailed": "[TODO: Add English translation]"
+      },
+      "linearHint": "[TODO: Add English translation]",
+      "name": "[TODO: Add English translation]",
+      "namePlaceholder": "[TODO: Add English translation]",
+      "properties": {
+        "continueOnError": "[TODO: Add English translation]",
+        "continueOnErrorHint": "[TODO: Add English translation]",
+        "document": "[TODO: Add English translation]",
+        "options": "[TODO: Add English translation]",
+        "setting": "[TODO: Add English translation]"
+      },
+      "saving": "[TODO: Add English translation]",
+      "toast": {
+        "saved": "[TODO: Add English translation]",
+        "startFromHere": "[TODO: Add English translation]"
+      },
+      "toolbar": {
+        "delete": "[TODO: Add English translation]",
+        "edit": "[TODO: Add English translation]",
+        "startFromHere": "[TODO: Add English translation]"
+      },
+      "variables": {
+        "add": "[TODO: Add English translation]",
+        "autoInjected": "[TODO: Add English translation]",
+        "description": "[TODO: Add English translation]",
+        "reserved": "[TODO: Add English translation]",
+        "title": "[TODO: Add English translation]"
+      }
+    },
+    "actions": {
+      "run": "[TODO: Add English translation]",
+      "starting": "[TODO: Add English translation]",
+      "stopAll": "[TODO: Add English translation]"
+    },
+    "errors": {
+      "readFlowFailed": "[TODO: Add English translation]",
+      "startFailed": "[TODO: Add English translation]",
+      "stopFailed": "[TODO: Add English translation]"
+    },
+    "flow": {
+      "empty": "[TODO: Add English translation]",
+      "label": "[TODO: Add English translation]",
+      "placeholder": "[TODO: Add English translation]",
+      "refresh": "[TODO: Add English translation]"
+    },
+    "grid": {
+      "empty": "[TODO: Add English translation]",
+      "stopProfile": "[TODO: Add English translation]"
+    },
+    "log": {
+      "allProfiles": "[TODO: Add English translation]",
+      "empty": "[TODO: Add English translation]",
+      "openFile": "[TODO: Add English translation]",
+      "scrollLock": "[TODO: Add English translation]",
+      "scrollUnlock": "[TODO: Add English translation]",
+      "title": "[TODO: Add English translation]"
+    },
+    "profiles": {
+      "deselectAll": "[TODO: Add English translation]",
+      "empty": "[TODO: Add English translation]",
+      "label": "[TODO: Add English translation]",
+      "selectAll": "[TODO: Add English translation]"
+    },
+    "review": {
+      "confirm": "[TODO: Add English translation]",
+      "description": "[TODO: Add English translation]",
+      "noSelectors": "[TODO: Add English translation]",
+      "noUrls": "[TODO: Add English translation]",
+      "selectors": "[TODO: Add English translation]",
+      "templatedOrInvalidHost": "[TODO: Add English translation]",
+      "title": "[TODO: Add English translation]",
+      "urls": "[TODO: Add English translation]"
+    },
+    "runInfo": "[TODO: Add English translation]",
+    "settings": {
+      "closeOnComplete": "[TODO: Add English translation]",
+      "closeOnCompleteHint": "[TODO: Add English translation]",
+      "concurrency": "[TODO: Add English translation]",
+      "concurrencyHint": "[TODO: Add English translation]",
+      "delayOpen": "[TODO: Add English translation]",
+      "delayOpenHint": "[TODO: Add English translation]",
+      "headless": "[TODO: Add English translation]",
+      "headlessHint": "[TODO: Add English translation]",
+      "noOverlapping": "[TODO: Add English translation]",
+      "noOverlappingHint": "[TODO: Add English translation]",
+      "title": "[TODO: Add English translation]",
+      "writeLogs": "[TODO: Add English translation]",
+      "writeLogsHint": "[TODO: Add English translation]"
+    },
+    "nodes": {
+      "addComment": {
+        "description": "Add a comment",
+        "document": "Adds a non-executable comment to document the script.",
+        "label": "Add Comment",
+        "params": {
+          "comment": "Comment"
+        }
+      },
+      "addLog": {
+        "description": "Write to log",
+        "document": "Writes a message to the automation log.",
+        "label": "Add Log",
+        "params": {
+          "level": "Level",
+          "message": "Message"
+        }
+      },
+      "clearCookies": {
+        "description": "Clear all cookies",
+        "document": "Removes all cookies from the browser.",
+        "label": "Clear Cookies"
+      },
+      "clearInput": {
+        "description": "Clear input field",
+        "document": "Clears the value of an input field.",
+        "label": "Clear Input"
+      },
+      "click": {
+        "description": "Click an element",
+        "document": "Clicks on an element matching the specified selector.",
+        "label": "Click"
+      },
+      "clickDown": {
+        "description": "Press mouse button",
+        "document": "Presses and holds a mouse button at the specified position.",
+        "label": "Mouse Down"
+      },
+      "clickUp": {
+        "description": "Release mouse button",
+        "document": "Releases a previously pressed mouse button.",
+        "label": "Mouse Up"
+      },
+      "closeTab": {
+        "description": "Close current tab",
+        "document": "Closes the currently active browser tab.",
+        "label": "Close Tab"
+      },
+      "convertingJson": {
+        "description": "Parse or stringify JSON",
+        "document": "Converts between JSON strings and JavaScript objects.",
+        "label": "Convert JSON",
+        "options": {
+          "parse": "Parse",
+          "stringify": "Stringify"
+        },
+        "params": {
+          "input": "Input",
+          "operation": "Operation",
+          "saveToVar": "Save to Variable"
+        }
+      },
+      "delay": {
+        "description": "Pause execution",
+        "document": "Pauses script execution for a specified duration.",
+        "label": "Delay"
+      },
+      "downloadFile": {
+        "description": "Download a file",
+        "document": "Downloads a file from a URL to the local filesystem.",
+        "label": "Download File"
+      },
+      "dragAndDrop": {
+        "description": "Drag element to target",
+        "document": "Drags an element from source to target location.",
+        "label": "Drag & Drop"
+      },
+      "elementExists": {
+        "description": "Check if element exists",
+        "document": "Checks whether an element matching the selector exists.",
+        "label": "Element Exists",
+        "options": {
+          "any": "Any",
+          "hidden": "Hidden",
+          "visible": "Visible"
+        },
+        "params": {
+          "selector": "Selector",
+          "timeout": "Timeout (ms)",
+          "visibility": "Visibility"
+        }
+      },
+      "evalJs": {
+        "description": "Run custom JS code",
+        "document": "Executes arbitrary JavaScript code in the page context.",
+        "label": "Evaluate JavaScript"
+      },
+      "extractionInText": {
+        "description": "Extract using regex",
+        "document": "Extracts text matching a regular expression pattern.",
+        "label": "Extract Text",
+        "params": {
+          "flags": "Regex Flags",
+          "regex": "Regex Pattern",
+          "saveToVar": "Save to variable",
+          "text": "Input Text"
+        }
+      },
+      "getAttributeValue": {
+        "description": "Get element attribute",
+        "document": "Retrieves a specific attribute value from an element.",
+        "label": "Get Attribute",
+        "params": {
+          "attribute": "Attribute Name",
+          "saveToVar": "Save to variable",
+          "selector": "Selector",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "getCookies": {
+        "description": "Retrieve cookies",
+        "document": "Retrieves cookies for the current domain.",
+        "label": "Get Cookies"
+      },
+      "getText": {
+        "description": "Extract text from element",
+        "document": "Retrieves text content from an element and stores it in a variable.",
+        "label": "Get Text",
+        "params": {
+          "saveToVar": "Save to variable",
+          "selector": "Selector",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "getUrl": {
+        "description": "Get current page URL",
+        "document": "Retrieves the URL of the current page and stores it in a variable.",
+        "label": "Get URL",
+        "params": {
+          "saveToVar": "Save to variable"
+        }
+      },
+      "getValue": {
+        "description": "Get input value",
+        "document": "Retrieves the value of an input field.",
+        "label": "Get Value",
+        "params": {
+          "saveToVar": "Save to variable",
+          "selector": "Selector",
+          "timeout": "Timeout (ms)"
+        }
+      },
+      "goBack": {
+        "description": "Navigate back in history",
+        "document": "Navigates to the previous page in browser history.",
+        "label": "Go Back"
+      },
+      "goForward": {
+        "description": "Navigate forward in history",
+        "document": "Navigates to the next page in browser history.",
+        "label": "Go Forward"
+      },
+      "hover": {
+        "description": "Hover over element",
+        "document": "Moves the mouse cursor over an element without clicking.",
+        "label": "Hover"
+      },
+      "http": {
+        "description": "Make HTTP request",
+        "document": "Performs an HTTP request and optionally stores the response.",
+        "label": "HTTP Request",
+        "params": {
+          "body": "Request Body",
+          "headers": "Headers",
+          "method": "Method",
+          "saveToVar": "[TODO: Add English translation]",
+          "timeout": "Timeout (ms)",
+          "url": "URL"
+        }
+      },
+      "ifCondition": {
+        "description": "Conditional branching",
+        "document": "Executes different branches based on a condition.",
+        "label": "If Condition"
+      },
+      "imageSearch": {
+        "description": "Find image on screen",
+        "document": "Searches for an image on the screen using template matching.",
+        "label": "Image Search",
+        "params": {
+          "imagePath": "Image Path",
+          "saveToVar": "Save to variable",
+          "threshold": "Threshold"
+        }
+      },
+      "log": {
+        "description": "Log to console",
+        "document": "Logs a message to the browser console.",
+        "label": "Log Message"
+      },
+      "loopElements": {
+        "description": "Iterate over elements",
+        "document": "Iterates over all elements matching a selector.",
+        "label": "Loop Elements"
+      },
+      "loopFor": {
+        "description": "Repeat N times",
+        "document": "Executes a block a specified number of times.",
+        "label": "For Loop"
+      },
+      "newTab": {
+        "description": "Open a new tab",
+        "document": "Opens a new browser tab with an optional URL.",
+        "label": "New Tab"
+      },
+      "openUrl": {
+        "description": "Navigate to a URL",
+        "document": "Opens a URL in the current tab or a new tab.",
+        "label": "Open URL"
+      },
+      "pressKey": {
+        "description": "Press keyboard key",
+        "document": "Simulates pressing a keyboard key or key combination.",
+        "label": "Press Key"
+      },
+      "random": {
+        "description": "Generate random data",
+        "document": "Generates random values of various types.",
+        "label": "Random Value",
+        "options": {
+          "email": "Email",
+          "firstName": "First Name",
+          "fullName": "Full Name",
+          "lastName": "Last Name",
+          "number": "Number",
+          "password": "Password",
+          "randomLetters": "Random Letters"
+        },
+        "params": {
+          "domain": "Domain",
+          "length": "Length",
+          "max": "Maximum",
+          "min": "Minimum",
+          "quantity": "Quantity",
+          "saveToVar": "[TODO: Add English translation]",
+          "type": "[TODO: Add English translation]"
+        }
+      },
+      "readCsv": {
+        "description": "Read CSV file",
+        "document": "Reads and parses a CSV file.",
+        "label": "Read CSV"
+      },
+      "reloadPage": {
+        "description": "Reload the current page",
+        "document": "Reloads the current page, optionally bypassing cache.",
+        "label": "Reload Page"
+      },
+      "runOtherScript": {
+        "description": "Execute another script",
+        "document": "Runs another automation script from within this script.",
+        "label": "Run Other Script",
+        "params": {
+          "scriptName": "Script Name",
+          "vars": "Variables"
+        }
+      },
+      "screenshot": {
+        "description": "Capture screenshot",
+        "document": "Captures a screenshot of the current page or element.",
+        "label": "Screenshot"
+      },
+      "scroll": {
+        "description": "Scroll the page",
+        "document": "Scrolls the page to reveal more content.",
+        "label": "Scroll"
+      },
+      "sendTextToSelector": {
+        "description": "Send text to element",
+        "document": "Sends text to an element matching the selector.",
+        "label": "Send Text to Selector"
+      },
+      "setCookies": {
+        "description": "Set cookies",
+        "document": "Sets cookies for the current domain.",
+        "label": "Set Cookies"
+      },
+      "setUserAgent": {
+        "description": "Override user agent",
+        "document": "Sets a custom User-Agent string for browser requests.",
+        "label": "Set User Agent",
+        "params": {
+          "userAgent": "User Agent"
+        }
+      },
+      "setVariable": {
+        "description": "Store a value",
+        "document": "Stores a value in a script variable.",
+        "label": "Set Variable"
+      },
+      "stopLoop": {
+        "description": "Break out of loop",
+        "document": "Exits the current loop immediately.",
+        "label": "Stop Loop"
+      },
+      "switchExtensionPopup": {
+        "description": "Open extension popup",
+        "document": "Switches context to an extension popup page.",
+        "label": "Switch Extension Popup"
+      },
+      "switchFrame": {
+        "description": "Switch to iframe",
+        "document": "Switches context to an iframe for subsequent operations.",
+        "label": "Switch Frame"
+      },
+      "switchTab": {
+        "description": "Switch to another tab",
+        "document": "Switches focus to a different browser tab by index.",
+        "label": "Switch Tab"
+      },
+      "type": {
+        "description": "Type text",
+        "document": "Types text into the currently focused element.",
+        "label": "Type"
+      },
+      "typeText": {
+        "description": "Type text into element",
+        "document": "Types text into an element matching the specified selector.",
+        "label": "Type Text"
+      },
+      "wait": {
+        "description": "Wait for condition",
+        "document": "Waits for a specified condition before continuing.",
+        "label": "Wait"
+      },
+      "while": {
+        "description": "Repeat while condition true",
+        "document": "Repeatedly executes a block while a condition remains true.",
+        "label": "While Loop",
+        "params": {
+          "leftValue": "Left Value",
+          "operator": "Operator",
+          "rightValue": "Right Value"
+        }
+      },
+      "writeCsv": {
+        "description": "Write CSV file",
+        "document": "Writes data to a CSV file.",
+        "label": "Write CSV"
+      }
+    }
   }
 }
