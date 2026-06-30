@@ -1,42 +1,257 @@
-//! SOCKS5 proxy server over WireGuard tunnel.
-//!
-//! This module provides a SOCKS5 server that routes traffic through a WireGuard
-//! tunnel using boringtun (userspace WireGuard) and smoltcp (userspace TCP/IP).
-//!
-//! ## Architecture
-//!
-//! - `udp_datagram`: RFC 1928 §7 UDP header parsing/building
-//! - `wg_device`: smoltcp Device implementation over WireGuard
-//! - `wireguard_tunnel`: Tunnel creation, key parsing, handshake logic
-//! - `connection`: SOCKS5 connection state machine (Connection, UdpAssoc)
-//! - `socks5_server` (this file): Main server loop and orchestration
-//!
-//! ## Buffer Sizes
-//!
-//! All buffer sizes are set to 64KB to match typical SOCKS5/WireGuard MTU needs.
-
-// Submodules are declared in mod.rs and accessed via super::
-
 use super::config::{VpnError, WireGuardConfig};
-use super::connection::{Connection, UdpAssoc};
-use super::udp_datagram::{build_udp_datagram, parse_udp_datagram};
-use super::wg_device::WgDevice;
-use super::wireguard_tunnel::{create_tunnel, do_handshake, parse_cidr_address, resolve_endpoint};
-use smoltcp::iface::{Config as IfaceConfig, Interface, SocketSet};
+use boringtun::noise::{Tunn, TunnResult};
+use boringtun::x25519::{PublicKey, StaticSecret};
+use smoltcp::iface::{Config as IfaceConfig, Interface, SocketHandle, SocketSet};
+use smoltcp::phy::{Device, DeviceCapabilities, Medium, RxToken, TxToken};
 use smoltcp::socket::tcp::{Socket as TcpSocket, SocketBuffer};
 use smoltcp::socket::udp;
 use smoltcp::time::Instant as SmolInstant;
-use smoltcp::wire::{HardwareAddress, IpAddress, Ipv4Address};
+use smoltcp::wire::{HardwareAddress, IpAddress, IpCidr, IpEndpoint, Ipv4Address};
 use std::collections::VecDeque;
-use std::net::{SocketAddr, ToSocketAddrs, UdpSocket as StdUdpSocket};
+use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
 use std::sync::{Arc, Mutex};
-use tokio::net::TcpListener;
+use tokio::net::{TcpListener, TcpStream};
 
 const SMOLTCP_TCP_RX_BUF: usize = 65536;
 const SMOLTCP_TCP_TX_BUF: usize = 65536;
 const SMOLTCP_UDP_BUF: usize = 65536;
 
-/// Main SOCKS5 server that accepts connections and routes them through WireGuard.
+/// Parse an RFC 1928 §7 UDP request header. Returns the destination endpoint
+/// and the payload offset, or None if malformed, fragmented, or domain-typed.
+/// Only literal IPs are routed through the tunnel: resolving a domain on the
+/// host would leak DNS, and QUIC/WebRTC datagrams always carry literal IPs.
+fn parse_udp_datagram(buf: &[u8]) -> Option<(IpEndpoint, usize)> {
+  if buf.len() < 4 || buf[2] != 0 {
+    // too short, or FRAG != 0 (fragmentation unsupported)
+    return None;
+  }
+  match buf[3] {
+    0x01 => {
+      if buf.len() < 10 {
+        return None;
+      }
+      let ip = Ipv4Address::new(buf[4], buf[5], buf[6], buf[7]);
+      let port = u16::from_be_bytes([buf[8], buf[9]]);
+      Some((IpEndpoint::new(IpAddress::Ipv4(ip), port), 10))
+    }
+    0x04 => {
+      if buf.len() < 22 {
+        return None;
+      }
+      let mut o = [0u8; 16];
+      o.copy_from_slice(&buf[4..20]);
+      let ip = smoltcp::wire::Ipv6Address::from(o);
+      let port = u16::from_be_bytes([buf[20], buf[21]]);
+      Some((IpEndpoint::new(IpAddress::Ipv6(ip), port), 22))
+    }
+    _ => None,
+  }
+}
+
+/// Wrap a tunnel-received datagram in an RFC 1928 §7 UDP reply header naming
+/// `src` as the origin, for delivery back to the browser's relay socket.
+fn build_udp_datagram(src: IpEndpoint, payload: &[u8]) -> Vec<u8> {
+  let mut out = vec![0x00, 0x00, 0x00]; // RSV(2) + FRAG(0)
+  match src.addr {
+    IpAddress::Ipv4(v4) => {
+      out.push(0x01);
+      out.extend_from_slice(&v4.octets());
+    }
+    IpAddress::Ipv6(v6) => {
+      out.push(0x04);
+      out.extend_from_slice(&v6.octets());
+    }
+  }
+  out.extend_from_slice(&src.port.to_be_bytes());
+  out.extend_from_slice(payload);
+  out
+}
+
+struct WgDevice {
+  tunn: Arc<Mutex<Box<Tunn>>>,
+  udp_socket: Arc<UdpSocket>,
+  peer_addr: SocketAddr,
+  rx_queue: VecDeque<Vec<u8>>,
+  tx_queue: VecDeque<Vec<u8>>,
+}
+
+impl WgDevice {
+  fn pump_wg_to_rx(&mut self) {
+    let mut recv_buf = vec![0u8; 2048];
+    loop {
+      match self.udp_socket.recv_from(&mut recv_buf) {
+        Ok((len, _)) => {
+          let mut dst = vec![0u8; 2048];
+          let mut tunn = self.tunn.lock().unwrap();
+          let result = tunn.decapsulate(None, &recv_buf[..len], &mut dst);
+          match result {
+            TunnResult::WriteToTunnelV4(data, _) | TunnResult::WriteToTunnelV6(data, _) => {
+              self.rx_queue.push_back(data.to_vec());
+            }
+            TunnResult::WriteToNetwork(response) => {
+              let _ = self.udp_socket.send_to(response, self.peer_addr);
+            }
+            _ => {}
+          }
+        }
+        Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => break,
+        Err(_) => break,
+      }
+    }
+  }
+
+  fn flush_tx_queue(&mut self) {
+    while let Some(ip_packet) = self.tx_queue.pop_front() {
+      let mut dst = vec![0u8; ip_packet.len() + 256];
+      let mut tunn = self.tunn.lock().unwrap();
+      let result = tunn.encapsulate(&ip_packet, &mut dst);
+      match result {
+        TunnResult::WriteToNetwork(packet) => {
+          if let Err(e) = self.udp_socket.send_to(packet, self.peer_addr) {
+            log::error!("[wg] udp send_to failed: {e}");
+          }
+        }
+        TunnResult::Done => {
+          // boringtun has nothing to send right now (e.g. handshake not yet
+          // complete); silently drop. smoltcp will retransmit.
+        }
+        TunnResult::Err(e) => {
+          log::error!(
+            "[wg] encapsulate error for {}B IP packet: {e:?}",
+            ip_packet.len()
+          );
+        }
+        TunnResult::WriteToTunnelV4(_, _) | TunnResult::WriteToTunnelV6(_, _) => {
+          log::error!("[wg] encapsulate returned unexpected WriteToTunnel — bug?");
+        }
+      }
+    }
+  }
+
+  fn tick_timers(&mut self) {
+    let mut dst = vec![0u8; 2048];
+    let mut tunn = self.tunn.lock().unwrap();
+    let result = tunn.update_timers(&mut dst);
+    if let TunnResult::WriteToNetwork(packet) = result {
+      let _ = self.udp_socket.send_to(packet, self.peer_addr);
+    }
+  }
+}
+
+struct WgRxToken {
+  data: Vec<u8>,
+}
+
+impl RxToken for WgRxToken {
+  fn consume<R, F>(self, f: F) -> R
+  where
+    F: FnOnce(&[u8]) -> R,
+  {
+    f(&self.data)
+  }
+}
+
+struct WgTxToken<'a> {
+  tx_queue: &'a mut VecDeque<Vec<u8>>,
+}
+
+impl<'a> TxToken for WgTxToken<'a> {
+  fn consume<R, F>(self, len: usize, f: F) -> R
+  where
+    F: FnOnce(&mut [u8]) -> R,
+  {
+    let mut buf = vec![0u8; len];
+    let result = f(&mut buf);
+    self.tx_queue.push_back(buf);
+    result
+  }
+}
+
+impl Device for WgDevice {
+  type RxToken<'a> = WgRxToken;
+  type TxToken<'a> = WgTxToken<'a>;
+
+  fn receive(&mut self, _timestamp: SmolInstant) -> Option<(Self::RxToken<'_>, Self::TxToken<'_>)> {
+    if let Some(data) = self.rx_queue.pop_front() {
+      Some((
+        WgRxToken { data },
+        WgTxToken {
+          tx_queue: &mut self.tx_queue,
+        },
+      ))
+    } else {
+      None
+    }
+  }
+
+  fn transmit(&mut self, _timestamp: SmolInstant) -> Option<Self::TxToken<'_>> {
+    Some(WgTxToken {
+      tx_queue: &mut self.tx_queue,
+    })
+  }
+
+  fn capabilities(&self) -> DeviceCapabilities {
+    let mut caps = DeviceCapabilities::default();
+    caps.medium = Medium::Ip;
+    caps.max_transmission_unit = 1420;
+    caps
+  }
+}
+
+fn parse_key(key: &str) -> Result<[u8; 32], VpnError> {
+  let decoded = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, key)
+    .map_err(|e| VpnError::InvalidWireGuard(format!("Invalid key encoding: {e}")))?;
+  if decoded.len() != 32 {
+    return Err(VpnError::InvalidWireGuard(format!(
+      "Invalid key length: {} (expected 32)",
+      decoded.len()
+    )));
+  }
+  let mut key_bytes = [0u8; 32];
+  key_bytes.copy_from_slice(&decoded);
+  Ok(key_bytes)
+}
+
+fn parse_cidr_address(addr: &str) -> Result<(IpCidr, IpAddress), VpnError> {
+  let first_addr = addr.split(',').next().unwrap_or(addr).trim();
+
+  let parts: Vec<&str> = first_addr.split('/').collect();
+  let ip_str = parts[0];
+  let prefix = if parts.len() > 1 {
+    parts[1]
+      .parse::<u8>()
+      .map_err(|_| VpnError::InvalidWireGuard(format!("Invalid prefix length: {}", parts[1])))?
+  } else {
+    32
+  };
+
+  let ip: std::net::IpAddr = ip_str
+    .parse()
+    .map_err(|_| VpnError::InvalidWireGuard(format!("Invalid IP address: {ip_str}")))?;
+
+  match ip {
+    std::net::IpAddr::V4(v4) => {
+      let smol_ip = Ipv4Address::new(
+        v4.octets()[0],
+        v4.octets()[1],
+        v4.octets()[2],
+        v4.octets()[3],
+      );
+      Ok((
+        IpCidr::new(IpAddress::Ipv4(smol_ip), prefix),
+        IpAddress::Ipv4(smol_ip),
+      ))
+    }
+    std::net::IpAddr::V6(v6) => {
+      let smol_ip = smoltcp::wire::Ipv6Address::from(v6.octets());
+      Ok((
+        IpCidr::new(IpAddress::Ipv6(smol_ip), prefix),
+        IpAddress::Ipv6(smol_ip),
+      ))
+    }
+  }
+}
+
 pub struct WireGuardSocks5Server {
   config: WireGuardConfig,
   port: u16,
@@ -47,18 +262,139 @@ impl WireGuardSocks5Server {
     Self { config, port }
   }
 
+  fn create_tunnel(&self) -> Result<Box<Tunn>, VpnError> {
+    let private_key_bytes = parse_key(&self.config.private_key)?;
+    let static_private = StaticSecret::from(private_key_bytes);
+
+    let peer_public_bytes = parse_key(&self.config.peer_public_key)?;
+    let peer_public = PublicKey::from(peer_public_bytes);
+
+    let preshared_key = if let Some(ref psk) = self.config.preshared_key {
+      Some(parse_key(psk)?)
+    } else {
+      None
+    };
+
+    Ok(Box::new(Tunn::new(
+      static_private,
+      peer_public,
+      preshared_key,
+      self.config.persistent_keepalive,
+      0,
+      None,
+    )))
+  }
+
+  fn resolve_endpoint(&self) -> Result<SocketAddr, VpnError> {
+    self
+      .config
+      .peer_endpoint
+      .to_socket_addrs()
+      .map_err(|e| {
+        VpnError::Connection(format!(
+          "Failed to resolve endpoint '{}': {e}",
+          self.config.peer_endpoint
+        ))
+      })?
+      .next()
+      .ok_or_else(|| {
+        VpnError::Connection(format!(
+          "No addresses found for endpoint: {}",
+          self.config.peer_endpoint
+        ))
+      })
+  }
+
+  fn do_handshake(
+    tunn: &mut Tunn,
+    socket: &UdpSocket,
+    peer_addr: SocketAddr,
+  ) -> Result<(), VpnError> {
+    socket
+      .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+      .map_err(|e| VpnError::Connection(format!("Failed to set timeout: {e}")))?;
+
+    // WireGuard handshakes use UDP which can silently lose packets, especially
+    // through Docker port-forwarding layers. Retry the handshake initiation up
+    // to 5 times (25s total) before giving up — the protocol is designed for
+    // retransmission and peers handle duplicate initiations correctly.
+    let max_attempts = 5;
+    let mut last_error = String::from("no handshake attempt completed");
+
+    for attempt in 1..=max_attempts {
+      let mut dst = vec![0u8; 2048];
+      let result = tunn.format_handshake_initiation(&mut dst, false);
+
+      match result {
+        TunnResult::WriteToNetwork(packet) => {
+          socket
+            .send_to(packet, peer_addr)
+            .map_err(|e| VpnError::Connection(format!("Failed to send handshake: {e}")))?;
+        }
+        TunnResult::Err(e) => {
+          return Err(VpnError::Tunnel(format!(
+            "Handshake initiation failed: {e:?}"
+          )));
+        }
+        _ => {}
+      }
+
+      let mut recv_buf = vec![0u8; 2048];
+      match socket.recv_from(&mut recv_buf) {
+        Ok((len, _)) => {
+          let result = tunn.decapsulate(None, &recv_buf[..len], &mut dst);
+          match result {
+            TunnResult::WriteToNetwork(response) => {
+              socket
+                .send_to(response, peer_addr)
+                .map_err(|e| VpnError::Connection(format!("Failed to send response: {e}")))?;
+            }
+            TunnResult::Done => {}
+            TunnResult::Err(e) => {
+              last_error = format!("handshake response error: {e:?}");
+              log::warn!(
+                "[vpn-worker] Handshake attempt {attempt}/{max_attempts} failed: {last_error}"
+              );
+              continue;
+            }
+            _ => {}
+          }
+
+          socket
+            .set_read_timeout(None)
+            .map_err(|e| VpnError::Connection(format!("Failed to clear timeout: {e}")))?;
+          return Ok(());
+        }
+        Err(e) if attempt < max_attempts => {
+          log::warn!(
+            "[vpn-worker] Handshake attempt {attempt}/{max_attempts} timed out: {e}, retrying"
+          );
+          last_error = format!("timeout: {e}");
+          continue;
+        }
+        Err(e) => {
+          last_error = format!("timeout: {e}");
+        }
+      }
+    }
+
+    Err(VpnError::Connection(format!(
+      "Handshake failed after {max_attempts} attempts: {last_error}"
+    )))
+  }
+
   pub async fn run(
     self,
     config_id: String,
     config_path: Option<std::path::PathBuf>,
   ) -> Result<(), VpnError> {
-    let peer_addr = resolve_endpoint(&self.config)?;
-    let mut tunn = create_tunnel(&self.config)?;
+    let peer_addr = self.resolve_endpoint()?;
+    let mut tunn = self.create_tunnel()?;
 
-    let udp_socket = StdUdpSocket::bind("0.0.0.0:0")
+    let udp_socket = UdpSocket::bind("0.0.0.0:0")
       .map_err(|e| VpnError::Connection(format!("Failed to create UDP socket: {e}")))?;
 
-    do_handshake(&mut tunn, &udp_socket, peer_addr)?;
+    Self::do_handshake(&mut tunn, &udp_socket, peer_addr)?;
 
     udp_socket
       .set_nonblocking(true)
@@ -150,6 +486,26 @@ impl WireGuardSocks5Server {
     );
 
     let mut sockets = SocketSet::new(vec![]);
+
+    // A live SOCKS5 UDP ASSOCIATE: the loopback relay socket the browser sends
+    // datagrams to, and the browser's learned source address. The tunnel-side
+    // smoltcp UDP socket lives in `sockets`, keyed by the connection's
+    // (repurposed) `smol_handle`.
+    struct UdpAssoc {
+      relay: UdpSocket,
+      client_addr: Option<SocketAddr>,
+    }
+
+    struct Connection {
+      smol_handle: SocketHandle,
+      tcp_stream: TcpStream,
+      socks_done: bool,
+      connecting: bool,
+      greeting_done: bool,
+      read_buf: Vec<u8>,
+      dest_addr: Option<SocketAddr>,
+      udp: Option<UdpAssoc>,
+    }
 
     let mut connections: Vec<Connection> = Vec::new();
     let mut timer_counter: u64 = 0;
@@ -340,7 +696,7 @@ impl WireGuardSocks5Server {
               // learned from its first datagram. Bind a loopback relay socket
               // the browser sends to, plus a smoltcp UDP socket that egresses
               // through the WireGuard tunnel on the interface IP.
-              let relay = match StdUdpSocket::bind("127.0.0.1:0") {
+              let relay = match UdpSocket::bind("127.0.0.1:0") {
                 Ok(s) => s,
                 Err(_) => {
                   let _ = conn
@@ -572,5 +928,14 @@ mod tests {
     assert_eq!(ip, IpAddress::Ipv4(Ipv4Address::new(10, 0, 0, 2)));
   }
 
-  // Note: parse_key tests are in wireguard_tunnel module
+  #[test]
+  fn test_parse_key_valid() {
+    let key = "YEocP0e2o1WT5GlvBvQzVF7EeR6z9aCk+ZdZ5NKEuXA=";
+    assert!(parse_key(key).is_ok());
+  }
+
+  #[test]
+  fn test_parse_key_invalid() {
+    assert!(parse_key("not-valid").is_err());
+  }
 }
