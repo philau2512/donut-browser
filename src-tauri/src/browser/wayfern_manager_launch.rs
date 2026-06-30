@@ -268,6 +268,7 @@ impl WayfernManager {
         port,
         fingerprint_params.clone(),
         fingerprinted_targets.clone(),
+        process_id,
       );
       (used, Some(fingerprint_params), Some(cancel))
     } else {

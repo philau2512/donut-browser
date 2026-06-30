@@ -1,4 +1,4 @@
-use super::app_updater_types::AppAutoUpdater;
+use super::app_updater_types::{AppAutoUpdater, PENDING_INSTALLER_PATH};
 use std::fs;
 use std::process::Command;
 

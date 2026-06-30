@@ -52,10 +52,19 @@ impl WayfernManager {
       .apply_fingerprint_to_targets(&page_refs, &fingerprint_params, &fingerprinted_targets)
       .await?;
 
+    // Get process_id from the instance that was already created before starting watcher
+    let inner = self.inner.lock().await;
+    let process_id = inner
+      .instances
+      .get(instance_id)
+      .and_then(|i| i.process_id);
+    drop(inner);
+
     let watcher_cancel = self.start_fingerprint_watcher(
       port,
       fingerprint_params.clone(),
       fingerprinted_targets.clone(),
+      process_id,
     );
 
     let mut inner = self.inner.lock().await;
@@ -329,12 +338,18 @@ impl WayfernManager {
 
   /// Poll for new page targets and re-apply fingerprint (Ctrl+T, window.open, automation).
   /// Uses watch channel with boolean flag (false → true) for reliable cancellation.
-  /// Prevents log spam after browser instance is stopped.
+  /// Proactively monitors process health to prevent log spam after browser instance is stopped.
+  ///
+  /// `process_id`: Optional PID of the Wayfern process. If provided, watcher checks process
+  /// health before each poll and stops immediately if process exits. This prevents retry
+  /// attempts and WARN logs during shutdown window when process is dying but watcher hasn't
+  /// received cancellation signal yet.
   pub(crate) fn start_fingerprint_watcher(
     &self,
     port: u16,
     fingerprint_params: Arc<serde_json::Value>,
     fingerprinted: Arc<AsyncMutex<HashSet<String>>>,
+    process_id: Option<u32>,
   ) -> tokio::sync::watch::Sender<bool> {
     let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
     let manager = WayfernManager {
@@ -353,6 +368,17 @@ impl WayfernManager {
             }
           }
           _ = interval.tick() => {
+            // Proactive health check: if process is dead, stop watcher immediately
+            // without attempting HTTP call. This prevents retry spam during shutdown.
+            if let Some(pid) = process_id {
+              use sysinfo::{Pid, System};
+              let system = System::new_all();
+              if system.process(Pid::from_u32(pid)).is_none() {
+                log::info!("Wayfern process {pid} exited, stopping fingerprint watcher for port {port}");
+                break;
+              }
+            }
+
             if let Err(e) = manager
               .respoof_new_page_targets(port, &fingerprint_params, &fingerprinted)
               .await

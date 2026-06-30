@@ -1,4 +1,4 @@
-use super::app_updater_types::{AppAutoUpdater, AppUpdateInfo};
+use super::app_updater_types::{AppAutoUpdater, AppUpdateInfo, PENDING_INSTALLER_PATH};
 use crate::events;
 use std::fs;
 use std::io::Write;
