@@ -2486,7 +2486,7 @@
         "params": {
           "flags": "Cờ Regex",
           "regex": "Mẫu Regex",
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "saveToVar": "Lưu vào biến",
           "text": "Văn bản đầu vào"
         }
       },
@@ -2496,7 +2496,7 @@
         "label": "Lấy Thuộc Tính",
         "params": {
           "attribute": "Tên thuộc tính",
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "saveToVar": "Lưu vào biến",
           "selector": "Selector",
           "timeout": "Thời gian chờ (ms)"
         }
@@ -2511,7 +2511,7 @@
         "document": "Lấy nội dung văn bản từ phần tử và lưu vào biến.",
         "label": "Lấy Văn Bản",
         "params": {
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "saveToVar": "Lưu vào biến",
           "selector": "Selector",
           "timeout": "Thời gian chờ (ms)"
         }
@@ -2521,7 +2521,7 @@
         "document": "Lấy URL của trang hiện tại và lưu vào biến.",
         "label": "Lấy URL",
         "params": {
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]"
+          "saveToVar": "Lưu vào biến"
         }
       },
       "getValue": {
@@ -2529,7 +2529,7 @@
         "document": "Lấy giá trị của trường nhập liệu.",
         "label": "Lấy Giá Trị",
         "params": {
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "saveToVar": "Lưu vào biến",
           "selector": "Selector",
           "timeout": "Thời gian chờ (ms)"
         }
@@ -2557,7 +2557,7 @@
           "body": "Nội dung request",
           "headers": "Headers",
           "method": "Phương thức",
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "saveToVar": "Lưu vào biến",
           "timeout": "Thời gian chờ (ms)",
           "url": "URL"
         }
@@ -2573,7 +2573,7 @@
         "label": "Tìm Ảnh",
         "params": {
           "imagePath": "Đường dẫn ảnh",
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
+          "saveToVar": "Lưu vào biến",
           "threshold": "Ngưỡng"
         }
       },
@@ -2626,8 +2626,8 @@
           "max": "Tối đa",
           "min": "Tối thiểu",
           "quantity": "Số lượng",
-          "saveToVar": "[TODO: Thêm bản dịch tiếng Việt]",
-          "type": "[TODO: Thêm bản dịch tiếng Việt]"
+          "saveToVar": "Lưu vào biến",
+          "type": "Loại"
         }
       },
       "readCsv": {

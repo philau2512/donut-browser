@@ -2250,29 +2250,29 @@
       "add": "Add Script",
       "empty": "No automation scripts yet",
       "confirm": {
-        "deleteDescription": "[TODO: Add English translation]",
-        "deleteTitle": "[TODO: Add English translation]",
-        "exportVariables": "[TODO: Add English translation]",
-        "overwriteImport": "[TODO: Add English translation]"
+        "deleteDescription": "Are you sure you want to delete this script?",
+        "deleteTitle": "Delete Script",
+        "exportVariables": "This script contains variables. Export them too?",
+        "overwriteImport": "Script '{name}' already exists. Overwrite?"
       },
-      "delete": "[TODO: Add English translation]",
-      "duplicate": "[TODO: Add English translation]",
-      "edit": "[TODO: Add English translation]",
+      "delete": "Delete",
+      "duplicate": "Duplicate",
+      "edit": "Edit",
       "errors": {
-        "deleteFailed": "[TODO: Add English translation]",
-        "duplicateFailed": "[TODO: Add English translation]",
-        "exportFailed": "[TODO: Add English translation]",
-        "importFailed": "[TODO: Add English translation]"
+        "deleteFailed": "Failed to delete script: {error}",
+        "duplicateFailed": "Failed to duplicate script: {error}",
+        "exportFailed": "Failed to export script: {error}",
+        "importFailed": "Failed to import script: {error}"
       },
-      "export": "[TODO: Add English translation]",
-      "loading": "[TODO: Add English translation]",
-      "modifiedAt": "[TODO: Add English translation]",
-      "noMatches": "[TODO: Add English translation]",
+      "export": "Export",
+      "loading": "Loading...",
+      "modifiedAt": "Last modified: {date}",
+      "noMatches": "No scripts found",
       "toast": {
-        "deleted": "[TODO: Add English translation]",
-        "duplicated": "[TODO: Add English translation]",
-        "exported": "[TODO: Add English translation]",
-        "imported": "[TODO: Add English translation]"
+        "deleted": "Deleted script '{name}'",
+        "duplicated": "Duplicated script as '{name}'",
+        "exported": "Exported script '{name}'",
+        "imported": "Imported script '{name}'"
       }
     },
     "editor": {
@@ -2286,102 +2286,102 @@
         "data": "Data"
       },
       "start": "Start",
-      "booleanEnabled": "[TODO: Add English translation]",
+      "booleanEnabled": "Enabled",
       "comment": {
-        "characters": "[TODO: Add English translation]",
-        "title": "[TODO: Add English translation]"
+        "characters": "characters",
+        "title": "Comment"
       },
       "errors": {
-        "loadFailed": "[TODO: Add English translation]",
-        "saveFailed": "[TODO: Add English translation]"
+        "loadFailed": "Failed to load script",
+        "saveFailed": "Failed to save script"
       },
-      "linearHint": "[TODO: Add English translation]",
-      "name": "[TODO: Add English translation]",
-      "namePlaceholder": "[TODO: Add English translation]",
+      "linearHint": "Linear mode",
+      "name": "Script Name",
+      "namePlaceholder": "Enter script name...",
       "properties": {
-        "continueOnError": "[TODO: Add English translation]",
-        "continueOnErrorHint": "[TODO: Add English translation]",
-        "document": "[TODO: Add English translation]",
-        "options": "[TODO: Add English translation]",
-        "setting": "[TODO: Add English translation]"
+        "continueOnError": "Continue on Error",
+        "continueOnErrorHint": "Skip errors and continue to next steps",
+        "document": "Documentation",
+        "options": "Options",
+        "setting": "Settings"
       },
-      "saving": "[TODO: Add English translation]",
+      "saving": "Saving...",
       "toast": {
-        "saved": "[TODO: Add English translation]",
-        "startFromHere": "[TODO: Add English translation]"
+        "saved": "Script saved",
+        "startFromHere": "Start from here"
       },
       "toolbar": {
-        "delete": "[TODO: Add English translation]",
-        "edit": "[TODO: Add English translation]",
-        "startFromHere": "[TODO: Add English translation]"
+        "delete": "Delete",
+        "edit": "Edit",
+        "startFromHere": "Start from here"
       },
       "variables": {
-        "add": "[TODO: Add English translation]",
-        "autoInjected": "[TODO: Add English translation]",
-        "description": "[TODO: Add English translation]",
-        "reserved": "[TODO: Add English translation]",
-        "title": "[TODO: Add English translation]"
+        "add": "Add Variable",
+        "autoInjected": "Auto-injected",
+        "description": "Description",
+        "reserved": "System Variables",
+        "title": "Variables"
       }
     },
     "actions": {
-      "run": "[TODO: Add English translation]",
-      "starting": "[TODO: Add English translation]",
-      "stopAll": "[TODO: Add English translation]"
+      "run": "Run",
+      "starting": "Starting...",
+      "stopAll": "Stop All"
     },
     "errors": {
-      "readFlowFailed": "[TODO: Add English translation]",
-      "startFailed": "[TODO: Add English translation]",
-      "stopFailed": "[TODO: Add English translation]"
+      "readFlowFailed": "Failed to read script",
+      "startFailed": "Failed to start script",
+      "stopFailed": "Failed to stop script"
     },
     "flow": {
-      "empty": "[TODO: Add English translation]",
-      "label": "[TODO: Add English translation]",
-      "placeholder": "[TODO: Add English translation]",
-      "refresh": "[TODO: Add English translation]"
+      "empty": "Script is empty",
+      "label": "Label",
+      "placeholder": "Enter label...",
+      "refresh": "Refresh"
     },
     "grid": {
-      "empty": "[TODO: Add English translation]",
-      "stopProfile": "[TODO: Add English translation]"
+      "empty": "No scripts yet",
+      "stopProfile": "Stop Profile"
     },
     "log": {
-      "allProfiles": "[TODO: Add English translation]",
-      "empty": "[TODO: Add English translation]",
-      "openFile": "[TODO: Add English translation]",
-      "scrollLock": "[TODO: Add English translation]",
-      "scrollUnlock": "[TODO: Add English translation]",
-      "title": "[TODO: Add English translation]"
+      "allProfiles": "All Profiles",
+      "empty": "No logs yet",
+      "openFile": "Open File",
+      "scrollLock": "Lock Scroll",
+      "scrollUnlock": "Unlock Scroll",
+      "title": "Logs"
     },
     "profiles": {
-      "deselectAll": "[TODO: Add English translation]",
-      "empty": "[TODO: Add English translation]",
-      "label": "[TODO: Add English translation]",
-      "selectAll": "[TODO: Add English translation]"
+      "deselectAll": "Deselect All",
+      "empty": "No profiles",
+      "label": "Profile",
+      "selectAll": "Select All"
     },
     "review": {
-      "confirm": "[TODO: Add English translation]",
-      "description": "[TODO: Add English translation]",
-      "noSelectors": "[TODO: Add English translation]",
-      "noUrls": "[TODO: Add English translation]",
-      "selectors": "[TODO: Add English translation]",
-      "templatedOrInvalidHost": "[TODO: Add English translation]",
-      "title": "[TODO: Add English translation]",
-      "urls": "[TODO: Add English translation]"
+      "confirm": "Confirm",
+      "description": "Description",
+      "noSelectors": "No selectors",
+      "noUrls": "No URLs",
+      "selectors": "Selectors",
+      "templatedOrInvalidHost": "Invalid or templated host",
+      "title": "Review",
+      "urls": "URLs"
     },
-    "runInfo": "[TODO: Add English translation]",
+    "runInfo": "Run Info",
     "settings": {
-      "closeOnComplete": "[TODO: Add English translation]",
-      "closeOnCompleteHint": "[TODO: Add English translation]",
-      "concurrency": "[TODO: Add English translation]",
-      "concurrencyHint": "[TODO: Add English translation]",
-      "delayOpen": "[TODO: Add English translation]",
-      "delayOpenHint": "[TODO: Add English translation]",
-      "headless": "[TODO: Add English translation]",
-      "headlessHint": "[TODO: Add English translation]",
-      "noOverlapping": "[TODO: Add English translation]",
-      "noOverlappingHint": "[TODO: Add English translation]",
-      "title": "[TODO: Add English translation]",
-      "writeLogs": "[TODO: Add English translation]",
-      "writeLogsHint": "[TODO: Add English translation]"
+      "closeOnComplete": "Close on Complete",
+      "closeOnCompleteHint": "Automatically close browser after script completes",
+      "concurrency": "Concurrent Profiles",
+      "concurrencyHint": "Maximum number of profiles to run simultaneously",
+      "delayOpen": "Profile Open Delay (ms)",
+      "delayOpenHint": "Wait time before opening next profile",
+      "headless": "Headless Mode",
+      "headlessHint": "Run browser in background (no window)",
+      "noOverlapping": "No Overlapping",
+      "noOverlappingHint": "Don't run multiple scripts on the same profile",
+      "title": "Settings",
+      "writeLogs": "Write Logs",
+      "writeLogsHint": "Save detailed logs to file"
     },
     "nodes": {
       "addComment": {
@@ -2558,7 +2558,7 @@
           "body": "Request Body",
           "headers": "Headers",
           "method": "Method",
-          "saveToVar": "[TODO: Add English translation]",
+          "saveToVar": "Save to Variable",
           "timeout": "Timeout (ms)",
           "url": "URL"
         }
@@ -2627,8 +2627,8 @@
           "max": "Maximum",
           "min": "Minimum",
           "quantity": "Quantity",
-          "saveToVar": "[TODO: Add English translation]",
-          "type": "[TODO: Add English translation]"
+          "saveToVar": "Save to Variable",
+          "type": "Type"
         }
       },
       "readCsv": {
