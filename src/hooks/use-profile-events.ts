@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useState } from "react";
 import i18n from "@/i18n";
+import { showErrorToast } from "@/lib/toast-utils";
 import type { BrowserProfile, GroupWithCount } from "@/types";
 
 interface UseProfileEventsReturn {
@@ -68,6 +69,7 @@ export function useProfileEvents(): UseProfileEventsReturn {
   useEffect(() => {
     let profilesUnlisten: (() => void) | undefined;
     let runningUnlisten: (() => void) | undefined;
+    let crashUnlisten: (() => void) | undefined;
 
     const setupListeners = async () => {
       try {
@@ -100,6 +102,21 @@ export function useProfileEvents(): UseProfileEventsReturn {
           },
         );
 
+        // Listen for profile crash events
+        crashUnlisten = await listen<{
+          id: string;
+          name: string;
+          exit_status: string;
+        }>("profile-crash", (event) => {
+          const { name, exit_status } = event.payload;
+          showErrorToast(i18n.t("toasts.error.profileCrashTitle", { name }), {
+            description: i18n.t("toasts.error.profileCrashDesc", {
+              status: exit_status,
+            }),
+            duration: 8000,
+          });
+        });
+
         console.log("Profile event listeners set up successfully");
       } catch (err) {
         console.error("Failed to setup profile event listeners:", err);
@@ -119,6 +136,7 @@ export function useProfileEvents(): UseProfileEventsReturn {
     return () => {
       if (profilesUnlisten) profilesUnlisten();
       if (runningUnlisten) runningUnlisten();
+      if (crashUnlisten) crashUnlisten();
     };
   }, [loadProfiles, loadGroups]);
 

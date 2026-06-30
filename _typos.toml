@@ -1,13 +1,15 @@
 [files]
 extend-exclude = [
-    "src-tauri/src/camoufox/data/*.json",
-    "src-tauri/src/camoufox/data/*.xml",
+    "src-tauri/src/browser/camoufox/data/*.json",
+    "src-tauri/src/browser/camoufox/data/*.xml",
     "src/i18n/locales/*.json",
     # Auto-generated from commit subjects by release.yml; typos here originate
     # in commit messages, which are immutable, so don't spell-check it.
     "CHANGELOG.md",
+    "**/*.bak",
 ]
 
 [default.extend-words]
 DBE = "DBE"
 nd = "nd"
+Sur = "Sur"

@@ -1,0 +1,726 @@
+"use client";
+
+import { invoke } from "@tauri-apps/api/core";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  FaBookmark,
+  FaCookieBite,
+  FaEllipsisH,
+  FaExchangeAlt,
+  FaHdd,
+  FaInfoCircle,
+  FaMapMarkerAlt,
+  FaNetworkWired,
+  FaPlus,
+  FaPuzzlePiece,
+  FaTerminal,
+} from "react-icons/fa";
+import { LuInfo, LuLoaderCircle, LuRefreshCw } from "react-icons/lu";
+import { toast } from "sonner";
+
+import { ProxyFormDialog } from "@/components/proxy";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useBrowserVersion } from "@/hooks/use-browser-version";
+import { useProxyEvents } from "@/hooks/use-proxy-events";
+import { useVpnEvents } from "@/hooks/use-vpn-events";
+import { useWayfernConfig } from "@/hooks/use-wayfern-config";
+import { cn } from "@/lib/utils";
+import type {
+  BrowserProfile,
+  CamoufoxConfig,
+  WayfernConfig,
+  WayfernOS,
+} from "@/types";
+import { AutomationTab } from "./sub-components/automation-tab";
+import { BaseInfoTab } from "./sub-components/base-info-tab";
+import { BookmarkTab } from "./sub-components/bookmark-tab";
+import { CommandTab } from "./sub-components/command-tab";
+import { CookiesTab } from "./sub-components/cookies-tab";
+import { ExtensionTab } from "./sub-components/extension-tab";
+import { HardwareTab } from "./sub-components/hardware-tab";
+import { LocationTab } from "./sub-components/location-tab";
+import { OtherTab } from "./sub-components/other-tab";
+import { ProxyTab } from "./sub-components/proxy-tab";
+import { RequestsTab } from "./sub-components/requests-tab";
+
+const getCurrentOS = (): WayfernOS => {
+  if (typeof navigator === "undefined") return "linux";
+  const platform = navigator.platform.toLowerCase();
+  if (platform.includes("win")) return "windows";
+  if (platform.includes("mac")) return "macos";
+  return "linux";
+};
+
+const osLabels: Record<WayfernOS, string> = {
+  windows: "Windows",
+  macos: "macOS",
+  linux: "Linux",
+  android: "Android",
+  ios: "iOS",
+};
+
+interface CreateProfileDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreateProfile: (profileData: {
+    name: string;
+    browserStr: "camoufox" | "wayfern";
+    version: string;
+    releaseType: string;
+    proxyId?: string;
+    vpnId?: string;
+    wayfernConfig?: WayfernConfig;
+    camoufoxConfig?: CamoufoxConfig;
+    groupId?: string;
+    extensionGroupId?: string;
+    ephemeral?: boolean;
+    dnsBlocklist?: string;
+    launchHook?: string;
+    password?: string;
+  }) => Promise<any>;
+  selectedGroupId?: string;
+  crossOsUnlocked?: boolean;
+}
+
+export function CreateProfileDialog({
+  isOpen,
+  onClose,
+  onCreateProfile,
+  selectedGroupId,
+  crossOsUnlocked = false,
+}: CreateProfileDialogProps) {
+  const { t } = useTranslation();
+
+  // Dialog Navigation & Basic States
+  const [activeTab, setActiveTab] = useState("base-info");
+  const [profileName, setProfileName] = useState("");
+  const [groupId, setGroupId] = useState<string | undefined>(selectedGroupId);
+  const [profileGroups, setProfileGroups] = useState<any[]>([]);
+  const [batchCount, setBatchCount] = useState(1);
+
+  // Browser Type Selection (Camoufox vs Wayfern)
+  const [browserType, _setBrowserType] = useState<"camoufox" | "wayfern">(
+    "wayfern",
+  );
+
+  // Batch Anti-Detect States (Phase 2 — Per-profile randomization & proxy rotation)
+  const [randomizePerProfile, setRandomizePerProfile] = useState(true);
+  const [proxyList, setProxyList] = useState("");
+
+  // Configuration States
+  const [selectedProxyId, setSelectedProxyId] = useState<string>();
+  const [dnsBlocklist, setDnsBlocklist] = useState<string>("");
+  const [launchHook, setLaunchHook] = useState("");
+  const [rawCookies, setRawCookies] = useState("");
+
+  // Extensions
+  const [selectedExtensionGroupId, setSelectedExtensionGroupId] =
+    useState<string>();
+  const [extensionGroups, setExtensionGroups] = useState<any[]>([]);
+
+  // Other configurations
+  const [ephemeral, setEphemeral] = useState(false);
+  const [enablePassword, setEnablePassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const PASSWORD_MIN_LEN = 8;
+
+  // Camoufox Config (for batch/single creation)
+  const [camoufoxConfig, _setCamoufoxConfig] = useState<CamoufoxConfig>({});
+
+  // Loading States
+  const [showProxyForm, setShowProxyForm] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const { storedProxies } = useProxyEvents();
+  const { vpnConfigs } = useVpnEvents();
+
+  // Extracted hooks
+  const {
+    isLoadingReleaseTypes,
+    getCreatableVersion,
+    isBrowserCurrentlyDownloading,
+    loadReleaseTypes,
+    downloadBrowser,
+    getBestAvailableVersion,
+  } = useBrowserVersion();
+
+  const {
+    wayfernConfig,
+    fingerprintConfig,
+    isGeneratingFingerprint,
+    updateWayfernConfig,
+    updateFingerprintConfig,
+    updateFingerprintConfigs,
+    handleGenerateFingerprint,
+    handleAutoLocationToggle,
+    isAutoLocationEnabled,
+    isFingerprintEditingDisabled,
+    setWayfernConfig,
+  } = useWayfernConfig(getCreatableVersion);
+
+  // Load profile groups and extension groups
+  useEffect(() => {
+    if (isOpen) {
+      void invoke<any[]>("get_groups_with_profile_counts")
+        .then(setProfileGroups)
+        .catch(() => setProfileGroups([]));
+
+      void invoke<any[]>("list_extension_groups")
+        .then(setExtensionGroups)
+        .catch(() => setExtensionGroups([]));
+
+      // Reset default GroupId
+      setGroupId(selectedGroupId);
+    }
+  }, [isOpen, selectedGroupId]);
+
+  // Check and download GeoIP database (required by Wayfern)
+  const checkAndDownloadGeoIPDatabase = useCallback(async () => {
+    try {
+      const isAvailable = await invoke<boolean>("is_geoip_database_available");
+      if (!isAvailable) {
+        await invoke("download_geoip_database");
+      }
+    } catch (error) {
+      console.error("Failed to check/download GeoIP database:", error);
+    }
+  }, []);
+
+  // Load versions and GeoIP data on mount
+  useEffect(() => {
+    if (isOpen) {
+      void loadReleaseTypes("wayfern");
+      void loadReleaseTypes("camoufox");
+      void checkAndDownloadGeoIPDatabase();
+    }
+  }, [isOpen, loadReleaseTypes, checkAndDownloadGeoIPDatabase]);
+
+  const _handleDownload = async (browserStr: string) => {
+    const bestVersion = getBestAvailableVersion(browserStr);
+    if (!bestVersion) return;
+    try {
+      await downloadBrowser(browserStr, bestVersion.version);
+    } catch (error) {
+      console.error("Failed to download browser:", error);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!profileName.trim()) return;
+
+    if (enablePassword && !ephemeral) {
+      if (password.length < PASSWORD_MIN_LEN) {
+        setPasswordError(
+          t("profilePassword.errors.tooShort", { min: PASSWORD_MIN_LEN }),
+        );
+        return;
+      }
+      if (password !== passwordConfirm) {
+        setPasswordError(t("profilePassword.errors.mismatch"));
+        return;
+      }
+    }
+    setPasswordError(null);
+    setIsCreating(true);
+
+    const isVpnSelection = selectedProxyId?.startsWith("vpn-") ?? false;
+    const resolvedProxyId = isVpnSelection ? undefined : selectedProxyId;
+    const resolvedVpnId =
+      isVpnSelection && selectedProxyId ? selectedProxyId.slice(4) : undefined;
+
+    const passwordToSet =
+      enablePassword && !ephemeral && password.length >= PASSWORD_MIN_LEN
+        ? password
+        : undefined;
+
+    try {
+      const bestVersion = getCreatableVersion(browserType);
+      if (!bestVersion) {
+        toast.error(
+          `No ${browserType === "camoufox" ? "Camoufox" : "Wayfern"} browser version downloaded. Please download it first.`,
+        );
+        return;
+      }
+
+      const finalWayfernConfig =
+        browserType === "wayfern" ? { ...wayfernConfig } : undefined;
+      const count = Math.max(1, batchCount);
+
+      // Batch mode: delegate to backend API for per-profile randomization & proxy rotation
+      if (count > 1) {
+        // Parse proxy list (one per line)
+        const proxyArray = proxyList
+          .split("\n")
+          .map((p) => p.trim())
+          .filter(Boolean);
+
+        const proxyRotation = proxyArray.length > 0 ? proxyArray : undefined;
+
+        // Call create_profiles_batch with individual parameters (no CreateProfileRequest struct)
+        const created = await invoke<BrowserProfile[]>(
+          "create_profiles_batch",
+          {
+            name: profileName.trim(),
+            browser: browserType,
+            version: bestVersion.version,
+            releaseType: bestVersion.releaseType,
+            proxyId: resolvedProxyId,
+            vpnId: resolvedVpnId,
+            camoufoxConfig: browserType === "camoufox" ? camoufoxConfig : null,
+            wayfernConfig: finalWayfernConfig,
+            groupId: groupId || undefined,
+            ephemeral,
+            dnsBlocklist: dnsBlocklist || undefined,
+            launchHook: launchHook || undefined,
+            count,
+            randomizePerProfile,
+            proxyRotation,
+          },
+        );
+
+        toast.success(`Created ${created.length} profiles`);
+      } else {
+        // Single profile (legacy path)
+        const finalName = profileName.trim();
+
+        // 1. Create the browser profile
+        const createdProfile = await onCreateProfile({
+          name: finalName,
+          browserStr: browserType,
+          version: bestVersion.version,
+          releaseType: bestVersion.releaseType,
+          proxyId: resolvedProxyId,
+          vpnId: resolvedVpnId,
+          camoufoxConfig:
+            browserType === "camoufox" ? camoufoxConfig : undefined,
+          wayfernConfig: finalWayfernConfig,
+          groupId: groupId && groupId !== "none" ? groupId : undefined,
+          extensionGroupId: selectedExtensionGroupId,
+          ephemeral,
+          dnsBlocklist: dnsBlocklist || undefined,
+          launchHook: launchHook.trim() || undefined,
+          password: passwordToSet,
+        });
+
+        // 2. Import raw cookies if provided
+        if (createdProfile?.id && rawCookies.trim()) {
+          try {
+            await invoke("import_cookies_from_file", {
+              profileId: createdProfile.id,
+              content: rawCookies.trim(),
+            });
+          } catch (cookieErr) {
+            console.error(
+              `Failed to import cookies for profile ${finalName}:`,
+              cookieErr,
+            );
+            toast.warning(
+              `Profile created, but cookie import failed for ${finalName}`,
+            );
+          }
+        }
+      }
+
+      toast.success(
+        count > 1
+          ? `Successfully created ${count} profiles`
+          : "Profile created successfully",
+      );
+      handleClose();
+    } catch (error) {
+      console.error("Failed to create profile:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleClose = () => {
+    setProfileName("");
+    setGroupId(selectedGroupId);
+    setBatchCount(1);
+    setSelectedProxyId(undefined);
+    setLaunchHook("");
+    setDnsBlocklist("");
+    setRawCookies("");
+    setSelectedExtensionGroupId(undefined);
+    setWayfernConfig({
+      os: getCurrentOS(),
+    });
+    setEphemeral(false);
+    setEnablePassword(false);
+    setPassword("");
+    setPasswordConfirm("");
+    setPasswordError(null);
+    setActiveTab("base-info");
+    // Reset batch anti-detect states
+    setRandomizePerProfile(true);
+    setProxyList("");
+    onClose();
+  };
+
+  const isCreateDisabled = useMemo(() => {
+    if (!profileName.trim()) return true;
+    if (isBrowserCurrentlyDownloading(browserType)) return true;
+    if (!getCreatableVersion(browserType)) return true;
+    return false;
+  }, [
+    profileName,
+    isBrowserCurrentlyDownloading,
+    getCreatableVersion,
+    browserType,
+  ]);
+
+  // Sidebar Items Definition
+  const tabItems = [
+    {
+      index: 1,
+      value: "base-info",
+      label: t("createProfile.tabs.baseInfo") || "Base info",
+      icon: FaInfoCircle,
+      color: "text-primary",
+    },
+    {
+      index: 2,
+      value: "location",
+      label: t("createProfile.tabs.location") || "Location",
+      icon: FaMapMarkerAlt,
+      color: "text-success",
+    },
+    {
+      index: 3,
+      value: "proxy",
+      label: t("createProfile.tabs.proxy") || "Proxy",
+      icon: FaNetworkWired,
+      color: "text-warning",
+    },
+    {
+      index: 4,
+      value: "cookies",
+      label: t("createProfile.tabs.cookies") || "Cookies",
+      icon: FaCookieBite,
+      color: "text-accent",
+    },
+    {
+      index: 5,
+      value: "hardware",
+      label: t("createProfile.tabs.hardware") || "Hardware",
+      icon: FaHdd,
+      color: "text-destructive",
+    },
+    {
+      index: 6,
+      value: "command",
+      label: t("createProfile.tabs.command") || "Command",
+      icon: FaTerminal,
+      color: "text-primary",
+    },
+    {
+      index: 7,
+      value: "bookmark",
+      label: t("createProfile.tabs.bookmark") || "Bookmark",
+      icon: FaBookmark,
+      color: "text-accent",
+    },
+    {
+      index: 8,
+      value: "extension",
+      label: t("createProfile.tabs.extension") || "Extension",
+      icon: FaPuzzlePiece,
+      color: "text-success",
+    },
+    {
+      index: 9,
+      value: "requests",
+      label: t("createProfile.tabs.requests") || "Requests",
+      icon: FaExchangeAlt,
+      color: "text-warning",
+    },
+    {
+      index: 10,
+      value: "other",
+      label: t("createProfile.tabs.other") || "Other",
+      icon: FaEllipsisH,
+      color: "text-muted-foreground",
+    },
+  ];
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-6xl h-[85vh] flex flex-col p-0 overflow-hidden bg-background">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b shrink-0 bg-muted/5">
+          <div>
+            <DialogTitle className="text-lg font-bold">
+              {t("createProfile.title")}
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Configure your browser anti-detect parameters, location and
+              proxies
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <LuInfo className="size-4" />
+            How to create a profile
+          </Button>
+        </div>
+
+        {/* Sidebar + Content Tabs */}
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex flex-1 min-h-0 w-full"
+        >
+          {/* Sidebar Left List */}
+          <TabsList className="flex flex-col justify-start items-stretch w-56 shrink-0 border-r bg-gradient-to-b from-muted/20 via-muted/5 to-transparent p-3 h-full gap-1.5 rounded-none">
+            {tabItems.map((tab) => {
+              const TabIcon = tab.icon;
+              return (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={cn(
+                    "justify-start gap-3 px-3 py-2.5 h-auto text-xs md:text-sm font-medium text-left w-full transition-all border-l-4 border-transparent rounded-r-md rounded-l-none",
+                    "data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary data-[state=active]:font-semibold data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground hover:bg-muted/30",
+                  )}
+                >
+                  <span className="text-xs opacity-60 w-4 text-right shrink-0">
+                    {tab.index}.
+                  </span>
+                  <TabIcon className={cn("size-4 shrink-0", tab.color)} />
+                  <span className="truncate">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+
+          {/* Right Scrollable Content */}
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-6 space-y-6">
+                {/* 1. Base Info */}
+                <TabsContent value="base-info" className="m-0 space-y-6">
+                  <BaseInfoTab
+                    profileName={profileName}
+                    setProfileName={setProfileName}
+                    groupId={groupId}
+                    setGroupId={setGroupId}
+                    groups={profileGroups}
+                    browserType={browserType}
+                    setBrowserType={_setBrowserType}
+                    wayfernConfig={wayfernConfig}
+                    updateWayfernConfig={updateWayfernConfig}
+                    fingerprintConfig={fingerprintConfig}
+                    updateFingerprintConfig={updateFingerprintConfig}
+                    isLoadingReleaseTypes={isLoadingReleaseTypes}
+                    getCreatableVersion={getCreatableVersion}
+                    crossOsUnlocked={crossOsUnlocked}
+                    currentOS={getCurrentOS()}
+                    osLabels={osLabels}
+                    isCreateDisabled={isCreateDisabled}
+                    isCreating={isCreating}
+                    handleCreate={handleCreate}
+                  />
+                </TabsContent>
+
+                {/* 2. Location */}
+                <TabsContent value="location" className="m-0 space-y-6">
+                  <LocationTab
+                    fingerprintConfig={fingerprintConfig}
+                    updateFingerprintConfig={updateFingerprintConfig}
+                    isEditingDisabled={isFingerprintEditingDisabled}
+                    isAutoLocationEnabled={isAutoLocationEnabled}
+                    handleAutoLocationToggle={handleAutoLocationToggle}
+                  />
+                </TabsContent>
+
+                {/* 3. Proxy */}
+                <TabsContent value="proxy" className="m-0 space-y-4">
+                  <ProxyTab
+                    storedProxies={storedProxies}
+                    vpnConfigs={vpnConfigs}
+                    selectedProxyId={selectedProxyId}
+                    setSelectedProxyId={setSelectedProxyId}
+                    setShowProxyForm={setShowProxyForm}
+                  />
+                </TabsContent>
+
+                {/* 4. Cookies */}
+                <TabsContent value="cookies" className="m-0">
+                  <CookiesTab
+                    rawCookies={rawCookies}
+                    setRawCookies={setRawCookies}
+                  />
+                </TabsContent>
+
+                {/* 5. Hardware */}
+                <TabsContent value="hardware" className="m-0 space-y-6">
+                  <HardwareTab
+                    fingerprintConfig={fingerprintConfig}
+                    updateFingerprintConfig={updateFingerprintConfig}
+                    updateFingerprintConfigs={updateFingerprintConfigs}
+                    isEditingDisabled={isFingerprintEditingDisabled}
+                  />
+                </TabsContent>
+
+                {/* 6. Command */}
+                <TabsContent value="command" className="m-0 space-y-6">
+                  <CommandTab
+                    launchHook={launchHook}
+                    setLaunchHook={setLaunchHook}
+                    isCreating={isCreating}
+                  />
+                </TabsContent>
+
+                {/* 7. Bookmark */}
+                <TabsContent value="bookmark" className="m-0 space-y-4">
+                  <BookmarkTab />
+                </TabsContent>
+
+                {/* 8. Extension */}
+                <TabsContent value="extension" className="m-0 space-y-4">
+                  <ExtensionTab
+                    extensionGroups={extensionGroups}
+                    selectedExtensionGroupId={selectedExtensionGroupId}
+                    setSelectedExtensionGroupId={setSelectedExtensionGroupId}
+                  />
+                </TabsContent>
+
+                {/* 9. Requests */}
+                <TabsContent value="requests" className="m-0 space-y-4">
+                  <RequestsTab
+                    dnsBlocklist={dnsBlocklist}
+                    setDnsBlocklist={setDnsBlocklist}
+                  />
+                </TabsContent>
+
+                {/* 10. Other */}
+                <TabsContent value="other" className="m-0 space-y-6">
+                  <OtherTab
+                    ephemeral={ephemeral}
+                    setEphemeral={setEphemeral}
+                    enablePassword={setEnablePassword}
+                    enablePasswordVal={enablePassword}
+                    password={password}
+                    setPassword={setPassword}
+                    passwordConfirm={passwordConfirm}
+                    setPasswordConfirm={setPasswordConfirm}
+                    passwordError={passwordError}
+                    setPasswordError={setPasswordError}
+                  />
+                </TabsContent>
+
+                <TabsContent value="automation" className="m-0 space-y-4">
+                  <AutomationTab
+                    automation={profileData.automation}
+                    onChange={(automation) =>
+                      setProfileData({ ...profileData, automation })
+                    }
+                  />
+                </TabsContent>
+              </div>
+            </ScrollArea>
+          </div>
+        </Tabs>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t shrink-0 bg-muted/5">
+          {/* Footer Left: Qty and Get Fingerprint */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Label
+                htmlFor="batch-count-input"
+                className="text-xs font-semibold text-muted-foreground select-none shrink-0"
+              >
+                {t("createProfile.quantity") || "Qty"}:
+              </Label>
+              <Input
+                id="batch-count-input"
+                type="number"
+                min={1}
+                max={100}
+                value={batchCount}
+                onChange={(e) =>
+                  setBatchCount(Math.max(1, parseInt(e.target.value, 10) || 1))
+                }
+                className="w-16 h-8 text-center font-bold text-xs"
+              />
+            </div>
+
+            {/* Download browser button (shown when selected browser not downloaded) */}
+            {!getCreatableVersion(browserType) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void _handleDownload(browserType)}
+                disabled={isBrowserCurrentlyDownloading(browserType)}
+                className="h-8 px-3 text-xs gap-1.5 border-primary/60 bg-primary/5 text-primary hover:bg-primary/20"
+              >
+                {isBrowserCurrentlyDownloading(browserType) ? (
+                  <LuLoaderCircle className="size-3.5 animate-spin" />
+                ) : (
+                  <FaPlus className="size-3" />
+                )}
+                Download {browserType === "camoufox" ? "Camoufox" : "Wayfern"}
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void handleGenerateFingerprint()}
+              disabled={
+                isGeneratingFingerprint || !getCreatableVersion(browserType)
+              }
+              className="h-8 px-3 text-xs gap-1.5 border-warning/60 bg-warning/5 text-warning hover:bg-warning/20 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {isGeneratingFingerprint ? (
+                <LuLoaderCircle className="size-3.5 animate-spin" />
+              ) : (
+                <LuRefreshCw className="size-3.5" />
+              )}
+              {t("createProfile.getFingerprint") || "Get new fingerprint"}
+            </Button>
+          </div>
+
+          {/* Footer Right: Action Buttons */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isCreating}
+              className="h-8 text-xs md:text-sm hover:bg-muted/50"
+            >
+              {t("common.buttons.cancel")}
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={isCreateDisabled || isCreating}
+              className="h-8 text-xs md:text-sm gap-1.5 bg-gradient-to-r from-primary to-primary/85 hover:from-primary/95 hover:to-primary/75 text-primary-foreground font-semibold shadow-md shadow-primary/15 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {isCreating && (
+                <LuLoaderCircle className="size-3.5 animate-spin" />
+              )}
+              {t("common.buttons.create")}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+      <ProxyFormDialog
+        isOpen={showProxyForm}
+        onClose={() => setShowProxyForm(false)}
+      />
+    </Dialog>
+  );
+}

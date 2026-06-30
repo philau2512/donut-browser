@@ -34,7 +34,8 @@
       "saving": "Đang lưu…",
       "saved": "Đã lưu",
       "copied": "Đã sao chép",
-      "learnMore": "Tìm hiểu thêm"
+      "learnMore": "Tìm hiểu thêm",
+      "toggleTheme": "Chuyển đổi giao diện"
     },
     "status": {
       "active": "Đang hoạt động",
@@ -245,7 +246,11 @@
       "cantModifyRunning": "Không thể chỉnh sửa profile đang chạy",
       "cantModifyLaunching": "Không thể chỉnh sửa profile khi đang khởi chạy",
       "cantModifyStopping": "Không thể chỉnh sửa profile khi đang dừng",
-      "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật"
+      "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật",
+      "lastOpen": "Lần mở cuối",
+      "os": "OS",
+      "message": "Thông báo",
+      "changeProxy": "Đổi Proxy"
     },
     "actions": {
       "launch": "Khởi chạy",
@@ -290,7 +295,6 @@
       "confirmButton": "Xóa {{count}} hồ sơ"
     },
     "note": {
-      "empty": "Không có ghi chú",
       "placeholder": "Thêm ghi chú..."
     },
     "aria": {
@@ -308,7 +312,17 @@
       "copyCookies": "Sao chép Cookie",
       "runSelected": "Chạy mục đã chọn",
       "stopSelected": "Dừng mục đã chọn",
-      "proRequired": "Cần gói Pro để chạy/dừng hàng loạt"
+      "proRequired": "Cần gói Pro để chạy/dừng hàng loạt",
+      "startCount": "Khởi động {{count}} Hồ sơ",
+      "start": "Khởi động hồ sơ",
+      "stopCount": "Dừng {{count}} Hồ sơ",
+      "stop": "Dừng hồ sơ",
+      "automation": "Tự động hóa",
+      "updateMultiple": "Cập nhật hàng loạt",
+      "proxy": "Proxy",
+      "exportCookies": "Xuất cookie",
+      "moreAction": "Hành động khác",
+      "synchronize": "Đồng bộ thao tác"
     },
     "passwordProtectedBadge": "Được bảo vệ bằng mật khẩu",
     "launchHook": {
@@ -331,6 +345,23 @@
       "nameDesc": "Tên (Z–A)",
       "newest": "Mới nhất trước",
       "oldest": "Cũ nhất trước"
+    },
+    "status": {
+      "noStatus": "Không có trạng thái",
+      "setting": "Cài đặt trạng thái",
+      "addStatus": "Thêm trạng thái",
+      "labelPlaceholder": "Nhãn trạng thái...",
+      "manageTitle": "Quản lý trạng thái"
+    },
+    "menu": {
+      "rename": "Đổi tên",
+      "edit": "Chỉnh sửa cài đặt",
+      "copyCookies": "Sao chép Cookie",
+      "manageCookies": "Quản lý Cookie",
+      "clone": "Nhân bản hồ sơ",
+      "assignGroup": "Gán vào Nhóm",
+      "assignExtension": "Gán Tiện ích",
+      "configureCamoufox": "Cấu hình Camoufox"
     }
   },
   "createProfile": {
@@ -385,7 +416,21 @@
       "description": "Mã hóa dữ liệu hồ sơ trên ổ đĩa. Yêu cầu mật khẩu để khởi chạy."
     },
     "downloadingSubtitle": "Đang tải xuống…",
-    "browsersDownloading": "Trình duyệt vẫn đang được tải xuống. Việc tạo hồ sơ sẽ khả dụng khi quá trình tải hoàn tất."
+    "browsersDownloading": "Trình duyệt vẫn đang được tải xuống. Việc tạo hồ sơ sẽ khả dụng khi quá trình tải hoàn tất.",
+    "tabs": {
+      "baseInfo": "Thông tin cơ bản",
+      "location": "Vị trí",
+      "proxy": "Proxy",
+      "cookies": "Cookies",
+      "hardware": "Phần cứng",
+      "command": "Lệnh",
+      "bookmark": "Dấu trang",
+      "extension": "Tiện ích mở rộng",
+      "requests": "Yêu cầu mạng",
+      "other": "Khác"
+    },
+    "quantity": "Số lượng",
+    "getFingerprint": "Lấy vân tay mới"
   },
   "deleteDialog": {
     "title": "Xóa hồ sơ",
@@ -534,6 +579,15 @@
       "vpnsTitle": "Xóa các VPN đã chọn",
       "vpnsDescription": "Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn {{count}} VPN: {{names}}.",
       "confirmButton": "Xóa {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Chỉnh sửa nhanh Proxy",
+      "formatLabel": "Định dạng Proxy",
+      "formatPlaceholder": "type://user:pass@ip:port hoặc ip:port",
+      "checkHostLabel": "Host kiểm tra proxy",
+      "checkBeforeStart": "Kiểm tra proxy trước khi khởi chạy profile.",
+      "checkButton": "Kiểm tra Proxy",
+      "saveButton": "Lưu Proxy"
     }
   },
   "groups": {
@@ -940,7 +994,9 @@
       "syncFailed": "Đồng bộ thất bại",
       "profileSyncFailed": "Đồng bộ profile '{{name}}' thất bại",
       "cacheClearFailed": "Xóa bộ nhớ đệm thất bại",
-      "unknown": "Đã xảy ra lỗi không xác định"
+      "unknown": "Đã xảy ra lỗi không xác định",
+      "profileCrashTitle": "Profile '{{name}}' đã bị tắt đột ngột",
+      "profileCrashDesc": "Trình duyệt tự thoát bất thường: {{status}}"
     },
     "loading": {
       "downloading": "Đang tải xuống {{browser}} {{version}}",
@@ -1100,7 +1156,25 @@
     "refreshFingerprint": "Làm mới vân tay",
     "canvasNoiseSeedPlaceholder": "Nhập chuỗi hạt giống cho vân tay canvas",
     "addFontsPlaceholder": "Thêm phông chữ...",
-    "enterAsJson": "Nhập {{title}} dưới dạng JSON"
+    "enterAsJson": "Nhập {{title}} dưới dạng JSON",
+    "webrtcMode": "Chế độ WebRTC",
+    "webrtcModes": {
+      "forward": "Chuyển tiếp (Proxy)",
+      "forwardGoogle": "Chuyển tiếp qua Google",
+      "alter": "Thay đổi (Spoof)",
+      "real": "Thực tế",
+      "disable": "Tắt"
+    },
+    "subTabs": {
+      "screen": "Màn hình",
+      "system": "Hệ thống (CPU & RAM)",
+      "graphics": "Đồ họa & Âm thanh"
+    },
+    "customizeDetails": "Tùy chỉnh thông số phần cứng chi tiết",
+    "customizeDetailsDesc": "Tự điều chỉnh seed, renderer và các tham số JSON",
+    "randomizeAll": "Randomize All",
+    "randomizeAllTooltip": "Tự động tạo ngẫu nhiên tất cả thông số hardware (màn hình, CPU, RAM, GPU) phù hợp với hệ điều hành được phát hiện",
+    "shuffleGPUTooltip": "Chọn ngẫu nhiên GPU vendor/renderer phù hợp với hệ điều hành"
   },
   "warnings": {
     "windowResizeTitle": "Kích thước cửa sổ tùy chỉnh",
@@ -1502,7 +1576,14 @@
     "noneOption": "Không có",
     "noValidProfiles": "Chưa chọn profile hợp lệ nào.",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "Gán proxy/VPN cho profile thất bại"
+    "failedFallback": "Gán proxy/VPN cho profile thất bại",
+    "changeProxyTitle": "Thay đổi proxy",
+    "bulkChangeDescription": "Cập nhật cài đặt proxy cho {{count}} hồ sơ đã chọn",
+    "pleaseSelectProxy": "Vui lòng chọn một cấu hình proxy",
+    "pleaseInputProxy": "Vui lòng nhập danh sách proxy",
+    "invalidJson": "Nội dung chuỗi JSON không hợp lệ",
+    "successClear": "Đã xóa cài đặt proxy/VPN thành công",
+    "withoutProxyWarning": "Tất cả các hồ sơ được chọn sẽ chuyển sang chế độ Không proxy sau khi xác nhận."
   },
   "groupAssignment": {
     "title": "Gán nhóm",
@@ -1860,7 +1941,14 @@
     "proxyNotWorking": "Proxy đã chọn không hoạt động, nên profile chưa được tạo.",
     "proxyPaymentRequired": "Proxy đã chọn yêu cầu thanh toán (402) — gói đăng ký của nó có thể đã hết hạn — nên profile chưa được tạo.",
     "vpnNotWorking": "VPN đã chọn không hoạt động, nên profile chưa được tạo.",
-    "camoufoxImportDeprecated": "Không còn hỗ trợ nhập profile dựa trên Firefox (Camoufox). Camoufox đang bị ngừng hỗ trợ — vui lòng dùng Wayfern."
+    "camoufoxImportDeprecated": "Không còn hỗ trợ nhập profile dựa trên Firefox (Camoufox). Camoufox đang bị ngừng hỗ trợ — vui lòng dùng Wayfern.",
+    "wayfernFingerprintMissing": "Hồ sơ này chưa có vân tay. Hãy tạo vân tay trước khi khởi chạy Wayfern.",
+    "wayfernGeolocationRequired": "Vân tay thiếu múi giờ hoặc vị trí và không thể xác định IP thoát qua proxy.",
+    "wayfernWebrtcAlterIpUnavailable": "Chế độ WebRTC alter cần IP thoát proxy nhưng không lấy được.",
+    "wayfernWebrtcAlterIpInvalid": "Chế độ WebRTC alter nhận IP thoát proxy không hợp lệ.",
+    "wayfernNoPageTargets": "Wayfern đã khởi động nhưng không có tab để inject vân tay.",
+    "wayfernFingerprintApplyFailed": "Không thể áp dụng vân tay cho Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}"
   },
   "rail": {
     "profiles": "Profile",
@@ -1877,7 +1965,8 @@
     },
     "network": "Mạng",
     "integrations": "Tích hợp",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "automation": "Tự động hóa"
   },
   "pageTitle": {
     "proxies": "Mạng",
@@ -1888,7 +1977,8 @@
     "integrations": "Tích hợp",
     "account": "Tài khoản",
     "import": "Nhập profile",
-    "shortcuts": "Phím tắt"
+    "shortcuts": "Phím tắt",
+    "automation": "Tự động hóa"
   },
   "encryption": {
     "required": {
@@ -2076,5 +2166,82 @@
     "title": "Hỗ trợ Camoufox sắp kết thúc",
     "description": "Hỗ trợ cho các profile Camoufox sẽ kết thúc vào ngày 8 tháng 7 năm 2026. Bạn có một hoặc nhiều profile Camoufox. Hãy chuyển chúng sang Wayfern trước thời điểm đó — sau ngày này, các profile Camoufox có thể ngừng hoạt động.",
     "acknowledge": "Đã hiểu"
+  },
+  "tags": {
+    "title": "Thẻ",
+    "assignSuccess": "Đã thêm thẻ thành công cho {{count}} hồ sơ",
+    "failed": "Không thể gán thẻ: {{error}}",
+    "placeholder": "Chọn hoặc tạo thẻ...",
+    "description_one": "Gán thẻ cho hồ sơ đã chọn.",
+    "description_other": "Gán thẻ cho {{count}} hồ sơ đã chọn.",
+    "selectedProfilesLabel": "Hồ sơ đã chọn",
+    "assignTagsLabel": "Gán thẻ",
+    "assignButton": "Thêm",
+    "deleteConfirmTitle": "Xóa thẻ",
+    "deleteConfirmDesc": "Bạn có chắc chắn muốn xóa thẻ \"{{tag}}\" không? Thao tác này sẽ gỡ thẻ khỏi tất cả hồ sơ và toàn bộ hệ thống.",
+    "deleteSuccess": "Đã xóa thẻ \"{{tag}}\" thành công",
+    "deleteFailed": "Không thể xóa thẻ: {{error}}"
+  },
+  "automation": {
+    "cleanupMode": {
+      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
+      "fullDesc": "Delete the entire profile directory",
+      "cookiesAndCache": "Cookies & Cache Only",
+      "full": "Full Profile Deletion"
+    },
+    "title": "Automation",
+    "addNode": "Add Task",
+    "securityWarning": {
+      "title": "Security Warning",
+      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    },
+    "afterClose": {
+      "description": "Tasks to execute after the browser closes",
+      "title": "After Closing Profile"
+    },
+    "masterSwitch": "Enable Automation",
+    "fields": {
+      "allowedCountries": "Allowed Countries",
+      "protocol": "Protocol",
+      "requestBody": "Request Body",
+      "message": "Message",
+      "timeoutSeconds": "Timeout (seconds)",
+      "label": "Label",
+      "jsonPathPort": "JSON Path for Port",
+      "apiUrl": "API URL",
+      "maxFraudScore": "Max Fraud Score",
+      "cleanupMode": "Cleanup Mode",
+      "jsonPathIp": "JSON Path for IP",
+      "chatId": "Chat ID",
+      "timeout": "Timeout (seconds)",
+      "botToken": "Bot Token",
+      "variablesAvailable": "Available variables",
+      "webhookUrl": "Webhook URL",
+      "method": "HTTP Method",
+      "labelPlaceholder": "My Task",
+      "responseFormat": "Response Format",
+      "maxAttempts": "Max Retry Attempts",
+      "command": "Command"
+    },
+    "noNodes": "No automation tasks configured yet",
+    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
+    "warnings": {
+      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
+      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    },
+    "beforeOpen": {
+      "description": "Tasks to execute before the browser launches",
+      "title": "Before Opening Profile"
+    },
+    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
+    "nodeTypes": {
+      "ipCheck": "IP Check",
+      "webhook": "Webhook",
+      "localCommand": "Local Command",
+      "cleanup": "Cleanup",
+      "dynamicProxy": "Dynamic Proxy",
+      "telegramAlert": "Telegram Alert"
+    },
+    "dependencyWarning": "Dependency issue"
   }
 }

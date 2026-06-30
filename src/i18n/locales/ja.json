@@ -34,7 +34,8 @@
       "saving": "保存中…",
       "saved": "保存しました",
       "copied": "コピーしました",
-      "learnMore": "詳細"
+      "learnMore": "詳細",
+      "toggleTheme": "テーマの切り替え"
     },
     "status": {
       "active": "アクティブ",
@@ -245,7 +246,11 @@
       "cantModifyRunning": "実行中のプロファイルは変更できません",
       "cantModifyLaunching": "起動中はプロファイルを変更できません",
       "cantModifyStopping": "停止中はプロファイルを変更できません",
-      "cantModifyUpdating": "ブラウザの更新中はプロファイルを変更できません"
+      "cantModifyUpdating": "ブラウザの更新中はプロファイルを変更できません",
+      "lastOpen": "最終起動",
+      "os": "OS",
+      "message": "メッセージ",
+      "changeProxy": "プロキシ変更"
     },
     "actions": {
       "launch": "起動",
@@ -290,7 +295,6 @@
       "confirmButton": "{{count}} 個のプロファイルを削除"
     },
     "note": {
-      "empty": "メモなし",
       "placeholder": "メモを追加..."
     },
     "aria": {
@@ -308,7 +312,17 @@
       "copyCookies": "Cookieをコピー",
       "runSelected": "選択を実行",
       "stopSelected": "選択を停止",
-      "proRequired": "一括実行・停止には Pro プランが必要です"
+      "proRequired": "一括実行・停止には Pro プランが必要です",
+      "startCount": "{{count}} 個のプロファイルを開始",
+      "start": "プロファイルを開始",
+      "stopCount": "{{count}} 個のプロファイルを停止",
+      "stop": "プロファイルを停止",
+      "automation": "自動化",
+      "updateMultiple": "複数更新",
+      "proxy": "プロキシ",
+      "exportCookies": "クッキーをエクスポート",
+      "moreAction": "その他のアクション",
+      "synchronize": "アクションを同期"
     },
     "passwordProtectedBadge": "パスワード保護",
     "launchHook": {
@@ -331,6 +345,23 @@
       "nameDesc": "名前 (Z→A)",
       "newest": "新しい順",
       "oldest": "古い順"
+    },
+    "status": {
+      "noStatus": "ステータスなし",
+      "setting": "ステータス設定",
+      "addStatus": "ステータスを追加",
+      "labelPlaceholder": "ステータスラベル...",
+      "manageTitle": "ステータスを管理"
+    },
+    "menu": {
+      "rename": "名前変更",
+      "edit": "設定を編集",
+      "copyCookies": "クッキーをコピー",
+      "manageCookies": "クッキーを管理",
+      "clone": "プロファイルを複製",
+      "assignGroup": "グループに割り当て",
+      "assignExtension": "拡張機能を割り当て",
+      "configureCamoufox": "Camoufoxを設定"
     }
   },
   "createProfile": {
@@ -385,7 +416,21 @@
       "description": "ディスク上のプロファイルデータを暗号化します。起動に必要です。"
     },
     "downloadingSubtitle": "ダウンロード中…",
-    "browsersDownloading": "ブラウザをダウンロード中です。ダウンロードが完了するとプロファイルを作成できます。"
+    "browsersDownloading": "ブラウザをダウンロード中です。ダウンロードが完了するとプロファイルを作成できます。",
+    "tabs": {
+      "baseInfo": "基本情報",
+      "location": "位置情報",
+      "proxy": "プロキシ",
+      "cookies": "クッキー",
+      "hardware": "ハードウェア",
+      "command": "コマンド",
+      "bookmark": "ブックマーク",
+      "extension": "拡張機能",
+      "requests": "リクエスト",
+      "other": "その他"
+    },
+    "quantity": "数量",
+    "getFingerprint": "新しい指紋を取得"
   },
   "deleteDialog": {
     "title": "プロファイルを削除",
@@ -534,6 +579,15 @@
       "vpnsTitle": "選択したVPNを削除",
       "vpnsDescription": "この操作は取り消せません。{{count}} 件のVPNを完全に削除します: {{names}}",
       "confirmButton": "{{count}} 件を削除"
+    },
+    "quickEdit": {
+      "quickEditTitle": "プロキシ簡易編集",
+      "formatLabel": "プロキシ形式",
+      "formatPlaceholder": "type://user:pass@ip:port または ip:port",
+      "checkHostLabel": "プロキシ確認ホスト",
+      "checkBeforeStart": "プロファイル起動前にプロキシを確認する。",
+      "checkButton": "プロキシ確認",
+      "saveButton": "プロキシ編集"
     }
   },
   "groups": {
@@ -940,7 +994,9 @@
       "syncFailed": "同期に失敗しました",
       "profileSyncFailed": "プロファイル '{{name}}' の同期に失敗しました",
       "cacheClearFailed": "キャッシュのクリアに失敗しました",
-      "unknown": "不明なエラーが発生しました"
+      "unknown": "不明なエラーが発生しました",
+      "profileCrashTitle": "プロファイル「{{name}}」がクラッシュしました",
+      "profileCrashDesc": "ブラウザが予期せず終了しました: {{status}}"
     },
     "loading": {
       "downloading": "{{browser}} {{version}} をダウンロード中",
@@ -1100,7 +1156,22 @@
     "refreshFingerprint": "フィンガープリントを更新",
     "canvasNoiseSeedPlaceholder": "キャンバスフィンガープリント用のシード文字列を入力",
     "addFontsPlaceholder": "フォントを追加...",
-    "enterAsJson": "{{title}} を JSON で入力"
+    "enterAsJson": "{{title}} を JSON で入力",
+    "webrtcMode": "WebRTC モード",
+    "webrtcModes": {
+      "forward": "転送 (プロキシ)",
+      "forwardGoogle": "Google 転送",
+      "alter": "変更 (偽装)",
+      "real": "リアル",
+      "disable": "無効"
+    },
+    "subTabs": {
+      "screen": "画面",
+      "system": "システム (CPU & RAM)",
+      "graphics": "グラフィックス & オーディオ"
+    },
+    "customizeDetails": "詳細なハードウェアパラメータのカスタマイズ",
+    "customizeDetailsDesc": "シード、レンダラー、JSONパラメータを手動で調整します"
   },
   "warnings": {
     "windowResizeTitle": "カスタムウィンドウサイズ",
@@ -1502,7 +1573,14 @@
     "noneOption": "なし",
     "noValidProfiles": "有効なプロファイルが選択されていません。",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "プロファイルへのプロキシ/VPN の割り当てに失敗しました"
+    "failedFallback": "プロファイルへのプロキシ/VPN の割り当てに失敗しました",
+    "changeProxyTitle": "プロキシ変更",
+    "bulkChangeDescription": "選択された {{count}} 個のプロファイルのプロキシ設定を更新",
+    "pleaseSelectProxy": "プロキシ設定を選択してください",
+    "pleaseInputProxy": "プロキシのリストを入力してください",
+    "invalidJson": "無効なJSON文字列の内容",
+    "successClear": "プロキシ/VPN設定が正常にクリアされました",
+    "withoutProxyWarning": "送信後、選択したすべてのプロファイルがプロキシなしモードに切り替わります。"
   },
   "groupAssignment": {
     "title": "グループを割り当てる",
@@ -1860,7 +1938,14 @@
     "proxyNotWorking": "選択したプロキシが機能していないため、プロファイルは作成されませんでした。",
     "proxyPaymentRequired": "選択したプロキシは支払いが必要です（402）。サブスクリプションが期限切れの可能性があります。そのため、プロファイルは作成されませんでした。",
     "vpnNotWorking": "選択したVPNが機能していないため、プロファイルは作成されませんでした。",
-    "camoufoxImportDeprecated": "Firefox ベース（Camoufox）のプロファイルのインポートはサポートされなくなりました。Camoufox は廃止予定です。代わりに Wayfern をご利用ください。"
+    "camoufoxImportDeprecated": "Firefox ベース（Camoufox）のプロファイルのインポートはサポートされなくなりました。Camoufox は廃止予定です。代わりに Wayfern をご利用ください。",
+    "wayfernFingerprintMissing": "このプロファイルにフィンガープリントがありません。Wayfernを起動する前に生成してください。",
+    "wayfernGeolocationRequired": "フィンガープリントにタイムゾーンまたは位置情報がなく、プロキシ出口を解決できませんでした。",
+    "wayfernWebrtcAlterIpUnavailable": "WebRTC alterモードにはプロキシ出口IPが必要ですが、取得できませんでした。",
+    "wayfernWebrtcAlterIpInvalid": "WebRTC alterモードで無効なプロキシ出口IPを受け取りました。",
+    "wayfernNoPageTargets": "Wayfernは起動しましたが、フィンガープリント注入用のページがありませんでした。",
+    "wayfernFingerprintApplyFailed": "Wayfernにフィンガープリントを適用できませんでした: {{detail}}",
+    "wayfernRehydrateFailed": "復旧した Wayfern ブラウザでフィンガープリント保護を復元できませんでした: {{reason}}"
   },
   "rail": {
     "profiles": "プロファイル",
@@ -1877,7 +1962,8 @@
     },
     "network": "ネットワーク",
     "integrations": "連携",
-    "account": "アカウント"
+    "account": "アカウント",
+    "automation": "オートメーション"
   },
   "pageTitle": {
     "proxies": "ネットワーク",
@@ -1888,7 +1974,8 @@
     "integrations": "連携",
     "account": "アカウント",
     "import": "プロファイルをインポート",
-    "shortcuts": "キーボードショートカット"
+    "shortcuts": "キーボードショートカット",
+    "automation": "オートメーション"
   },
   "encryption": {
     "required": {
@@ -2076,5 +2163,82 @@
     "title": "Camoufox のサポートが終了します",
     "description": "Camoufox プロファイルのサポートは 2026 年 7 月 8 日に終了します。Camoufox プロファイルが 1 つ以上あります。それまでに Wayfern へ移行してください。その後、Camoufox プロファイルは動作しなくなる可能性があります。",
     "acknowledge": "了解しました"
+  },
+  "tags": {
+    "title": "タグ",
+    "assignSuccess": "{{count}}個のプロファイルにタグが正常に追加されました",
+    "failed": "タグの割り当てに失敗しました: {{error}}",
+    "placeholder": "タグの選択または作成...",
+    "description_one": "選択したプロファイルにタグを割り当てます。",
+    "description_other": "選択した{{count}}個のプロファイルにタグを割り当てます。",
+    "selectedProfilesLabel": "選択されたプロファイル",
+    "assignTagsLabel": "タグの割り当て",
+    "assignButton": "追加",
+    "deleteConfirmTitle": "タグの削除",
+    "deleteConfirmDesc": "タグ「{{tag}}」を削除してもよろしいですか？これにより、すべてのプロファイルおよびシステム全体から削除されます。",
+    "deleteSuccess": "タグ「{{tag}}」が正常に削除されました",
+    "deleteFailed": "タグの削除に失敗しました: {{error}}"
+  },
+  "automation": {
+    "cleanupMode": {
+      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
+      "fullDesc": "Delete the entire profile directory",
+      "cookiesAndCache": "Cookies & Cache Only",
+      "full": "Full Profile Deletion"
+    },
+    "title": "Automation",
+    "addNode": "Add Task",
+    "securityWarning": {
+      "title": "Security Warning",
+      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    },
+    "afterClose": {
+      "description": "Tasks to execute after the browser closes",
+      "title": "After Closing Profile"
+    },
+    "masterSwitch": "Enable Automation",
+    "fields": {
+      "allowedCountries": "Allowed Countries",
+      "protocol": "Protocol",
+      "requestBody": "Request Body",
+      "message": "Message",
+      "timeoutSeconds": "Timeout (seconds)",
+      "label": "Label",
+      "jsonPathPort": "JSON Path for Port",
+      "apiUrl": "API URL",
+      "maxFraudScore": "Max Fraud Score",
+      "cleanupMode": "Cleanup Mode",
+      "jsonPathIp": "JSON Path for IP",
+      "chatId": "Chat ID",
+      "timeout": "Timeout (seconds)",
+      "botToken": "Bot Token",
+      "variablesAvailable": "Available variables",
+      "webhookUrl": "Webhook URL",
+      "method": "HTTP Method",
+      "labelPlaceholder": "My Task",
+      "responseFormat": "Response Format",
+      "maxAttempts": "Max Retry Attempts",
+      "command": "Command"
+    },
+    "noNodes": "No automation tasks configured yet",
+    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
+    "warnings": {
+      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
+      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    },
+    "beforeOpen": {
+      "description": "Tasks to execute before the browser launches",
+      "title": "Before Opening Profile"
+    },
+    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
+    "nodeTypes": {
+      "ipCheck": "IP Check",
+      "webhook": "Webhook",
+      "localCommand": "Local Command",
+      "cleanup": "Cleanup",
+      "dynamicProxy": "Dynamic Proxy",
+      "telegramAlert": "Telegram Alert"
+    },
+    "dependencyWarning": "Dependency issue"
   }
 }

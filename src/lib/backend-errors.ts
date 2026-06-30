@@ -34,6 +34,14 @@ export type BackendErrorCode =
   | "PROXY_PAYMENT_REQUIRED"
   | "VPN_NOT_WORKING"
   | "CAMOUFOX_IMPORT_DEPRECATED"
+  | "WAYFERN_FINGERPRINT_MISSING"
+  | "WAYFERN_GEOLOCATION_REQUIRED"
+  | "WAYFERN_WEBRTC_ALTER_IP_UNAVAILABLE"
+  | "WAYFERN_WEBRTC_ALTER_IP_INVALID"
+  | "WAYFERN_NO_PAGE_TARGETS"
+  | "WAYFERN_FINGERPRINT_APPLY_FAILED"
+  | "WAYFERN_REHYDRATE_FAILED"
+  | "WAYFERN_FINGERPRINT_INCONSISTENT"
   | "INTERNAL_ERROR";
 
 export interface BackendError {
@@ -138,6 +146,28 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.vpnNotWorking");
     case "CAMOUFOX_IMPORT_DEPRECATED":
       return t("backendErrors.camoufoxImportDeprecated");
+    case "WAYFERN_FINGERPRINT_MISSING":
+      return t("backendErrors.wayfernFingerprintMissing");
+    case "WAYFERN_GEOLOCATION_REQUIRED":
+      return t("backendErrors.wayfernGeolocationRequired");
+    case "WAYFERN_WEBRTC_ALTER_IP_UNAVAILABLE":
+      return t("backendErrors.wayfernWebrtcAlterIpUnavailable");
+    case "WAYFERN_WEBRTC_ALTER_IP_INVALID":
+      return t("backendErrors.wayfernWebrtcAlterIpInvalid");
+    case "WAYFERN_NO_PAGE_TARGETS":
+      return t("backendErrors.wayfernNoPageTargets");
+    case "WAYFERN_FINGERPRINT_APPLY_FAILED":
+      return t("backendErrors.wayfernFingerprintApplyFailed", {
+        detail: parsed.params?.detail ?? "",
+      });
+    case "WAYFERN_REHYDRATE_FAILED":
+      return t("backendErrors.wayfernRehydrateFailed", {
+        reason: parsed.params?.reason ?? "",
+      });
+    case "WAYFERN_FINGERPRINT_INCONSISTENT":
+      return t("backendErrors.wayfernFingerprintInconsistent", {
+        reason: parsed.params?.reason ?? "",
+      });
     case "INTERNAL_ERROR":
       return t("backendErrors.internal", {
         detail: parsed.params?.detail ?? "",

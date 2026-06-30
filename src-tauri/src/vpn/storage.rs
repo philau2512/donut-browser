@@ -99,7 +99,7 @@ impl VpnStorage {
 
   /// Get the storage file path
   fn get_storage_path() -> PathBuf {
-    let vpn_dir = crate::app_dirs::vpn_dir();
+    let vpn_dir = crate::settings::app_dirs::vpn_dir();
     if !vpn_dir.exists() {
       let _ = fs::create_dir_all(&vpn_dir);
     }
@@ -109,7 +109,7 @@ impl VpnStorage {
 
   /// Get or create the encryption key
   fn get_or_create_key() -> [u8; 32] {
-    let key_path = crate::app_dirs::vpn_dir().join(".vpn_key");
+    let key_path = crate::settings::app_dirs::vpn_dir().join(".vpn_key");
 
     if key_path.exists() {
       if let Ok(key_data) = fs::read(&key_path) {
@@ -361,7 +361,7 @@ impl VpnStorage {
       last_used: None,
       sync_enabled,
       last_sync: None,
-      updated_at: Some(crate::proxy_manager::now_secs()),
+      updated_at: Some(crate::proxy::proxy_manager::now_secs()),
     };
 
     self.save_config(&config)?;
@@ -373,7 +373,7 @@ impl VpnStorage {
   pub fn update_config_name(&self, id: &str, new_name: &str) -> Result<VpnConfig, VpnError> {
     let mut config = self.load_config(id)?;
     config.name = new_name.to_string();
-    config.updated_at = Some(crate::proxy_manager::now_secs());
+    config.updated_at = Some(crate::proxy::proxy_manager::now_secs());
     self.save_config(&config)?;
     Ok(config)
   }
@@ -427,7 +427,7 @@ impl VpnStorage {
       last_used: None,
       sync_enabled,
       last_sync: None,
-      updated_at: Some(crate::proxy_manager::now_secs()),
+      updated_at: Some(crate::proxy::proxy_manager::now_secs()),
     };
 
     self.save_config(&config)?;

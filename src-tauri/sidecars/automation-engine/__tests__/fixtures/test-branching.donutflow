@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "name": "Test Branching",
+  "variables": {
+    "TEST_VAR": "true"
+  },
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "setVariable",
+      "params": {
+        "name": "TEST_VAR",
+        "value": "true"
+      }
+    },
+    {
+      "id": "node-2",
+      "type": "ifCondition",
+      "params": {
+        "leftValue": "{{TEST_VAR}}",
+        "operator": "===",
+        "rightValue": "true"
+      }
+    },
+    {
+      "id": "node-3-true",
+      "type": "log",
+      "params": {
+        "message": "Branch A - condition was true",
+        "level": "info"
+      }
+    },
+    {
+      "id": "node-3-false",
+      "type": "log",
+      "params": {
+        "message": "Branch B - condition was false",
+        "level": "info"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "node-1",
+      "to": "node-2"
+    },
+    {
+      "from": "node-2",
+      "to": "node-3-true",
+      "sourceHandle": "true"
+    },
+    {
+      "from": "node-2",
+      "to": "node-3-false",
+      "sourceHandle": "false"
+    }
+  ]
+}

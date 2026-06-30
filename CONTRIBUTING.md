@@ -41,20 +41,54 @@ pnpm tauri dev
 
 ## Quality Checks
 
-Run before every commit:
+### Pre-commit Hooks (Optimized)
+
+Pre-commit hooks are **scoped for speed** (~30-60s):
 
 ```bash
-pnpm format && pnpm lint && pnpm test
+# Automatic on commit (lint-staged)
+cargo fmt --all           # Format all Rust files
+cargo clippy --all-features -- -D warnings -D clippy::all  # Lint library code only
 ```
 
-This runs:
+**Full validation runs in CI** (`lint-rs.yml`):
+- `cargo fmt --all -- --check`
+- `cargo clippy --all-targets --all-features -- -D warnings -D clippy::all`
+- `pnpm test` (unit + integration tests)
+- `cargo audit` (security)
 
-- **Biome**: JS/TS linting and formatting
-- **Clippy + rustfmt**: Rust linting and formatting
-- **typos**: Spellcheck (allowlist in `_typos.toml`)
-- **CodeQL**: Security analysis (JS, Actions, Rust), runs in CI
-- **Unit tests**: 330+ Rust tests
-- **Integration tests**: proxy, sync e2e
+### When to Use `--no-verify`
+
+Skip pre-commit checks for **urgent hotfixes only**:
+
+```bash
+git commit --no-verify -m "hotfix: critical security patch"
+```
+
+**Use cases:**
+- Emergency production fixes
+- CI will catch issues before merge
+- **Never** for routine development
+
+**Default workflow** (recommended):
+```bash
+git add .
+git commit -m "feat: add new feature"  # Runs scoped checks (fast)
+git push
+# CI runs full validation → PR review
+```
+
+### Running Full Checks Locally
+
+If you want full validation before pushing:
+
+```bash
+# Full lint + test (same as CI)
+pnpm format && pnpm lint && pnpm test
+
+# Or via Nix
+nix run .#test
+```
 
 ### Running CodeQL locally
 

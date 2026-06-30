@@ -34,7 +34,8 @@
       "saving": "Saving…",
       "saved": "Saved",
       "copied": "Copied",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "toggleTheme": "Toggle Theme"
     },
     "status": {
       "active": "Active",
@@ -245,7 +246,11 @@
       "cantModifyRunning": "Can't modify running profile",
       "cantModifyLaunching": "Can't modify profile while launching",
       "cantModifyStopping": "Can't modify profile while stopping",
-      "cantModifyUpdating": "Can't modify profile while browser is updating"
+      "cantModifyUpdating": "Can't modify profile while browser is updating",
+      "lastOpen": "Last Open",
+      "os": "OS",
+      "message": "Message",
+      "changeProxy": "Change Proxy"
     },
     "actions": {
       "launch": "Launch",
@@ -290,7 +295,6 @@
       "confirmButton": "Delete {{count}} Profile(s)"
     },
     "note": {
-      "empty": "No Note",
       "placeholder": "Add a note..."
     },
     "aria": {
@@ -308,7 +312,17 @@
       "copyCookies": "Copy Cookies",
       "runSelected": "Run selected",
       "stopSelected": "Stop selected",
-      "proRequired": "Pro plan required for bulk run/stop"
+      "proRequired": "Pro plan required for bulk run/stop",
+      "startCount": "Start {{count}} Profiles",
+      "start": "Start Profiles",
+      "stopCount": "Stop {{count}} Profiles",
+      "stop": "Stop Profiles",
+      "automation": "Automation",
+      "updateMultiple": "Update Multiple",
+      "proxy": "Proxy",
+      "exportCookies": "Export cookies",
+      "moreAction": "More action",
+      "synchronize": "Synchronize Actions"
     },
     "passwordProtectedBadge": "Password Protected",
     "launchHook": {
@@ -331,6 +345,23 @@
       "nameDesc": "Name (Z–A)",
       "newest": "Newest first",
       "oldest": "Oldest first"
+    },
+    "status": {
+      "noStatus": "No Status",
+      "setting": "Status Setting",
+      "addStatus": "Add Status",
+      "labelPlaceholder": "Status label...",
+      "manageTitle": "Manage Statuses"
+    },
+    "menu": {
+      "rename": "Rename",
+      "edit": "Edit Settings",
+      "copyCookies": "Copy Cookies",
+      "manageCookies": "Manage Cookies",
+      "clone": "Clone Profile",
+      "assignGroup": "Assign to Group",
+      "assignExtension": "Assign Extension",
+      "configureCamoufox": "Configure Camoufox"
     }
   },
   "createProfile": {
@@ -385,7 +416,21 @@
       "description": "Encrypts the on-disk profile data. Required to launch."
     },
     "downloadingSubtitle": "Downloading…",
-    "browsersDownloading": "Browsers are still downloading. Profile creation will be available once a download finishes."
+    "browsersDownloading": "Browsers are still downloading. Profile creation will be available once a download finishes.",
+    "tabs": {
+      "baseInfo": "Base info",
+      "location": "Location",
+      "proxy": "Proxy",
+      "cookies": "Cookies",
+      "hardware": "Hardware",
+      "command": "Command",
+      "bookmark": "Bookmark",
+      "extension": "Extension",
+      "requests": "Requests",
+      "other": "Other"
+    },
+    "quantity": "Quantity",
+    "getFingerprint": "Get new fingerprint"
   },
   "deleteDialog": {
     "title": "Delete Profile",
@@ -534,6 +579,15 @@
       "vpnsTitle": "Delete Selected VPNs",
       "vpnsDescription": "This action cannot be undone. This will permanently delete {{count}} VPN(s): {{names}}.",
       "confirmButton": "Delete {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Quick Edit Proxy",
+      "formatLabel": "Format Proxy",
+      "formatPlaceholder": "type://user:pass@ip:port or ip:port",
+      "checkHostLabel": "Check proxy host",
+      "checkBeforeStart": "Check proxy before start profile.",
+      "checkButton": "Check Proxy",
+      "saveButton": "Edit Proxy"
     }
   },
   "groups": {
@@ -940,7 +994,9 @@
       "syncFailed": "Sync failed",
       "profileSyncFailed": "Failed to sync profile '{{name}}'",
       "cacheClearFailed": "Failed to clear cache",
-      "unknown": "An unknown error occurred"
+      "unknown": "An unknown error occurred",
+      "profileCrashTitle": "Profile '{{name}}' crashed",
+      "profileCrashDesc": "Browser exited unexpectedly: {{status}}"
     },
     "loading": {
       "downloading": "Downloading {{browser}} {{version}}",
@@ -1100,7 +1156,25 @@
     "refreshFingerprint": "Refresh Fingerprint",
     "canvasNoiseSeedPlaceholder": "Enter a seed string for canvas fingerprint",
     "addFontsPlaceholder": "Add fonts...",
-    "enterAsJson": "Enter {{title}} as JSON"
+    "enterAsJson": "Enter {{title}} as JSON",
+    "webrtcMode": "WebRTC Mode",
+    "webrtcModes": {
+      "forward": "Forward (Proxy)",
+      "forwardGoogle": "Forward Google",
+      "alter": "Alter (Spoof)",
+      "real": "Real",
+      "disable": "Disable"
+    },
+    "subTabs": {
+      "screen": "Screen",
+      "system": "System (CPU & RAM)",
+      "graphics": "Graphics & Audio"
+    },
+    "customizeDetails": "Customize detailed hardware parameters",
+    "customizeDetailsDesc": "Manually adjust seeds, renderers, and JSON parameters",
+    "randomizeAll": "Randomize All",
+    "randomizeAllTooltip": "Auto-generate realistic hardware fingerprints (screen, CPU, RAM, GPU) matching the detected operating system",
+    "shuffleGPUTooltip": "Randomly select GPU vendor/renderer matching the operating system"
   },
   "warnings": {
     "windowResizeTitle": "Custom Window Dimensions",
@@ -1502,7 +1576,14 @@
     "noneOption": "None",
     "noValidProfiles": "No valid profiles selected.",
     "vpnGroupHeading": "VPNs",
-    "failedFallback": "Failed to assign proxy/VPN to profiles"
+    "failedFallback": "Failed to assign proxy/VPN to profiles",
+    "changeProxyTitle": "Change proxy",
+    "bulkChangeDescription": "Update proxy settings for {{count}} selected profile(s)",
+    "pleaseSelectProxy": "Please select a proxy configuration",
+    "pleaseInputProxy": "Please input a list of proxies",
+    "invalidJson": "Invalid JSON string content",
+    "successClear": "Successfully cleared proxy/VPN settings",
+    "withoutProxyWarning": "All selected profiles will be switched to No Proxy mode after submit."
   },
   "groupAssignment": {
     "title": "Assign Group",
@@ -1860,7 +1941,15 @@
     "proxyNotWorking": "The selected proxy isn't working, so the profile wasn't created.",
     "proxyPaymentRequired": "The selected proxy requires payment (402) — its subscription may have expired — so the profile wasn't created.",
     "vpnNotWorking": "The selected VPN isn't working, so the profile wasn't created.",
-    "camoufoxImportDeprecated": "Importing Firefox-based (Camoufox) profiles is no longer supported. Camoufox is being deprecated — please use Wayfern instead."
+    "camoufoxImportDeprecated": "Importing Firefox-based (Camoufox) profiles is no longer supported. Camoufox is being deprecated — please use Wayfern instead.",
+    "wayfernFingerprintMissing": "This profile has no fingerprint. Generate one before launching Wayfern.",
+    "wayfernGeolocationRequired": "Fingerprint is missing timezone or geolocation and the proxy exit could not be resolved.",
+    "wayfernWebrtcAlterIpUnavailable": "WebRTC alter mode requires a proxy exit IP, but it could not be fetched.",
+    "wayfernWebrtcAlterIpInvalid": "WebRTC alter mode received an invalid proxy exit IP.",
+    "wayfernNoPageTargets": "Wayfern started but no browser page was available for fingerprint injection.",
+    "wayfernFingerprintApplyFailed": "Failed to apply the fingerprint to Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "Failed to restore fingerprint protection on a recovered Wayfern browser: {{reason}}",
+    "wayfernFingerprintInconsistent": "Fingerprint is inconsistent (e.g., screen resolution mismatch). Regenerate fingerprint to fix: {{reason}}"
   },
   "rail": {
     "profiles": "Profiles",
@@ -1877,7 +1966,8 @@
     },
     "network": "Network",
     "integrations": "Integrations",
-    "account": "Account"
+    "account": "Account",
+    "automation": "Automation"
   },
   "pageTitle": {
     "proxies": "Network",
@@ -1888,7 +1978,8 @@
     "integrations": "Integrations",
     "account": "Account",
     "import": "Import profile",
-    "shortcuts": "Keyboard shortcuts"
+    "shortcuts": "Keyboard shortcuts",
+    "automation": "Automation"
   },
   "encryption": {
     "required": {
@@ -2076,5 +2167,82 @@
     "title": "Camoufox support is ending",
     "description": "Support for Camoufox profiles is ending on July 8, 2026. You have one or more Camoufox profiles. Please migrate them to Wayfern before then — after that date, Camoufox profiles may stop working.",
     "acknowledge": "Got it"
+  },
+  "tags": {
+    "title": "Tags",
+    "assignSuccess": "Successfully added tags to {{count}} profile(s)",
+    "failed": "Failed to assign tags: {{error}}",
+    "placeholder": "Select or create tags...",
+    "description_one": "Assign tags to the selected profile.",
+    "description_other": "Assign tags to the {{count}} selected profiles.",
+    "selectedProfilesLabel": "Selected Profiles",
+    "assignTagsLabel": "Assign Tags",
+    "assignButton": "Add",
+    "deleteConfirmTitle": "Delete Tag",
+    "deleteConfirmDesc": "Are you sure you want to delete the tag \"{{tag}}\"? This will remove it from all profiles and the system globally.",
+    "deleteSuccess": "Tag \"{{tag}}\" deleted successfully",
+    "deleteFailed": "Failed to delete tag: {{error}}"
+  },
+  "automation": {
+    "cleanupMode": {
+      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
+      "fullDesc": "Delete the entire profile directory",
+      "cookiesAndCache": "Cookies & Cache Only",
+      "full": "Full Profile Deletion"
+    },
+    "title": "Automation",
+    "addNode": "Add Task",
+    "securityWarning": {
+      "title": "Security Warning",
+      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    },
+    "afterClose": {
+      "description": "Tasks to execute after the browser closes",
+      "title": "After Closing Profile"
+    },
+    "masterSwitch": "Enable Automation",
+    "fields": {
+      "allowedCountries": "Allowed Countries",
+      "protocol": "Protocol",
+      "requestBody": "Request Body",
+      "message": "Message",
+      "timeoutSeconds": "Timeout (seconds)",
+      "label": "Label",
+      "jsonPathPort": "JSON Path for Port",
+      "apiUrl": "API URL",
+      "maxFraudScore": "Max Fraud Score",
+      "cleanupMode": "Cleanup Mode",
+      "jsonPathIp": "JSON Path for IP",
+      "chatId": "Chat ID",
+      "timeout": "Timeout (seconds)",
+      "botToken": "Bot Token",
+      "variablesAvailable": "Available variables",
+      "webhookUrl": "Webhook URL",
+      "method": "HTTP Method",
+      "labelPlaceholder": "My Task",
+      "responseFormat": "Response Format",
+      "maxAttempts": "Max Retry Attempts",
+      "command": "Command"
+    },
+    "noNodes": "No automation tasks configured yet",
+    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
+    "warnings": {
+      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
+      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    },
+    "beforeOpen": {
+      "description": "Tasks to execute before the browser launches",
+      "title": "Before Opening Profile"
+    },
+    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
+    "nodeTypes": {
+      "ipCheck": "IP Check",
+      "webhook": "Webhook",
+      "localCommand": "Local Command",
+      "cleanup": "Cleanup",
+      "dynamicProxy": "Dynamic Proxy",
+      "telegramAlert": "Telegram Alert"
+    },
+    "dependencyWarning": "Dependency issue"
   }
 }

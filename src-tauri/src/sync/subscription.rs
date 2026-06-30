@@ -1,5 +1,5 @@
 use crate::events;
-use crate::settings_manager::SettingsManager;
+use crate::settings::settings_manager::SettingsManager;
 use reqwest::Client;
 use serde::Deserialize;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -68,9 +68,9 @@ impl SyncSubscription {
     work_tx: mpsc::UnboundedSender<SyncWorkItem>,
   ) -> Result<Option<Self>, String> {
     // Cloud auth takes priority
-    if crate::cloud_auth::CLOUD_AUTH.is_logged_in().await {
-      let url = crate::cloud_auth::CLOUD_SYNC_URL.to_string();
-      let token = crate::cloud_auth::CLOUD_AUTH
+    if crate::api::cloud_auth::CLOUD_AUTH.is_logged_in().await {
+      let url = crate::api::cloud_auth::CLOUD_SYNC_URL.to_string();
+      let token = crate::api::cloud_auth::CLOUD_AUTH
         .get_or_refresh_sync_token()
         .await
         .map_err(|e| format!("Failed to get cloud sync token: {e}"))?;
@@ -171,7 +171,7 @@ impl SyncSubscription {
     app_handle: &tauri::AppHandle,
   ) -> Result<Option<String>, String> {
     match source {
-      TokenSource::Cloud => crate::cloud_auth::CLOUD_AUTH
+      TokenSource::Cloud => crate::api::cloud_auth::CLOUD_AUTH
         .get_or_refresh_sync_token()
         .await
         .map_err(|e| format!("Failed to refresh cloud sync token: {e}")),

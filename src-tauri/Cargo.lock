@@ -1825,6 +1825,7 @@ dependencies = [
  "playwright",
  "quick-xml 0.40.1",
  "rand 0.10.1",
+ "regex",
  "regex-lite",
  "reqwest 0.13.4",
  "resvg",

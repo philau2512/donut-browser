@@ -1,0 +1,4 @@
+# Ignore generated tray icons to prevent rebuild loop during development
+icons/tray-icon-22.png
+icons/tray-icon-44.png
+icons/tray-icon-win-44.png

@@ -34,7 +34,8 @@
       "saving": "Salvando…",
       "saved": "Salvo",
       "copied": "Copiado",
-      "learnMore": "Saiba mais"
+      "learnMore": "Saiba mais",
+      "toggleTheme": "Alternar tema"
     },
     "status": {
       "active": "Ativo",
@@ -245,7 +246,11 @@
       "cantModifyRunning": "Não é possível modificar um perfil em execução",
       "cantModifyLaunching": "Não é possível modificar o perfil durante a inicialização",
       "cantModifyStopping": "Não é possível modificar o perfil durante a parada",
-      "cantModifyUpdating": "Não é possível modificar o perfil enquanto o navegador é atualizado"
+      "cantModifyUpdating": "Não é possível modificar o perfil enquanto o navegador é atualizado",
+      "lastOpen": "Última abertura",
+      "os": "OS",
+      "message": "Mensagem",
+      "changeProxy": "Alterar proxy"
     },
     "actions": {
       "launch": "Iniciar",
@@ -290,7 +295,6 @@
       "confirmButton": "Excluir {{count}} perfil(is)"
     },
     "note": {
-      "empty": "Sem nota",
       "placeholder": "Adicionar uma nota..."
     },
     "aria": {
@@ -308,7 +312,17 @@
       "copyCookies": "Copiar cookies",
       "runSelected": "Executar selecionados",
       "stopSelected": "Parar selecionados",
-      "proRequired": "Plano Pro necessário para execução/parada em massa"
+      "proRequired": "Plano Pro necessário para execução/parada em massa",
+      "startCount": "Iniciar {{count}} perfis",
+      "start": "Iniciar perfis",
+      "stopCount": "Parar {{count}} perfis",
+      "stop": "Parar perfis",
+      "automation": "Automação",
+      "updateMultiple": "Atualizar múltiplos",
+      "proxy": "Proxy",
+      "exportCookies": "Exportar cookies",
+      "moreAction": "Mais ações",
+      "synchronize": "Sincronizar ações"
     },
     "passwordProtectedBadge": "Protegido por Senha",
     "launchHook": {
@@ -331,6 +345,23 @@
       "nameDesc": "Nome (Z–A)",
       "newest": "Mais recentes primeiro",
       "oldest": "Mais antigos primeiro"
+    },
+    "status": {
+      "noStatus": "Sem status",
+      "setting": "Configuração de Status",
+      "addStatus": "Adicionar Status",
+      "labelPlaceholder": "Rótulo do status...",
+      "manageTitle": "Gerenciar Status"
+    },
+    "menu": {
+      "rename": "Renomear",
+      "edit": "Editar configurações",
+      "copyCookies": "Copiar cookies",
+      "manageCookies": "Gerenciar cookies",
+      "clone": "Clonar perfil",
+      "assignGroup": "Atribuir ao grupo",
+      "assignExtension": "Atribuir extensão",
+      "configureCamoufox": "Configurar Camoufox"
     }
   },
   "createProfile": {
@@ -385,7 +416,21 @@
       "description": "Criptografa os dados do perfil em disco. Necessário para iniciar."
     },
     "downloadingSubtitle": "Baixando…",
-    "browsersDownloading": "Os navegadores ainda estão sendo baixados. A criação de perfis ficará disponível assim que um download terminar."
+    "browsersDownloading": "Os navegadores ainda estão sendo baixados. A criação de perfis ficará disponível assim que um download terminar.",
+    "tabs": {
+      "baseInfo": "Informações básicas",
+      "location": "Localização",
+      "proxy": "Proxy",
+      "cookies": "Cookies",
+      "hardware": "Hardware",
+      "command": "Comando",
+      "bookmark": "Favorito",
+      "extension": "Extensão",
+      "requests": "Requisições",
+      "other": "Outro"
+    },
+    "quantity": "Quantidade",
+    "getFingerprint": "Obter nova impressão digital"
   },
   "deleteDialog": {
     "title": "Excluir Perfil",
@@ -534,6 +579,15 @@
       "vpnsTitle": "Excluir VPNs selecionadas",
       "vpnsDescription": "Esta ação não pode ser desfeita. Isso excluirá permanentemente {{count}} VPN(s): {{names}}.",
       "confirmButton": "Excluir {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "Editar proxy rápido",
+      "formatLabel": "Formato do Proxy",
+      "formatPlaceholder": "type://user:pass@ip:port ou ip:port",
+      "checkHostLabel": "Host de verificação do proxy",
+      "checkBeforeStart": "Verificar proxy antes de iniciar o perfil.",
+      "checkButton": "Verificar Proxy",
+      "saveButton": "Editar Proxy"
     }
   },
   "groups": {
@@ -940,7 +994,9 @@
       "syncFailed": "Falha na sincronização",
       "profileSyncFailed": "Falha ao sincronizar perfil '{{name}}'",
       "cacheClearFailed": "Falha ao limpar cache",
-      "unknown": "Ocorreu um erro desconhecido"
+      "unknown": "Ocorreu um erro desconhecido",
+      "profileCrashTitle": "O perfil '{{name}}' travou",
+      "profileCrashDesc": "O navegador saiu inesperadamente: {{status}}"
     },
     "loading": {
       "downloading": "Baixando {{browser}} {{version}}",
@@ -1100,7 +1156,22 @@
     "refreshFingerprint": "Atualizar Impressão Digital",
     "canvasNoiseSeedPlaceholder": "Insira uma string seed para a impressão digital do canvas",
     "addFontsPlaceholder": "Adicionar fontes...",
-    "enterAsJson": "Insira {{title}} como JSON"
+    "enterAsJson": "Insira {{title}} como JSON",
+    "webrtcMode": "Modo WebRTC",
+    "webrtcModes": {
+      "forward": "Encaminhar (Proxy)",
+      "forwardGoogle": "Encaminhar Google",
+      "alter": "Alterar (Falsificar)",
+      "real": "Real",
+      "disable": "Desativar"
+    },
+    "subTabs": {
+      "screen": "Tela",
+      "system": "Sistema (CPU & RAM)",
+      "graphics": "Gráficos & Áudio"
+    },
+    "customizeDetails": "Personalizar parâmetros de hardware detalhados",
+    "customizeDetailsDesc": "Ajustar manualmente sementes, renderizadores e parâmetros JSON"
   },
   "warnings": {
     "windowResizeTitle": "Dimensões de janela personalizadas",
@@ -1502,7 +1573,14 @@
     "noneOption": "Nenhum",
     "noValidProfiles": "Nenhum perfil válido selecionado.",
     "vpnGroupHeading": "VPNs",
-    "failedFallback": "Falha ao atribuir proxy/VPN aos perfis"
+    "failedFallback": "Falha ao atribuir proxy/VPN aos perfis",
+    "changeProxyTitle": "Alterar proxy",
+    "bulkChangeDescription": "Atualizar configurações de proxy para {{count}} perfil(is) selecionado(s)",
+    "pleaseSelectProxy": "Por favor, selecione uma configuração de proxy",
+    "pleaseInputProxy": "Por favor, insira uma lista de proxies",
+    "invalidJson": "Conteúdo da string JSON inválido",
+    "successClear": "Configurações de proxy/VPN limpas com sucesso",
+    "withoutProxyWarning": "Todos os perfis selecionados serão alternados para o modo Sem Proxy após enviar."
   },
   "groupAssignment": {
     "title": "Atribuir grupo",
@@ -1860,7 +1938,14 @@
     "proxyNotWorking": "O proxy selecionado não está funcionando, então o perfil não foi criado.",
     "proxyPaymentRequired": "O proxy selecionado exige pagamento (402) — sua assinatura pode ter expirado — então o perfil não foi criado.",
     "vpnNotWorking": "A VPN selecionada não está funcionando, então o perfil não foi criado.",
-    "camoufoxImportDeprecated": "A importação de perfis baseados em Firefox (Camoufox) não é mais suportada. O Camoufox está sendo descontinuado — use o Wayfern."
+    "camoufoxImportDeprecated": "A importação de perfis baseados em Firefox (Camoufox) não é mais suportada. O Camoufox está sendo descontinuado — use o Wayfern.",
+    "wayfernFingerprintMissing": "Este perfil não tem impressão digital. Gere uma antes de iniciar o Wayfern.",
+    "wayfernGeolocationRequired": "A impressão digital não tem fuso horário ou geolocalização e a saída do proxy não pôde ser resolvida.",
+    "wayfernWebrtcAlterIpUnavailable": "O modo alter do WebRTC requer um IP de saída do proxy, mas não foi possível obtê-lo.",
+    "wayfernWebrtcAlterIpInvalid": "O modo alter do WebRTC recebeu um IP de saída do proxy inválido.",
+    "wayfernNoPageTargets": "O Wayfern iniciou, mas nenhuma página estava disponível para injeção de impressão digital.",
+    "wayfernFingerprintApplyFailed": "Falha ao aplicar a impressão digital ao Wayfern: {{detail}}",
+    "wayfernRehydrateFailed": "Falha ao restaurar a protecao de impressao digital em um navegador Wayfern recuperado: {{reason}}"
   },
   "rail": {
     "profiles": "Perfis",
@@ -1877,7 +1962,8 @@
     },
     "network": "Rede",
     "integrations": "Integrações",
-    "account": "Conta"
+    "account": "Conta",
+    "automation": "Automação"
   },
   "pageTitle": {
     "proxies": "Rede",
@@ -1888,7 +1974,8 @@
     "integrations": "Integrações",
     "account": "Conta",
     "import": "Importar perfil",
-    "shortcuts": "Atalhos de teclado"
+    "shortcuts": "Atalhos de teclado",
+    "automation": "Automação"
   },
   "encryption": {
     "required": {
@@ -2076,5 +2163,82 @@
     "title": "O suporte ao Camoufox está terminando",
     "description": "O suporte aos perfis do Camoufox terminará em 8 de julho de 2026. Você tem um ou mais perfis do Camoufox. Migre-os para o Wayfern antes dessa data — depois disso, os perfis do Camoufox podem parar de funcionar.",
     "acknowledge": "Entendi"
+  },
+  "tags": {
+    "title": "Tags",
+    "assignSuccess": "Tags adicionadas com sucesso a {{count}} perfil(is)",
+    "failed": "Falha ao atribuir tags: {{error}}",
+    "placeholder": "Selecionar ou criar tags...",
+    "description_one": "Atribuir tags ao perfil selecionado.",
+    "description_other": "Atribuir tags aos {{count}} perfis selecionados.",
+    "selectedProfilesLabel": "Perfis selecionados",
+    "assignTagsLabel": "Atribuir tags",
+    "assignButton": "Adicionar",
+    "deleteConfirmTitle": "Excluir tag",
+    "deleteConfirmDesc": "Tem certeza de que deseja excluir a tag \"{{tag}}\"? Isso a removerá de todos os perfis e do sistema globalmente.",
+    "deleteSuccess": "Tag \"{{tag}}\" excluída com sucesso",
+    "deleteFailed": "Falha ao excluir tag: {{error}}"
+  },
+  "automation": {
+    "cleanupMode": {
+      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
+      "fullDesc": "Delete the entire profile directory",
+      "cookiesAndCache": "Cookies & Cache Only",
+      "full": "Full Profile Deletion"
+    },
+    "title": "Automation",
+    "addNode": "Add Task",
+    "securityWarning": {
+      "title": "Security Warning",
+      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    },
+    "afterClose": {
+      "description": "Tasks to execute after the browser closes",
+      "title": "After Closing Profile"
+    },
+    "masterSwitch": "Enable Automation",
+    "fields": {
+      "allowedCountries": "Allowed Countries",
+      "protocol": "Protocol",
+      "requestBody": "Request Body",
+      "message": "Message",
+      "timeoutSeconds": "Timeout (seconds)",
+      "label": "Label",
+      "jsonPathPort": "JSON Path for Port",
+      "apiUrl": "API URL",
+      "maxFraudScore": "Max Fraud Score",
+      "cleanupMode": "Cleanup Mode",
+      "jsonPathIp": "JSON Path for IP",
+      "chatId": "Chat ID",
+      "timeout": "Timeout (seconds)",
+      "botToken": "Bot Token",
+      "variablesAvailable": "Available variables",
+      "webhookUrl": "Webhook URL",
+      "method": "HTTP Method",
+      "labelPlaceholder": "My Task",
+      "responseFormat": "Response Format",
+      "maxAttempts": "Max Retry Attempts",
+      "command": "Command"
+    },
+    "noNodes": "No automation tasks configured yet",
+    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
+    "warnings": {
+      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
+      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    },
+    "beforeOpen": {
+      "description": "Tasks to execute before the browser launches",
+      "title": "Before Opening Profile"
+    },
+    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
+    "nodeTypes": {
+      "ipCheck": "IP Check",
+      "webhook": "Webhook",
+      "localCommand": "Local Command",
+      "cleanup": "Cleanup",
+      "dynamicProxy": "Dynamic Proxy",
+      "telegramAlert": "Telegram Alert"
+    },
+    "dependencyWarning": "Dependency issue"
   }
 }

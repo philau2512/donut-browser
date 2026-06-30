@@ -34,7 +34,8 @@
       "saving": "正在保存…",
       "saved": "已保存",
       "copied": "已复制",
-      "learnMore": "了解更多"
+      "learnMore": "了解更多",
+      "toggleTheme": "切换主题"
     },
     "status": {
       "active": "活跃",
@@ -245,7 +246,11 @@
       "cantModifyRunning": "无法修改正在运行的配置文件",
       "cantModifyLaunching": "启动期间无法修改配置文件",
       "cantModifyStopping": "停止期间无法修改配置文件",
-      "cantModifyUpdating": "浏览器更新期间无法修改配置文件"
+      "cantModifyUpdating": "浏览器更新期间无法修改配置文件",
+      "lastOpen": "上次打开",
+      "os": "OS",
+      "message": "消息",
+      "changeProxy": "更改代理"
     },
     "actions": {
       "launch": "启动",
@@ -290,7 +295,6 @@
       "confirmButton": "删除 {{count}} 个配置文件"
     },
     "note": {
-      "empty": "无备注",
       "placeholder": "添加备注..."
     },
     "aria": {
@@ -308,7 +312,17 @@
       "copyCookies": "复制 Cookie",
       "runSelected": "运行所选",
       "stopSelected": "停止所选",
-      "proRequired": "批量运行/停止需要 Pro 套餐"
+      "proRequired": "批量运行/停止需要 Pro 套餐",
+      "startCount": "启动 {{count}} 个配置",
+      "start": "启动配置",
+      "stopCount": "停止 {{count}} 个配置",
+      "stop": "停止配置",
+      "automation": "自动化",
+      "updateMultiple": "批量更新",
+      "proxy": "代理",
+      "exportCookies": "导出 Cookie",
+      "moreAction": "更多操作",
+      "synchronize": "同步操作"
     },
     "passwordProtectedBadge": "密码保护",
     "launchHook": {
@@ -331,6 +345,23 @@
       "nameDesc": "名称 (Z–A)",
       "newest": "最新优先",
       "oldest": "最早优先"
+    },
+    "status": {
+      "noStatus": "无状态",
+      "setting": "状态设置",
+      "addStatus": "添加状态",
+      "labelPlaceholder": "状态标签...",
+      "manageTitle": "管理状态"
+    },
+    "menu": {
+      "rename": "重命名",
+      "edit": "编辑设置",
+      "copyCookies": "复制 Cookie",
+      "manageCookies": "管理 Cookie",
+      "clone": "克隆配置",
+      "assignGroup": "分配给分组",
+      "assignExtension": "分配扩展",
+      "configureCamoufox": "配置 Camoufox"
     }
   },
   "createProfile": {
@@ -385,7 +416,21 @@
       "description": "加密磁盘上的配置文件数据。启动时需要密码。"
     },
     "downloadingSubtitle": "正在下载…",
-    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。"
+    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。",
+    "tabs": {
+      "baseInfo": "基本信息",
+      "location": "位置",
+      "proxy": "代理",
+      "cookies": "Cookies",
+      "hardware": "硬件",
+      "command": "命令行",
+      "bookmark": "书签",
+      "extension": "扩展程序",
+      "requests": "网络请求",
+      "other": "其他"
+    },
+    "quantity": "数量",
+    "getFingerprint": "获取新指纹"
   },
   "deleteDialog": {
     "title": "删除配置文件",
@@ -534,6 +579,15 @@
       "vpnsTitle": "删除所选 VPN",
       "vpnsDescription": "此操作无法撤销。将永久删除 {{count}} 个 VPN：{{names}}。",
       "confirmButton": "删除 {{count}}"
+    },
+    "quickEdit": {
+      "quickEditTitle": "快速编辑代理",
+      "formatLabel": "代理格式",
+      "formatPlaceholder": "type://user:pass@ip:port 或 ip:port",
+      "checkHostLabel": "代理检查主机",
+      "checkBeforeStart": "启动配置前检查代理。",
+      "checkButton": "检查代理",
+      "saveButton": "编辑代理"
     }
   },
   "groups": {
@@ -940,7 +994,9 @@
       "syncFailed": "同步失败",
       "profileSyncFailed": "配置文件 '{{name}}' 同步失败",
       "cacheClearFailed": "清除缓存失败",
-      "unknown": "发生未知错误"
+      "unknown": "发生未知错误",
+      "profileCrashTitle": "浏览器配置文件 '{{name}}' 异常崩溃",
+      "profileCrashDesc": "浏览器异常退出: {{status}}"
     },
     "loading": {
       "downloading": "正在下载 {{browser}} {{version}}",
@@ -1100,7 +1156,22 @@
     "refreshFingerprint": "刷新指纹",
     "canvasNoiseSeedPlaceholder": "输入用于 canvas 指纹的种子字符串",
     "addFontsPlaceholder": "添加字体...",
-    "enterAsJson": "以 JSON 格式输入 {{title}}"
+    "enterAsJson": "以 JSON 格式输入 {{title}}",
+    "webrtcMode": "WebRTC 模式",
+    "webrtcModes": {
+      "forward": "转发 (代理)",
+      "forwardGoogle": "谷歌转发",
+      "alter": "修改 (欺骗)",
+      "real": "真实",
+      "disable": "禁用"
+    },
+    "subTabs": {
+      "screen": "屏幕",
+      "system": "系统 (CPU & 内存)",
+      "graphics": "图形与音频"
+    },
+    "customizeDetails": "自定义详细硬件参数",
+    "customizeDetailsDesc": "手动调整种子、渲染器 và JSON 参数"
   },
   "warnings": {
     "windowResizeTitle": "自定义窗口尺寸",
@@ -1502,7 +1573,14 @@
     "noneOption": "无",
     "noValidProfiles": "未选择有效的配置文件。",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "为配置文件分配代理/VPN 失败"
+    "failedFallback": "为配置文件分配代理/VPN 失败",
+    "changeProxyTitle": "修改代理",
+    "bulkChangeDescription": "更新选中的 {{count}} 个配置的代理设置",
+    "pleaseSelectProxy": "请选择代理配置",
+    "pleaseInputProxy": "请输入代理列表",
+    "invalidJson": "无效的 JSON 字符串",
+    "successClear": "成功清除代理/VPN设置",
+    "withoutProxyWarning": "提交后，所有选中的配置将切换到“无代理”模式。"
   },
   "groupAssignment": {
     "title": "分配分组",
@@ -1860,7 +1938,14 @@
     "proxyNotWorking": "所选代理无法使用，因此未创建配置文件。",
     "proxyPaymentRequired": "所选代理需要付费（402），其订阅可能已过期，因此未创建配置文件。",
     "vpnNotWorking": "所选 VPN 无法使用，因此未创建配置文件。",
-    "camoufoxImportDeprecated": "不再支持导入基于 Firefox 的 (Camoufox) 配置文件。Camoufox 即将停用——请改用 Wayfern。"
+    "camoufoxImportDeprecated": "不再支持导入基于 Firefox 的 (Camoufox) 配置文件。Camoufox 即将停用——请改用 Wayfern。",
+    "wayfernFingerprintMissing": "此配置文件没有指纹。启动 Wayfern 前请先生成指纹。",
+    "wayfernGeolocationRequired": "指纹缺少时区或地理位置，且无法解析代理出口。",
+    "wayfernWebrtcAlterIpUnavailable": "WebRTC alter 模式需要代理出口 IP，但无法获取。",
+    "wayfernWebrtcAlterIpInvalid": "WebRTC alter 模式收到了无效的代理出口 IP。",
+    "wayfernNoPageTargets": "Wayfern 已启动，但没有可用于注入指纹的页面。",
+    "wayfernFingerprintApplyFailed": "无法将指纹应用到 Wayfern：{{detail}}",
+    "wayfernRehydrateFailed": "无法在已恢复的 Wayfern 浏览器上恢复指纹保护：{{reason}}"
   },
   "rail": {
     "profiles": "配置文件",
@@ -1877,7 +1962,8 @@
     },
     "network": "网络",
     "integrations": "集成",
-    "account": "账号"
+    "account": "账号",
+    "automation": "自动化"
   },
   "pageTitle": {
     "proxies": "网络",
@@ -1888,7 +1974,8 @@
     "integrations": "集成",
     "account": "账户",
     "import": "导入配置文件",
-    "shortcuts": "键盘快捷键"
+    "shortcuts": "键盘快捷键",
+    "automation": "自动化"
   },
   "encryption": {
     "required": {
@@ -2076,5 +2163,82 @@
     "title": "Camoufox 支持即将结束",
     "description": "Camoufox 配置文件的支持将于 2026 年 7 月 8 日结束。您有一个或多个 Camoufox 配置文件。请在此之前迁移到 Wayfern——之后 Camoufox 配置文件可能会停止工作。",
     "acknowledge": "知道了"
+  },
+  "tags": {
+    "title": "标签",
+    "assignSuccess": "已成功为 {{count}} 个配置添加标签",
+    "failed": "分配标签失败: {{error}}",
+    "placeholder": "选择或创建标签...",
+    "description_one": "为所选配置分配标签。",
+    "description_other": "为所选的 {{count}} 个配置分配标签。",
+    "selectedProfilesLabel": "所选配置",
+    "assignTagsLabel": "分配标签",
+    "assignButton": "添加",
+    "deleteConfirmTitle": "删除标签",
+    "deleteConfirmDesc": "您确定要删除标签“{{tag}}”吗？这将从所有配置和全局系统中将其删除。",
+    "deleteSuccess": "标签“{{tag}}”已成功删除",
+    "deleteFailed": "删除标签失败: {{error}}"
+  },
+  "automation": {
+    "cleanupMode": {
+      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
+      "fullDesc": "Delete the entire profile directory",
+      "cookiesAndCache": "Cookies & Cache Only",
+      "full": "Full Profile Deletion"
+    },
+    "title": "Automation",
+    "addNode": "Add Task",
+    "securityWarning": {
+      "title": "Security Warning",
+      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    },
+    "afterClose": {
+      "description": "Tasks to execute after the browser closes",
+      "title": "After Closing Profile"
+    },
+    "masterSwitch": "Enable Automation",
+    "fields": {
+      "allowedCountries": "Allowed Countries",
+      "protocol": "Protocol",
+      "requestBody": "Request Body",
+      "message": "Message",
+      "timeoutSeconds": "Timeout (seconds)",
+      "label": "Label",
+      "jsonPathPort": "JSON Path for Port",
+      "apiUrl": "API URL",
+      "maxFraudScore": "Max Fraud Score",
+      "cleanupMode": "Cleanup Mode",
+      "jsonPathIp": "JSON Path for IP",
+      "chatId": "Chat ID",
+      "timeout": "Timeout (seconds)",
+      "botToken": "Bot Token",
+      "variablesAvailable": "Available variables",
+      "webhookUrl": "Webhook URL",
+      "method": "HTTP Method",
+      "labelPlaceholder": "My Task",
+      "responseFormat": "Response Format",
+      "maxAttempts": "Max Retry Attempts",
+      "command": "Command"
+    },
+    "noNodes": "No automation tasks configured yet",
+    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
+    "warnings": {
+      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
+      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    },
+    "beforeOpen": {
+      "description": "Tasks to execute before the browser launches",
+      "title": "Before Opening Profile"
+    },
+    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
+    "nodeTypes": {
+      "ipCheck": "IP Check",
+      "webhook": "Webhook",
+      "localCommand": "Local Command",
+      "cleanup": "Cleanup",
+      "dynamicProxy": "Dynamic Proxy",
+      "telegramAlert": "Telegram Alert"
+    },
+    "dependencyWarning": "Dependency issue"
   }
 }

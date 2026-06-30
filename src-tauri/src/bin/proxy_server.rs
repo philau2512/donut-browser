@@ -64,11 +64,14 @@ fn build_proxy_url(
 ) -> String {
   let mut url = format!("{}://", proxy_type.to_lowercase());
 
-  if let (Some(user), Some(pass)) = (username, password) {
+  let user_opt = username.filter(|u| !u.is_empty());
+  let pass_opt = password.filter(|p| !p.is_empty());
+
+  if let (Some(user), Some(pass)) = (user_opt, pass_opt) {
     let encoded_user = urlencoding::encode(user);
     let encoded_pass = urlencoding::encode(pass);
     url.push_str(&format!("{}:{}@", encoded_user, encoded_pass));
-  } else if let Some(user) = username {
+  } else if let Some(user) = user_opt {
     let encoded_user = urlencoding::encode(user);
     url.push_str(&format!("{}@", encoded_user));
   }

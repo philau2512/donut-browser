@@ -1,5 +1,6 @@
-use crate::camoufox_manager::CamoufoxConfig;
-use crate::wayfern_manager::WayfernConfig;
+use crate::automation::pipeline::types::ProfileAutomation;
+use crate::browser::camoufox_manager::CamoufoxConfig;
+use crate::browser::wayfern_manager::WayfernConfig;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -33,6 +34,8 @@ pub struct BrowserProfile {
   pub vpn_id: Option<String>, // Reference to stored VPN config
   #[serde(default)]
   pub launch_hook: Option<String>,
+  #[serde(default)]
+  pub automation: Option<ProfileAutomation>, // Automation pipeline config (before_open/after_close)
   #[serde(default)]
   pub process_id: Option<u32>,
   #[serde(default)]
@@ -84,6 +87,9 @@ pub struct BrowserProfile {
   /// NOT bumped by browser-file changes, which sync via the file manifest.
   #[serde(default)]
   pub updated_at: Option<u64>,
+  /// User-assigned profile status label (e.g. "Ban", "Ready", "New"). None = "No Status".
+  #[serde(default)]
+  pub profile_status: Option<String>,
 }
 
 pub fn default_release_type() -> String {
