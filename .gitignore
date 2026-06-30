@@ -74,3 +74,5 @@ mcps/
 .vscode/
 .codex/
 CLAUDE.md
+.agent/
+.agents/

@@ -129,7 +129,7 @@ export const AUTOMATION_NODE_BY_TYPE = Object.fromEntries(
 ) as Record<AutomationNodeType, AutomationNodeCatalogItem>;
 
 export function isAutomationNodeType(
-  value: string,
+  value: string | null | undefined,
 ): value is AutomationNodeType {
-  return value in AUTOMATION_NODE_BY_TYPE;
+  return typeof value === "string" && value in AUTOMATION_NODE_BY_TYPE;
 }

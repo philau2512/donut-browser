@@ -21,10 +21,9 @@ const GROUPS: AutomationNodeGroup[] = [
 
 interface NodePaletteProps {
   onDragStart: (event: DragEvent, item: AutomationNodeCatalogItem) => void;
-  onDragEnd?: () => void;
 }
 
-export function NodePalette({ onDragStart, onDragEnd }: NodePaletteProps) {
+export function NodePalette({ onDragStart }: NodePaletteProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
 
@@ -77,19 +76,19 @@ export function NodePalette({ onDragStart, onDragEnd }: NodePaletteProps) {
                 {items.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <button
+                    <div
                       key={item.type}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       draggable
                       onDragStart={(event) => onDragStart(event, item)}
-                      onDragEnd={onDragEnd}
-                      className="flex cursor-grab items-center gap-1.5 rounded-md border border-border bg-background/50 p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing min-w-0"
+                      className="flex cursor-grab items-center gap-1.5 rounded-md border border-border bg-background/50 p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing min-w-0 select-none"
                     >
                       <Icon className="size-3.5 shrink-0 text-primary" />
                       <span className="truncate text-[11px] font-semibold">
                         {t(item.labelKey)}
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>

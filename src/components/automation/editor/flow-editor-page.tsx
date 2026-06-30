@@ -216,9 +216,8 @@ export function FlowEditorPage({
     [],
   );
 
-  const handleDragEnd = useCallback(() => {
-    setDraggedNodeType(null);
-  }, []);
+  // NOTE: Do NOT clear draggedNodeType here — onDragEnd fires before/during onDrop on Tauri/WKWebView.
+  // The next drag will overwrite the value. Clearing causes race condition where onDrop reads null.
 
   const updateSelectedParam = (
     key: string,
@@ -325,7 +324,7 @@ export function FlowEditorPage({
       </div>
 
       <div className="flex min-h-0 flex-1 gap-3">
-        <NodePalette onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
+        <NodePalette onDragStart={handleDragStart} />
         <FlowCanvas
           nodes={nodesWithCallbacks}
           edges={edges}
