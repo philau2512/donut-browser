@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
@@ -380,14 +381,7 @@ export function FlowEditorPage({
     return () => {
       cancelled = true;
     };
-  }, [
-    currentFlowPath,
-    setEdges,
-    setNodes,
-    t,
-    justSavedRef.current,
-    justSavedRef,
-  ]);
+  }, [currentFlowPath, setEdges, setNodes, t]);
 
   const handleDragStart = useCallback(
     (event: DragEvent, item: AutomationNodeCatalogItem) => {
