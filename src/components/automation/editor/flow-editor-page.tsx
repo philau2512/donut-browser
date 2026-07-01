@@ -474,6 +474,15 @@ export function FlowEditorPage({
 
       showSuccessToast(t("automation.editor.toast.saved", { name: flow.name }));
 
+      // If we are renaming the flow (not Save As), clean up the old file
+      if (!isSaveAs && currentFlowPath && currentFlowPath !== savedPath) {
+        try {
+          await invoke("delete_automation_flow", { path: currentFlowPath });
+        } catch (e) {
+          console.warn(`Failed to clean up old flow file: ${e}`);
+        }
+      }
+
       justSavedRef.current = true;
       setCurrentFlowPath(savedPath);
       if (customName) {
