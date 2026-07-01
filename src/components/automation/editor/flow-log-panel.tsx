@@ -10,6 +10,7 @@ export interface FlowLogLine {
   type: "success" | "info" | "warn" | "error";
   message: string;
   duration?: number;
+  nodeId?: string;
 }
 
 export interface FlowExecutionStep {
@@ -24,6 +25,8 @@ interface FlowLogPanelProps {
   steps: FlowExecutionStep[];
   variables: Record<string, string>;
   onClose: () => void;
+  onSelectNode?: (nodeId: string | null) => void;
+  selectedNodeId?: string | null;
   className?: string;
 }
 
@@ -32,6 +35,8 @@ export function FlowLogPanel({
   steps,
   variables,
   onClose,
+  onSelectNode,
+  selectedNodeId,
   className,
 }: FlowLogPanelProps) {
   const { t } = useTranslation();
@@ -77,9 +82,11 @@ export function FlowLogPanel({
             <div className="flex items-center gap-2 overflow-x-auto py-2">
               {steps.map((step, idx) => (
                 <div key={step.id} className="flex items-center">
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => onSelectNode?.(step.id)}
                     className={cn(
-                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition shadow-sm",
+                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition shadow-sm hover:opacity-90 active:scale-95 cursor-pointer",
                       step.status === "success" &&
                         "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
                       step.status === "running" &&
@@ -88,6 +95,8 @@ export function FlowLogPanel({
                         "border-destructive/30 bg-destructive/10 text-destructive",
                       step.status === "idle" &&
                         "border-border bg-muted/30 text-muted-foreground",
+                      selectedNodeId === step.id &&
+                        "ring-2 ring-amber-500 border-amber-500",
                     )}
                   >
                     {step.status === "success" && (
@@ -97,7 +106,7 @@ export function FlowLogPanel({
                       <LuInfo className="size-3.5 shrink-0 animate-spin" />
                     )}
                     <span className="truncate max-w-[100px]">{step.label}</span>
-                  </div>
+                  </button>
                   {idx < steps.length - 1 && (
                     <div className="mx-2 h-[2px] w-8 bg-border" />
                   )}
@@ -150,14 +159,24 @@ export function FlowLogPanel({
           </div>
           <div className="flex-1 overflow-y-auto rounded-md border border-border bg-zinc-950/90 p-3 space-y-1 scrollbar-thin">
             {logs.map((log) => (
+              // biome-ignore lint/a11y/useKeyWithClickEvents: Click handler on log line is a helper shortcut
+              // biome-ignore lint/a11y/noStaticElementInteractions: Log container selection is a mouse click helper
               <div
                 key={log.id}
+                onClick={() => {
+                  if (log.nodeId) {
+                    onSelectNode?.(log.nodeId);
+                  }
+                }}
                 className={cn(
-                  "flex items-start gap-1.5",
+                  "flex items-center gap-1.5 cursor-pointer py-0.5 px-1 rounded transition-colors hover:bg-zinc-800/40 select-none",
                   log.type === "success" && "text-emerald-400",
                   log.type === "info" && "text-blue-400",
                   log.type === "warn" && "text-amber-500",
                   log.type === "error" && "text-destructive font-semibold",
+                  log.nodeId &&
+                    selectedNodeId === log.nodeId &&
+                    "bg-amber-500/10 border-l-2 border-amber-500 pl-1",
                 )}
               >
                 <span className="shrink-0 opacity-70">
@@ -166,6 +185,23 @@ export function FlowLogPanel({
                   {log.type === "warn" && "[Warning]"}
                   {log.type === "error" && "[Error]"}
                 </span>
+                {log.nodeId && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectNode?.(log.nodeId);
+                    }}
+                    className={cn(
+                      "font-mono text-[9px] px-1 py-0.5 rounded border leading-none hover:bg-white/10 hover:text-white transition shrink-0 cursor-pointer",
+                      selectedNodeId === log.nodeId
+                        ? "border-amber-500 bg-amber-500/20 text-amber-300 font-semibold"
+                        : "border-zinc-700 bg-zinc-800 text-zinc-400",
+                    )}
+                  >
+                    {log.nodeId}
+                  </button>
+                )}
                 <span>
                   {log.message}
                   {log.duration !== undefined && ` | ${log.duration}ms`}

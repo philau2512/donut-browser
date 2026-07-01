@@ -2,7 +2,14 @@
 
 import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { useTranslation } from "react-i18next";
-import { LuMessageSquare, LuPencil, LuPlay, LuTrash2 } from "react-icons/lu";
+import {
+  LuCheck,
+  LuMessageSquare,
+  LuPencil,
+  LuPlay,
+  LuTrash2,
+  LuX,
+} from "react-icons/lu";
 import { AUTOMATION_NODE_BY_TYPE } from "@/lib/automation/node-catalog";
 import { cn } from "@/lib/utils";
 import type { AutomationCanvasNode } from "../serialize";
@@ -52,8 +59,30 @@ export function AutomationNode({
   const groupBg = "bg-primary text-primary-foreground border-primary/20";
   const badgeBg = "bg-primary-foreground/15";
 
+  const debugStatus = (data as any).debugStatus;
+
   return (
     <div className="relative">
+      {/* Debug Status Indicator */}
+      {debugStatus === "running" && (
+        <div className="absolute -right-1 -top-1 z-50">
+          <span className="relative flex size-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+            <span className="relative inline-flex rounded-full size-4 bg-blue-500 border-2 border-background" />
+          </span>
+        </div>
+      )}
+      {debugStatus === "success" && (
+        <div className="absolute -right-1 -top-1 z-50 flex size-4 items-center justify-center rounded-full bg-success border-2 border-background">
+          <LuCheck className="size-2.5 text-success-foreground" />
+        </div>
+      )}
+      {debugStatus === "error" && (
+        <div className="absolute -right-1 -top-1 z-50 flex size-4 items-center justify-center rounded-full bg-destructive border-2 border-background">
+          <LuX className="size-2.5 text-destructive-foreground" />
+        </div>
+      )}
+
       {/* Selected Action Toolbar */}
       {selected && (
         // biome-ignore lint/a11y/noStaticElementInteractions: stops propagation to canvas

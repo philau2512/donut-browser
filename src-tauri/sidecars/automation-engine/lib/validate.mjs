@@ -359,11 +359,15 @@ function validateNode(node, ids) {
     );
   }
 
-  // closed-schema key check: only id/type/params/continueOnError/comment allowed
-  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment"];
+  // closed-schema key check: only id/type/params/continueOnError/comment/nodeId allowed
+  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment", "nodeId"];
   const extraNodeKeys = Object.keys(node).filter((k) => !allowedNodeKeys.includes(k));
   if (extraNodeKeys.length > 0) {
     throw new FlowValidationError(`Node ${node.id}: unknown keys ${extraNodeKeys.join(", ")}`);
+  }
+
+  if (node.nodeId != null && typeof node.nodeId !== "string") {
+    throw new FlowValidationError(`Node ${node.id}: nodeId must be a string`);
   }
 
   if (node.continueOnError != null && typeof node.continueOnError !== "boolean") {

@@ -37,6 +37,7 @@ export function AutomationTab({ profiles }: AutomationTabProps) {
     return (
       <FlowEditorPage
         flowPath={view.flowPath}
+        profiles={profiles}
         onBack={() => setView({ kind: "list" })}
         onSaved={() => setView({ kind: "list" })}
       />

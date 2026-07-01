@@ -16,6 +16,7 @@ import {
   type DragEvent,
   type SetStateAction,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -27,6 +28,7 @@ import {
   type AutomationCanvasEdge,
   type AutomationCanvasNode,
   createAutomationNode,
+  START_NODE_ID,
 } from "./serialize";
 
 const nodeTypes = { automation: AutomationNode };
@@ -39,6 +41,8 @@ interface FlowCanvasProps {
   setNodes: Dispatch<SetStateAction<AutomationCanvasNode[]>>;
   setEdges: Dispatch<SetStateAction<AutomationCanvasEdge[]>>;
   onSelectNode: (nodeId: string | null) => void;
+  selectedNodeId?: string | null;
+  focusNodeTrigger?: { nodeId: string } | null;
   /** Node type being dragged from the palette — bypasses DataTransfer which
    * is blocked by WebView2 security policy on Windows. */
   draggedNodeType: string | null;
@@ -54,6 +58,8 @@ function FlowCanvasInner({
   setNodes,
   setEdges,
   onSelectNode,
+  selectedNodeId = null,
+  focusNodeTrigger = null,
   draggedNodeType,
   isLocked,
   onToggleLock,
@@ -64,6 +70,21 @@ function FlowCanvasInner({
     AutomationCanvasEdge
   > | null>(null);
   const [draggingHandleId, setDraggingHandleId] = useState<string | null>(null);
+
+  // Focus and center on the selected node only when focusNodeTrigger is fired
+  useEffect(() => {
+    if (!instance || !focusNodeTrigger) return;
+    const { nodeId } = focusNodeTrigger;
+    const node = nodes.find((n) => n.id === nodeId);
+    if (node) {
+      void instance.fitView({
+        nodes: [{ id: nodeId }],
+        duration: 800,
+        minZoom: 1,
+        maxZoom: 1.2,
+      });
+    }
+  }, [focusNodeTrigger, instance, nodes]);
 
   const outgoingSourceHandles = useMemo(
     () => new Set(edges.map((edge) => `${edge.source}-${edge.sourceHandle}`)),
@@ -213,7 +234,13 @@ function FlowCanvasInner({
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
         onEdgeDoubleClick={onEdgeDoubleClick}
-        onNodeClick={(_, node) => onSelectNode(node.id)}
+        onNodeClick={(_, node) => {
+          const isAlreadySelected = selectedNodeId === node.id;
+          onSelectNode(node.id);
+          if (isAlreadySelected && node.id !== START_NODE_ID) {
+            (node.data as any).onEdit?.(node.id);
+          }
+        }}
         onPaneClick={() => onSelectNode(null)}
         isValidConnection={isValidConnection}
         connectionLineStyle={{

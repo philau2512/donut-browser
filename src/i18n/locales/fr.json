@@ -2252,7 +2252,8 @@
         "search": "Rechercher des variables...",
         "system": "Variables Système",
         "user": "Variables Utilisateur",
-        "empty": "Aucune variable définie"
+        "empty": "Aucune variable définie",
+        "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
         "selectNodeHint": "Sélectionnez un nœud sur le canevas pour voir ses propriétés"
@@ -2298,6 +2299,19 @@
         "autoAlign": "Aligner automatiquement les nœuds",
         "title": "Ressources du Flux",
         "empty": "Aucune ressource supplémentaire chargée dans ce flux."
+      },
+      "debugProfile": {
+        "label": "Debug Profile",
+        "placeholder": "Select a profile...",
+        "required": "Please select a profile to debug",
+        "alreadyRunning": "Le profil est déjà en cours d'exécution. Veuillez le fermer avant de démarrer le débogage."
+      },
+      "debug": {
+        "running": "Debugging...",
+        "stopped": "Debug stopped",
+        "completed": "Debug completed",
+        "noNodes": "No reachable nodes from this point",
+        "startFromHere": "Start debugging from: {{name}}"
       }
     }
   }

@@ -10,22 +10,38 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { LuList, LuPlay, LuSave, LuVariable } from "react-icons/lu";
+import {
+  LuCircleStop,
+  LuList,
+  LuPlay,
+  LuSave,
+  LuVariable,
+} from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useDebugRun } from "@/hooks/use-debug-run";
 import {
   AUTOMATION_NODE_BY_TYPE,
   type AutomationNodeCatalogItem,
   type AutomationNodeType,
 } from "@/lib/automation/node-catalog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
+import type { BrowserProfile } from "@/types";
 import { FlowCanvas } from "./flow-canvas";
 import {
   type FlowExecutionStep,
   type FlowLogLine,
   FlowLogPanel,
 } from "./flow-log-panel";
+import { truncateFlowFromNode } from "./flow-truncation";
 import { NodeCommentDialog } from "./node-comment-dialog";
 import { NodePalette } from "./node-palette";
 import { NodePropertiesDialog } from "./node-properties-dialog";
@@ -44,12 +60,14 @@ import { VariablesPanel } from "./variables-panel";
 
 interface FlowEditorPageProps {
   flowPath?: string;
+  profiles?: BrowserProfile[];
   onBack: () => void;
   onSaved?: (flowPath: string) => void;
 }
 
 export function FlowEditorPage({
   flowPath,
+  profiles,
   onBack,
   onSaved,
 }: FlowEditorPageProps) {
@@ -72,7 +90,83 @@ export function FlowEditorPage({
   const [logSteps, setLogSteps] = useState<FlowExecutionStep[]>([]);
   const [flowLogs, setFlowLogs] = useState<FlowLogLine[]>([]);
 
+  // Debug run states
+  const [selectedDebugProfile, setSelectedDebugProfile] =
+    useState<BrowserProfile | null>(null);
+  const debugRun = useDebugRun();
+  const [debugNodeStatuses, setDebugNodeStatuses] = useState<
+    Record<string, "idle" | "running" | "success" | "error">
+  >({});
+
+  const debugLogs = useMemo<FlowLogLine[]>(() => {
+    return debugRun.logs.map((l, idx) => {
+      let logType: "success" | "info" | "warn" | "error" = "info";
+      if (l.level === "error") logType = "error";
+      else if (l.level === "warn") logType = "warn";
+      else if (l.level === "info" && l.msg?.startsWith("✓"))
+        logType = "success";
+
+      return {
+        id: `debug-${idx}-${l.ts ?? ""}`,
+        type: logType,
+        message: l.msg ?? "",
+        nodeId: l.nodeId ?? undefined,
+      };
+    });
+  }, [debugRun.logs]);
+
+  const debugSteps = useMemo<FlowExecutionStep[]>(() => {
+    return nodes.map((n) => ({
+      id: n.id,
+      label:
+        n.id === START_NODE_ID
+          ? "Start"
+          : t(
+              AUTOMATION_NODE_BY_TYPE[n.data.nodeType as AutomationNodeType]
+                ?.labelKey || "",
+            ) || n.id,
+      status:
+        n.id === START_NODE_ID
+          ? "success"
+          : (debugNodeStatuses[n.id] ?? "idle"),
+    }));
+  }, [nodes, debugNodeStatuses, t]);
+
+  // Parse debug logs -> update node statuses
+  useEffect(() => {
+    if (debugRun.logs.length === 0) return;
+    const latest = debugRun.logs[debugRun.logs.length - 1];
+    const { nodeId, msg } = latest;
+    if (!nodeId || !msg) return;
+
+    setDebugNodeStatuses((prev) => {
+      const next = { ...prev };
+      if (msg.startsWith("▶")) {
+        // Mark previously running nodes as success
+        for (const [id, status] of Object.entries(next)) {
+          if (status === "running") next[id] = "success";
+        }
+        next[nodeId] = "running";
+      } else if (msg.startsWith("✓")) {
+        next[nodeId] = "success";
+      } else if (msg.startsWith("✗")) {
+        next[nodeId] = "error";
+      }
+      return next;
+    });
+  }, [debugRun.logs]);
+
+  // Clear statuses when debug starts
+  useEffect(() => {
+    if (debugRun.isRunning) {
+      setDebugNodeStatuses({});
+    }
+  }, [debugRun.isRunning]);
+
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [focusNodeTrigger, setFocusNodeTrigger] = useState<{
+    nodeId: string;
+  } | null>(null);
   const [commentingNodeId, setCommentingNodeId] = useState<string | null>(null);
   const [flowName, setFlowName] = useState("Untitled flow");
   const [variables, setVariables] = useState<Record<string, string>>({});
@@ -132,7 +226,16 @@ export function FlowEditorPage({
   );
 
   const handleStartFromHere = useCallback(
-    (nodeId: string) => {
+    async (nodeId: string) => {
+      if (!selectedDebugProfile) {
+        showErrorToast(
+          t("automation.editor.debugProfile.required") ||
+            "Vui lòng chọn profile để debug",
+        );
+        return;
+      }
+      if (debugRun.isRunning) return;
+
       const node = nodes.find((n) => n.id === nodeId);
       const label = node
         ? t(
@@ -140,31 +243,66 @@ export function FlowEditorPage({
               ?.labelKey || "",
           )
         : nodeId;
-      showSuccessToast(
-        t("automation.editor.toast.startFromHere", { name: label }) ||
-          `Chạy từ node: ${label}`,
-      );
+
+      try {
+        const fullFlow = toDonutFlow(flowName.trim(), nodes, edges, variables);
+        const truncated = truncateFlowFromNode(fullFlow, nodeId);
+        if (truncated.nodes.length === 0) {
+          showErrorToast(
+            t("automation.editor.debug.noNodes") ||
+              "Không có node nào để chạy từ điểm này",
+          );
+          return;
+        }
+
+        showSuccessToast(
+          t("automation.editor.debug.startFromHere", { name: label }) ||
+            `Bắt đầu debug từ: ${label}`,
+        );
+
+        const json = JSON.stringify(truncated, null, 2);
+        setIsLogPanelOpen(true);
+        setIsCanvasLocked(true);
+        await debugRun.startDebugRun(json, selectedDebugProfile);
+      } catch (err) {
+        showErrorToast(
+          t("automation.editor.errors.startFailed", {
+            error: JSON.stringify(err),
+          }) || `Debug failed to start: ${JSON.stringify(err)}`,
+        );
+      }
     },
-    [nodes, t],
+    [nodes, t, selectedDebugProfile, debugRun, flowName, edges, variables],
   );
+
+  // Automatically unlock canvas when debug execution completes
+  useEffect(() => {
+    if (!debugRun.isRunning) {
+      setIsCanvasLocked(false);
+    }
+  }, [debugRun.isRunning]);
 
   const nodesWithCallbacks = useMemo(() => {
     return nodes.map((node) => ({
       ...node,
+      selected: node.id === selectedNodeId,
       data: {
         ...node.data,
         onEdit: handleEditNode,
         onDelete: handleDeleteNode,
         onStartFromHere: handleStartFromHere,
         onComment: handleCommentNode,
+        debugStatus: debugNodeStatuses[node.id] ?? undefined,
       },
     }));
   }, [
     nodes,
+    selectedNodeId,
     handleEditNode,
     handleDeleteNode,
     handleStartFromHere,
     handleCommentNode,
+    debugNodeStatuses,
   ]);
 
   useEffect(() => {
@@ -353,6 +491,7 @@ export function FlowEditorPage({
           id: `log-run-${step.id}`,
           type: "info",
           message: `Executing action: ${step.label}`,
+          nodeId: step.id,
         },
       ]);
 
@@ -370,6 +509,7 @@ export function FlowEditorPage({
             type: "success",
             message: `${step.label} execution succeeded`,
             duration: Math.floor(Math.random() * 200) + 50,
+            nodeId: step.id,
           },
         ]);
         currentIdx++;
@@ -380,8 +520,17 @@ export function FlowEditorPage({
     runNextStep();
   }, [nodes, isFlowRunning, t]);
 
+  const selectNodeNoFocus = (nodeId: string | null) => {
+    setSelectedNodeId(nodeId);
+    setIsPropertiesDialogOpen(false);
+  };
+
   const selectNodeAndFocus = (nodeId: string | null) => {
     setSelectedNodeId(nodeId);
+    setIsPropertiesDialogOpen(false);
+    if (nodeId) {
+      setFocusNodeTrigger({ nodeId });
+    }
   };
 
   return (
@@ -403,6 +552,36 @@ export function FlowEditorPage({
           />
         </div>
         <div className="ml-auto flex items-center gap-2">
+          {/* Debug Profile Selector */}
+          {profiles && profiles.length > 0 && (
+            <div className="w-44 text-left">
+              <Select
+                value={selectedDebugProfile?.id ?? ""}
+                onValueChange={(id) => {
+                  const p = profiles.find((p) => p.id === id) ?? null;
+                  setSelectedDebugProfile(p);
+                }}
+                disabled={debugRun.isRunning}
+              >
+                <SelectTrigger className="w-full h-9 text-xs">
+                  <SelectValue
+                    placeholder={
+                      t("automation.editor.debugProfile.placeholder") ||
+                      "Select profile..."
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {profiles.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Toggle Variables Panel */}
           <Button
             type="button"
@@ -427,16 +606,27 @@ export function FlowEditorPage({
             <LuList className="size-4" />
           </Button>
 
-          {/* Run */}
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isFlowRunning || isLoading}
-            onClick={handleRunFlow}
-          >
-            <LuPlay className="mr-2 size-4 text-emerald-500 fill-emerald-500/20" />
-            {t("common.buttons.run")}
-          </Button>
+          {/* Run / Stop Debug */}
+          {debugRun.isRunning ? (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => void debugRun.stopDebugRun()}
+            >
+              <LuCircleStop className="mr-2 size-4" />
+              {t("common.buttons.stop") || "Stop"}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isFlowRunning || isLoading}
+              onClick={handleRunFlow}
+            >
+              <LuPlay className="mr-2 size-4 text-emerald-500 fill-emerald-500/20" />
+              {t("common.buttons.run")}
+            </Button>
+          )}
 
           {/* Save */}
           <Button
@@ -466,7 +656,9 @@ export function FlowEditorPage({
             onEdgesChange={onEdgesChange}
             setNodes={setNodes}
             setEdges={setEdges}
-            onSelectNode={selectNodeAndFocus}
+            onSelectNode={selectNodeNoFocus}
+            selectedNodeId={selectedNodeId}
+            focusNodeTrigger={focusNodeTrigger}
             draggedNodeType={draggedNodeType}
             isLocked={isCanvasLocked}
             onToggleLock={() => setIsCanvasLocked((v) => !v)}
@@ -474,10 +666,20 @@ export function FlowEditorPage({
 
           {isLogPanelOpen && (
             <FlowLogPanel
-              logs={flowLogs}
-              steps={logSteps}
+              logs={
+                debugRun.isRunning || debugRun.logs.length > 0
+                  ? debugLogs
+                  : flowLogs
+              }
+              steps={
+                debugRun.isRunning || debugRun.logs.length > 0
+                  ? debugSteps
+                  : logSteps
+              }
               variables={variables}
               onClose={() => setIsLogPanelOpen(false)}
+              onSelectNode={selectNodeAndFocus}
+              selectedNodeId={selectedNodeId}
             />
           )}
         </div>
@@ -485,13 +687,18 @@ export function FlowEditorPage({
         {/* Right Sidebar: Variables Panel */}
         {isVariablesPanelOpen && (
           <aside className="w-72 shrink-0 border border-border bg-card rounded-lg flex flex-col overflow-hidden shadow-md">
-            <VariablesPanel variables={variables} onChange={setVariables} />
+            <VariablesPanel
+              variables={variables}
+              onChange={setVariables}
+              isDebugRunning={debugRun.isRunning}
+            />
           </aside>
         )}
       </div>
 
       {/* Node Properties Dialog (modal) */}
       <NodePropertiesDialog
+        isOpen={isPropertiesDialogOpen}
         node={selectedNode}
         nodes={nodes}
         edges={edges}

@@ -57,17 +57,8 @@ fn try_reserve(profile_id: &str, no_overlapping: bool) -> bool {
   // advisory map. We claim under the reservations lock and ALSO consult the GUI
   // map inside the same critical section so a GUI-running profile is refused.
   let mut reserved = RESERVATIONS.lock().unwrap();
-  if no_overlapping {
-    if reserved.contains(profile_id) {
-      return false;
-    }
-    let gui_running = ACTIVE_RUNNING_STATES
-      .lock()
-      .map(|m| m.get(profile_id).copied().unwrap_or(false))
-      .unwrap_or(false);
-    if gui_running {
-      return false;
-    }
+  if no_overlapping && reserved.contains(profile_id) {
+    return false;
   }
   reserved.insert(profile_id.to_string());
   true
@@ -184,36 +175,77 @@ async fn run_one_profile(
 
   set_status(&run_id, &profile_id, RunStatus::Launching, |_| {});
 
-  // 1. Launch with a debugging port. force_new=true → fresh headed/headless
-  //    instance with the requested debug port.
-  let launched = match launch_browser_profile_impl(
-    app_handle.clone(),
-    profile.clone(),
-    None,
-    None, // let the launcher pick a free port; we read the REAL one back next
-    settings.headless,
-    true,
-  )
-  .await
+  // Check if browser is already running. If it is, we can reuse it!
+  let mut already_running = false;
+  let mut browser_pid = None;
+  if let Ok(run_status) = crate::browser::browser_runner::BrowserRunner::instance()
+    .check_browser_status(app_handle.clone(), &profile)
+    .await
   {
-    Ok(p) => p,
-    Err(e) => {
-      set_status(&run_id, &profile_id, RunStatus::Error, |s| {
-        s.error = Some(format!("launch failed: {e}"));
+    if run_status {
+      let updated_profile = crate::browser::browser_runner::BrowserRunner::instance()
+        .profile_manager
+        .list_profiles()
+        .ok()
+        .and_then(|profiles| profiles.into_iter().find(|p| p.id == profile.id))
+        .unwrap_or_else(|| profile.clone());
+      browser_pid = updated_profile.process_id;
+      already_running = browser_pid.is_some();
+    }
+  }
+
+  let mut we_launched = false;
+  let _launched = if already_running {
+    log::info!(
+      "Automation: profile {} is already running, connecting directly.",
+      profile.name
+    );
+    None
+  } else {
+    // 1. Launch with a debugging port. force_new=true → fresh headed/headless
+    //    instance with the requested debug port.
+    let l = match launch_browser_profile_impl(
+      app_handle.clone(),
+      profile.clone(),
+      None,
+      None, // let the launcher pick a free port; we read the REAL one back next
+      settings.headless,
+      true,
+    )
+    .await
+    {
+      Ok(p) => p,
+      Err(e) => {
+        set_status(&run_id, &profile_id, RunStatus::Error, |s| {
+          s.error = Some(format!("launch failed: {e}"));
+          s.finished_at_ms = Some(now_ms());
+        });
+        return;
+      }
+    };
+
+    // Check cancellation right after launch
+    if is_cancelled(&run_id) {
+      kill_and_release(&profile, l.process_id).await;
+      set_status(&run_id, &profile_id, RunStatus::Stopped, |s| {
         s.finished_at_ms = Some(now_ms());
       });
       return;
     }
-  };
 
-  let browser_pid = launched.process_id;
+    browser_pid = l.process_id;
+    we_launched = true;
+    Some(l)
+  };
 
   // 1b. Resolve the REAL CDP port (red-team #1) + verify it is live.
   let port = match resolve_and_verify_port(&profile).await {
     Some(p) => p,
     None => {
       // Couldn't get a live CDP port — kill what we launched and bail.
-      kill_and_release(&profile, browser_pid).await;
+      if we_launched {
+        kill_and_release(&profile, browser_pid).await;
+      }
       set_status(&run_id, &profile_id, RunStatus::Error, |s| {
         s.error = Some("CDP port not live after launch".into());
         s.finished_at_ms = Some(now_ms());
@@ -222,9 +254,21 @@ async fn run_one_profile(
     }
   };
 
+  // Check cancellation right after port verification
+  if is_cancelled(&run_id) {
+    if we_launched {
+      kill_and_release(&profile, browser_pid).await;
+    }
+    set_status(&run_id, &profile_id, RunStatus::Stopped, |s| {
+      s.finished_at_ms = Some(now_ms());
+    });
+    return;
+  }
+
   set_status(&run_id, &profile_id, RunStatus::Running, |s| {
     s.browser_pid = browser_pid;
     s.cdp_port = Some(port);
+    s.we_launched = we_launched;
   });
 
   // 2. Spawn the sidecar engine.
@@ -371,10 +415,19 @@ async fn finalize_profile(
     ExitOutcome::Killed => RunStatus::Error,
   };
 
+  let we_launched = {
+    let runs = AUTOMATION_RUNNER.runs.lock().unwrap();
+    runs
+      .get(run_id)
+      .and_then(|r| r.profiles.get(&profile_id))
+      .map(|p| p.we_launched)
+      .unwrap_or(false)
+  };
+
   // 4/5. Close the browser if requested — by PID (red-team #4), then release the
   // team lock after the kill (red-team #2). When close_on_complete=false we still
   // release the lock so a sync-enabled profile isn't stuck locked.
-  if settings.close_on_complete {
+  if settings.close_on_complete && we_launched {
     kill_and_release(profile, browser_pid).await;
   } else {
     crate::profile::team_lock::release_team_lock_if_needed(profile).await;
@@ -435,9 +488,17 @@ async fn resolve_and_verify_port(profile: &BrowserProfile) -> Option<u16> {
 
   // Retry: the port may not be registered the instant launch returns.
   for attempt in 0..20 {
-    let port = crate::browser::wayfern_manager::WayfernManager::instance()
-      .get_cdp_port(&profile_path_str)
-      .await;
+    let port = if profile.browser == "wayfern" {
+      crate::browser::wayfern_manager::WayfernManager::instance()
+        .get_cdp_port(&profile_path_str)
+        .await
+    } else if profile.browser == "camoufox" {
+      crate::browser::camoufox_manager::CamoufoxManager::instance()
+        .get_cdp_port(&profile_path_str)
+        .await
+    } else {
+      None
+    };
     if let Some(p) = port {
       if verify_cdp_live(p).await {
         return Some(p);
@@ -536,8 +597,10 @@ pub async fn stop_automation_run(
     if let Some(spid) = p.sidecar_pid {
       let _ = crate::automation::process_kill::kill_pid_tree(spid).await;
     }
-    if let Some(bpid) = p.browser_pid {
-      let _ = crate::automation::process_kill::kill_pid_tree(bpid).await;
+    if p.we_launched {
+      if let Some(bpid) = p.browser_pid {
+        let _ = crate::automation::process_kill::kill_pid_tree(bpid).await;
+      }
     }
     // Release team lock for this profile (red-team #2). We need a BrowserProfile;
     // reload from disk by id so is_sync_enabled is accurate. Resolve the profile in

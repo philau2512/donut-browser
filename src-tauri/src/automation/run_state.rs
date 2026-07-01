@@ -60,6 +60,9 @@ pub struct ProfileRunState {
   pub finished_at_ms: Option<u64>,
   /// Last error message, when status is Error.
   pub error: Option<String>,
+  /// Whether we launched this browser instance or connected to an existing one.
+  #[serde(default)]
+  pub we_launched: bool,
 }
 
 impl ProfileRunState {
@@ -73,6 +76,7 @@ impl ProfileRunState {
       cdp_port: None,
       finished_at_ms: None,
       error: None,
+      we_launched: false,
     }
   }
 }

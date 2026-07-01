@@ -2252,7 +2252,8 @@
         "search": "変数を検索...",
         "system": "システム変数",
         "user": "ユーザー変数",
-        "empty": "変数が定義されていません"
+        "empty": "変数が定義されていません",
+        "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
         "selectNodeHint": "キャンバス上のノードを選択してプロパティを表示"
@@ -2298,6 +2299,19 @@
         "autoAlign": "ノードを自動整列",
         "title": "フローリソース",
         "empty": "このフローには追加リソースはありません。"
+      },
+      "debugProfile": {
+        "label": "Debug Profile",
+        "placeholder": "Select a profile...",
+        "required": "Please select a profile to debug",
+        "alreadyRunning": "プロファイルはすでに実行されています。デバッグを開始する前に閉じてください。"
+      },
+      "debug": {
+        "running": "Debugging...",
+        "stopped": "Debug stopped",
+        "completed": "Debug completed",
+        "noNodes": "No reachable nodes from this point",
+        "startFromHere": "Start debugging from: {{name}}"
       }
     }
   }

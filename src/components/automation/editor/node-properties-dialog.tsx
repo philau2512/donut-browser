@@ -29,6 +29,7 @@ import {
 } from "./serialize";
 
 interface NodePropertiesDialogProps {
+  isOpen: boolean;
   node: AutomationCanvasNode | null;
   nodes: AutomationCanvasNode[];
   edges: AutomationCanvasEdge[];
@@ -39,6 +40,7 @@ interface NodePropertiesDialogProps {
 }
 
 export function NodePropertiesDialog({
+  isOpen,
   node,
   nodes,
   edges,
@@ -52,21 +54,21 @@ export function NodePropertiesDialog({
     node && node.id !== START_NODE_ID && node.data.nodeType !== "start"
       ? node
       : null;
-  const open = Boolean(editableNode);
+  const open = isOpen && Boolean(editableNode);
   const [profiles, setProfiles] = useState<BrowserProfile[]>([]);
 
   // Load profiles for profile node forms
   useEffect(() => {
-    if (!editableNode) return;
+    if (!open || !editableNode) return;
     const nodeType = editableNode.data.nodeType;
     if (nodeType === "openProfile" || nodeType === "closeProfile") {
       invoke<BrowserProfile[]>("list_browser_profiles")
         .then(setProfiles)
         .catch(() => setProfiles([]));
     }
-  }, [editableNode]);
+  }, [open, editableNode]);
 
-  if (!editableNode) {
+  if (!open || !editableNode) {
     return <Dialog open={false} onOpenChange={onOpenChange} />;
   }
 

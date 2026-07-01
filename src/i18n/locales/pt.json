@@ -2252,7 +2252,8 @@
         "search": "Pesquisar variáveis...",
         "system": "Variáveis do Sistema",
         "user": "Variáveis do Usuário",
-        "empty": "Nenhuma variável definida"
+        "empty": "Nenhuma variável definida",
+        "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
         "selectNodeHint": "Selecione um nó no canvas para ver suas propriedades"
@@ -2298,6 +2299,19 @@
         "autoAlign": "Alinhar nós automaticamente",
         "title": "Recursos do Fluxo",
         "empty": "Nenhum recurso extra carregado neste fluxo."
+      },
+      "debugProfile": {
+        "label": "Debug Profile",
+        "placeholder": "Select a profile...",
+        "required": "Please select a profile to debug",
+        "alreadyRunning": "O perfil já está em execução. Feche-o antes de iniciar a depuração."
+      },
+      "debug": {
+        "running": "Debugging...",
+        "stopped": "Debug stopped",
+        "completed": "Debug completed",
+        "noNodes": "No reachable nodes from this point",
+        "startFromHere": "Start debugging from: {{name}}"
       }
     }
   }

@@ -2252,7 +2252,8 @@
         "search": "Поиск переменных...",
         "system": "Системные Переменные",
         "user": "Пользовательские Переменные",
-        "empty": "Переменные не определены"
+        "empty": "Переменные не определены",
+        "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
         "selectNodeHint": "Выберите узел на холсте для просмотра свойств"
@@ -2298,6 +2299,19 @@
         "autoAlign": "Автоматическое выравнивание узлов",
         "title": "Ресурсы потока",
         "empty": "Дополнительные ресурсы в этом потоке не загружены."
+      },
+      "debugProfile": {
+        "label": "Debug Profile",
+        "placeholder": "Select a profile...",
+        "required": "Please select a profile to debug",
+        "alreadyRunning": "Профиль уже запущен. Пожалуйста, закройте его перед началом отладки."
+      },
+      "debug": {
+        "running": "Debugging...",
+        "stopped": "Debug stopped",
+        "completed": "Debug completed",
+        "noNodes": "No reachable nodes from this point",
+        "startFromHere": "Start debugging from: {{name}}"
       }
     }
   }

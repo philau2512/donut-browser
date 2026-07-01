@@ -2332,7 +2332,8 @@
         "search": "Search variables...",
         "system": "System Variables",
         "user": "User Variables",
-        "empty": "No variables defined"
+        "empty": "No variables defined",
+        "changesWarning": "⚠️ Changes apply on next run"
       },
       "logs": {
         "title": "Log",
@@ -2372,6 +2373,19 @@
         "autoAlign": "Auto-align nodes",
         "title": "Flow Resources",
         "empty": "No extra resources loaded in this flow."
+      },
+      "debugProfile": {
+        "label": "Debug Profile",
+        "placeholder": "Select a profile...",
+        "required": "Please select a profile to debug",
+        "alreadyRunning": "Profile is already running. Please close it before starting debug."
+      },
+      "debug": {
+        "running": "Debugging...",
+        "stopped": "Debug stopped",
+        "completed": "Debug completed",
+        "noNodes": "No reachable nodes from this point",
+        "startFromHere": "Start debugging from: {{name}}"
       }
     },
     "actions": {

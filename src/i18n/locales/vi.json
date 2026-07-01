@@ -2330,7 +2330,8 @@
         "search": "Tìm kiếm biến...",
         "system": "Biến Hệ Thống",
         "user": "Biến Người Dùng",
-        "empty": "Chưa có biến nào"
+        "empty": "Chưa có biến nào",
+        "changesWarning": "⚠️ Thay đổi sẽ áp dụng ở lần chạy sau"
       },
       "logs": {
         "title": "Nhật ký",
@@ -2370,6 +2371,19 @@
         "autoAlign": "Tự động căn chỉnh node",
         "title": "Tài Nguyên Flow",
         "empty": "Không có tài nguyên bổ sung nào được tải trong flow này."
+      },
+      "debugProfile": {
+        "label": "Profile debug",
+        "placeholder": "Chọn profile...",
+        "required": "Vui lòng chọn profile để debug",
+        "alreadyRunning": "Profile đang chạy. Vui lòng đóng profile trước khi bắt đầu debug."
+      },
+      "debug": {
+        "running": "Đang debug...",
+        "stopped": "Đã dừng debug",
+        "completed": "Debug hoàn tất",
+        "noNodes": "Không có node nào từ điểm này",
+        "startFromHere": "Bắt đầu debug từ: {{name}}"
       }
     },
     "actions": {

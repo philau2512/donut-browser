@@ -14,13 +14,18 @@ import {
 interface VariablesPanelProps {
   variables: Record<string, string>;
   onChange: (variables: Record<string, string>) => void;
+  isDebugRunning?: boolean;
 }
 
 function isReservedVariable(key: string) {
   return isReservedFlowVariable(key);
 }
 
-export function VariablesPanel({ variables, onChange }: VariablesPanelProps) {
+export function VariablesPanel({
+  variables,
+  onChange,
+  isDebugRunning,
+}: VariablesPanelProps) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -83,6 +88,14 @@ export function VariablesPanel({ variables, onChange }: VariablesPanelProps) {
           <LuFilter className="size-3.5 text-muted-foreground" />
         </Button>
       </div>
+
+      {/* Debug Running Warning */}
+      {isDebugRunning && (
+        <div className="shrink-0 bg-amber-500/10 border-b border-amber-500/20 px-3 py-2 text-[10px] text-amber-500 font-medium text-center">
+          {t("automation.editor.variables.changesWarning") ||
+            "⚠️ Changes apply on next run"}
+        </div>
+      )}
 
       {/* Variables List Area */}
       <div className="flex-1 overflow-y-auto p-3 space-y-4 min-h-0 pb-16">

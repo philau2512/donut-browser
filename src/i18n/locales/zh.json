@@ -2252,7 +2252,8 @@
         "search": "搜索变量...",
         "system": "系统变量",
         "user": "用户变量",
-        "empty": "尚未定义变量"
+        "empty": "尚未定义变量",
+        "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
         "selectNodeHint": "在画布上选择一个节点以查看其属性"
@@ -2298,6 +2299,19 @@
         "autoAlign": "自动对齐节点",
         "title": "流程资源",
         "empty": "此流程中未加载额外资源。"
+      },
+      "debugProfile": {
+        "label": "Debug Profile",
+        "placeholder": "Select a profile...",
+        "required": "Please select a profile to debug",
+        "alreadyRunning": "配置文件已在运行。请在启动调试前关闭它。"
+      },
+      "debug": {
+        "running": "Debugging...",
+        "stopped": "Debug stopped",
+        "completed": "Debug completed",
+        "noNodes": "No reachable nodes from this point",
+        "startFromHere": "Start debugging from: {{name}}"
       }
     }
   }
