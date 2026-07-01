@@ -154,6 +154,65 @@ fn parse_proxy_override(
   })
 }
 
+pub fn stage_profile_overrides(profile_id: &str, automation_json: &str) -> Result<(), String> {
+  if automation_json.trim().is_empty() {
+    return Ok(());
+  }
+  let config: AutomationConfig = serde_json::from_str(automation_json)
+    .map_err(|e| format!("Failed to parse automation config JSON: {e}"))?;
+
+  let mut overrides = crate::browser::browser_runner::LaunchOverrides::default();
+
+  // 1. Proxy
+  if let Some(ref proxy_str) = config.proxy_string {
+    if !proxy_str.trim().is_empty() {
+      let p_settings = parse_proxy_override(
+        proxy_str,
+        config.proxy_type.as_deref(),
+        config.proxy_login.as_deref(),
+        config.proxy_password.as_deref(),
+      )?;
+      overrides.proxy = Some(Some(p_settings));
+    } else {
+      overrides.proxy = Some(None); // Direct
+    }
+  }
+
+  // 2. WebRTC
+  if let Some(ref webrtc_mode) = config.webrtc_mode {
+    overrides.webrtc_mode = Some(webrtc_mode.clone());
+    overrides.block_webrtc = Some(webrtc_mode == "block");
+  }
+
+  // 3. Custom DNS / DNS Blocklist
+  if let Some(ref custom_dns) = config.custom_dns {
+    if !custom_dns.trim().is_empty() {
+      overrides.dns_blocklist = Some(Some(custom_dns.clone()));
+    }
+  }
+
+  // 4. Geolocation
+  if let Some(ref geo) = config.change_geolocation {
+    overrides.change_geolocation = Some(geo.clone());
+  }
+
+  // 5. Timezone
+  if let Some(ref tz) = config.change_timezone {
+    overrides.change_timezone = Some(tz.clone());
+  }
+
+  // 6. Language
+  if let Some(ref lang) = config.change_language {
+    overrides.change_language = Some(lang.clone());
+  }
+
+  if let Ok(mut guard) = crate::browser::browser_runner::LAUNCH_OVERRIDES.lock() {
+    guard.insert(profile_id.to_string(), overrides);
+  }
+
+  Ok(())
+}
+
 pub async fn execute_open_profile(
   profile_id: String,
   automation: Option<AutomationConfig>,

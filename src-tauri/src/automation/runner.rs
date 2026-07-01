@@ -173,6 +173,37 @@ async fn run_one_profile(
     return;
   }
 
+  // Read flow JSON to see if there is an openProfile (Browser Settings) node targeting this profile.
+  // If found, stage the config to LAUNCH_OVERRIDES so it is applied on the initial browser launch.
+  if let Ok(raw) = std::fs::read_to_string(&flow_path) {
+    if let Ok(flow_val) = serde_json::from_str::<serde_json::Value>(&raw) {
+      if let Some(nodes) = flow_val.get("nodes").and_then(|n| n.as_array()) {
+        for node in nodes {
+          if node.get("type").and_then(|t| t.as_str()) == Some("openProfile") {
+            let params = node.get("params").and_then(|p| p.as_object());
+            let node_profile_id = params.and_then(|p| p.get("profileId")).and_then(|v| v.as_str()).unwrap_or("");
+            let is_match = node_profile_id.is_empty()
+              || node_profile_id == "{{PROFILE_ID}}"
+              || node_profile_id == profile_id
+              || node_profile_id == profile.name;
+            if is_match {
+              if let Some(automation_str) = params.and_then(|p| p.get("automation")).and_then(|v| v.as_str()) {
+                log::info!(
+                  "[AUTOMATION] Staging initial proxy/browser settings from node {} for profile {}",
+                  node.get("id").and_then(|id| id.as_str()).unwrap_or("?"),
+                  profile.name
+                );
+                if let Err(e) = crate::automation::profile_node::stage_profile_overrides(&profile_id, automation_str) {
+                  log::error!("[AUTOMATION] Failed to stage initial profile overrides: {e}");
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   set_status(&run_id, &profile_id, RunStatus::Launching, |_| {});
 
   // Check if browser is already running. If it is, we can reuse it!

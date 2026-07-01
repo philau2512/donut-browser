@@ -252,8 +252,8 @@ export const NODE_SCHEMAS = {
   },
 
   openProfile: {
-    required: { profileId: "string" },
-    optional: { automation: "string" },
+    required: {},
+    optional: { profileId: "string", automation: "string" },
   },
   closeProfile: {
     required: { profileId: "string" },
