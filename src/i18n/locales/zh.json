@@ -2247,7 +2247,8 @@
       "groups": {
         "interaction": "交互",
         "utility": "实用工具",
-        "network": "网络"
+        "network": "网络",
+        "control": "控制流"
       },
       "variables": {
         "search": "搜索变量...",
@@ -2317,12 +2318,20 @@
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
       },
+      "toolbar": {
+        "delete": "删除",
+        "edit": "编辑",
+        "startFromHere": "从此处开始",
+        "duplicate": "复制"
+      },
       "saveAsTitle": "流程另存为",
       "saveAsDescription": "请输入新流程副本的名称。",
       "flowNameLabel": "流程名称",
       "errors": {
         "saveFailed": "保存脚本失败: {{error}}",
-        "loadFailed": "加载脚本失败: {{error}}"
+        "loadFailed": "加载脚本失败: {{error}}",
+        "nameRequired": "流程名称不能为空",
+        "startFailed": "调试启动失败: {{error}}"
       },
       "help": {
         "waitUntil": "页面加载等待模式:\n• load: 等待所有资源加载完成\n• domcontentloaded: 等待基本的HTML(DOM)加载完成\n• networkidle: 等待至少500ms无网络活动",
@@ -2331,6 +2340,38 @@
         "selector": "用于定位元素的CSS选择器或XPath。",
         "value": "要插入/选择的文本值或内容。",
         "milliseconds": "暂停执行的时间（毫秒）。"
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
+      }
+    },
+    "nodes": {
+      "setVariable": {
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
+      },
+      "switchTab": {
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
+      },
+      "closeTab": {
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
       }
     }
   }

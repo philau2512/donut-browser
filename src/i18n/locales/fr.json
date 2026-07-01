@@ -2247,7 +2247,8 @@
       "groups": {
         "interaction": "Interaction",
         "utility": "Utilitaire",
-        "network": "Réseau"
+        "network": "Réseau",
+        "control": "Contrôle de flux"
       },
       "variables": {
         "search": "Rechercher des variables...",
@@ -2317,12 +2318,20 @@
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
       },
+      "toolbar": {
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "startFromHere": "Démarrer depuis ici",
+        "duplicate": "Dupliquer"
+      },
       "saveAsTitle": "Enregistrer le flux sous",
       "saveAsDescription": "Entrez un nom pour la nouvelle copie de flux.",
       "flowNameLabel": "Nom de flux",
       "errors": {
         "saveFailed": "Échec de la sauvegarde du script : {{error}}",
-        "loadFailed": "Échec du chargement du script : {{error}}"
+        "loadFailed": "Échec du chargement du script : {{error}}",
+        "nameRequired": "Le nom du flux est obligatoire",
+        "startFailed": "Échec du démarrage du débogage : {{error}}"
       },
       "help": {
         "waitUntil": "Mode d'attente de chargement :\n• load: Attendre le chargement complet (HTML, images, styles)\n• domcontentloaded: Attendre la structure HTML (DOM)\n• networkidle: Attendre que le réseau soit inactif pendant 500ms",
@@ -2331,6 +2340,38 @@
         "selector": "Sélecteur CSS ou XPath pour localiser l'élément.",
         "value": "La valeur textuelle ou le contenu à insérer/sélectionner.",
         "milliseconds": "Durée de la pause d'exécution en millisecondes."
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
+      }
+    },
+    "nodes": {
+      "setVariable": {
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
+      },
+      "switchTab": {
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
+      },
+      "closeTab": {
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
       }
     }
   }

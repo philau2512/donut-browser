@@ -37,7 +37,7 @@ export const KEYBOARD_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "input[name=email]",
         supportsExpression: true,
@@ -70,7 +70,7 @@ export const KEYBOARD_CATALOG: AutomationNodeCatalogItem[] = [
       },
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: false,
         placeholder: "body",
         supportsExpression: true,
@@ -88,7 +88,7 @@ export const KEYBOARD_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "input[name=username]",
         supportsExpression: true,

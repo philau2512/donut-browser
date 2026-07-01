@@ -1,7 +1,7 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { availableVariablesAtNode } from "@/lib/automation/flow-variable-availability";
 import {
   AUTOMATION_NODE_BY_TYPE,
   type AutomationNodeType,
@@ -42,6 +43,7 @@ interface NodePropertiesDialogProps {
     key: "sleepAfterFrom" | "sleepAfterTo",
     value: string | number | undefined,
   ) => void;
+  onCreateVariable?: (name: string) => void;
 }
 
 export function NodePropertiesDialog({
@@ -54,6 +56,7 @@ export function NodePropertiesDialog({
   onParamChange,
   onContinueOnErrorChange,
   onSleepAfterChange,
+  onCreateVariable,
 }: NodePropertiesDialogProps) {
   const { t } = useTranslation();
   const editableNode =
@@ -74,18 +77,32 @@ export function NodePropertiesDialog({
     }
   }, [open, editableNode]);
 
-  if (!open || !editableNode) {
+  const type = editableNode?.data.nodeType as AutomationNodeType | undefined;
+  const catalog = type ? AUTOMATION_NODE_BY_TYPE[type] : null;
+
+  const availableVars = useMemo(() => {
+    if (!editableNode) return {};
+    const set = availableVariablesAtNode(
+      editableNode.id,
+      nodes,
+      edges,
+      variables,
+    );
+    const obj: Record<string, string> = {};
+    for (const v of set) {
+      obj[v] = variables[v] ?? "";
+    }
+    return obj;
+  }, [editableNode, nodes, edges, variables]);
+
+  const variableWarnings = useMemo(() => {
+    if (!editableNode) return [];
+    return validateNodeVariableRefs(editableNode, nodes, edges, variables);
+  }, [editableNode, nodes, edges, variables]);
+
+  if (!open || !editableNode || !catalog) {
     return <Dialog open={false} onOpenChange={onOpenChange} />;
   }
-
-  const type = editableNode.data.nodeType as AutomationNodeType;
-  const catalog = AUTOMATION_NODE_BY_TYPE[type];
-  const variableWarnings = validateNodeVariableRefs(
-    editableNode,
-    nodes,
-    edges,
-    variables,
-  );
 
   // Special form rendering for profile nodes
   const renderOptionsContent = () => {
@@ -105,7 +122,7 @@ export function NodePropertiesDialog({
             }
           }}
           profiles={profiles}
-          variables={variables}
+          variables={availableVars}
           variableWarnings={variableWarnings}
         />
       );
@@ -139,9 +156,10 @@ export function NodePropertiesDialog({
       <PropertyForm
         catalog={catalog}
         node={editableNode}
-        variables={variables}
+        variables={availableVars}
         variableWarnings={variableWarnings}
         onParamChange={onParamChange}
+        onCreateVariable={onCreateVariable}
       />
     );
   };

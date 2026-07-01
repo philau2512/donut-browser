@@ -22,7 +22,13 @@ export const NODE_SCHEMAS = {
   // Navigator
   openUrl: {
     required: { url: "string" },
-    optional: { timeout: "number", waitUntil: "string" },
+    optional: {
+      timeout: "number",
+      waitUntil: "string",
+      retryOnFail: "boolean",
+      maxRetry: "number",
+      retrySleep: "number",
+    },
   },
   newTab: {
     required: {},

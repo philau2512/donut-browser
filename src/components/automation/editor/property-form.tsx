@@ -23,7 +23,9 @@ import {
   ValidationBadge,
   type ValidationWarning,
 } from "./nodes/forms/validation-badge";
+import { SelectorInput } from "./selector-input";
 import type { AutomationCanvasNode } from "./serialize";
+import { VariableSelectInput } from "./variable-select-input";
 
 interface PropertyFormProps {
   catalog: AutomationNodeCatalogItem;
@@ -31,6 +33,7 @@ interface PropertyFormProps {
   variables: Record<string, string>;
   variableWarnings?: ValidationWarning[];
   onParamChange: (key: string, value: string | number | boolean) => void;
+  onCreateVariable?: (name: string) => void;
 }
 
 function formatParamKey(key: string): string {
@@ -61,6 +64,7 @@ export function PropertyForm({
   variables,
   variableWarnings = [],
   onParamChange,
+  onCreateVariable,
 }: PropertyFormProps) {
   const { t, i18n } = useTranslation();
 
@@ -68,6 +72,14 @@ export function PropertyForm({
     <div className="space-y-4">
       <ValidationBadge warnings={variableWarnings} />
       {catalog.params.map((param) => {
+        // Conditional visibility: hide this param unless the guard condition is met
+        if (param.showIf) {
+          const guardValue =
+            node.data.params[param.showIf.key] ??
+            catalog.defaults?.[param.showIf.key];
+          if (guardValue !== param.showIf.value) return null;
+        }
+
         const value =
           node.data.params[param.key] ?? catalog.defaults?.[param.key];
 
@@ -79,7 +91,7 @@ export function PropertyForm({
         const autoHelpKey = `automation.editor.help.${param.key}`;
         const helpText = param.helpKey
           ? t(param.helpKey)
-          : i18n.exists(autoHelpKey)
+          : i18n?.exists(autoHelpKey)
             ? t(autoHelpKey)
             : null;
 
@@ -134,12 +146,29 @@ export function PropertyForm({
                   ))}
                 </SelectContent>
               </Select>
+            ) : param.key === "saveToVar" ||
+              (catalog.type === "setVariable" && param.key === "name") ? (
+              <VariableSelectInput
+                value={String(value ?? "")}
+                onChange={(next) => onParamChange(param.key, next)}
+                placeholder={param.placeholder}
+                variables={variables}
+                onCreateVariable={onCreateVariable}
+              />
             ) : param.kind === "string" && param.supportsExpression ? (
               <ExpressionInput
                 value={String(value ?? "")}
                 onChange={(next) => onParamChange(param.key, next)}
                 placeholder={param.placeholder}
                 multiline={param.multiline}
+                variables={variables}
+              />
+            ) : param.kind === "selector" ? (
+              <SelectorInput
+                value={String(value ?? "")}
+                onChange={(next) => onParamChange(param.key, next)}
+                placeholder={param.placeholder}
+                supportsExpression={param.supportsExpression}
                 variables={variables}
               />
             ) : (

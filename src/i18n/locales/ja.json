@@ -2247,7 +2247,8 @@
       "groups": {
         "interaction": "インタラクション",
         "utility": "ユーティリティ",
-        "network": "ネットワーク"
+        "network": "ネットワーク",
+        "control": "制御フロー"
       },
       "variables": {
         "search": "変数を検索...",
@@ -2317,12 +2318,20 @@
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
       },
+      "toolbar": {
+        "delete": "削除",
+        "edit": "編集",
+        "startFromHere": "ここから開始",
+        "duplicate": "複製"
+      },
       "saveAsTitle": "フローを名前を付けて保存",
       "saveAsDescription": "新しいフローコピーの名前を入力してください。",
       "flowNameLabel": "フロー名",
       "errors": {
         "saveFailed": "スクリプトの保存に失敗しました: {{error}}",
-        "loadFailed": "スクリプトの読み込みに失敗しました: {{error}}"
+        "loadFailed": "スクリプトの読み込みに失敗しました: {{error}}",
+        "nameRequired": "フロー名を入力してください",
+        "startFailed": "デバッグの開始に失敗しました: {{error}}"
       },
       "help": {
         "waitUntil": "ページ読み込み待機モード:\n• load: すべてのリソースが読み込まれるのを待機\n• domcontentloaded: HTML構造(DOM)の読み込み完了を待機\n• networkidle: 500msの間ネットワークリクエストが停止するまで待機",
@@ -2331,6 +2340,38 @@
         "selector": "要素を特定するためのCSSセレクターまたはXPath。",
         "value": "入力または選択するテキスト値またはコンテンツ。",
         "milliseconds": "実行を一時停止する時間(ミリ秒)。"
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
+      }
+    },
+    "nodes": {
+      "setVariable": {
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
+      },
+      "switchTab": {
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
+      },
+      "closeTab": {
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
       }
     }
   }

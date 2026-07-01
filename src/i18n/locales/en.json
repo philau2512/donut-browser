@@ -2290,7 +2290,8 @@
         "data": "Data",
         "interaction": "Interaction",
         "utility": "Utility",
-        "network": "Network"
+        "network": "Network",
+        "control": "Control Flow"
       },
       "start": "Start",
       "booleanEnabled": "Enabled",
@@ -2301,8 +2302,17 @@
       },
       "errors": {
         "loadFailed": "Failed to load script: {{error}}",
-        "saveFailed": "Failed to save script: {{error}}"
+        "saveFailed": "Failed to save script: {{error}}",
+        "nameRequired": "Flow name is required",
+        "startFailed": "Debug failed to start: {{error}}"
       },
+      "debug": {
+        "noNodes": "No nodes to run from this point",
+        "startFromHere": "Start debug from: {{name}}"
+      },
+      "saveAsTitle": "Save Flow As",
+      "saveAsDescription": "Enter a name for the new flow copy.",
+      "flowNameLabel": "Flow Name",
       "linearHint": "Linear mode",
       "name": "Script Name",
       "namePlaceholder": "Enter script name...",
@@ -2325,7 +2335,8 @@
       "toolbar": {
         "delete": "Delete",
         "edit": "Edit",
-        "startFromHere": "Start from here"
+        "startFromHere": "Start from here",
+        "duplicate": "Duplicate"
       },
       "variables": {
         "add": "Add Variable",
@@ -2401,6 +2412,12 @@
         "selector": "CSS Selector or XPath to locate the element (e.g., button.submit, //input[@id='username']).",
         "value": "The text value or content to insert/select.",
         "milliseconds": "Duration to pause execution in milliseconds."
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
       }
     },
     "actions": {
@@ -2509,7 +2526,12 @@
       "closeTab": {
         "description": "Close current tab",
         "document": "Closes the currently active browser tab.",
-        "label": "Close Tab"
+        "label": "Close Tab",
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
       },
       "closeProfile": {
         "description": "Close browser profile with cleanup options",
@@ -2696,7 +2718,12 @@
       "openUrl": {
         "description": "Navigate to a URL",
         "document": "Opens a URL in the current tab or a new tab.",
-        "label": "Open URL"
+        "label": "Open URL",
+        "retryOnFail": "Retry on Fail",
+        "retryOnFailHelp": "Automatically retry navigation if the page fails to load.",
+        "maxRetry": "Max Retry",
+        "retrySleep": "Sleep Between Retries (ms)",
+        "retrySleepHelp": "Time to wait in milliseconds between each retry attempt."
       },
       "openProfile": {
         "description": "Configure proxy and browser settings before launch",
@@ -2787,7 +2814,15 @@
       "setVariable": {
         "description": "Store a value",
         "document": "Stores a value in a script variable.",
-        "label": "Set Variable"
+        "label": "Set Variable",
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
       },
       "stopLoop": {
         "description": "Break out of loop",
@@ -2807,7 +2842,12 @@
       "switchTab": {
         "description": "Switch to another tab",
         "document": "Switches focus to a different browser tab by index.",
-        "label": "Switch Tab"
+        "label": "Switch Tab",
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
       },
       "type": {
         "description": "Type text",

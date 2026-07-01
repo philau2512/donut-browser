@@ -32,7 +32,23 @@ export function ExpressionInput({
   const [search, setSearch] = useState("");
 
   const names = useMemo(() => {
-    return [...RESERVED_FLOW_VARIABLES, ...Object.keys(variables).sort()];
+    const set = new Set([
+      ...RESERVED_FLOW_VARIABLES,
+      ...Object.keys(variables),
+    ]);
+    return [...set].sort((a, b) => {
+      const aReserved = RESERVED_FLOW_VARIABLES.includes(a as any);
+      const bReserved = RESERVED_FLOW_VARIABLES.includes(b as any);
+      if (aReserved && !bReserved) return -1;
+      if (!aReserved && bReserved) return 1;
+      if (aReserved && bReserved) {
+        return (
+          RESERVED_FLOW_VARIABLES.indexOf(a as any) -
+          RESERVED_FLOW_VARIABLES.indexOf(b as any)
+        );
+      }
+      return a.localeCompare(b);
+    });
   }, [variables]);
 
   const filteredNames = useMemo(() => {

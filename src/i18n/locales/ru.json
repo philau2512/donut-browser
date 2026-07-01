@@ -2247,7 +2247,8 @@
       "groups": {
         "interaction": "Взаимодействие",
         "utility": "Утилиты",
-        "network": "Сеть"
+        "network": "Сеть",
+        "control": "Управление потоком"
       },
       "variables": {
         "search": "Поиск переменных...",
@@ -2317,12 +2318,20 @@
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
       },
+      "toolbar": {
+        "delete": "Удалить",
+        "edit": "Редактировать",
+        "startFromHere": "Начать отсюда",
+        "duplicate": "Дублировать"
+      },
       "saveAsTitle": "Сохранить сценарий как",
       "saveAsDescription": "Введите имя для новой копии сценария.",
       "flowNameLabel": "Имя сценария",
       "errors": {
         "saveFailed": "Не удалось сохранить сценарий: {{error}}",
-        "loadFailed": "Не удалось загрузить сценарий: {{error}}"
+        "loadFailed": "Не удалось загрузить сценарий: {{error}}",
+        "nameRequired": "Название сценария обязательно",
+        "startFailed": "Не удалось запустить отладку: {{error}}"
       },
       "help": {
         "waitUntil": "Режим ожидания загрузки страницы:\n• load: Ожидание полной загрузки (HTML, изображения, стили)\n• domcontentloaded: Ожидание готовности структуры HTML (DOM)\n• networkidle: Ожидание отсутствия сетевых запросов в течение 500 мс",
@@ -2331,6 +2340,38 @@
         "selector": "CSS-селектор или XPath для поиска элемента.",
         "value": "Текстовое значение или содержимое для ввода/выбора.",
         "milliseconds": "Длительность паузы выполнения в миллисекундах."
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
+      }
+    },
+    "nodes": {
+      "setVariable": {
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
+      },
+      "switchTab": {
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
+      },
+      "closeTab": {
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
       }
     }
   }

@@ -23,7 +23,7 @@ export const EXTENSION_CATALOG: AutomationNodeCatalogItem[] = [
       },
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: false,
         placeholder: "#oauth-button",
         supportsExpression: true,

@@ -71,7 +71,7 @@ export type AutomationNodeGroup =
   | "control"
   | "interaction";
 
-export type ParamKind = "string" | "number" | "boolean" | "enum";
+export type ParamKind = "string" | "number" | "boolean" | "enum" | "selector";
 
 export interface ParamOption {
   value: string;
@@ -88,6 +88,8 @@ export interface ParamSpec {
   options?: ParamOption[];
   labelKey?: string;
   helpKey?: string;
+  /** Show this param only when the referenced param key equals the given value */
+  showIf?: { key: string; value: string | number | boolean };
 }
 
 export interface AutomationNodeCatalogItem {

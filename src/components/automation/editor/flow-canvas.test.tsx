@@ -58,6 +58,11 @@ vi.mock("@xyflow/react", async () => {
       connection: Record<string, unknown>,
       current: Record<string, unknown>[],
     ) => [...current, connection],
+    useReactFlow: () => ({
+      zoomIn: vi.fn(),
+      zoomOut: vi.fn(),
+      fitView: vi.fn(),
+    }),
   };
 });
 

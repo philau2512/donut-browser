@@ -1,6 +1,6 @@
 "use client";
 
-import { type DragEvent, useMemo, useState } from "react";
+import { type DragEvent, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuSearch } from "react-icons/lu";
 import {
@@ -22,6 +22,8 @@ const GROUPS: AutomationNodeGroup[] = [
   "keyboard",
   "data",
   "network",
+  "control",
+  "utility",
   "other",
 ];
 
@@ -32,6 +34,14 @@ interface NodePaletteProps {
 export function NodePalette({ onDragStart }: NodePaletteProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
+  const [openGroups, setOpenGroups] = useState<string[]>(["navigator"]);
+
+  // Auto-expand all groups when searching
+  useEffect(() => {
+    if (query.trim()) {
+      setOpenGroups(GROUPS);
+    }
+  }, [query]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -68,7 +78,8 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
       </div>
       <Accordion
         type="multiple"
-        defaultValue={["navigator"]}
+        value={openGroups}
+        onValueChange={setOpenGroups}
         className="w-full"
       >
         {GROUPS.map((group) => {

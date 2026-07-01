@@ -1,11 +1,12 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { availableVariablesAtNode } from "@/lib/automation/flow-variable-availability";
 import {
   AUTOMATION_NODE_BY_TYPE,
   type AutomationNodeType,
@@ -63,6 +64,29 @@ export function NodePropertiesPanel({
     }
   }, [editableNode]);
 
+  const type = editableNode?.data.nodeType as AutomationNodeType | undefined;
+  const catalog = type ? AUTOMATION_NODE_BY_TYPE[type] : null;
+
+  const availableVars = useMemo(() => {
+    if (!editableNode) return {};
+    const set = availableVariablesAtNode(
+      editableNode.id,
+      nodes,
+      edges,
+      variables,
+    );
+    const obj: Record<string, string> = {};
+    for (const v of set) {
+      obj[v] = variables[v] ?? "";
+    }
+    return obj;
+  }, [editableNode, nodes, edges, variables]);
+
+  const variableWarnings = useMemo(() => {
+    if (!editableNode) return [];
+    return validateNodeVariableRefs(editableNode, nodes, edges, variables);
+  }, [editableNode, nodes, edges, variables]);
+
   if (!editableNode) {
     return (
       <div className="flex h-full items-center justify-center text-muted-foreground text-xs p-4 text-center">
@@ -72,16 +96,7 @@ export function NodePropertiesPanel({
     );
   }
 
-  const type = editableNode.data.nodeType as AutomationNodeType;
-  const catalog = AUTOMATION_NODE_BY_TYPE[type];
   if (!catalog) return null;
-
-  const variableWarnings = validateNodeVariableRefs(
-    editableNode,
-    nodes,
-    edges,
-    variables,
-  );
 
   const renderOptionsContent = () => {
     if (type === "openProfile") {
@@ -100,7 +115,7 @@ export function NodePropertiesPanel({
             }
           }}
           profiles={profiles}
-          variables={variables}
+          variables={availableVars}
           variableWarnings={variableWarnings}
         />
       );
@@ -133,7 +148,7 @@ export function NodePropertiesPanel({
       <PropertyForm
         catalog={catalog}
         node={editableNode}
-        variables={variables}
+        variables={availableVars}
         variableWarnings={variableWarnings}
         onParamChange={onParamChange}
       />

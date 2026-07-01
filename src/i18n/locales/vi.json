@@ -2288,7 +2288,8 @@
         "data": "Dữ liệu",
         "interaction": "Tương tác",
         "utility": "Tiện ích",
-        "network": "Mạng"
+        "network": "Mạng",
+        "control": "Điều khiển luồng"
       },
       "start": "Bắt đầu",
       "booleanEnabled": "Bật",
@@ -2299,7 +2300,9 @@
       },
       "errors": {
         "loadFailed": "Tải script thất bại: {{error}}",
-        "saveFailed": "Lưu script thất bại: {{error}}"
+        "saveFailed": "Lưu script thất bại: {{error}}",
+        "nameRequired": "Tên flow không được để trống",
+        "startFailed": "Khởi động debug thất bại: {{error}}"
       },
       "linearHint": "Chế độ tuyến tính",
       "name": "Tên script",
@@ -2323,7 +2326,8 @@
       "toolbar": {
         "delete": "Xóa",
         "edit": "Chỉnh sửa",
-        "startFromHere": "Bắt đầu từ đây"
+        "startFromHere": "Bắt đầu từ đây",
+        "duplicate": "Nhân bản"
       },
       "variables": {
         "add": "Thêm biến",
@@ -2399,6 +2403,12 @@
         "selector": "CSS Selector hoặc XPath để xác định phần tử (ví dụ: button.submit, //input[@id='username']).",
         "value": "Giá trị văn bản hoặc nội dung cần điền/chọn.",
         "milliseconds": "Thời gian tạm dừng thực thi tính bằng mili-giây."
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
       }
     },
     "actions": {
@@ -2507,7 +2517,12 @@
       "closeTab": {
         "description": "Đóng tab hiện tại",
         "document": "Đóng tab trình duyệt đang hoạt động.",
-        "label": "Đóng Tab"
+        "label": "Đóng Tab",
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
       },
       "closeProfile": {
         "description": "Đóng profile trình duyệt với tùy chọn dọn dẹp",
@@ -2694,7 +2709,12 @@
       "openUrl": {
         "description": "Điều hướng đến URL",
         "document": "Mở URL trong tab hiện tại hoặc tab mới.",
-        "label": "Mở URL"
+        "label": "Mở URL",
+        "retryOnFail": "Thử lại khi thất bại",
+        "retryOnFailHelp": "Tự động thử lại điều hướng nếu trang tải thất bại.",
+        "maxRetry": "Số lần thử lại tối đa",
+        "retrySleep": "Thời gian chờ giữa các lần thử (ms)",
+        "retrySleepHelp": "Thời gian chờ tính bằng mili-giây giữa mỗi lần thử lại."
       },
       "openProfile": {
         "description": "Cấu hình proxy và cài đặt trình duyệt trước khi chạy",
@@ -2785,7 +2805,15 @@
       "setVariable": {
         "description": "Lưu giá trị",
         "document": "Lưu giá trị vào biến script.",
-        "label": "Đặt Biến"
+        "label": "Đặt Biến",
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
       },
       "stopLoop": {
         "description": "Thoát vòng lặp",
@@ -2805,7 +2833,12 @@
       "switchTab": {
         "description": "Chuyển sang tab khác",
         "document": "Chuyển focus sang tab trình duyệt khác theo chỉ số.",
-        "label": "Chuyển Tab"
+        "label": "Chuyển Tab",
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
       },
       "type": {
         "description": "Gõ văn bản",

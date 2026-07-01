@@ -246,6 +246,25 @@ export function FlowEditorPage({
     [selectedNodeId, setEdges, setNodes],
   );
 
+  const handleDuplicateNode = useCallback(
+    (nodeId: string) => {
+      const source = nodes.find((n) => n.id === nodeId);
+      if (!source) return;
+      const newNode = {
+        ...source,
+        id: `${source.type ?? "automation"}-${Date.now()}`,
+        position: {
+          x: source.position.x + 40,
+          y: source.position.y + 40,
+        },
+        selected: false,
+        data: { ...source.data },
+      };
+      setNodes((current) => [...current, newNode]);
+    },
+    [nodes, setNodes],
+  );
+
   const handleStartFromHere = useCallback(
     async (nodeId: string) => {
       if (!selectedDebugProfile) {
@@ -763,6 +782,11 @@ export function FlowEditorPage({
             draggedNodeType={draggedNodeType}
             isLocked={isCanvasLocked}
             onToggleLock={() => setIsCanvasLocked((v) => !v)}
+            onEditNode={handleEditNode}
+            onDeleteNode={handleDeleteNode}
+            onCommentNode={handleCommentNode}
+            onDuplicateNode={handleDuplicateNode}
+            onStartFromHereNode={handleStartFromHere}
           />
 
           {isLogPanelOpen && (
@@ -810,6 +834,12 @@ export function FlowEditorPage({
         onParamChange={updateSelectedParam}
         onContinueOnErrorChange={updateSelectedContinueOnError}
         onSleepAfterChange={updateSelectedSleepAfter}
+        onCreateVariable={(name) => {
+          setVariables((prev) => {
+            if (name in prev) return prev;
+            return { ...prev, [name]: "" };
+          });
+        }}
       />
 
       <NodeCommentDialog

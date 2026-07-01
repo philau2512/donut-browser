@@ -12,8 +12,13 @@ describe("ExpressionInput", () => {
       />,
     );
 
+    fireEvent.click(screen.getByTitle("Insert Variable"));
+
     expect(
-      screen.getAllByRole("button").map((button) => button.textContent),
+      screen
+        .getAllByRole("button")
+        .map((button) => button.textContent)
+        .filter(Boolean),
     ).toEqual([
       "PROFILE_ID",
       "PROFILE_NAME",
@@ -36,6 +41,7 @@ describe("ExpressionInput", () => {
       />,
     );
 
+    fireEvent.click(screen.getByTitle("Insert Variable"));
     fireEvent.click(screen.getByRole("button", { name: /EMAIL/i }));
     expect(onChange).toHaveBeenLastCalledWith("{{EMAIL}}");
 
@@ -46,6 +52,7 @@ describe("ExpressionInput", () => {
         variables={{ EMAIL: "e" }}
       />,
     );
+    fireEvent.click(screen.getByTitle("Insert Variable"));
     fireEvent.click(screen.getByRole("button", { name: /EMAIL/i }));
     expect(onChange).toHaveBeenLastCalledWith("hello {{EMAIL}}");
 
@@ -56,6 +63,7 @@ describe("ExpressionInput", () => {
         variables={{ EMAIL: "e" }}
       />,
     );
+    fireEvent.click(screen.getByTitle("Insert Variable"));
     fireEvent.click(screen.getByRole("button", { name: /EMAIL/i }));
     expect(onChange).toHaveBeenLastCalledWith("hello {{EMAIL}}");
   });

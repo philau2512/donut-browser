@@ -74,7 +74,7 @@ export const LOGIC_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "a.product-link",
         supportsExpression: true,

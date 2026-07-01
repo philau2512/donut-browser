@@ -25,7 +25,12 @@ function node(
 
 describe("automation editor serialization", () => {
   beforeEach(() => {
-    vi.stubGlobal("crypto", { randomUUID: () => "uuid-1" });
+    const originalCrypto = global.crypto;
+    vi.stubGlobal("crypto", {
+      getRandomValues: (arr: Uint8Array) => originalCrypto.getRandomValues(arr),
+      randomUUID: () => "uuid-1",
+    });
+    vi.spyOn(Math, "random").mockReturnValue(0.180212345);
   });
 
   it("creates a fixed UI-only start node", () => {
@@ -45,7 +50,7 @@ describe("automation editor serialization", () => {
     const openUrl = createAutomationNode("openUrl", { x: 50, y: 70 });
 
     expect(openUrl).toMatchObject({
-      id: "openUrl-uuid-1",
+      id: "openUrl-262191110",
       type: "automation",
       position: { x: 50, y: 70 },
       data: {

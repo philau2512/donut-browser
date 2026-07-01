@@ -2247,7 +2247,8 @@
       "groups": {
         "interaction": "상호작용",
         "utility": "유틸리티",
-        "network": "네트워크"
+        "network": "네트워크",
+        "control": "제어 흐름"
       },
       "variables": {
         "search": "변수 검색...",
@@ -2317,12 +2318,20 @@
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
       },
+      "toolbar": {
+        "delete": "삭제",
+        "edit": "편집",
+        "startFromHere": "여기서 시작",
+        "duplicate": "복제"
+      },
       "saveAsTitle": "다른 이름으로 흐름 저장",
       "saveAsDescription": "새 흐름 복사본의 이름을 입력하세요.",
       "flowNameLabel": "흐름 이름",
       "errors": {
         "saveFailed": "스크립트 저장 실패: {{error}}",
-        "loadFailed": "스크립트 로드 실패: {{error}}"
+        "loadFailed": "스크립트 로드 실패: {{error}}",
+        "nameRequired": "흐름 이름을 입력해주세요",
+        "startFailed": "디버그 시작 실패: {{error}}"
       },
       "help": {
         "waitUntil": "페이지 로드 대기 모드:\n• load: 모든 리소스가 로드될 때까지 대기\n• domcontentloaded: HTML 구조(DOM)가 로드될 때까지 대기\n• networkidle: 500ms 동안 네트워크 요청이 없을 때까지 대기",
@@ -2331,6 +2340,38 @@
         "selector": "요소를 찾기 위한 CSS 선택자 또는 XPath입니다.",
         "value": "입력하거나 선택할 텍스트 값 또는 콘텐츠입니다.",
         "milliseconds": "실행을 일시 중지할 시간(ms)입니다."
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
+      }
+    },
+    "nodes": {
+      "setVariable": {
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
+      },
+      "switchTab": {
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
+      },
+      "closeTab": {
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
       }
     }
   }

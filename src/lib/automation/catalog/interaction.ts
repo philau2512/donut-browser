@@ -26,7 +26,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "button[type=submit]",
         supportsExpression: true,
@@ -52,7 +52,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: ".menu-item",
         supportsExpression: true,
@@ -71,7 +71,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         placeholder: "body",
         supportsExpression: true,
       },
@@ -90,14 +90,14 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "sourceSelector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "#drag-source",
         supportsExpression: true,
       },
       {
         key: "targetSelector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "#drop-target",
         supportsExpression: true,
@@ -116,7 +116,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: ".canvas",
         supportsExpression: true,
@@ -141,7 +141,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: ".canvas",
         supportsExpression: true,
@@ -166,7 +166,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "input[name=email]",
         supportsExpression: true,
