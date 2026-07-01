@@ -8,6 +8,7 @@ import {
   LuChevronLeft,
   LuChevronRight,
   LuMoon,
+  LuRefreshCw,
   LuSearch,
   LuSun,
   LuX,
@@ -53,6 +54,7 @@ interface Props {
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string) => void;
   pageTitle?: string;
+  onRefresh?: () => void;
 }
 
 const HomeHeader = ({
@@ -64,10 +66,12 @@ const HomeHeader = ({
   selectedGroupId,
   onGroupSelect,
   pageTitle,
+  onRefresh,
 }: Props) => {
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
   const [platform, setPlatform] = useState<string>("macos");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     setPlatform(getCurrentOS());
@@ -402,6 +406,35 @@ const HomeHeader = ({
             </span>
           </TooltipTrigger>
           <TooltipContent>{t("header.createProfile")}</TooltipContent>
+        </Tooltip>
+      )}
+
+      {onRefresh && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={async () => {
+                if (isRefreshing) return;
+                setIsRefreshing(true);
+                try {
+                  await onRefresh();
+                } finally {
+                  // Keep the spin animation visible briefly for feedback
+                  setTimeout(() => setIsRefreshing(false), 500);
+                }
+              }}
+              className="h-7 w-7 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              aria-label={t("common.buttons.refresh")}
+            >
+              <LuRefreshCw
+                className={cn("size-3.5", isRefreshing && "animate-spin")}
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("common.buttons.refresh")}</TooltipContent>
         </Tooltip>
       )}
 

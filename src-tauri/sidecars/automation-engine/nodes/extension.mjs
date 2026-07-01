@@ -11,7 +11,7 @@
  * - CDP/Playwright popup pages may have different lifecycle than regular tabs
  */
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /**
  * switchExtensionPopup: switch context to extension popup or back to main page.

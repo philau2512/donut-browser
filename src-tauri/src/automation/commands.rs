@@ -260,9 +260,9 @@ fn sanitize_flow_name(name: &str) -> Result<String, String> {
   }
   if !stem
     .chars()
-    .all(|c| c.is_alphanumeric() || c == ' ' || c == '_' || c == '-' || c == '.')
+    .all(|c| c.is_alphanumeric() || c == ' ' || c == '_' || c == '-')
   {
-    return Err("flow name may only contain letters, digits, space, '_', '-', or '.'".into());
+    return Err("flow name may only contain letters, digits, space, '_' or '-'".into());
   }
   Ok(format!("{stem}.donutflow"))
 }

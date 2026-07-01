@@ -2257,7 +2257,10 @@
         "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
-        "selectNodeHint": "Selecione um nó no canvas para ver suas propriedades"
+        "selectNodeHint": "Selecione um nó no canvas para ver suas propriedades",
+        "sleepAfter": "Tempo de espera (milissegundos) antes de executar o próximo nó.",
+        "sleepAfterFrom": "De (milissegundos)",
+        "sleepAfterTo": "Até (milissegundos)"
       },
       "logs": {
         "title": "Registro",

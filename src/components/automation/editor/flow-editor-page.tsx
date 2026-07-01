@@ -427,6 +427,26 @@ export function FlowEditorPage({
     );
   };
 
+  const updateSelectedSleepAfter = (
+    key: "sleepAfterFrom" | "sleepAfterTo",
+    value: string | number | undefined,
+  ) => {
+    if (!selectedNodeId) return;
+    setNodes((current) =>
+      current.map((node) =>
+        node.id === selectedNodeId
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                [key]: value,
+              },
+            }
+          : node,
+      ),
+    );
+  };
+
   const handleSave = async (customName?: string, isSaveAs = false) => {
     setIsSaving(true);
     try {
@@ -777,7 +797,6 @@ export function FlowEditorPage({
         )}
       </div>
 
-      {/* Node Properties Dialog (modal) */}
       <NodePropertiesDialog
         isOpen={isPropertiesDialogOpen}
         node={selectedNode}
@@ -790,6 +809,7 @@ export function FlowEditorPage({
         }}
         onParamChange={updateSelectedParam}
         onContinueOnErrorChange={updateSelectedContinueOnError}
+        onSleepAfterChange={updateSelectedSleepAfter}
       />
 
       <NodeCommentDialog

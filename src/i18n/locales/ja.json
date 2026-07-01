@@ -2257,7 +2257,10 @@
         "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
-        "selectNodeHint": "キャンバス上のノードを選択してプロパティを表示"
+        "selectNodeHint": "キャンバス上のノードを選択してプロパティを表示",
+        "sleepAfter": "次のノードを実行する前のスリープ時間（ミリ秒）。",
+        "sleepAfterFrom": "開始（ミリ秒）",
+        "sleepAfterTo": "終了（ミリ秒）"
       },
       "logs": {
         "title": "ログ",

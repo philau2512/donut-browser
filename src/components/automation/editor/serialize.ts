@@ -16,6 +16,8 @@ export interface DonutFlowNode {
   comment?: string;
   /** Stable per-node ID for debug/search correlation. Generated at save time. */
   nodeId?: string;
+  sleepAfterFrom?: number | string;
+  sleepAfterTo?: number | string;
 }
 
 export interface DonutFlowEdge {
@@ -38,6 +40,8 @@ export interface AutomationNodeData extends Record<string, unknown> {
   params: Record<string, string | number | boolean>;
   continueOnError?: boolean;
   comment?: string;
+  sleepAfterFrom?: number | string;
+  sleepAfterTo?: number | string;
 }
 
 export type AutomationCanvasNode = Node<AutomationNodeData, "automation">;
@@ -129,6 +133,10 @@ export function toDonutFlow(
       };
       if (node.data.continueOnError === true) out.continueOnError = true;
       if (node.data.comment) out.comment = node.data.comment;
+      if (node.data.sleepAfterFrom !== undefined)
+        out.sleepAfterFrom = node.data.sleepAfterFrom;
+      if (node.data.sleepAfterTo !== undefined)
+        out.sleepAfterTo = node.data.sleepAfterTo;
       return out;
     }),
     edges: edges
@@ -170,6 +178,8 @@ export function fromDonutFlow(
         continueOnError: node.continueOnError,
         comment: node.comment,
         nodeId,
+        sleepAfterFrom: node.sleepAfterFrom,
+        sleepAfterTo: node.sleepAfterTo,
       },
     });
   });

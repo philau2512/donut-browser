@@ -97,6 +97,49 @@ donutbrowser/
 └── .github/workflows/                # CI/CD pipelines
 ```
 
+## Codebase Routing Guide (Quick Symbol Map)
+
+To find specific functionality instantly, use this map:
+
+### 1. Automation & Flow Nodes
+- **Frontend Catalog Specification (Node Params & Defaults)**:
+  - Global Schema: [node-catalog.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/node-catalog.ts)
+  - Network Spec: [network.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/network.ts)
+  - Navigator Spec: [navigator.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/navigator.ts)
+  - Keyboard/Input Spec: [keyboard.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/keyboard.ts)
+  - Interaction Spec: [interaction.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/interaction.ts)
+  - Extraction Spec: [extraction.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/extraction.ts)
+  - Extension Spec: [extension.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/extension.ts)
+- **Frontend Editor UI**:
+  - Canvas Layout & Nodes: [flow-editor-page.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/flow-editor-page.tsx)
+  - Properties & Form Serialization: [serialize.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/serialize.ts), [property-form.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/property-form.tsx)
+  - Node Config Panels: [node-properties-dialog.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/node-properties-dialog.tsx), [node-properties-panel.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/node-properties-panel.tsx)
+- **Backend Execution Engine (NodeJS Sidecar)**:
+  - Orchestrator Engine: [engine.mjs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/sidecars/automation-engine/engine.mjs)
+  - Node Logic (e.g. sleepAfter): `src-tauri/sidecars/automation-engine/nodes/` (`extension.mjs`, `extraction.mjs`, `keyboard.mjs`, `network.mjs`, `profile-flow.mjs`)
+- **Backend Tauri Commands & Orchestrator**:
+  - Command Bridges: [commands.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/commands.rs), [engine_host.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/engine_host.rs)
+  - Flow Runner Orchestrator: [runner.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/runner.rs)
+  - Profile Open/Close Nodes: [profile_node.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/profile_node.rs)
+
+### 2. Browser Profiles Management
+- **Rust Profile Manager & Persistence**: [manager.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/profile/manager.rs) (handles CRUD, listing, saving to metadata.json on disk)
+- **Profile Overrides (Proxy Staging)**: [profile_node.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/profile_node.rs) (`apply_proxy_to_profile`, `stage_profile_overrides`)
+- **Profile React States & Listeners**: [use-profile-events.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/hooks/use-profile-events.ts) (listens to `profiles-changed` event to re-fetch database)
+- **Profile List UI**: [page.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/app/page.tsx), [profile-data-table.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/home/profile-data-table.tsx)
+
+### 3. Proxy and VPN
+- **Rust Proxy Management & Local Servers**: [proxy_manager/mod.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/proxy/proxy_manager/mod.rs), [proxy_storage.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/proxy/proxy_storage.rs)
+- **VPN WireGuard Configuration & Lifecycle**: `src-tauri/src/vpn/`
+
+### 4. Sync Engine (S3 / Presigned URLs / NestJS)
+- **Reconciliation & Config Sync**: [engine.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/sync/engine.rs) (Conflict resolution, Presigned S3 uploads, `updated_at` last-write-wins)
+- **Profile File Manifest Diff**: [manifest.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/sync/manifest.rs)
+
+### 5. UI Theming & Global Settings
+- **Theme Variables Map**: [themes.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/themes.ts)
+- **App Settings Storage**: [manager.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/settings/manager.rs)
+
 ## Testing and Quality
 
 - After making changes, run `pnpm format && pnpm lint && pnpm test` at the root of the project

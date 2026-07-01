@@ -2257,7 +2257,10 @@
         "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
-        "selectNodeHint": "在画布上选择一个节点以查看其属性"
+        "selectNodeHint": "在画布上选择一个节点以查看其属性",
+        "sleepAfter": "运行下一个节点前的休眠时间（毫秒）。",
+        "sleepAfterFrom": "从（毫秒）",
+        "sleepAfterTo": "至（毫秒）"
       },
       "logs": {
         "title": "日志",

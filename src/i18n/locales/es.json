@@ -2257,7 +2257,10 @@
         "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
-        "selectNodeHint": "Selecciona un nodo en el lienzo para ver sus propiedades"
+        "selectNodeHint": "Selecciona un nodo en el lienzo para ver sus propiedades",
+        "sleepAfter": "Tiempo de espera (milisegundos) antes de ejecutar el siguiente nodo.",
+        "sleepAfterFrom": "Desde (milisegundos)",
+        "sleepAfterTo": "Hasta (milisegundos)"
       },
       "logs": {
         "title": "Registro",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { LuHelpCircle } from "react-icons/lu";
+import { LuCircleHelp } from "react-icons/lu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,7 +68,8 @@ export function PropertyForm({
     <div className="space-y-4">
       <ValidationBadge warnings={variableWarnings} />
       {catalog.params.map((param) => {
-        const value = node.data.params[param.key];
+        const value =
+          node.data.params[param.key] ?? catalog.defaults?.[param.key];
 
         // Auto format label if labelKey is not specified or fallback
         const formattedLabel = formatParamKey(param.key);
@@ -96,7 +97,7 @@ export function PropertyForm({
                       type="button"
                       className="text-muted-foreground hover:text-foreground cursor-help rounded-full p-0.5 focus:outline-hidden"
                     >
-                      <LuHelpCircle className="size-3.5" />
+                      <LuCircleHelp className="size-3.5" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs whitespace-pre-line text-xs">
@@ -145,14 +146,22 @@ export function PropertyForm({
               <Input
                 value={String(value ?? "")}
                 type={param.kind === "number" ? "number" : "text"}
-                onChange={(event) =>
-                  onParamChange(
-                    param.key,
-                    param.kind === "number"
-                      ? Number(event.target.value)
-                      : event.target.value,
-                  )
-                }
+                min={param.kind === "number" ? 0 : undefined}
+                onChange={(event) => {
+                  const rawValue = event.target.value;
+                  if (param.kind === "number") {
+                    if (rawValue === "") {
+                      onParamChange(param.key, "");
+                    } else {
+                      const num = Number(rawValue);
+                      if (!Number.isNaN(num)) {
+                        onParamChange(param.key, Math.max(0, num));
+                      }
+                    }
+                  } else {
+                    onParamChange(param.key, rawValue);
+                  }
+                }}
                 placeholder={param.placeholder}
               />
             )}

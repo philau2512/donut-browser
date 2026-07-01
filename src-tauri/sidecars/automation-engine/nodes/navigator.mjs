@@ -2,7 +2,7 @@ import { assertNavigableUrl } from "../lib/url-guard.mjs";
 import { getLocatorRoot } from "../lib/execution-target.mjs";
 import { matchFilter, resolveTabIndex } from "../lib/tab-match.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** openUrl: navigate the page to a URL */
 export async function openUrl(node, page, ctx) {

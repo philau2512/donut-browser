@@ -28,8 +28,8 @@ export const EXTENSION_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "#oauth-button",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { mode: "popup", selector: "" },
+    defaults: { mode: "popup", selector: "", timeout: 60000 },
   },
 ];

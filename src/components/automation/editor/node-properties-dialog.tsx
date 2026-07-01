@@ -19,6 +19,7 @@ import {
 } from "@/lib/automation/node-catalog";
 import { validateNodeVariableRefs } from "@/lib/automation/validate-node-variables";
 import type { BrowserProfile } from "@/types";
+import { ExpressionInput } from "./expression-input";
 import { CloseProfileForm } from "./nodes/forms/close-profile-form";
 import { OpenProfileForm } from "./nodes/forms/open-profile-form";
 import { PropertyForm } from "./property-form";
@@ -37,6 +38,10 @@ interface NodePropertiesDialogProps {
   onOpenChange: (open: boolean) => void;
   onParamChange: (key: string, value: string | number | boolean) => void;
   onContinueOnErrorChange: (value: boolean) => void;
+  onSleepAfterChange: (
+    key: "sleepAfterFrom" | "sleepAfterTo",
+    value: string | number | undefined,
+  ) => void;
 }
 
 export function NodePropertiesDialog({
@@ -48,6 +53,7 @@ export function NodePropertiesDialog({
   onOpenChange,
   onParamChange,
   onContinueOnErrorChange,
+  onSleepAfterChange,
 }: NodePropertiesDialogProps) {
   const { t } = useTranslation();
   const editableNode =
@@ -184,22 +190,89 @@ export function NodePropertiesDialog({
           </TabsContent>
           <TabsContent
             value="setting"
-            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0"
+            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0 space-y-4"
           >
             <div className="flex items-center gap-3 rounded-md border border-border p-3">
               <Checkbox
+                id="dialog-continue-on-error"
                 checked={editableNode.data.continueOnError === true}
                 onCheckedChange={(checked) =>
                   onContinueOnErrorChange(checked === true)
                 }
               />
               <div className="space-y-1">
-                <Label>
+                <Label
+                  htmlFor="dialog-continue-on-error"
+                  className="cursor-pointer"
+                >
                   {t("automation.editor.properties.continueOnError")}
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   {t("automation.editor.properties.continueOnErrorHint")}
                 </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">
+                  {t("automation.editor.properties.sleepAfter") ||
+                    "Sleep time (milliseconds) before running the next node."}
+                </Label>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-medium">
+                    {t("automation.editor.properties.sleepAfterFrom") ||
+                      "From (milliseconds)"}
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    1 s = 1000 ms
+                  </p>
+                  <ExpressionInput
+                    value={String(editableNode.data.sleepAfterFrom ?? "")}
+                    onChange={(val) => {
+                      let parsed: string | number | undefined = val;
+                      if (val === "") {
+                        parsed = undefined;
+                      } else if (
+                        !val.includes("{{") &&
+                        !Number.isNaN(Number(val))
+                      ) {
+                        parsed = Math.max(0, Number(val));
+                      }
+                      onSleepAfterChange("sleepAfterFrom", parsed);
+                    }}
+                    placeholder="0"
+                    variables={variables}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-medium">
+                    {t("automation.editor.properties.sleepAfterTo") ||
+                      "To (milliseconds)"}
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    1 s = 1000 ms
+                  </p>
+                  <ExpressionInput
+                    value={String(editableNode.data.sleepAfterTo ?? "")}
+                    onChange={(val) => {
+                      let parsed: string | number | undefined = val;
+                      if (val === "") {
+                        parsed = undefined;
+                      } else if (
+                        !val.includes("{{") &&
+                        !Number.isNaN(Number(val))
+                      ) {
+                        parsed = Math.max(0, Number(val));
+                      }
+                      onSleepAfterChange("sleepAfterTo", parsed);
+                    }}
+                    placeholder="0"
+                    variables={variables}
+                  />
+                </div>
               </div>
             </div>
           </TabsContent>

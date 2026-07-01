@@ -49,10 +49,10 @@ export const KEYBOARD_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "{{EMAIL}}",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
       { key: "delay", kind: "number", placeholder: "25" },
     ],
-    defaults: { selector: "input", text: "" },
+    defaults: { selector: "input", text: "", timeout: 60000 },
   },
   {
     type: "pressKey",
@@ -93,8 +93,8 @@ export const KEYBOARD_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "input[name=username]",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { selector: "input" },
+    defaults: { selector: "input", timeout: 60000 },
   },
 ];

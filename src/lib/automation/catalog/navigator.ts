@@ -39,7 +39,7 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "https://example.com",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
       {
         key: "waitUntil",
         kind: "enum",
@@ -47,7 +47,11 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
         options: WAIT_UNTIL_OPTIONS,
       },
     ],
-    defaults: { url: "https://example.com" },
+    defaults: {
+      url: "https://example.com",
+      timeout: 60000,
+      waitUntil: "domcontentloaded",
+    },
   },
   {
     type: "newTab",
@@ -64,9 +68,9 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "https://example.com",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { url: "" },
+    defaults: { url: "", timeout: 60000 },
   },
   {
     type: "switchTab",
@@ -186,8 +190,8 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "#iframe-id",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { mode: "sub", selector: "#iframe-id" },
+    defaults: { mode: "sub", selector: "#iframe-id", timeout: 60000 },
   },
 ];

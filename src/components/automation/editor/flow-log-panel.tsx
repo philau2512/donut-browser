@@ -190,7 +190,7 @@ export function FlowLogPanel({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSelectNode?.(log.nodeId);
+                      onSelectNode?.(log.nodeId ?? null);
                     }}
                     className={cn(
                       "font-mono text-[9px] px-1 py-0.5 rounded border leading-none hover:bg-white/10 hover:text-white transition shrink-0 cursor-pointer",

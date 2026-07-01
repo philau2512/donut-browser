@@ -2257,7 +2257,10 @@
         "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
-        "selectNodeHint": "속성을 보려면 캔버스에서 노드를 선택하세요"
+        "selectNodeHint": "속성을 보려면 캔버스에서 노드를 선택하세요",
+        "sleepAfter": "다음 노드를 실행하기 전 대기 시간(밀리초).",
+        "sleepAfterFrom": "시작(밀리초)",
+        "sleepAfterTo": "종료(밀리초)"
       },
       "logs": {
         "title": "로그",

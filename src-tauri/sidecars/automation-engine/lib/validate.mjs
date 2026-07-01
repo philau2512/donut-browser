@@ -359,8 +359,8 @@ function validateNode(node, ids) {
     );
   }
 
-  // closed-schema key check: only id/type/params/continueOnError/comment/nodeId allowed
-  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment", "nodeId"];
+  // closed-schema key check: only id/type/params/continueOnError/comment/nodeId/sleepAfterFrom/sleepAfterTo allowed
+  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment", "nodeId", "sleepAfterFrom", "sleepAfterTo"];
   const extraNodeKeys = Object.keys(node).filter((k) => !allowedNodeKeys.includes(k));
   if (extraNodeKeys.length > 0) {
     throw new FlowValidationError(`Node ${node.id}: unknown keys ${extraNodeKeys.join(", ")}`);
@@ -376,6 +376,14 @@ function validateNode(node, ids) {
 
   if (node.comment != null && typeof node.comment !== "string") {
     throw new FlowValidationError(`Node ${node.id}: comment must be a string`);
+  }
+
+  if (node.sleepAfterFrom != null && typeof node.sleepAfterFrom !== "number" && typeof node.sleepAfterFrom !== "string") {
+    throw new FlowValidationError(`Node ${node.id}: sleepAfterFrom must be a number or a string`);
+  }
+
+  if (node.sleepAfterTo != null && typeof node.sleepAfterTo !== "number" && typeof node.sleepAfterTo !== "string") {
+    throw new FlowValidationError(`Node ${node.id}: sleepAfterTo must be a number or a string`);
   }
 
   const params = node.params ?? {};

@@ -21,7 +21,7 @@ import { dirname, resolve } from "node:path";
 import { chromium } from "playwright-core";
 
 import { validateFlow } from "./lib/validate.mjs";
-import { interpolateParams } from "./lib/interpolate.mjs";
+import { interpolateParams, interpolateString } from "./lib/interpolate.mjs";
 import { Logger, createRedactor } from "./lib/logger.mjs";
 import { getPage } from "./lib/execution-target.mjs";
 import { getHandler } from "./nodes/index.mjs";
@@ -151,6 +151,7 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
     const stableNodeId = cur.data?.nodeId ?? cur.id;
     logger.info(stableNodeId, `▶ ${cur.type}`);
     let outcome = "success";
+    const startTime = Date.now();
     try {
       const activePage = getPage(ctx);
       const result = await handler(interpolated, activePage, ctx);
@@ -162,6 +163,45 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       outcome = "fail";
       const msg = err instanceof Error ? err.message : String(err);
       logger.error(stableNodeId, `✗ ${cur.type}: ${msg}`);
+    }
+    const duration = Date.now() - startTime;
+
+    // Sleep after node execution (calculating target sleep time minus execution duration)
+    const rawFrom = cur.sleepAfterFrom;
+    const rawTo = cur.sleepAfterTo;
+    if (rawFrom != null || rawTo != null) {
+      let from = 0;
+      let to = 0;
+
+      if (rawFrom != null) {
+        const interpolatedFrom = typeof rawFrom === "string" ? interpolateString(rawFrom, vars) : rawFrom;
+        const parsedFrom = Number(interpolatedFrom);
+        from = Number.isFinite(parsedFrom) ? Math.max(0, parsedFrom) : 0;
+      }
+
+      if (rawTo != null) {
+        const interpolatedTo = typeof rawTo === "string" ? interpolateString(rawTo, vars) : rawTo;
+        const parsedTo = Number(interpolatedTo);
+        to = Number.isFinite(parsedTo) ? Math.max(0, parsedTo) : 0;
+      }
+
+      if (from > 0 || to > 0) {
+        let sleepTarget = 0;
+        if (from === to) {
+          sleepTarget = from;
+        } else {
+          const minVal = Math.min(from, to);
+          const maxVal = Math.max(from, to);
+          sleepTarget = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+        }
+        const sleepTime = sleepTarget - duration;
+        if (sleepTime > 0) {
+          logger.info(stableNodeId, `sleep after node → sleeping ${sleepTime}ms (target: ${sleepTarget}ms, execution duration: ${duration}ms)`);
+          await new Promise((resolve) => setTimeout(resolve, sleepTime));
+        } else {
+          logger.debug(stableNodeId, `sleep after node → skipped (execution duration ${duration}ms exceeded target ${sleepTarget}ms)`);
+        }
+      }
     }
 
     const next = getNextNode(cur.id, outcome);

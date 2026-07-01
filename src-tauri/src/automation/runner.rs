@@ -181,19 +181,28 @@ async fn run_one_profile(
         for node in nodes {
           if node.get("type").and_then(|t| t.as_str()) == Some("openProfile") {
             let params = node.get("params").and_then(|p| p.as_object());
-            let node_profile_id = params.and_then(|p| p.get("profileId")).and_then(|v| v.as_str()).unwrap_or("");
+            let node_profile_id = params
+              .and_then(|p| p.get("profileId"))
+              .and_then(|v| v.as_str())
+              .unwrap_or("");
             let is_match = node_profile_id.is_empty()
               || node_profile_id == "{{PROFILE_ID}}"
               || node_profile_id == profile_id
               || node_profile_id == profile.name;
             if is_match {
-              if let Some(automation_str) = params.and_then(|p| p.get("automation")).and_then(|v| v.as_str()) {
+              if let Some(automation_str) = params
+                .and_then(|p| p.get("automation"))
+                .and_then(|v| v.as_str())
+              {
                 log::info!(
                   "[AUTOMATION] Staging initial proxy/browser settings from node {} for profile {}",
                   node.get("id").and_then(|id| id.as_str()).unwrap_or("?"),
                   profile.name
                 );
-                if let Err(e) = crate::automation::profile_node::stage_profile_overrides(&profile_id, automation_str) {
+                if let Err(e) = crate::automation::profile_node::stage_profile_overrides(
+                  &profile_id,
+                  automation_str,
+                ) {
                   log::error!("[AUTOMATION] Failed to stage initial profile overrides: {e}");
                 }
               }

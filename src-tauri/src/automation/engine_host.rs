@@ -81,7 +81,6 @@ async fn open_profile(
     execute_open_profile(body.profile_id, body.automation).await
   };
 
-
   match result {
     Ok(r) => (
       StatusCode::OK,

@@ -4,7 +4,7 @@ import { parse as parseCsv } from "csv-parse/sync";
 import { stringify as stringifyCsv } from "csv-stringify/sync";
 import { assertNavigableUrl } from "../lib/url-guard.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** screenshot: capture a page image */
 export async function screenshot(node, page, ctx) {

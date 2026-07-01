@@ -2257,7 +2257,10 @@
         "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
-        "selectNodeHint": "Выберите узел на холсте для просмотра свойств"
+        "selectNodeHint": "Выберите узел на холсте для просмотра свойств",
+        "sleepAfter": "Время ожидания (миллисекунды) перед запуском следующего узла.",
+        "sleepAfterFrom": "От (миллисекунд)",
+        "sleepAfterTo": "До (миллисекунд)"
       },
       "logs": {
         "title": "Журнал",

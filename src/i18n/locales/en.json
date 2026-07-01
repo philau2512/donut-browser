@@ -2312,7 +2312,10 @@
         "document": "Documentation",
         "options": "Options",
         "setting": "Settings",
-        "selectNodeHint": "Select a node on the canvas to view its properties"
+        "selectNodeHint": "Select a node on the canvas to view its properties",
+        "sleepAfter": "Sleep time (milliseconds) before running the next node.",
+        "sleepAfterFrom": "From (milliseconds)",
+        "sleepAfterTo": "To (milliseconds)"
       },
       "saving": "Saving...",
       "toast": {

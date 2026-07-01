@@ -154,12 +154,99 @@ fn parse_proxy_override(
   })
 }
 
+fn apply_proxy_to_profile(
+  profile_id: &str,
+  proxy_string: Option<&str>,
+  proxy_type: Option<&str>,
+  proxy_login: Option<&str>,
+  proxy_password: Option<&str>,
+) -> Result<(), String> {
+  let pm = BrowserRunner::instance().profile_manager;
+  let profile_uuid = match uuid::Uuid::parse_str(profile_id) {
+    Ok(u) => u,
+    Err(_) => return Ok(()), // If it's a dynamic template variable like "{{PROFILE_ID}}", just skip
+  };
+  let profiles = pm
+    .list_profiles()
+    .map_err(|e| format!("Failed to list profiles: {e}"))?;
+  let mut profile = match profiles.into_iter().find(|p| p.id == profile_uuid) {
+    Some(p) => p,
+    None => return Ok(()),
+  };
+
+  if let Some(proxy_str) = proxy_string {
+    let trimmed = proxy_str.trim();
+    if !trimmed.is_empty() {
+      let p_settings = parse_proxy_override(trimmed, proxy_type, proxy_login, proxy_password)?;
+
+      // Find if we already have this proxy stored
+      let stored_proxies = crate::proxy::proxy_manager::PROXY_MANAGER.get_stored_proxies();
+      let existing_proxy = stored_proxies.into_iter().find(|p| {
+        p.proxy_settings.proxy_type == p_settings.proxy_type
+          && p.proxy_settings.host == p_settings.host
+          && p.proxy_settings.port == p_settings.port
+          && p.proxy_settings.username == p_settings.username
+          && p.proxy_settings.password == p_settings.password
+      });
+
+      let proxy_id = match existing_proxy {
+        Some(p) => p.id,
+        None => {
+          let proxy_name = format!("Auto_{}_{}", p_settings.host, p_settings.port);
+          let app_handle = crate::automation::app_handle_store::get_automation_app_handle()?;
+          let stored_proxy = crate::proxy::proxy_manager::PROXY_MANAGER
+            .create_stored_proxy(&app_handle, proxy_name, p_settings, false)
+            .map_err(|e| format!("Failed to create stored proxy: {e}"))?;
+          stored_proxy.id
+        }
+      };
+
+      profile.proxy_id = Some(proxy_id.clone());
+      profile.vpn_id = None;
+      profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
+      pm.save_profile(&profile)
+        .map_err(|e| format!("Failed to save profile: {e}"))?;
+      let _ = crate::events::emit_empty("profiles-changed");
+      log::info!(
+        "[AUTOMATION] Applied proxy {} to profile {} ({})",
+        proxy_id,
+        profile.name,
+        profile_id
+      );
+      crate::sync::queue_profile_sync_if_eligible(&profile);
+    } else {
+      // Direct
+      if profile.proxy_id.is_some() {
+        profile.proxy_id = None;
+        profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
+        pm.save_profile(&profile)
+          .map_err(|e| format!("Failed to save profile: {e}"))?;
+        let _ = crate::events::emit_empty("profiles-changed");
+        crate::sync::queue_profile_sync_if_eligible(&profile);
+      }
+    }
+  }
+
+  Ok(())
+}
+
 pub fn stage_profile_overrides(profile_id: &str, automation_json: &str) -> Result<(), String> {
   if automation_json.trim().is_empty() {
     return Ok(());
   }
   let config: AutomationConfig = serde_json::from_str(automation_json)
     .map_err(|e| format!("Failed to parse automation config JSON: {e}"))?;
+
+  // Apply proxy permanently to the profile so it reflects in the main UI list
+  if let Err(e) = apply_proxy_to_profile(
+    profile_id,
+    config.proxy_string.as_deref(),
+    config.proxy_type.as_deref(),
+    config.proxy_login.as_deref(),
+    config.proxy_password.as_deref(),
+  ) {
+    log::error!("[AUTOMATION] Failed to apply proxy to profile permanently: {e}");
+  }
 
   let mut overrides = crate::browser::browser_runner::LaunchOverrides::default();
 
@@ -221,6 +308,19 @@ pub async fn execute_open_profile(
   let mut overrides = crate::browser::browser_runner::LaunchOverrides::default();
 
   if let Some(ref config) = automation {
+    // Apply proxy permanently to the profile so it reflects in the main UI list
+    if let Err(e) = apply_proxy_to_profile(
+      &profile_id,
+      config.proxy_string.as_deref(),
+      config.proxy_type.as_deref(),
+      config.proxy_login.as_deref(),
+      config.proxy_password.as_deref(),
+    ) {
+      log::error!(
+        "[AUTOMATION] Failed to apply proxy to profile permanently in execute_open_profile: {e}"
+      );
+    }
+
     // 1. Proxy
     if let Some(ref proxy_str) = config.proxy_string {
       if !proxy_str.trim().is_empty() {

@@ -74,11 +74,11 @@ export const NETWORK_CATALOG: AutomationNodeCatalogItem[] = [
         key: "timeout",
         kind: "number",
         required: false,
-        placeholder: "30000",
+        placeholder: "60000",
         labelKey: "automation.nodes.http.params.timeout",
       },
     ],
-    defaults: { method: "GET", timeout: 30000 },
+    defaults: { method: "GET", timeout: 60000 },
   },
   {
     type: "setUserAgent",

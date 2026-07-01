@@ -2257,7 +2257,10 @@
         "changesWarning": "⚠️ Changes apply on next run"
       },
       "properties": {
-        "selectNodeHint": "Sélectionnez un nœud sur le canevas pour voir ses propriétés"
+        "selectNodeHint": "Sélectionnez un nœud sur le canevas pour voir ses propriétés",
+        "sleepAfter": "Temps de pause (millisecondes) avant d'exécuter le nœud suivant.",
+        "sleepAfterFrom": "De (millisecondes)",
+        "sleepAfterTo": "À (millisecondes)"
       },
       "logs": {
         "title": "Journal",

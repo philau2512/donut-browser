@@ -2310,7 +2310,10 @@
         "document": "Tài liệu",
         "options": "Tùy chọn",
         "setting": "Cài đặt",
-        "selectNodeHint": "Chọn một node trên canvas để xem thuộc tính"
+        "selectNodeHint": "Chọn một node trên canvas để xem thuộc tính",
+        "sleepAfter": "Thời gian nghỉ (mili giây) trước khi chạy node tiếp theo.",
+        "sleepAfterFrom": "Từ (mili giây)",
+        "sleepAfterTo": "Đến (mili giây)"
       },
       "saving": "Đang lưu...",
       "toast": {

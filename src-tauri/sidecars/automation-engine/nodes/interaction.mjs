@@ -1,6 +1,6 @@
 import { getLocatorRoot, getPage } from "../lib/execution-target.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** click: click an element by selector. */
 export async function click(node, page, ctx) {

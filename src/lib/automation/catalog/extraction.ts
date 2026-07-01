@@ -30,12 +30,12 @@ export const EXTRACTION_CATALOG: AutomationNodeCatalogItem[] = [
         key: "timeout",
         kind: "number",
         required: false,
-        placeholder: "30000",
+        placeholder: "60000",
         labelKey: "automation.nodes.getText.params.timeout",
       },
     ],
     defaults: {
-      timeout: 30000,
+      timeout: 60000,
     },
   },
   {
@@ -71,12 +71,12 @@ export const EXTRACTION_CATALOG: AutomationNodeCatalogItem[] = [
         key: "timeout",
         kind: "number",
         required: false,
-        placeholder: "30000",
+        placeholder: "60000",
         labelKey: "automation.nodes.getAttributeValue.params.timeout",
       },
     ],
     defaults: {
-      timeout: 30000,
+      timeout: 60000,
     },
   },
   {
@@ -105,12 +105,12 @@ export const EXTRACTION_CATALOG: AutomationNodeCatalogItem[] = [
         key: "timeout",
         kind: "number",
         required: false,
-        placeholder: "30000",
+        placeholder: "60000",
         labelKey: "automation.nodes.getValue.params.timeout",
       },
     ],
     defaults: {
-      timeout: 30000,
+      timeout: 60000,
     },
   },
   {
@@ -153,13 +153,13 @@ export const EXTRACTION_CATALOG: AutomationNodeCatalogItem[] = [
         key: "timeout",
         kind: "number",
         required: false,
-        placeholder: "30000",
+        placeholder: "60000",
         labelKey: "automation.nodes.elementExists.params.timeout",
       },
     ],
     defaults: {
       visibility: "visible",
-      timeout: 30000,
+      timeout: 60000,
     },
   },
   {
