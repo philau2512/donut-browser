@@ -36,7 +36,8 @@
       "copied": "コピーしました",
       "learnMore": "詳細",
       "toggleTheme": "テーマの切り替え",
-      "run": "実行"
+      "run": "実行",
+      "saveAs": "名前を付けて保存"
     },
     "status": {
       "active": "アクティブ",
@@ -2312,7 +2313,10 @@
         "completed": "Debug completed",
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
-      }
+      },
+      "saveAsTitle": "フローを名前を付けて保存",
+      "saveAsDescription": "新しいフローコピーの名前を入力してください。",
+      "flowNameLabel": "フロー名"
     }
   }
 }

@@ -18,6 +18,14 @@ import {
   LuVariable,
 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -163,6 +171,16 @@ export function FlowEditorPage({
     }
   }, [debugRun.isRunning]);
 
+  const [currentFlowPath, setCurrentFlowPath] = useState<string | undefined>(
+    flowPath,
+  );
+  const justSavedRef = useRef(false);
+
+  // Sync prop flowPath with currentFlowPath
+  useEffect(() => {
+    setCurrentFlowPath(flowPath);
+  }, [flowPath]);
+
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [focusNodeTrigger, setFocusNodeTrigger] = useState<{
     nodeId: string;
@@ -172,6 +190,8 @@ export function FlowEditorPage({
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(Boolean(flowPath));
   const [isSaving, setIsSaving] = useState(false);
+  const [isSaveAsDialogOpen, setIsSaveAsDialogOpen] = useState(false);
+  const [saveAsName, setSaveAsName] = useState("");
   const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
 
   const selectedNode = useMemo(
@@ -306,14 +326,25 @@ export function FlowEditorPage({
   ]);
 
   useEffect(() => {
-    if (!flowPath) return;
+    if (!currentFlowPath) {
+      setFlowName("Untitled flow");
+      setVariables({});
+      setNodes([createStartNode()]);
+      setEdges([]);
+      setIsLoading(false);
+      return;
+    }
+    if (justSavedRef.current) {
+      justSavedRef.current = false;
+      return;
+    }
     let cancelled = false;
 
     const load = async () => {
       setIsLoading(true);
       try {
         const raw = await invoke<string>("read_automation_flow", {
-          path: flowPath,
+          path: currentFlowPath,
         });
         const flow = JSON.parse(raw) as DonutFlowV1;
         let layout: FlowLayoutSidecarV1 | null = null;
@@ -321,7 +352,7 @@ export function FlowEditorPage({
           const rawLayout = await invoke<string>(
             "read_automation_flow_layout",
             {
-              flowPath,
+              flowPath: currentFlowPath,
             },
           );
           layout = JSON.parse(rawLayout) as FlowLayoutSidecarV1;
@@ -349,7 +380,14 @@ export function FlowEditorPage({
     return () => {
       cancelled = true;
     };
-  }, [flowPath, setEdges, setNodes, t]);
+  }, [
+    currentFlowPath,
+    setEdges,
+    setNodes,
+    t,
+    justSavedRef.current,
+    justSavedRef,
+  ]);
 
   const handleDragStart = useCallback(
     (event: DragEvent, item: AutomationNodeCatalogItem) => {
@@ -395,12 +433,21 @@ export function FlowEditorPage({
     );
   };
 
-  const handleSave = async () => {
+  const handleSave = async (customName?: string, isSaveAs = false) => {
     setIsSaving(true);
     try {
-      const flow = toDonutFlow(flowName.trim(), nodes, edges, variables);
+      const activeName = (customName || flowName).trim();
+      if (!activeName) {
+        showErrorToast(
+          t("automation.editor.errors.nameRequired") || "Flow name is required",
+        );
+        return;
+      }
+
+      const flow = toDonutFlow(activeName, nodes, edges, variables);
       const json = JSON.stringify(flow, null, 2);
-      const shouldOverwrite = Boolean(flowPath);
+
+      const shouldOverwrite = !isSaveAs && Boolean(currentFlowPath);
       let savedPath: string;
       try {
         savedPath = await invoke<string>("write_automation_flow", {
@@ -411,7 +458,9 @@ export function FlowEditorPage({
       } catch (err) {
         if (!shouldOverwrite && String(err) === "exists") {
           const ok = window.confirm(
-            t("automation.script.confirm.overwriteImport", { name: flow.name }),
+            t("automation.script.confirm.overwriteImport", {
+              name: flow.name,
+            }) || `A flow named "${flow.name}" already exists. Overwrite?`,
           );
           if (!ok) return;
           savedPath = await invoke<string>("write_automation_flow", {
@@ -428,7 +477,14 @@ export function FlowEditorPage({
         flowPath: savedPath,
         layoutJson: JSON.stringify(toLayoutSidecar(nodes), null, 2),
       });
+
       showSuccessToast(t("automation.editor.toast.saved", { name: flow.name }));
+
+      justSavedRef.current = true;
+      setCurrentFlowPath(savedPath);
+      if (customName) {
+        setFlowName(customName);
+      }
       onSaved?.(savedPath);
     } catch (err) {
       showErrorToast(
@@ -439,6 +495,16 @@ export function FlowEditorPage({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSaveAsClick = () => {
+    setSaveAsName(`${flowName} - Copy`);
+    setIsSaveAsDialogOpen(true);
+  };
+
+  const handleConfirmSaveAs = () => {
+    setIsSaveAsDialogOpen(false);
+    void handleSave(saveAsName, true);
   };
 
   // Run flow simulation
@@ -628,6 +694,18 @@ export function FlowEditorPage({
             </Button>
           )}
 
+          {/* Save As */}
+          {currentFlowPath && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSaving || isLoading}
+              onClick={handleSaveAsClick}
+            >
+              {t("common.buttons.saveAs") || "Save As"}
+            </Button>
+          )}
+
           {/* Save */}
           <Button
             type="button"
@@ -721,6 +799,51 @@ export function FlowEditorPage({
           setCommentingNodeId(null);
         }}
       />
+
+      <Dialog open={isSaveAsDialogOpen} onOpenChange={setIsSaveAsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t("automation.editor.saveAsTitle") || "Save Flow As"}
+            </DialogTitle>
+            <DialogDescription>
+              {t("automation.editor.saveAsDescription") ||
+                "Enter a name for the new flow copy."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label
+              htmlFor="save-as-name"
+              className="text-xs font-semibold mb-2 block"
+            >
+              {t("automation.editor.flowNameLabel") || "Flow Name"}
+            </Label>
+            <Input
+              id="save-as-name"
+              value={saveAsName}
+              onChange={(e) => setSaveAsName(e.target.value)}
+              placeholder="Flow name..."
+              className="h-9 text-xs"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSaveAsDialogOpen(false)}
+            >
+              {t("common.buttons.cancel")}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!saveAsName.trim() || isSaving}
+              onClick={handleConfirmSaveAs}
+            >
+              {t("common.buttons.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

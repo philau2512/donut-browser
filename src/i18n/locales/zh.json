@@ -36,7 +36,8 @@
       "copied": "已复制",
       "learnMore": "了解更多",
       "toggleTheme": "切换主题",
-      "run": "运行"
+      "run": "运行",
+      "saveAs": "另存为"
     },
     "status": {
       "active": "活跃",
@@ -2312,7 +2313,10 @@
         "completed": "Debug completed",
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
-      }
+      },
+      "saveAsTitle": "流程另存为",
+      "saveAsDescription": "请输入新流程副本的名称。",
+      "flowNameLabel": "流程名称"
     }
   }
 }

@@ -36,7 +36,8 @@
       "copied": "Đã sao chép",
       "learnMore": "Tìm hiểu thêm",
       "toggleTheme": "Chuyển đổi giao diện",
-      "run": "Chạy"
+      "run": "Chạy",
+      "saveAs": "Lưu bản sao"
     },
     "status": {
       "active": "Đang hoạt động",
@@ -2384,7 +2385,10 @@
         "completed": "Debug hoàn tất",
         "noNodes": "Không có node nào từ điểm này",
         "startFromHere": "Bắt đầu debug từ: {{name}}"
-      }
+      },
+      "saveAsTitle": "Lưu bản sao Flow",
+      "saveAsDescription": "Nhập tên cho bản sao flow mới.",
+      "flowNameLabel": "Tên Flow"
     },
     "actions": {
       "run": "Chạy",

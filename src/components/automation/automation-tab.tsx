@@ -39,7 +39,7 @@ export function AutomationTab({ profiles }: AutomationTabProps) {
         flowPath={view.flowPath}
         profiles={profiles}
         onBack={() => setView({ kind: "list" })}
-        onSaved={() => setView({ kind: "list" })}
+        onSaved={(newPath) => setView({ kind: "editor", flowPath: newPath })}
       />
     );
   }

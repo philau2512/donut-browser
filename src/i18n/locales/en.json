@@ -36,7 +36,8 @@
       "copied": "Copied",
       "learnMore": "Learn more",
       "toggleTheme": "Toggle Theme",
-      "run": "Run"
+      "run": "Run",
+      "saveAs": "Save As"
     },
     "status": {
       "active": "Active",
@@ -2386,7 +2387,10 @@
         "completed": "Debug completed",
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
-      }
+      },
+      "saveAsTitle": "Save Flow As",
+      "saveAsDescription": "Enter a name for the new flow copy.",
+      "flowNameLabel": "Flow Name"
     },
     "actions": {
       "run": "Run",

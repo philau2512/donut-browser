@@ -36,7 +36,8 @@
       "copied": "Скопировано",
       "learnMore": "Подробнее",
       "toggleTheme": "Переключить тему",
-      "run": "Запустить"
+      "run": "Запустить",
+      "saveAs": "Сохранить как"
     },
     "status": {
       "active": "Активен",
@@ -2312,7 +2313,10 @@
         "completed": "Debug completed",
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
-      }
+      },
+      "saveAsTitle": "Сохранить сценарий как",
+      "saveAsDescription": "Введите имя для новой копии сценария.",
+      "flowNameLabel": "Имя сценария"
     }
   }
 }

@@ -36,7 +36,8 @@
       "copied": "Copié",
       "learnMore": "En savoir plus",
       "toggleTheme": "Changer de thème",
-      "run": "Exécuter"
+      "run": "Exécuter",
+      "saveAs": "Enregistrer sous"
     },
     "status": {
       "active": "Actif",
@@ -2312,7 +2313,10 @@
         "completed": "Debug completed",
         "noNodes": "No reachable nodes from this point",
         "startFromHere": "Start debugging from: {{name}}"
-      }
+      },
+      "saveAsTitle": "Enregistrer le flux sous",
+      "saveAsDescription": "Entrez un nom pour la nouvelle copie de flux.",
+      "flowNameLabel": "Nom de flux"
     }
   }
 }
