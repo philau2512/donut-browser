@@ -250,21 +250,6 @@ pub fn stage_profile_overrides(profile_id: &str, automation_json: &str) -> Resul
 
   let mut overrides = crate::browser::browser_runner::LaunchOverrides::default();
 
-  // 1. Proxy
-  if let Some(ref proxy_str) = config.proxy_string {
-    if !proxy_str.trim().is_empty() {
-      let p_settings = parse_proxy_override(
-        proxy_str,
-        config.proxy_type.as_deref(),
-        config.proxy_login.as_deref(),
-        config.proxy_password.as_deref(),
-      )?;
-      overrides.proxy = Some(Some(p_settings));
-    } else {
-      overrides.proxy = Some(None); // Direct
-    }
-  }
-
   // 2. WebRTC
   if let Some(ref webrtc_mode) = config.webrtc_mode {
     overrides.webrtc_mode = Some(webrtc_mode.clone());
