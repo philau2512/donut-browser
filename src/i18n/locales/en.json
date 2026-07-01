@@ -2390,7 +2390,15 @@
       },
       "saveAsTitle": "Save Flow As",
       "saveAsDescription": "Enter a name for the new flow copy.",
-      "flowNameLabel": "Flow Name"
+      "flowNameLabel": "Flow Name",
+      "help": {
+        "waitUntil": "Page load wait mode:\n• load: Wait for all resources (HTML, images, styles) to load\n• domcontentloaded: Wait for HTML structure (DOM) to load\n• networkidle: Wait until network requests have stopped for at least 500ms",
+        "timeout": "Maximum time to wait (ms) before throwing an error. Default is 30000ms.",
+        "url": "The website address (URL) to navigate to.",
+        "selector": "CSS Selector or XPath to locate the element (e.g., button.submit, //input[@id='username']).",
+        "value": "The text value or content to insert/select.",
+        "milliseconds": "Duration to pause execution in milliseconds."
+      }
     },
     "actions": {
       "run": "Run",

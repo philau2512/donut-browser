@@ -2320,6 +2320,14 @@
       "errors": {
         "saveFailed": "스크립트 저장 실패: {{error}}",
         "loadFailed": "스크립트 로드 실패: {{error}}"
+      },
+      "help": {
+        "waitUntil": "페이지 로드 대기 모드:\n• load: 모든 리소스가 로드될 때까지 대기\n• domcontentloaded: HTML 구조(DOM)가 로드될 때까지 대기\n• networkidle: 500ms 동안 네트워크 요청이 없을 때까지 대기",
+        "timeout": "에러 발생 전 최대 대기 시간(ms). 기본값은 30000ms입니다.",
+        "url": "이동할 웹사이트 주소(URL)입니다.",
+        "selector": "요소를 찾기 위한 CSS 선택자 또는 XPath입니다.",
+        "value": "입력하거나 선택할 텍스트 값 또는 콘텐츠입니다.",
+        "milliseconds": "실행을 일시 중지할 시간(ms)입니다."
       }
     }
   }

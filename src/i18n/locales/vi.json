@@ -2388,7 +2388,15 @@
       },
       "saveAsTitle": "Lưu bản sao Flow",
       "saveAsDescription": "Nhập tên cho bản sao flow mới.",
-      "flowNameLabel": "Tên Flow"
+      "flowNameLabel": "Tên Flow",
+      "help": {
+        "waitUntil": "Chế độ chờ trang tải:\n• load: Chờ tải xong toàn bộ (HTML, ảnh, CSS...)\n• domcontentloaded: Chờ cấu trúc HTML (DOM) sẵn sàng, không chờ ảnh/CSS\n• networkidle: Chờ mạng rảnh hoàn toàn (không còn request trong 500ms)",
+        "timeout": "Thời gian chờ tối đa (mili-giây) trước khi báo lỗi. Mặc định là 30000ms.",
+        "url": "Địa chỉ trang web (URL) cần truy cập.",
+        "selector": "CSS Selector hoặc XPath để xác định phần tử (ví dụ: button.submit, //input[@id='username']).",
+        "value": "Giá trị văn bản hoặc nội dung cần điền/chọn.",
+        "milliseconds": "Thời gian tạm dừng thực thi tính bằng mili-giây."
+      }
     },
     "actions": {
       "run": "Chạy",

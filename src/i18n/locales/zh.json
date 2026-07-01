@@ -2320,6 +2320,14 @@
       "errors": {
         "saveFailed": "保存脚本失败: {{error}}",
         "loadFailed": "加载脚本失败: {{error}}"
+      },
+      "help": {
+        "waitUntil": "页面加载等待模式:\n• load: 等待所有资源加载完成\n• domcontentloaded: 等待基本的HTML(DOM)加载完成\n• networkidle: 等待至少500ms无网络活动",
+        "timeout": "报错前的最大等待时间（毫秒）。默认为30000ms。",
+        "url": "要导航到的网站地址（URL）。",
+        "selector": "用于定位元素的CSS选择器或XPath。",
+        "value": "要插入/选择的文本值或内容。",
+        "milliseconds": "暂停执行的时间（毫秒）。"
       }
     }
   }

@@ -2320,6 +2320,14 @@
       "errors": {
         "saveFailed": "Échec de la sauvegarde du script : {{error}}",
         "loadFailed": "Échec du chargement du script : {{error}}"
+      },
+      "help": {
+        "waitUntil": "Mode d'attente de chargement :\n• load: Attendre le chargement complet (HTML, images, styles)\n• domcontentloaded: Attendre la structure HTML (DOM)\n• networkidle: Attendre que le réseau soit inactif pendant 500ms",
+        "timeout": "Temps d'attente maximum (ms) avant de générer une erreur. Par défaut, 30000ms.",
+        "url": "L'adresse du site web (URL) vers laquelle naviguer.",
+        "selector": "Sélecteur CSS ou XPath pour localiser l'élément.",
+        "value": "La valeur textuelle ou le contenu à insérer/sélectionner.",
+        "milliseconds": "Durée de la pause d'exécution en millisecondes."
       }
     }
   }

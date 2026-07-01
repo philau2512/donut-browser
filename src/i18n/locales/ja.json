@@ -2320,6 +2320,14 @@
       "errors": {
         "saveFailed": "スクリプトの保存に失敗しました: {{error}}",
         "loadFailed": "スクリプトの読み込みに失敗しました: {{error}}"
+      },
+      "help": {
+        "waitUntil": "ページ読み込み待機モード:\n• load: すべてのリソースが読み込まれるのを待機\n• domcontentloaded: HTML構造(DOM)の読み込み完了を待機\n• networkidle: 500msの間ネットワークリクエストが停止するまで待機",
+        "timeout": "エラーをスローするまでの最大待機時間(ミリ秒)。デフォルトは30000msです。",
+        "url": "移動先のウェブサイトのアドレス(URL)。",
+        "selector": "要素を特定するためのCSSセレクターまたはXPath。",
+        "value": "入力または選択するテキスト値またはコンテンツ。",
+        "milliseconds": "実行を一時停止する時間(ミリ秒)。"
       }
     }
   }
