@@ -10,6 +10,7 @@ export type AutomationNodeType =
   | "goForward"
   | "switchFrame"
   | "click"
+  | "moveAndClick"
   | "hover"
   | "scroll"
   | "dragAndDrop"

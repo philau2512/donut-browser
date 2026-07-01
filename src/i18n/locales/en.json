@@ -2513,6 +2513,11 @@
         "document": "Clicks on an element matching the specified selector.",
         "label": "Click"
       },
+      "moveAndClick": {
+        "description": "Move mouse smoothly to element then click",
+        "document": "Moves the mouse cursor from its current position to the center of the target element using smooth interpolation (human-like movement), then performs a click. Mouse position is tracked across nodes.",
+        "label": "Move and Click"
+      },
       "clickDown": {
         "description": "Press mouse button",
         "document": "Presses and holds a mouse button at the specified position.",

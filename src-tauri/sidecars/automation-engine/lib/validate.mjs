@@ -96,6 +96,10 @@ export const NODE_SCHEMAS = {
     required: { selector: "string" },
     optional: { button: "string", timeout: "number" },
   },
+  moveAndClick: {
+    required: { selector: "string" },
+    optional: { steps: "number", button: "string", timeout: "number" },
+  },
   type: {
     required: { selector: "string", text: "string" },
     optional: { timeout: "number", delay: "number" },

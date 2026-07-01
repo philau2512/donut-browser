@@ -22,12 +22,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  LuCopy,
-  LuMessageSquare,
-  LuPlay,
-  LuTrash2,
-} from "react-icons/lu";
+import { LuCopy, LuMessageSquare, LuPlay, LuTrash2 } from "react-icons/lu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -100,7 +95,9 @@ function FlowCanvasInner({
     AutomationCanvasEdge
   > | null>(null);
   const [draggingHandleId, setDraggingHandleId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<NodeContextMenuState | null>(null);
+  const [contextMenu, setContextMenu] = useState<NodeContextMenuState | null>(
+    null,
+  );
   const contextMenuTriggerRef = useRef<HTMLDivElement>(null);
 
   // Focus and center on the selected node only when focusNodeTrigger is fired
@@ -310,16 +307,27 @@ function FlowCanvasInner({
       {contextMenu && (
         <DropdownMenu
           open
-          onOpenChange={(open: boolean) => { if (!open) closeContextMenu(); }}
+          onOpenChange={(open: boolean) => {
+            if (!open) closeContextMenu();
+          }}
         >
           <div
             ref={contextMenuTriggerRef}
             className="fixed pointer-events-none"
-            style={{ left: contextMenu.x, top: contextMenu.y, width: 1, height: 1 }}
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y,
+              width: 1,
+              height: 1,
+            }}
           />
           <DropdownMenuContent
             className="w-44"
-            style={{ position: "fixed", left: contextMenu.x, top: contextMenu.y }}
+            style={{
+              position: "fixed",
+              left: contextMenu.x,
+              top: contextMenu.y,
+            }}
             onCloseAutoFocus={(e: Event) => e.preventDefault()}
           >
             {onStartFromHereNode && (

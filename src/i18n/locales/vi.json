@@ -2504,6 +2504,11 @@
         "document": "Click vào phần tử khớp với selector đã chỉ định.",
         "label": "Click"
       },
+      "moveAndClick": {
+        "description": "Di chuyển chuột mượt đến phần tử rồi click",
+        "document": "Di chuyển con trỏ chuột từ vị trí hiện tại đến tâm của phần tử đích theo chuyển động mượt mà (mô phỏng người thật), sau đó thực hiện click. Vị trí chuột được lưu lại giữa các node.",
+        "label": "Di Chuột và Click"
+      },
       "clickDown": {
         "description": "Giữ nút chuột",
         "document": "Nhấn và giữ nút chuột tại vị trí đã chỉ định.",

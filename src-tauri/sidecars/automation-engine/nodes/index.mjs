@@ -1,5 +1,5 @@
 import { openUrl, newTab, switchTab, closeTab, reloadPage, goBack, goForward, switchFrame, wait, scroll } from "./navigator.mjs";
-import { click, hover, dragAndDrop, clickDown, clickUp, type } from "./interaction.mjs";
+import { click, hover, dragAndDrop, clickDown, clickUp, type, moveAndClick } from "./interaction.mjs";
 import { typeText, sendTextToSelector, pressKey, clearInput } from "./keyboard.mjs";
 import { getCookies, setCookies, clearCookies } from "./cookie.mjs";
 import { ifCondition, loopFor, loopElements, evalJs } from "./logic.mjs";
@@ -25,6 +25,7 @@ export const handlers = {
 
   // Interaction
   click,
+  moveAndClick,
   hover,
   dragAndDrop,
   clickDown,

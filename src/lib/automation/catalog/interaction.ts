@@ -43,6 +43,32 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     defaults: { selector: "button", timeout: 60000 },
   },
   {
+    type: "moveAndClick",
+    group: "mouse",
+    labelKey: "automation.nodes.moveAndClick.label",
+    descriptionKey: "automation.nodes.moveAndClick.description",
+    documentKey: "automation.nodes.moveAndClick.document",
+    icon: LuMousePointerClick,
+    params: [
+      {
+        key: "selector",
+        kind: "selector",
+        required: true,
+        placeholder: "button[type=submit]",
+        supportsExpression: true,
+      },
+      { key: "steps", kind: "number", placeholder: "10" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
+      {
+        key: "button",
+        kind: "enum",
+        placeholder: "left",
+        options: BUTTON_OPTIONS,
+      },
+    ],
+    defaults: { selector: "button", steps: 10, timeout: 60000 },
+  },
+  {
     type: "hover",
     group: "mouse",
     labelKey: "automation.nodes.hover.label",
