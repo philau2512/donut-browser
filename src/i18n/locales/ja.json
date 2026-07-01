@@ -2316,7 +2316,11 @@
       },
       "saveAsTitle": "フローを名前を付けて保存",
       "saveAsDescription": "新しいフローコピーの名前を入力してください。",
-      "flowNameLabel": "フロー名"
+      "flowNameLabel": "フロー名",
+      "errors": {
+        "saveFailed": "スクリプトの保存に失敗しました: {{error}}",
+        "loadFailed": "スクリプトの読み込みに失敗しました: {{error}}"
+      }
     }
   }
 }

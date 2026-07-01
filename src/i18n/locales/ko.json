@@ -2316,7 +2316,11 @@
       },
       "saveAsTitle": "다른 이름으로 흐름 저장",
       "saveAsDescription": "새 흐름 복사본의 이름을 입력하세요.",
-      "flowNameLabel": "흐름 이름"
+      "flowNameLabel": "흐름 이름",
+      "errors": {
+        "saveFailed": "스크립트 저장 실패: {{error}}",
+        "loadFailed": "스크립트 로드 실패: {{error}}"
+      }
     }
   }
 }

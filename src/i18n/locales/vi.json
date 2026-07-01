@@ -2298,8 +2298,8 @@
         "placeholder": "Nhập nhận xét của bạn..."
       },
       "errors": {
-        "loadFailed": "Tải script thất bại",
-        "saveFailed": "Lưu script thất bại"
+        "loadFailed": "Tải script thất bại: {{error}}",
+        "saveFailed": "Lưu script thất bại: {{error}}"
       },
       "linearHint": "Chế độ tuyến tính",
       "name": "Tên script",

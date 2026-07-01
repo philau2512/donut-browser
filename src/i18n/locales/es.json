@@ -2316,7 +2316,11 @@
       },
       "saveAsTitle": "Guardar flujo como",
       "saveAsDescription": "Ingrese un nombre para la nueva copia de flujo.",
-      "flowNameLabel": "Nombre de flujo"
+      "flowNameLabel": "Nombre de flujo",
+      "errors": {
+        "saveFailed": "Error al guardar el script: {{error}}",
+        "loadFailed": "Error al cargar el script: {{error}}"
+      }
     }
   }
 }

@@ -2300,8 +2300,8 @@
         "placeholder": "Enter your comment..."
       },
       "errors": {
-        "loadFailed": "Failed to load script",
-        "saveFailed": "Failed to save script"
+        "loadFailed": "Failed to load script: {{error}}",
+        "saveFailed": "Failed to save script: {{error}}"
       },
       "linearHint": "Linear mode",
       "name": "Script Name",

@@ -2316,7 +2316,11 @@
       },
       "saveAsTitle": "Сохранить сценарий как",
       "saveAsDescription": "Введите имя для новой копии сценария.",
-      "flowNameLabel": "Имя сценария"
+      "flowNameLabel": "Имя сценария",
+      "errors": {
+        "saveFailed": "Не удалось сохранить сценарий: {{error}}",
+        "loadFailed": "Не удалось загрузить сценарий: {{error}}"
+      }
     }
   }
 }

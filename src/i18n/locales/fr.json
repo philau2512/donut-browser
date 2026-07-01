@@ -2316,7 +2316,11 @@
       },
       "saveAsTitle": "Enregistrer le flux sous",
       "saveAsDescription": "Entrez un nom pour la nouvelle copie de flux.",
-      "flowNameLabel": "Nom de flux"
+      "flowNameLabel": "Nom de flux",
+      "errors": {
+        "saveFailed": "Échec de la sauvegarde du script : {{error}}",
+        "loadFailed": "Échec du chargement du script : {{error}}"
+      }
     }
   }
 }

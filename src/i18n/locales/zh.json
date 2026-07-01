@@ -2316,7 +2316,11 @@
       },
       "saveAsTitle": "流程另存为",
       "saveAsDescription": "请输入新流程副本的名称。",
-      "flowNameLabel": "流程名称"
+      "flowNameLabel": "流程名称",
+      "errors": {
+        "saveFailed": "保存脚本失败: {{error}}",
+        "loadFailed": "加载脚本失败: {{error}}"
+      }
     }
   }
 }
