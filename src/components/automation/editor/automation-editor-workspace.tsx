@@ -40,6 +40,9 @@ interface AutomationEditorWorkspaceProps {
   variables: Record<string, string>;
   resources: ResourceDefinition[];
   isDebugRunning: boolean;
+  collapsedBlockIds?: Set<string>;
+  onToggleCollapseBlock?: (nodeId: string) => void;
+  onToggleErrorHandling?: (nodeId: string) => void;
   onPaletteDragStart: (
     event: DragEvent,
     item: AutomationNodeCatalogItem,
@@ -86,6 +89,9 @@ export function AutomationEditorWorkspace({
   variables,
   resources,
   isDebugRunning: _isDebugRunning,
+  collapsedBlockIds,
+  onToggleCollapseBlock,
+  onToggleErrorHandling,
   onPaletteDragStart,
   onSelectNode,
   onInsertNode,
@@ -156,6 +162,9 @@ export function AutomationEditorWorkspace({
           draggedNodeType={draggedNodeType}
           debugNodeStatuses={debugNodeStatuses}
           disabled={disabled}
+          collapsedBlockIds={collapsedBlockIds}
+          onToggleCollapseBlock={onToggleCollapseBlock}
+          onToggleErrorHandling={onToggleErrorHandling}
           onSelectNode={onSelectNode}
           onInsertNode={onInsertNode}
           onDeleteNode={onDeleteNode}

@@ -57,6 +57,9 @@ export type AutomationNodeType =
   | "addComment"
   | "label"
   | "moveToLabel"
+  | "ignoreErrorsStart"
+  | "ignoreErrorsEnd"
+  | "endIf"
   // Extension (spike)
   | "switchExtensionPopup"
   // Profile Flow Nodes

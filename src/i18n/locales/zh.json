@@ -2390,6 +2390,21 @@
           "targetLabelNodeId": "目标标签节点ID",
           "targetLabelName": "目标标签名称"
         }
+      },
+      "ignoreErrorsStart": {
+        "label": "忽略错误",
+        "description": "开始忽略错误块",
+        "document": "忽略此块内发生的 any 错误。"
+      },
+      "ignoreErrorsEnd": {
+        "label": "结束忽略错误",
+        "description": "结束忽略错误块",
+        "document": "结束忽略错误块。"
+      },
+      "endIf": {
+        "label": "结束 If",
+        "description": "条件块结束",
+        "document": "结束 If 条件块。"
       }
     }
   }

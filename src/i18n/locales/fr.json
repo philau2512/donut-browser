@@ -2390,6 +2390,21 @@
           "targetLabelNodeId": "ID de l'étiquette cible",
           "targetLabelName": "Nom de l'étiquette cible"
         }
+      },
+      "ignoreErrorsStart": {
+        "label": "Ignorer les erreurs",
+        "description": "Démarrer le bloc d'ignorance des erreurs",
+        "document": "Ignore toutes les erreurs survenant dans ce bloc."
+      },
+      "ignoreErrorsEnd": {
+        "label": "Fin d'ignorer les erreurs",
+        "description": "Terminer le bloc d'ignorance des erreurs",
+        "document": "Termine le bloc d'ignorance des erreurs."
+      },
+      "endIf": {
+        "label": "Fin de If",
+        "description": "Fin du bloc conditionnel",
+        "document": "Termine le bloc conditionnel If."
       }
     }
   }

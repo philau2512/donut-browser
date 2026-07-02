@@ -1,4 +1,11 @@
-import { LuCpu, LuRefreshCcw, LuRepeat, LuSplit } from "react-icons/lu";
+import {
+  LuInfo,
+  LuCpu,
+  LuRefreshCcw,
+  LuRepeat,
+  LuSplit,
+  LuX,
+} from "react-icons/lu";
 import type { AutomationNodeCatalogItem, ParamOption } from "../node-catalog";
 
 const OPERATOR_OPTIONS: ParamOption[] = [
@@ -112,5 +119,35 @@ export const LOGIC_CATALOG: AutomationNodeCatalogItem[] = [
       },
     ],
     defaults: { code: "return document.title;", saveToVar: "" },
+  },
+  {
+    type: "ignoreErrorsStart",
+    group: "utility",
+    labelKey: "automation.nodes.ignoreErrorsStart.label",
+    descriptionKey: "automation.nodes.ignoreErrorsStart.description",
+    documentKey: "automation.nodes.ignoreErrorsStart.document",
+    icon: LuInfo,
+    params: [],
+    defaults: {},
+  },
+  {
+    type: "ignoreErrorsEnd",
+    group: "utility",
+    labelKey: "automation.nodes.ignoreErrorsEnd.label",
+    descriptionKey: "automation.nodes.ignoreErrorsEnd.description",
+    documentKey: "automation.nodes.ignoreErrorsEnd.document",
+    icon: LuX,
+    params: [],
+    defaults: {},
+  },
+  {
+    type: "endIf",
+    group: "utility",
+    labelKey: "automation.nodes.endIf.label",
+    descriptionKey: "automation.nodes.endIf.description",
+    documentKey: "automation.nodes.endIf.document",
+    icon: LuX,
+    params: [],
+    defaults: {},
   },
 ];

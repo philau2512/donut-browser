@@ -2894,6 +2894,21 @@
           "targetLabelNodeId": "Target Label Node ID",
           "targetLabelName": "Target Label Name"
         }
+      },
+      "ignoreErrorsStart": {
+        "label": "Ignore Errors",
+        "description": "Start ignore errors block",
+        "document": "Ignores any errors that occur within this block."
+      },
+      "ignoreErrorsEnd": {
+        "label": "End Ignore Errors",
+        "description": "End ignore errors block",
+        "document": "Ends the ignore errors block."
+      },
+      "endIf": {
+        "label": "End If",
+        "description": "End of conditional block",
+        "document": "Ends the If conditional block."
       }
     },
     "validation": {

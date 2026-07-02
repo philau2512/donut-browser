@@ -1,7 +1,21 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { LuCheck, LuPlay, LuTrash2, LuX } from "react-icons/lu";
+import {
+  LuCheck,
+  LuChevronDown,
+  LuChevronUp,
+  LuPlay,
+  LuTriangleAlert,
+  LuX,
+} from "react-icons/lu";
+import { FiMoreHorizontal } from "react-icons/fi";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AUTOMATION_NODE_BY_TYPE,
   type AutomationNodeType,
@@ -17,6 +31,9 @@ interface ScriptActionCardProps {
   labels: Array<{ id: string; name: string }>;
   debugStatus?: "idle" | "running" | "success" | "error";
   disabled?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: (nodeId: string) => void;
+  onToggleErrorHandling?: (nodeId: string) => void;
   onSelect: (nodeId: string) => void;
   onEditNode: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
@@ -36,12 +53,15 @@ export function ScriptActionCard({
   labels,
   debugStatus,
   disabled = false,
+  isCollapsed = false,
+  onToggleCollapse,
+  onToggleErrorHandling,
   onSelect,
   onEditNode,
   onDeleteNode,
-  onDuplicateNode: _onDuplicateNode,
-  onCommentNode: _onCommentNode,
-  onStartFromHereNode: _onStartFromHereNode,
+  onDuplicateNode,
+  onCommentNode,
+  onStartFromHereNode,
   onMoveToLabel,
 }: ScriptActionCardProps) {
   const { t } = useTranslation();
@@ -54,11 +74,16 @@ export function ScriptActionCard({
   const title = isStart
     ? t("automation.editor.start")
     : t(catalog?.labelKey ?? "");
-  const targetLabel =
+  const _targetLabel =
     nodeType === "moveToLabel"
       ? labels.find((label) => label.id === node.data.params.targetLabelNodeId)
       : null;
   const handles = getBranchHandles(nodeType);
+
+  const isBlockStartNode =
+    nodeType === "ignoreErrorsStart" || nodeType === "ifCondition";
+  const isBlockEndNode = nodeType === "ignoreErrorsEnd" || nodeType === "endIf";
+  const isBlockNode = isBlockStartNode || isBlockEndNode;
 
   const customColor = node.data.params?.color;
   const colorClasses =
@@ -80,7 +105,11 @@ export function ScriptActionCard({
                     ? "border-amber-500/40 bg-amber-500/5"
                     : nodeType === "moveToLabel"
                       ? "border-blue-500/40 bg-blue-500/5"
-                      : "border-border bg-card";
+                      : nodeType === "ignoreErrorsStart"
+                        ? "border-amber-500/40 bg-amber-500/5"
+                        : nodeType === "ifCondition"
+                          ? "border-red-500/40 bg-red-500/5"
+                          : "border-border bg-card";
 
   return (
     <article
@@ -131,21 +160,101 @@ export function ScriptActionCard({
           </h3>
         </div>
 
-        {/* Hover Delete Button */}
+        {/* Hover Actions Menu */}
         {!isStart && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={(event) => {
-                event.stopPropagation();
-                onDeleteNode(node.id);
-              }}
-              className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
-              title="Delete node"
-            >
-              <LuTrash2 className="size-3.5" />
-            </button>
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+            {/* Collapse/Expand for block starts */}
+            {isBlockStartNode && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleCollapse?.(node.id);
+                }}
+                className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
+                title={isCollapsed ? "Expand block" : "Collapse block"}
+              >
+                {isCollapsed ? (
+                  <LuChevronDown className="size-3.5" />
+                ) : (
+                  <LuChevronUp className="size-3.5" />
+                )}
+              </button>
+            )}
+
+            {/* Warning Triangle to toggle ignore-errors block wrapper */}
+            {!isBlockNode && (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleErrorHandling?.(node.id);
+                }}
+                className="text-muted-foreground hover:text-warning transition-colors p-0.5"
+                title="Ignore errors / Try-Catch"
+              >
+                <LuTriangleAlert className="size-3.5" />
+              </button>
+            )}
+
+            {/* Dropdown Menu for Duplicate, Comment, Delete, etc. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={(event) => event.stopPropagation()}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
+                  title="More actions"
+                >
+                  <FiMoreHorizontal className="size-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                <DropdownMenuItem
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onEditNode(node.id);
+                  }}
+                >
+                  {t("common.buttons.edit")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onDuplicateNode(node.id);
+                  }}
+                >
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onCommentNode(node.id);
+                  }}
+                >
+                  Comment
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onStartFromHereNode(node.id);
+                  }}
+                >
+                  Start from here
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onDeleteNode(node.id);
+                  }}
+                >
+                  {t("common.buttons.delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
@@ -176,7 +285,8 @@ export function ScriptActionCard({
       {/* Branch Select */}
       {(() => {
         const availableLabels = labels.filter((label) => label.id !== node.id);
-        const showBranchSelect = !isStart && handles.length > 1 && availableLabels.length > 0;
+        const showBranchSelect =
+          !isStart && handles.length > 1 && availableLabels.length > 0;
 
         if (!showBranchSelect) return null;
 
@@ -233,9 +343,19 @@ function renderNodeParams(node: AutomationCanvasNode) {
     );
   }
   if (nodeType === "ifCondition") {
+    const left = String(params.leftValue || "");
+    const op = String(params.operator || "");
+    const right = String(params.rightValue || "");
+    if (left === "[[WAS_ERROR]]" && (right === "true" || right === "")) {
+      return (
+        <span className="text-muted-foreground font-mono break-all font-semibold">
+          [[WAS_ERROR]]
+        </span>
+      );
+    }
     return (
       <span className="text-muted-foreground font-mono break-all">
-        {String(params.condition || "")}
+        {left} {op} {right}
       </span>
     );
   }

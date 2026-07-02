@@ -103,6 +103,10 @@ async function resolvePage(browser, logger) {
 }
 
 export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger, flowDir, resourceManager }) {
+  if (vars) {
+    vars.WAS_ERROR = "false";
+    vars.LAST_ERROR = "";
+  }
   // Inject runSubFlow so control-flow handlers can call sub-scripts without a
   // dynamic import back into engine.mjs (avoids circular-import overhead).
   const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, resourceManager, ...args });
@@ -116,6 +120,8 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
     flowDir,
     runSubFlow,
     resourceManager: resourceManager ?? null,
+    ignoreErrors: false,
+    flow,
   };
   let failed = false;
 
@@ -172,12 +178,24 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
         }
         jumpTarget = target;
         logger.info(stableNodeId, `jump → ${result.targetLabelName ?? result.targetLabelNodeId}`);
+      } else if (result?.type === "jumpToNode") {
+        const target = byId.get(result.targetNodeId);
+        if (!target) {
+          throw new Error(`jumpToNode: target node not found: ${result.targetNodeId}`);
+        }
+        jumpTarget = target;
+        logger.info(stableNodeId, `jump to node → ${result.targetNodeId}`);
       }
       logger.info(stableNodeId, `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`);
     } catch (err) {
       outcome = "fail";
       const msg = err instanceof Error ? err.message : String(err);
       logger.error(stableNodeId, `✗ ${cur.type}: ${msg}`);
+      if (ctx.ignoreErrors) {
+        vars.WAS_ERROR = "true";
+        vars.LAST_ERROR = msg;
+        logger.warn(stableNodeId, `ignoreErrors is active → capturing error and continuing`);
+      }
     }
     const duration = Date.now() - startTime;
 
@@ -229,7 +247,7 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       cur = next;
     } else {
       if (outcome === "fail") {
-        const cont = cur.continueOnError ?? continueDefault;
+        const cont = cur.continueOnError ?? continueDefault ?? ctx.ignoreErrors;
         if (cont) {
           logger.warn(cur.id, `continueOnError → skipping failed node, proceeding to success branch`);
           // Clean up loop state if this node was a loop node that failed

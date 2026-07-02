@@ -2390,6 +2390,21 @@
           "targetLabelNodeId": "대상 레이블 노드 ID",
           "targetLabelName": "대상 레이블 이름"
         }
+      },
+      "ignoreErrorsStart": {
+        "label": "오류 무시",
+        "description": "오류 무시 블록 시작",
+        "document": "이 블록 내에서 발생하는 모든 오류를 무시합니다."
+      },
+      "ignoreErrorsEnd": {
+        "label": "오류 무시 종료",
+        "description": "오류 무시 블록 종료",
+        "document": "오류 무시 블록을 종료합니다."
+      },
+      "endIf": {
+        "label": "End If",
+        "description": "조건 블록 종료",
+        "document": "If 조건 블록을 종료합니다."
       }
     }
   }

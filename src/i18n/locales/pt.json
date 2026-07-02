@@ -2390,6 +2390,21 @@
           "targetLabelNodeId": "ID da Etiqueta de Destino",
           "targetLabelName": "Nome da Etiqueta de Destino"
         }
+      },
+      "ignoreErrorsStart": {
+        "label": "Ignorar erros",
+        "description": "Iniciar bloco de ignorar erros",
+        "document": "Ignora quaisquer erros que ocorram dentro deste bloco."
+      },
+      "ignoreErrorsEnd": {
+        "label": "Fim de ignorar erros",
+        "description": "Finalizar bloco de ignorar erros",
+        "document": "Finaliza o bloco de ignorar erros."
+      },
+      "endIf": {
+        "label": "Fim de If",
+        "description": "Fim do bloco condicional",
+        "document": "Finaliza o bloco condicional If."
       }
     }
   }

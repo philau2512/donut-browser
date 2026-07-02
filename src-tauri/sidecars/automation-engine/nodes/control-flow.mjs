@@ -223,3 +223,24 @@ export async function moveToLabel(node, page, ctx) {
   ctx.logger.info(node.id, `moveToLabel → ${targetLabelName}`);
   return { type: "jumpToLabel", targetLabelNodeId, targetLabelName };
 }
+
+/** ignoreErrorsStart: enable ignoreErrors flag in context and reset error vars. */
+export async function ignoreErrorsStart(node, page, ctx) {
+  ctx.ignoreErrors = true;
+  if (ctx.vars) {
+    ctx.vars.WAS_ERROR = "false";
+    ctx.vars.LAST_ERROR = "";
+  }
+  ctx.logger.info(node.id, `ignoreErrorsStart → enabled error ignoring`);
+}
+
+/** ignoreErrorsEnd: disable ignoreErrors flag in context. */
+export async function ignoreErrorsEnd(node, page, ctx) {
+  ctx.ignoreErrors = false;
+  ctx.logger.info(node.id, `ignoreErrorsEnd → disabled error ignoring`);
+}
+
+/** endIf: no-op end marker for IF blocks. */
+export async function endIf(node, page, ctx) {
+  ctx.logger.debug(node.id, `endIf`);
+}

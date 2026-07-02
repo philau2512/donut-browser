@@ -175,6 +175,10 @@ export function FlowEditorPage({
   const [isResourceConfigOpen, setIsResourceConfigOpen] = useState(false);
   const [selectedResourceIdForConfig, setSelectedResourceIdForConfig] =
     useState<string | null>(null);
+  const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [deletingBlockId, setDeletingBlockId] = useState<string | null>(null);
 
   const handleEditResource = useCallback((id: string) => {
     setSelectedResourceIdForConfig(id);
@@ -437,8 +441,373 @@ export function FlowEditorPage({
     [insertExistingNodeAtSlot, nodes],
   );
 
+  const getBlockContext = useCallback(
+    (startNodeId: string) => {
+      const startNode = nodes.find((n) => n.id === startNodeId);
+      if (!startNode) return null;
+      const startType = startNode.data.nodeType;
+      const endType =
+        startType === "ignoreErrorsStart" ? "ignoreErrorsEnd" : "endIf";
+
+      const model = buildCardStackModel(nodes, edges);
+      const orderedIds = model.items.map((item) => item.node.id);
+      const startIndex = orderedIds.indexOf(startNodeId);
+      if (startIndex === -1) return null;
+
+      const childIds: string[] = [];
+      let endNodeId: string | null = null;
+      let depth = 1;
+
+      for (let i = startIndex + 1; i < orderedIds.length; i++) {
+        const id = orderedIds[i];
+        const node = nodes.find((n) => n.id === id);
+        if (!node) continue;
+
+        if (node.data.nodeType === startType) {
+          depth++;
+        } else if (node.data.nodeType === endType) {
+          depth--;
+          if (depth === 0) {
+            endNodeId = id;
+            break;
+          }
+        }
+        childIds.push(id);
+      }
+
+      return { startNodeId, endNodeId, childIds };
+    },
+    [nodes, edges],
+  );
+
+  const handleConfirmDeleteBlock = useCallback(
+    (deleteAll: boolean) => {
+      if (!deletingBlockId) return;
+      const ctx = getBlockContext(deletingBlockId);
+      if (!ctx) {
+        setDeletingBlockId(null);
+        return;
+      }
+
+      const { startNodeId, endNodeId, childIds } = ctx;
+      const nodesToDelete = [startNodeId];
+      if (endNodeId) nodesToDelete.push(endNodeId);
+      if (deleteAll) {
+        nodesToDelete.push(...childIds);
+      }
+
+      setNodes((nds) => nds.filter((n) => !nodesToDelete.includes(n.id)));
+
+      const incoming = edges.find(
+        (e) =>
+          e.target === startNodeId &&
+          (e.sourceHandle ?? "success") === "success",
+      );
+
+      setEdges((eds) => {
+        const filtered = eds.filter(
+          (e) =>
+            !nodesToDelete.includes(e.source) &&
+            !nodesToDelete.includes(e.target),
+        );
+        const additions: AutomationCanvasEdge[] = [];
+
+        if (deleteAll) {
+          const outgoing = endNodeId
+            ? edges.find(
+                (e) =>
+                  e.source === endNodeId &&
+                  (e.sourceHandle ?? "success") === "success",
+              )
+            : null;
+          if (incoming && outgoing) {
+            additions.push({
+              id: edgeId(incoming.source, outgoing.target, "success"),
+              source: incoming.source,
+              target: outgoing.target,
+              sourceHandle: "success",
+            });
+          }
+        } else {
+          const firstChildId = childIds[0];
+          const lastChildId = childIds[childIds.length - 1];
+
+          if (incoming && firstChildId) {
+            additions.push({
+              id: edgeId(incoming.source, firstChildId, "success"),
+              source: incoming.source,
+              target: firstChildId,
+              sourceHandle: "success",
+            });
+          }
+
+          const outgoing = endNodeId
+            ? edges.find(
+                (e) =>
+                  e.source === endNodeId &&
+                  (e.sourceHandle ?? "success") === "success",
+              )
+            : null;
+          if (outgoing && lastChildId) {
+            additions.push({
+              id: edgeId(lastChildId, outgoing.target, "success"),
+              source: lastChildId,
+              target: outgoing.target,
+              sourceHandle: "success",
+            });
+          }
+        }
+
+        return [...filtered, ...additions];
+      });
+
+      setDeletingBlockId(null);
+      if (selectedNodeId && nodesToDelete.includes(selectedNodeId)) {
+        setSelectedNodeId(null);
+      }
+    },
+    [getBlockContext, deletingBlockId, edges, selectedNodeId, setEdges, setNodes],
+  );
+
+  const handleToggleCollapseBlock = useCallback((nodeId: string) => {
+    setCollapsedBlockIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleToggleErrorHandling = useCallback(
+    (nodeId: string) => {
+      const incoming = edges.find(
+        (e) =>
+          e.target === nodeId && (e.sourceHandle ?? "success") === "success",
+      );
+      const outgoing = edges.find(
+        (e) =>
+          e.source === nodeId && (e.sourceHandle ?? "success") === "success",
+      );
+
+      const prevNode = incoming
+        ? nodes.find((n) => n.id === incoming.source)
+        : null;
+      const nextNode = outgoing
+        ? nodes.find((n) => n.id === outgoing.target)
+        : null;
+
+      if (
+        prevNode?.data.nodeType === "ignoreErrorsStart" &&
+        nextNode?.data.nodeType === "ignoreErrorsEnd"
+      ) {
+        // Unwrap logic
+        const ctx = getBlockContext(prevNode.id);
+        if (!ctx?.endNodeId) return;
+
+        const afterEndEdge = edges.find(
+          (e) =>
+            e.source === nextNode.id &&
+            (e.sourceHandle ?? "success") === "success",
+        );
+        const afterEndNode = afterEndEdge
+          ? nodes.find((n) => n.id === afterEndEdge.target)
+          : null;
+
+        const nodesToDelete = [prevNode.id, nextNode.id];
+
+        if (afterEndNode?.data.nodeType === "ifCondition") {
+          const ifCtx = getBlockContext(afterEndNode.id);
+          if (ifCtx) {
+            nodesToDelete.push(afterEndNode.id);
+            if (ifCtx.endNodeId) nodesToDelete.push(ifCtx.endNodeId);
+            nodesToDelete.push(...ifCtx.childIds);
+          }
+        }
+
+        setNodes((nds) => nds.filter((n) => !nodesToDelete.includes(n.id)));
+
+        const beforeStartEdge = edges.find(
+          (e) =>
+            e.target === prevNode.id &&
+            (e.sourceHandle ?? "success") === "success",
+        );
+        const lastSequenceNodeId = nodesToDelete[nodesToDelete.length - 1];
+        const afterSequenceEdge = edges.find(
+          (e) =>
+            e.source === lastSequenceNodeId &&
+            (e.sourceHandle ?? "success") === "success",
+        );
+
+        setEdges((eds) => {
+          const filtered = eds.filter(
+            (e) =>
+              !nodesToDelete.includes(e.source) &&
+              !nodesToDelete.includes(e.target),
+          );
+          const additions: AutomationCanvasEdge[] = [];
+
+          if (beforeStartEdge) {
+            additions.push({
+              id: edgeId(beforeStartEdge.source, nodeId, "success"),
+              source: beforeStartEdge.source,
+              target: nodeId,
+              sourceHandle: "success",
+            });
+          }
+
+          if (afterSequenceEdge) {
+            additions.push({
+              id: edgeId(nodeId, afterSequenceEdge.target, "success"),
+              source: nodeId,
+              target: afterSequenceEdge.target,
+              sourceHandle: "success",
+            });
+          }
+
+          return [...filtered, ...additions];
+        });
+      } else {
+        // Wrap logic
+        const targetNodeObj = nodes.find((n) => n.id === nodeId);
+        const p = targetNodeObj?.position || { x: 360, y: 360 };
+
+        const startNode = createAutomationNode("ignoreErrorsStart", {
+          x: p.x,
+          y: p.y - 120,
+        });
+        startNode.data.params = { ...startNode.data.params, color: "yellow" };
+
+        const endNode = createAutomationNode("ignoreErrorsEnd", {
+          x: p.x,
+          y: p.y + 120,
+        });
+
+        const ifNode = createAutomationNode("ifCondition", {
+          x: p.x,
+          y: p.y + 240,
+        });
+        ifNode.data.params = {
+          ...ifNode.data.params,
+          leftValue: "[[WAS_ERROR]]",
+          operator: "===",
+          rightValue: "true",
+          color: "red",
+        };
+
+        const logNode = createAutomationNode("log", {
+          x: p.x,
+          y: p.y + 360,
+        });
+        logNode.data.params = {
+          ...logNode.data.params,
+          message: "Error occurred: [[LAST_ERROR]]",
+          level: "error",
+          color: "red",
+        };
+
+        const endIfNode = createAutomationNode("endIf", {
+          x: p.x,
+          y: p.y + 480,
+        });
+
+        setNodes((nds) => [
+          ...nds,
+          startNode,
+          endNode,
+          ifNode,
+          logNode,
+          endIfNode,
+        ]);
+
+        setEdges((eds) => {
+          const filtered = eds.filter(
+            (e) =>
+              !(
+                e.target === nodeId &&
+                (e.sourceHandle ?? "success") === "success"
+              ) &&
+              !(
+                e.source === nodeId &&
+                (e.sourceHandle ?? "success") === "success"
+              ),
+          );
+
+          const additions: AutomationCanvasEdge[] = [];
+
+          if (incoming) {
+            additions.push({
+              id: edgeId(incoming.source, startNode.id, "success"),
+              source: incoming.source,
+              target: startNode.id,
+              sourceHandle: "success",
+            });
+          }
+
+          additions.push({
+            id: edgeId(startNode.id, nodeId, "success"),
+            source: startNode.id,
+            target: nodeId,
+            sourceHandle: "success",
+          });
+
+          additions.push({
+            id: edgeId(nodeId, endNode.id, "success"),
+            source: nodeId,
+            target: endNode.id,
+            sourceHandle: "success",
+          });
+
+          additions.push({
+            id: edgeId(endNode.id, ifNode.id, "success"),
+            source: endNode.id,
+            target: ifNode.id,
+            sourceHandle: "success",
+          });
+
+          additions.push({
+            id: edgeId(ifNode.id, logNode.id, "success"),
+            source: ifNode.id,
+            target: logNode.id,
+            sourceHandle: "success",
+          });
+
+          additions.push({
+            id: edgeId(logNode.id, endIfNode.id, "success"),
+            source: logNode.id,
+            target: endIfNode.id,
+            sourceHandle: "success",
+          });
+
+          if (outgoing) {
+            additions.push({
+              id: edgeId(endIfNode.id, outgoing.target, "success"),
+              source: endIfNode.id,
+              target: outgoing.target,
+              sourceHandle: "success",
+            });
+          }
+
+          return [...filtered, ...additions];
+        });
+      }
+    },
+    [nodes, edges, getBlockContext, setEdges, setNodes],
+  );
+
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (
+        node?.data.nodeType === "ignoreErrorsStart" ||
+        node?.data.nodeType === "ifCondition"
+      ) {
+        setDeletingBlockId(nodeId);
+        return;
+      }
+
       const incomingSuccess = edges.find(
         (edge) =>
           edge.target === nodeId &&
@@ -480,7 +849,7 @@ export function FlowEditorPage({
         setSelectedNodeId(null);
       }
     },
-    [edges, selectedNodeId, setEdges, setNodes],
+    [nodes, edges, selectedNodeId, setEdges, setNodes],
   );
 
   const handleDuplicateNode = useCallback(
@@ -962,6 +1331,9 @@ export function FlowEditorPage({
         variables={variables}
         resources={v2Resources}
         isDebugRunning={debugRun.isRunning}
+        collapsedBlockIds={collapsedBlockIds}
+        onToggleCollapseBlock={handleToggleCollapseBlock}
+        onToggleErrorHandling={handleToggleErrorHandling}
         onPaletteDragStart={handleDragStart}
         onSelectNode={selectNodeNoFocus}
         onInsertNode={handleInsertNode}
@@ -1037,6 +1409,9 @@ export function FlowEditorPage({
         onLabelCreationSlotChange={setLabelCreationSlot}
         onNewLabelNameChange={setNewLabelName}
         onConfirmCreateLabel={handleConfirmCreateLabel}
+        deletingBlockId={deletingBlockId}
+        onConfirmDeleteBlock={handleConfirmDeleteBlock}
+        onCancelDeleteBlock={() => setDeletingBlockId(null)}
       />
     </div>
   );

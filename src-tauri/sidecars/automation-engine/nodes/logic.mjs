@@ -1,3 +1,29 @@
+function findMatchingEndIf(flow, startNodeId) {
+  const byId = new Map(flow.nodes.map((n) => [n.id, n]));
+  const getNextNodeId = (fromId) => {
+    const edge = flow.edges.find((e) => e.from === fromId && (e.sourceHandle ?? "success") === "success");
+    return edge ? edge.to : null;
+  };
+
+  let currentId = getNextNodeId(startNodeId);
+  let depth = 1;
+  while (currentId) {
+    const node = byId.get(currentId);
+    if (node) {
+      if (node.type === "ifCondition") {
+        depth++;
+      } else if (node.type === "endIf") {
+        depth--;
+        if (depth === 0) {
+          return currentId;
+        }
+      }
+    }
+    currentId = getNextNodeId(currentId);
+  }
+  return null;
+}
+
 /** ifCondition: compare values and branch based on operator */
 export async function ifCondition(node, page, ctx) {
   const { leftValue, operator, rightValue } = node.params ?? {};
@@ -27,8 +53,28 @@ export async function ifCondition(node, page, ctx) {
   }
 
   const outcome = result ? "true" : "false";
-  ctx.logger.info(node.id, `ifCondition → ${outcome}`);
-  return outcome;
+
+  // Check if there are explicit true/false branches wired
+  const hasExplicitBranch = ctx.flow?.edges?.some(
+    (e) => e.from === node.id && (e.sourceHandle === "true" || e.sourceHandle === "false")
+  );
+
+  if (hasExplicitBranch) {
+    ctx.logger.info(node.id, `ifCondition (explicit branch) → ${outcome}`);
+    return outcome;
+  }
+
+  if (result) {
+    ctx.logger.info(node.id, `ifCondition (block true) → proceeding to block body`);
+    return "success";
+  } else {
+    const matchingEndIfId = findMatchingEndIf(ctx.flow, node.id);
+    if (!matchingEndIfId) {
+      throw new Error(`ifCondition: matching endIf node not found for ifCondition ${node.id}`);
+    }
+    ctx.logger.info(node.id, `ifCondition (block false) → jumping to endIf: ${matchingEndIfId}`);
+    return { type: "jumpToNode", targetNodeId: matchingEndIfId };
+  }
 }
 
 /** loopFor: loop N times with index variable */

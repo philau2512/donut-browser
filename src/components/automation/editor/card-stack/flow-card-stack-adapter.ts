@@ -87,7 +87,6 @@ export function buildCardStackModel(
 export function getBranchHandles(
   nodeType: AutomationNodeType | "start",
 ): string[] {
-  if (nodeType === "ifCondition") return ["true", "false"];
   if (
     nodeType === "loopFor" ||
     nodeType === "loopElements" ||
@@ -95,9 +94,7 @@ export function getBranchHandles(
   ) {
     return ["loop", "done"];
   }
-  if (nodeType === "start" || nodeType === "label") return ["success"];
-  if (nodeType === "moveToLabel") return [];
-  return ["success", "fail"];
+  return [];
 }
 
 export function edgeId(

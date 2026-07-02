@@ -65,6 +65,9 @@ interface AutomationEditorDialogsProps {
   onLabelCreationSlotChange: (slot: CardStackSlot | null) => void;
   onNewLabelNameChange: (name: string) => void;
   onConfirmCreateLabel: () => void;
+  deletingBlockId: string | null;
+  onConfirmDeleteBlock: (deleteAll: boolean) => void;
+  onCancelDeleteBlock: () => void;
 }
 
 export function AutomationEditorDialogs({
@@ -104,6 +107,9 @@ export function AutomationEditorDialogs({
   onLabelCreationSlotChange,
   onNewLabelNameChange,
   onConfirmCreateLabel,
+  deletingBlockId,
+  onConfirmDeleteBlock,
+  onCancelDeleteBlock,
 }: AutomationEditorDialogsProps) {
   const { t } = useTranslation();
 
@@ -226,6 +232,40 @@ export function AutomationEditorDialogs({
               Cancel
             </Button>
             <Button onClick={onConfirmCreateLabel}>Ok</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(deletingBlockId)}
+        onOpenChange={(open) => {
+          if (!open) onCancelDeleteBlock();
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Block</DialogTitle>
+            <DialogDescription>
+              Do you want to delete all nodes inside the block, or dissolve the
+              block (keep the child nodes)?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:justify-start">
+            <Button
+              variant="destructive"
+              onClick={() => onConfirmDeleteBlock(true)}
+            >
+              Delete All Nodes
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => onConfirmDeleteBlock(false)}
+            >
+              Dissolve Block (Keep Nodes)
+            </Button>
+            <Button variant="ghost" onClick={onCancelDeleteBlock}>
+              Cancel
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

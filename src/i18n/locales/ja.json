@@ -2390,6 +2390,21 @@
           "targetLabelNodeId": "ターゲットラベルノードID",
           "targetLabelName": "ターゲットラベル名"
         }
+      },
+      "ignoreErrorsStart": {
+        "label": "エラーを無視",
+        "description": "エラー無視ブロックの開始",
+        "document": "このブロック内で発生したエラーを無視します。"
+      },
+      "ignoreErrorsEnd": {
+        "label": "エラー無視の終了",
+        "description": "エラー無視ブロックの終了",
+        "document": "エラー無視ブロックを終了します。"
+      },
+      "endIf": {
+        "label": "End If",
+        "description": "条件分岐ブロックの終了",
+        "document": "If条件分岐ブロックを終了します。"
       }
     }
   }

@@ -269,6 +269,18 @@ export const NODE_SCHEMAS = {
     required: { targetLabelNodeId: "string" },
     optional: { targetLabelName: "string" },
   },
+  ignoreErrorsStart: {
+    required: {},
+    optional: { color: "string" },
+  },
+  ignoreErrorsEnd: {
+    required: {},
+    optional: {},
+  },
+  endIf: {
+    required: {},
+    optional: {},
+  },
 
   // Extension popup (spike)
   switchExtensionPopup: {

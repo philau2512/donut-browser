@@ -16,6 +16,9 @@ interface ScriptCardStackProps {
   draggedNodeType: string | null;
   debugNodeStatuses: Record<string, "idle" | "running" | "success" | "error">;
   disabled?: boolean;
+  collapsedBlockIds?: Set<string>;
+  onToggleCollapseBlock?: (nodeId: string) => void;
+  onToggleErrorHandling?: (nodeId: string) => void;
   onSelectNode: (nodeId: string | null) => void;
   onInsertNode: (type: AutomationNodeType, slot: CardStackSlot) => void;
   onDeleteNode: (nodeId: string) => void;
@@ -44,6 +47,9 @@ export function ScriptCardStack({
   draggedNodeType,
   debugNodeStatuses,
   disabled = false,
+  collapsedBlockIds,
+  onToggleCollapseBlock,
+  onToggleErrorHandling,
   onSelectNode,
   onInsertNode,
   onDeleteNode,
@@ -87,6 +93,69 @@ export function ScriptCardStack({
     setDragMousePos(null);
   };
 
+  // Filter out items that are inside collapsed blocks
+  const visibleItems: typeof model.items = [];
+  let skipUntilEndType: string | null = null;
+  let skipDepth = 0;
+
+  for (let i = 0; i < model.items.length; i++) {
+    const item = model.items[i];
+    const nodeType = item.node.data.nodeType;
+
+    if (skipUntilEndType) {
+      if (nodeType === skipUntilEndType) {
+        skipDepth--;
+        if (skipDepth === 0) {
+          skipUntilEndType = null;
+        }
+      }
+      continue;
+    }
+
+    visibleItems.push(item);
+
+    const isCollapsed = collapsedBlockIds?.has(item.node.id);
+    if (isCollapsed) {
+      if (nodeType === "ignoreErrorsStart") {
+        skipUntilEndType = "ignoreErrorsEnd";
+        skipDepth = 1;
+      } else if (nodeType === "ifCondition") {
+        skipUntilEndType = "endIf";
+        skipDepth = 1;
+      }
+    }
+  }
+
+  // Pre-calculate indentation depths on the full structured sequence
+  const allDepths = new Map<string, number>();
+  let currentDepth = 0;
+  for (let i = 0; i < model.items.length; i++) {
+    const item = model.items[i];
+    const nodeType = item.node.data.nodeType;
+
+    if (nodeType === "ignoreErrorsEnd" || nodeType === "endIf") {
+      currentDepth = Math.max(0, currentDepth - 1);
+    }
+
+    allDepths.set(item.node.id, currentDepth);
+
+    if (nodeType === "ignoreErrorsStart" || nodeType === "ifCondition") {
+      currentDepth++;
+    }
+  }
+
+  // Reconstruct slots for only the visible items
+  const slots: CardStackSlot[] = [];
+  for (let index = 0; index <= visibleItems.length; index++) {
+    const previous = visibleItems[index - 1]?.node ?? null;
+    const next = visibleItems[index]?.node ?? null;
+    slots.push({
+      previousNodeId: previous?.id ?? null,
+      nextNodeId: next?.id ?? null,
+      index,
+    });
+  }
+
   return (
     <section
       ref={containerRef}
@@ -96,37 +165,58 @@ export function ScriptCardStack({
       className="relative min-h-0 flex-1 overflow-y-auto border-0 bg-transparent p-1 pr-2"
     >
       <div className="flex w-full flex-col items-start gap-0.5">
-        {model.items.map((item, index) => (
-          <div key={item.node.id} className="flex w-full flex-col items-start">
-            <ScriptActionCard
-              node={item.node}
-              selected={selectedNodeId === item.node.id}
-              labels={model.labels}
-              debugStatus={debugNodeStatuses[item.node.id] ?? "idle"}
-              disabled={disabled}
-              onSelect={onSelectNode}
-              onEditNode={onEditNode}
-              onDeleteNode={onDeleteNode}
-              onDuplicateNode={onDuplicateNode}
-              onCommentNode={onCommentNode}
-              onStartFromHereNode={onStartFromHereNode}
-              onMoveToLabel={onMoveToLabel}
-            />
-            <ScriptConnectorSlot
-              slot={model.slots[index + 1]}
-              draggedNodeType={draggedNodeType}
-              disabled={disabled}
-              isActive={isSameSlot(activeInsertSlot, model.slots[index + 1])}
-              onInsertNode={onInsertNode}
-              onCreateLabel={onCreateLabel}
-              onSelectSlot={onSelectSlot}
-              onMoveNode={onMoveNode}
-              onStartConnectionDrag={setActiveConnectionSource}
-              onEndConnectionDrag={handleDragEnd}
-              onConnectSlots={onConnectSlots}
-            />
-          </div>
-        ))}
+        {visibleItems.map((item, index) => {
+          const isEndMarker =
+            item.node.data.nodeType === "ignoreErrorsEnd" ||
+            item.node.data.nodeType === "endIf";
+          const depth = allDepths.get(item.node.id) ?? 0;
+
+          return (
+            <div
+              key={item.node.id}
+              className="flex w-full flex-col items-start"
+              style={{ paddingLeft: `${depth * 16}px` }}
+            >
+              {isEndMarker ? (
+                <div className="w-52 flex flex-col gap-0.5 py-1.5 pl-4 select-none">
+                  <div className="w-full h-[1px] bg-border/40" />
+                  <div className="w-full h-[1px] bg-border/40" />
+                </div>
+              ) : (
+                <ScriptActionCard
+                  node={item.node}
+                  selected={selectedNodeId === item.node.id}
+                  labels={model.labels}
+                  debugStatus={debugNodeStatuses[item.node.id] ?? "idle"}
+                  disabled={disabled}
+                  isCollapsed={collapsedBlockIds?.has(item.node.id)}
+                  onToggleCollapse={onToggleCollapseBlock}
+                  onToggleErrorHandling={onToggleErrorHandling}
+                  onSelect={onSelectNode}
+                  onEditNode={onEditNode}
+                  onDeleteNode={onDeleteNode}
+                  onDuplicateNode={onDuplicateNode}
+                  onCommentNode={onCommentNode}
+                  onStartFromHereNode={onStartFromHereNode}
+                  onMoveToLabel={onMoveToLabel}
+                />
+              )}
+              <ScriptConnectorSlot
+                slot={slots[index + 1]}
+                draggedNodeType={draggedNodeType}
+                disabled={disabled}
+                isActive={isSameSlot(activeInsertSlot, slots[index + 1])}
+                onInsertNode={onInsertNode}
+                onCreateLabel={onCreateLabel}
+                onSelectSlot={onSelectSlot}
+                onMoveNode={onMoveNode}
+                onStartConnectionDrag={setActiveConnectionSource}
+                onEndConnectionDrag={handleDragEnd}
+                onConnectSlots={onConnectSlots}
+              />
+            </div>
+          );
+        })}
       </div>
 
       <ScriptConnectionWires

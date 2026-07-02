@@ -2892,6 +2892,21 @@
           "targetLabelNodeId": "ID nhãn đích",
           "targetLabelName": "Tên nhãn đích"
         }
+      },
+      "ignoreErrorsStart": {
+        "label": "Bỏ qua lỗi",
+        "description": "Bắt đầu khối bỏ qua lỗi",
+        "document": "Bỏ qua các lỗi phát sinh trong khối này và tiếp tục chạy."
+      },
+      "ignoreErrorsEnd": {
+        "label": "Kết thúc bỏ qua lỗi",
+        "description": "Kết thúc khối bỏ qua lỗi",
+        "document": "Kết thúc khối bỏ qua lỗi."
+      },
+      "endIf": {
+        "label": "Kết thúc If",
+        "description": "Kết thúc khối điều kiện",
+        "document": "Kết thúc khối điều kiện If."
       }
     },
     "validation": {
