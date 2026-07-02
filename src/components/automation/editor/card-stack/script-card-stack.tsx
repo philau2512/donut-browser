@@ -174,7 +174,7 @@ export function ScriptCardStack({
           return (
             <div
               key={item.node.id}
-              className="flex w-full flex-col items-start"
+              className="flex w-full flex-col items-start relative z-10"
               style={{ paddingLeft: `${depth * 16}px` }}
             >
               {isEndMarker ? (

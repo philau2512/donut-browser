@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { FiMoreHorizontal } from "react-icons/fi";
 import {
   LuCheck,
   LuChevronDown,
@@ -9,7 +10,6 @@ import {
   LuTriangleAlert,
   LuX,
 } from "react-icons/lu";
-import { FiMoreHorizontal } from "react-icons/fi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -140,6 +140,9 @@ export function ScriptActionCard({
         }
       }}
     >
+      {/* Opaque card background to block connection wires running underneath */}
+      <div className="absolute inset-0 bg-card -z-10 pointer-events-none" />
+
       <DebugBadge status={debugStatus} />
 
       {/* Header */}

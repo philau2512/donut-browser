@@ -8,6 +8,7 @@ interface WirePath {
   label: string;
   labelX: number;
   labelY: number;
+  targetLabelNodeId?: string;
 }
 
 interface ScriptConnectionWiresProps {
@@ -25,6 +26,25 @@ export function ScriptConnectionWires({
 }: ScriptConnectionWiresProps) {
   const [paths, setPaths] = useState<WirePath[]>([]);
   const [dragPath, setDragPath] = useState<string | null>(null);
+
+  const handleLabelClick = (targetLabelId?: string) => {
+    if (!targetLabelId) return;
+    const tgtEl = document.getElementById(`node-card-${targetLabelId}`);
+    if (tgtEl) {
+      tgtEl.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // Visual feedback: highlight border and scale up slightly
+      tgtEl.classList.add("ring-4", "ring-success", "scale-[1.02]", "z-50");
+      setTimeout(() => {
+        tgtEl.classList.remove(
+          "ring-4",
+          "ring-success",
+          "scale-[1.02]",
+          "z-50",
+        );
+      }, 1500);
+    }
+  };
 
   useEffect(() => {
     if (!activeConnectionSource || !dragMousePos) {
@@ -93,7 +113,8 @@ export function ScriptConnectionWires({
             container.scrollTop +
             srcRect.height / 2;
 
-          const tgtX = tgtRect.right - containerRect.left + container.scrollLeft;
+          const tgtX =
+            tgtRect.right - containerRect.left + container.scrollLeft;
           const tgtY =
             tgtRect.top -
             containerRect.top +
@@ -103,28 +124,27 @@ export function ScriptConnectionWires({
           // Compute C-shaped loop path around the cards on the right side
           const rightOffset = 28;
           const isDownward = tgtY > srcY;
+          const wireX = Math.max(srcX, tgtX) + rightOffset;
 
           let path = "";
           if (isDownward) {
             path = `M ${srcX} ${srcY}
-              C ${srcX + rightOffset} ${srcY}, ${srcX + rightOffset} ${srcY + 8}, ${srcX + rightOffset} ${srcY + 16}
-              L ${srcX + rightOffset} ${tgtY - 16}
-              C ${srcX + rightOffset} ${tgtY}, ${tgtX + 8} ${tgtY}, ${tgtX} ${tgtY}`;
+              C ${wireX} ${srcY}, ${wireX} ${srcY + 8}, ${wireX} ${srcY + 16}
+              L ${wireX} ${tgtY - 16}
+              C ${wireX} ${tgtY}, ${tgtX + 8} ${tgtY}, ${tgtX} ${tgtY}`;
           } else {
             path = `M ${srcX} ${srcY}
-              C ${srcX + rightOffset} ${srcY}, ${srcX + rightOffset} ${srcY - 8}, ${srcX + rightOffset} ${srcY - 16}
-              L ${srcX + rightOffset} ${tgtY + 16}
-              C ${srcX + rightOffset} ${tgtY}, ${tgtX + 8} ${tgtY}, ${tgtX} ${tgtY}`;
+              C ${wireX} ${srcY}, ${wireX} ${srcY - 8}, ${wireX} ${srcY - 16}
+              L ${wireX} ${tgtY + 16}
+              C ${wireX} ${tgtY}, ${tgtX + 8} ${tgtY}, ${tgtX} ${tgtY}`;
           }
-
-          const labelX = srcX + rightOffset;
-          const labelY = (srcY + tgtY) / 2;
 
           newPaths.push({
             path,
             label: String(node.data.params?.targetLabelName || "label"),
-            labelX,
-            labelY,
+            labelX: wireX,
+            labelY: srcY,
+            targetLabelNodeId: String(targetLabelId),
           });
         }
       }
@@ -157,7 +177,7 @@ export function ScriptConnectionWires({
     <svg
       role="img"
       aria-label="Connection wires"
-      className="absolute inset-0 pointer-events-none w-full h-full z-10 overflow-visible"
+      className="absolute inset-0 pointer-events-none w-full h-full z-0 overflow-visible"
     >
       <title>Connection wires</title>
       <defs>
@@ -173,28 +193,70 @@ export function ScriptConnectionWires({
           <path d="M 0 1.5 L 7 5 L 0 8.5 Z" fill="var(--success)" />
         </marker>
       </defs>
-      {paths.map((wp, idx) => (
-        <g key={idx}>
-          <path
-            d={wp.path}
-            stroke="var(--success)"
-            strokeWidth="1.5"
-            fill="none"
-            markerEnd="url(#arrow-green)"
-          />
-          <foreignObject
-            x={wp.labelX - 45}
-            y={wp.labelY - 9}
-            width="90"
-            height="18"
-            className="overflow-visible"
+      {paths.map((wp, idx) => {
+        const H = 18;
+        const textPadding = 12; // 8px for left arrow + 4px space
+        const charWidth = 5.2;
+        const textLength = wp.label.length;
+        const W = Math.max(65, textLength * charWidth + textPadding + 8);
+        const tagX = wp.labelX + 2; // Offset slightly from the vertical wire
+        const tagY = wp.labelY - H / 2;
+
+        return (
+          <g
+            key={idx}
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer select-none group/tag pointer-events-auto outline-none"
+            onClick={() => handleLabelClick(wp.targetLabelNodeId)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleLabelClick(wp.targetLabelNodeId);
+              }
+            }}
           >
-            <div className="flex items-center justify-center bg-card border border-success/40 rounded px-1 py-0.5 text-[8px] font-bold font-mono text-success truncate shadow-sm select-none">
+            <path
+              d={wp.path}
+              stroke="var(--success)"
+              strokeWidth="1.5"
+              fill="none"
+              markerEnd="url(#arrow-green)"
+              className="transition-colors duration-200 group-hover/tag:stroke-success/80"
+            />
+            {/* Tag shape with a left-pointing arrow */}
+            <path
+              d={`M 8,0 L ${W - 4},0 A 4,4 0 0,1 ${W},4 L ${W},${H - 4} A 4,4 0 0,1 ${W - 4},${H} L 8,${H} L 0,${H / 2} Z`}
+              transform={`translate(${tagX}, ${tagY})`}
+              fill="var(--card)"
+              stroke="var(--success)"
+              strokeWidth="1"
+              className="transition-all duration-200 group-hover/tag:fill-success/10 group-hover/tag:stroke-success/80"
+            />
+            <text
+              x={tagX + textPadding}
+              y={tagY + H / 2 + 3}
+              fill="var(--success)"
+              fontSize="8"
+              fontWeight="bold"
+              fontFamily="monospace"
+              className="transition-colors duration-200 group-hover/tag:fill-success/80"
+            >
               {wp.label}
-            </div>
-          </foreignObject>
-        </g>
-      ))}
+            </text>
+            {/* Small decorative circle on the right end */}
+            <circle
+              cx={tagX + W + 6}
+              cy={tagY + H / 2}
+              r="2"
+              fill="none"
+              stroke="var(--success)"
+              strokeWidth="1"
+              className="opacity-60 transition-colors duration-200 group-hover/tag:stroke-success/80 group-hover/tag:opacity-100"
+            />
+          </g>
+        );
+      })}
       {dragPath && (
         <path
           d={dragPath}

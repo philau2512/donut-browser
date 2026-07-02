@@ -1,6 +1,6 @@
 import {
-  LuInfo,
   LuCpu,
+  LuInfo,
   LuRefreshCcw,
   LuRepeat,
   LuSplit,

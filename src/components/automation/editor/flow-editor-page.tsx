@@ -566,7 +566,14 @@ export function FlowEditorPage({
         setSelectedNodeId(null);
       }
     },
-    [getBlockContext, deletingBlockId, edges, selectedNodeId, setEdges, setNodes],
+    [
+      getBlockContext,
+      deletingBlockId,
+      edges,
+      selectedNodeId,
+      setEdges,
+      setNodes,
+    ],
   );
 
   const handleToggleCollapseBlock = useCallback((nodeId: string) => {
@@ -791,6 +798,45 @@ export function FlowEditorPage({
           }
 
           return [...filtered, ...additions];
+        });
+
+        // Auto-declare WAS_ERROR and LAST_ERROR in flow variables
+        setV2Variables((current) => {
+          const hasWasError = current.some((v) => v.name === "WAS_ERROR");
+          const hasLastError = current.some((v) => v.name === "LAST_ERROR");
+          const next = [...current];
+          if (!hasWasError) {
+            next.push({
+              id: "var-was-error",
+              name: "WAS_ERROR",
+              scope: "flow",
+              valueType: "boolean",
+              defaultValue: "false",
+              description: "True if any error occurred in Try-Catch block",
+            });
+          }
+          if (!hasLastError) {
+            next.push({
+              id: "var-last-error",
+              name: "LAST_ERROR",
+              scope: "flow",
+              valueType: "string",
+              defaultValue: "",
+              description: "Holds the message of the last occurred error",
+            });
+          }
+          return next;
+        });
+
+        setVariables((current) => {
+          const next = { ...current };
+          if (!("WAS_ERROR" in next)) {
+            next.WAS_ERROR = "false";
+          }
+          if (!("LAST_ERROR" in next)) {
+            next.LAST_ERROR = "";
+          }
+          return next;
         });
       }
     },
@@ -1329,6 +1375,7 @@ export function FlowEditorPage({
         debugSteps={debugSteps}
         logSteps={logSteps}
         variables={variables}
+        v2Variables={v2Variables}
         resources={v2Resources}
         isDebugRunning={debugRun.isRunning}
         collapsedBlockIds={collapsedBlockIds}
@@ -1345,6 +1392,7 @@ export function FlowEditorPage({
         onCreateLabel={handleCreateLabel}
         onMoveToLabel={handleMoveToLabel}
         onVariablesChange={setVariables}
+        onV2VariablesChange={setV2Variables}
         onResourcesChange={setV2Resources}
         onEditResource={handleEditResource}
         onCloseLogPanel={() => setIsLogPanelOpen(false)}

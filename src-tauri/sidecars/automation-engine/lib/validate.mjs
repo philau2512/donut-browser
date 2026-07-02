@@ -487,6 +487,12 @@ function validateNode(node, ids) {
   // no unknown params (closed schema)
   const known = new Set([...Object.keys(spec.required), ...Object.keys(spec.optional)]);
   for (const key of Object.keys(params)) {
+    if (key === "color") {
+      if (typeof params[key] !== "string") {
+        throw new FlowValidationError(`Node ${node.id} (${node.type}): param 'color' must be string`);
+      }
+      continue;
+    }
     if (!known.has(key)) {
       throw new FlowValidationError(`Node ${node.id} (${node.type}): unknown param '${key}'`);
     }

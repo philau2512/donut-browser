@@ -42,7 +42,12 @@ export function ScriptConnectorSlot({
     const rawData =
       event.dataTransfer.getData("application/donut-node-type") ||
       event.dataTransfer.getData("text/plain");
-    if (rawData && !rawData.startsWith("donut-") && isAutomationNodeType(rawData)) return rawData;
+    if (
+      rawData &&
+      !rawData.startsWith("donut-") &&
+      isAutomationNodeType(rawData)
+    )
+      return rawData;
     if (isAutomationNodeType(draggedNodeType)) return draggedNodeType;
     return null;
   };
@@ -91,7 +96,9 @@ export function ScriptConnectorSlot({
 
             // 1. Check if dragging a connection wire from another slot
             if (textData.startsWith("donut-connection-source:")) {
-              const rawSource = textData.substring("donut-connection-source:".length);
+              const rawSource = textData.substring(
+                "donut-connection-source:".length,
+              );
               try {
                 const sourceSlot = JSON.parse(rawSource) as CardStackSlot;
                 onConnectSlots?.(sourceSlot, slot);

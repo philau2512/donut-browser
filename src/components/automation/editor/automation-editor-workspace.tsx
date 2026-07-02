@@ -6,7 +6,10 @@ import type {
   AutomationNodeCatalogItem,
   AutomationNodeType,
 } from "@/lib/automation/node-catalog";
-import type { ResourceDefinition } from "@/lib/automation/resource-schema";
+import type {
+  ResourceDefinition,
+  VariableDefinition,
+} from "@/lib/automation/resource-schema";
 import { cn } from "@/lib/utils";
 import {
   type CardStackSlot,
@@ -18,7 +21,7 @@ import {
   FlowLogPanel,
 } from "./flow-log-panel";
 import { NodePalette } from "./node-palette";
-import { ResourceManagerPanel } from "./panels/resource-manager-panel";
+import { VariableResourcePanel } from "./panels/variable-resource-panel";
 import type { AutomationCanvasEdge, AutomationCanvasNode } from "./serialize";
 
 type DebugNodeStatus = "idle" | "running" | "success" | "error";
@@ -38,6 +41,7 @@ interface AutomationEditorWorkspaceProps {
   debugSteps: FlowExecutionStep[];
   logSteps: FlowExecutionStep[];
   variables: Record<string, string>;
+  v2Variables: VariableDefinition[];
   resources: ResourceDefinition[];
   isDebugRunning: boolean;
   collapsedBlockIds?: Set<string>;
@@ -61,6 +65,7 @@ interface AutomationEditorWorkspaceProps {
     sourceHandle: string,
   ) => void;
   onVariablesChange: (variables: Record<string, string>) => void;
+  onV2VariablesChange: (variables: VariableDefinition[]) => void;
   onResourcesChange: (resources: ResourceDefinition[]) => void;
   onEditResource: (id: string) => void;
   onCloseLogPanel: () => void;
@@ -87,6 +92,7 @@ export function AutomationEditorWorkspace({
   debugSteps,
   logSteps,
   variables,
+  v2Variables,
   resources,
   isDebugRunning: _isDebugRunning,
   collapsedBlockIds,
@@ -103,6 +109,7 @@ export function AutomationEditorWorkspace({
   onCreateLabel,
   onMoveToLabel,
   onVariablesChange: _onVariablesChange,
+  onV2VariablesChange,
   onResourcesChange,
   onEditResource,
   onCloseLogPanel,
@@ -215,9 +222,11 @@ export function AutomationEditorWorkspace({
       {/* COLUMN 3: Resource Management / Variables Panel */}
       {isVariablesPanelOpen && (
         <aside className="flex w-80 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-md">
-          <ResourceManagerPanel
+          <VariableResourcePanel
+            variables={v2Variables}
             resources={resources}
-            onChange={onResourcesChange}
+            onVariablesChange={onV2VariablesChange}
+            onResourcesChange={onResourcesChange}
             onDoubleClickResource={onEditResource}
             disabled={disabled}
           />
