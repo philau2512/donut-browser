@@ -19,7 +19,7 @@ interface ScriptCardStackProps {
   collapsedBlockIds?: Set<string>;
   onToggleCollapseBlock?: (nodeId: string) => void;
   onToggleErrorHandling?: (nodeId: string) => void;
-  onSelectNode: (nodeId: string | null) => void;
+  onSelectNode: (nodeId: string | null, isMetaKey?: boolean) => void;
   onInsertNode: (type: AutomationNodeType, slot: CardStackSlot) => void;
   onDeleteNode: (nodeId: string) => void;
   onDuplicateNode: (nodeId: string) => void;
@@ -36,6 +36,11 @@ interface ScriptCardStackProps {
   onSelectSlot: (slot: CardStackSlot) => void;
   onMoveNode?: (nodeId: string, slot: CardStackSlot) => void;
   onConnectSlots?: (source: CardStackSlot, target: CardStackSlot) => void;
+
+  // Search & Multi-select props
+  selectedNodeIds?: Set<string>;
+  searchResults?: string[];
+  currentActiveMatchId?: string | null;
 }
 
 import { useState } from "react";
@@ -63,6 +68,9 @@ export function ScriptCardStack({
   onSelectSlot,
   onMoveNode,
   onConnectSlots,
+  selectedNodeIds,
+  searchResults = [],
+  currentActiveMatchId = null,
 }: ScriptCardStackProps) {
   const model = buildCardStackModel(nodes, edges);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -185,20 +193,28 @@ export function ScriptCardStack({
               ) : (
                 <ScriptActionCard
                   node={item.node}
-                  selected={selectedNodeId === item.node.id}
+                  selected={
+                    selectedNodeIds
+                      ? selectedNodeIds.has(item.node.id)
+                      : selectedNodeId === item.node.id
+                  }
                   labels={model.labels}
                   debugStatus={debugNodeStatuses[item.node.id] ?? "idle"}
                   disabled={disabled}
                   isCollapsed={collapsedBlockIds?.has(item.node.id)}
                   onToggleCollapse={onToggleCollapseBlock}
                   onToggleErrorHandling={onToggleErrorHandling}
-                  onSelect={onSelectNode}
+                  onSelect={(nodeId, isMetaKey) =>
+                    onSelectNode(nodeId, isMetaKey)
+                  }
                   onEditNode={onEditNode}
                   onDeleteNode={onDeleteNode}
                   onDuplicateNode={onDuplicateNode}
                   onCommentNode={onCommentNode}
                   onStartFromHereNode={onStartFromHereNode}
                   onMoveToLabel={onMoveToLabel}
+                  isSearchMatch={searchResults?.includes(item.node.id)}
+                  isActiveSearchMatch={currentActiveMatchId === item.node.id}
                 />
               )}
               <ScriptConnectorSlot

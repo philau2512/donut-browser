@@ -177,7 +177,7 @@ export function ScriptConnectionWires({
     <svg
       role="img"
       aria-label="Connection wires"
-      className="absolute inset-0 pointer-events-none w-full h-full z-0 overflow-visible"
+      className="absolute inset-0 pointer-events-none w-full h-full z-20 overflow-visible"
     >
       <title>Connection wires</title>
       <defs>

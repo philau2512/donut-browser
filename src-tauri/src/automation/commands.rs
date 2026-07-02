@@ -445,8 +445,14 @@ mod tests {
 
   #[test]
   fn sanitize_rejects_disallowed_chars() {
-    assert_eq!(sanitize_flow_name("flow.exe").unwrap(), "flow.exe.donutflow");
-    assert_eq!(sanitize_flow_name("flow.v1.0").unwrap(), "flow.v1.0.donutflow");
+    assert_eq!(
+      sanitize_flow_name("flow.exe").unwrap(),
+      "flow.exe.donutflow"
+    );
+    assert_eq!(
+      sanitize_flow_name("flow.v1.0").unwrap(),
+      "flow.v1.0.donutflow"
+    );
     assert!(sanitize_flow_name("flow$").is_err());
     assert!(sanitize_flow_name("flow:name").is_err());
     assert!(sanitize_flow_name("").is_err());

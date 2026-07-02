@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FiMoreHorizontal } from "react-icons/fi";
 import {
@@ -34,7 +35,7 @@ interface ScriptActionCardProps {
   isCollapsed?: boolean;
   onToggleCollapse?: (nodeId: string) => void;
   onToggleErrorHandling?: (nodeId: string) => void;
-  onSelect: (nodeId: string) => void;
+  onSelect: (nodeId: string, isMetaKey: boolean) => void;
   onEditNode: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
   onDuplicateNode: (nodeId: string) => void;
@@ -45,6 +46,9 @@ interface ScriptActionCardProps {
     labelId: string,
     sourceHandle: string,
   ) => void;
+  // Search props
+  isSearchMatch?: boolean;
+  isActiveSearchMatch?: boolean;
 }
 
 export function ScriptActionCard({
@@ -63,7 +67,17 @@ export function ScriptActionCard({
   onCommentNode,
   onStartFromHereNode,
   onMoveToLabel,
+  isSearchMatch = false,
+  isActiveSearchMatch = false,
 }: ScriptActionCardProps) {
+  useEffect(() => {
+    if (isActiveSearchMatch) {
+      const el = document.getElementById(`node-card-${node.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }, [isActiveSearchMatch, node.id]);
   const { t } = useTranslation();
   const isStart = node.data.nodeType === "start";
   const nodeType = node.data.nodeType as AutomationNodeType | "start";
@@ -125,10 +139,14 @@ export function ScriptActionCard({
       }}
       className={cn(
         "group relative w-52 max-w-full rounded-lg border shadow-sm transition overflow-hidden cursor-pointer",
-        selected && "border-primary ring-2 ring-primary/20",
         colorClasses,
+        selected && "border-primary ring-2 ring-primary/30 shadow-md",
+        isSearchMatch &&
+          (isActiveSearchMatch
+            ? "border-amber-500 ring-4 ring-amber-500/35 shadow-[0_0_15px_rgba(245,158,11,0.5)] scale-[1.02] z-20"
+            : "border-amber-500/60 border-dashed bg-amber-500/5"),
       )}
-      onClick={() => onSelect(node.id)}
+      onClick={(event) => onSelect(node.id, event.ctrlKey || event.metaKey)}
       onDoubleClick={(event) => {
         event.stopPropagation();
         onEditNode(node.id);
@@ -136,7 +154,7 @@ export function ScriptActionCard({
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          onSelect(node.id);
+          onSelect(node.id, event.ctrlKey || event.metaKey);
         }
       }}
     >
