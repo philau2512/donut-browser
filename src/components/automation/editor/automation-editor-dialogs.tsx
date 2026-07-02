@@ -17,6 +17,7 @@ import type {
   ResourceReport,
   ScriptReport,
 } from "@/types/automation-report-types";
+import type { CardStackSlot } from "./card-stack/flow-card-stack-adapter";
 import { NodeCommentDialog } from "./node-comment-dialog";
 import { NodePropertiesDialog } from "./node-properties-dialog";
 import { ResourceConfigurationDialog } from "./panels/resource-configuration-dialog";
@@ -55,15 +56,15 @@ interface AutomationEditorDialogsProps {
   onResourcesChange: (resources: ResourceDefinition[]) => void;
   isScriptReportOpen: boolean;
   scriptReport: ScriptReport | null;
-  onOpenScriptReportOpenChange?: (open: boolean) => void;
-  onOpenScriptReport?: () => void;
-  onOpenResourceReport?: () => void;
-  onOpenResourceConfig?: () => void;
-  onOpenScriptReportOpenChangeChange?: (open: boolean) => void;
   onScriptReportOpenChange: (open: boolean) => void;
   isResourceReportOpen: boolean;
   resourceReport: ResourceReport;
   onResourceReportOpenChange: (open: boolean) => void;
+  labelCreationSlot: CardStackSlot | null;
+  newLabelName: string;
+  onLabelCreationSlotChange: (slot: CardStackSlot | null) => void;
+  onNewLabelNameChange: (name: string) => void;
+  onConfirmCreateLabel: () => void;
 }
 
 export function AutomationEditorDialogs({
@@ -98,6 +99,11 @@ export function AutomationEditorDialogs({
   isResourceReportOpen,
   resourceReport,
   onResourceReportOpenChange,
+  labelCreationSlot,
+  newLabelName,
+  onLabelCreationSlotChange,
+  onNewLabelNameChange,
+  onConfirmCreateLabel,
 }: AutomationEditorDialogsProps) {
   const { t } = useTranslation();
 
@@ -184,6 +190,45 @@ export function AutomationEditorDialogs({
         onOpenChange={onResourceReportOpenChange}
         report={resourceReport}
       />
+
+      <Dialog
+        open={Boolean(labelCreationSlot)}
+        onOpenChange={(open) => {
+          if (!open) {
+            onLabelCreationSlotChange(null);
+            onNewLabelNameChange("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Label Name</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={newLabelName}
+              onChange={(e) => onNewLabelNameChange(e.target.value)}
+              placeholder="e.g. check_interface_constructor"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onConfirmCreateLabel();
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                onLabelCreationSlotChange(null);
+                onNewLabelNameChange("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={onConfirmCreateLabel}>Ok</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -17,6 +17,7 @@ interface ScriptConnectorSlotProps {
   onInsertNode: (type: AutomationNodeType, slot: CardStackSlot) => void;
   onCreateLabel: (slot: CardStackSlot) => void;
   onSelectSlot?: (slot: CardStackSlot) => void;
+  onMoveNode?: (nodeId: string, slot: CardStackSlot) => void;
 }
 
 export function ScriptConnectorSlot({
@@ -27,6 +28,7 @@ export function ScriptConnectorSlot({
   onInsertNode,
   onCreateLabel,
   onSelectSlot,
+  onMoveNode,
 }: ScriptConnectorSlotProps) {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -70,7 +72,7 @@ export function ScriptConnectorSlot({
           onDragOver={(event) => {
             if (disabled) return;
             event.preventDefault();
-            event.dataTransfer.dropEffect = "copy";
+            event.dataTransfer.dropEffect = "move";
             setIsDraggingOver(true);
           }}
           onDragLeave={() => setIsDraggingOver(false)}
@@ -78,6 +80,15 @@ export function ScriptConnectorSlot({
             event.preventDefault();
             setIsDraggingOver(false);
             if (disabled) return;
+
+            const nodeId = event.dataTransfer.getData(
+              "application/donut-node-id",
+            );
+            if (nodeId) {
+              onMoveNode?.(nodeId, slot);
+              return;
+            }
+
             const type = resolveDraggedType(event);
             if (type) onInsertNode(type, slot);
           }}

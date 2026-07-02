@@ -84,6 +84,16 @@ export function ScriptActionCard({
 
   return (
     <article
+      id={`node-card-${node.id}`}
+      draggable={!disabled && !isStart}
+      onDragStart={(event) => {
+        if (disabled || isStart) return;
+        event.dataTransfer.setData("application/donut-node-id", node.id);
+        event.dataTransfer.effectAllowed = "move";
+
+        // Align the top-left corner of the card with the mouse cursor
+        event.dataTransfer.setDragImage(event.currentTarget, 0, 0);
+      }}
       className={cn(
         "group relative w-52 max-w-full rounded-lg border shadow-sm transition overflow-hidden cursor-pointer",
         selected && "border-primary ring-2 ring-primary/20",
@@ -104,7 +114,12 @@ export function ScriptActionCard({
       <DebugBadge status={debugStatus} />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/50 bg-muted/40 px-3 py-1.5 select-none">
+      <div
+        className={cn(
+          "flex items-center justify-between border-b border-border/50 bg-muted/40 px-3 py-1.5 select-none",
+          !disabled && !isStart && "cursor-grab active:cursor-grabbing",
+        )}
+      >
         <div className="flex items-center gap-2 min-w-0">
           {Icon ? (
             <Icon className="size-3.5 text-muted-foreground/80" />

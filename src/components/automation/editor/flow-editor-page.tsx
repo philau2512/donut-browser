@@ -30,7 +30,10 @@ import {
   AutomationEditorWorkspace,
   type CardStackSlot,
 } from "./automation-editor-workspace";
-import { edgeId } from "./card-stack/flow-card-stack-adapter";
+import {
+  buildCardStackModel,
+  edgeId,
+} from "./card-stack/flow-card-stack-adapter";
 import type { FlowExecutionStep, FlowLogLine } from "./flow-log-panel";
 import { truncateFlowFromNode } from "./flow-truncation";
 import {
@@ -186,6 +189,9 @@ export function FlowEditorPage({
   const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
   const [activeInsertSlot, setActiveInsertSlot] =
     useState<CardStackSlot | null>(null);
+  const [labelCreationSlot, setLabelCreationSlot] =
+    useState<CardStackSlot | null>(null);
+  const [newLabelName, setNewLabelName] = useState("");
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -286,24 +292,85 @@ export function FlowEditorPage({
     [insertExistingNodeAtSlot],
   );
 
+  const generateDefaultLabelName = useCallback(() => {
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `label name ${rand}`;
+  }, []);
+
+  const handleConfirmCreateLabel = useCallback(() => {
+    if (!labelCreationSlot || !newLabelName.trim()) return;
+
+    const labelName = newLabelName.trim();
+    const slot = labelCreationSlot;
+
+    const newNode = createAutomationNode("label", {
+      x: 360,
+      y: 120 + slot.index * 120,
+    });
+    newNode.data.params = {
+      ...newNode.data.params,
+      labelName,
+    };
+    insertExistingNodeAtSlot(newNode, slot);
+    setActiveInsertSlot({
+      previousNodeId: newNode.id,
+      nextNodeId: slot.nextNodeId,
+      index: slot.index + 1,
+    });
+
+    setLabelCreationSlot(null);
+    setNewLabelName("");
+  }, [labelCreationSlot, newLabelName, insertExistingNodeAtSlot]);
+
   const handleCreateLabel = useCallback(
     (slot: CardStackSlot) => {
-      const newNode = createAutomationNode("label", {
-        x: 360,
-        y: 120 + slot.index * 120,
-      });
-      newNode.data.params = {
-        ...newNode.data.params,
-        labelName: `label_${Date.now()}`,
-      };
-      insertExistingNodeAtSlot(newNode, slot);
-      setActiveInsertSlot({
-        previousNodeId: newNode.id,
-        nextNodeId: slot.nextNodeId,
-        index: slot.index + 1,
+      setLabelCreationSlot(slot);
+      setNewLabelName(generateDefaultLabelName());
+    },
+    [generateDefaultLabelName],
+  );
+
+  const handleMoveNode = useCallback(
+    (nodeId: string, slot: CardStackSlot) => {
+      const model = buildCardStackModel(nodes, edges);
+      const orderedIds = model.items.map((item) => item.node.id);
+
+      const oldIndex = orderedIds.indexOf(nodeId);
+      if (oldIndex === -1) return;
+
+      const targetIndex = slot.index;
+      if (oldIndex === targetIndex || oldIndex === targetIndex - 1) return;
+
+      const reorderedIds = [...orderedIds];
+      reorderedIds.splice(oldIndex, 1);
+
+      let newIndex = targetIndex;
+      if (oldIndex < targetIndex) {
+        newIndex = targetIndex - 1;
+      }
+      reorderedIds.splice(newIndex, 0, nodeId);
+
+      setEdges((current) => {
+        const nonSuccessEdges = current.filter(
+          (edge) => (edge.sourceHandle ?? "success") !== "success",
+        );
+
+        const successEdges: AutomationCanvasEdge[] = [];
+        for (let i = 0; i < reorderedIds.length - 1; i++) {
+          const sourceId = reorderedIds[i];
+          const targetId = reorderedIds[i + 1];
+          successEdges.push({
+            id: edgeId(sourceId, targetId, "success"),
+            source: sourceId,
+            target: targetId,
+            sourceHandle: "success",
+          });
+        }
+
+        return [...nonSuccessEdges, ...successEdges];
       });
     },
-    [insertExistingNodeAtSlot],
+    [nodes, edges, setEdges],
   );
 
   const handlePaletteItemClick = useCallback(
@@ -880,6 +947,7 @@ export function FlowEditorPage({
         activeInsertSlot={activeInsertSlot}
         onSelectSlot={setActiveInsertSlot}
         onPaletteItemClick={handlePaletteItemClick}
+        onMoveNode={handleMoveNode}
       />
 
       <AutomationEditorDialogs
@@ -930,6 +998,11 @@ export function FlowEditorPage({
         isResourceReportOpen={isResourceReportOpen}
         resourceReport={report.state.resourceReport}
         onResourceReportOpenChange={setIsResourceReportOpen}
+        labelCreationSlot={labelCreationSlot}
+        newLabelName={newLabelName}
+        onLabelCreationSlotChange={setLabelCreationSlot}
+        onNewLabelNameChange={setNewLabelName}
+        onConfirmCreateLabel={handleConfirmCreateLabel}
       />
     </div>
   );

@@ -65,6 +65,7 @@ interface AutomationEditorWorkspaceProps {
   activeInsertSlot: CardStackSlot | null;
   onSelectSlot: (slot: CardStackSlot) => void;
   onPaletteItemClick: (item: AutomationNodeCatalogItem) => void;
+  onMoveNode?: (nodeId: string, slot: CardStackSlot) => void;
 }
 
 export function AutomationEditorWorkspace({
@@ -102,6 +103,7 @@ export function AutomationEditorWorkspace({
   activeInsertSlot,
   onSelectSlot,
   onPaletteItemClick,
+  onMoveNode,
 }: AutomationEditorWorkspaceProps) {
   const { t } = useTranslation();
   const [sidebarWidth, setSidebarWidth] = useState(384);
@@ -163,6 +165,7 @@ export function AutomationEditorWorkspace({
           onMoveToLabel={onMoveToLabel}
           activeInsertSlot={activeInsertSlot}
           onSelectSlot={onSelectSlot}
+          onMoveNode={onMoveNode}
         />
         {/* Resize Handle */}
         <button

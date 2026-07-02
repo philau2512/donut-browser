@@ -1,5 +1,4 @@
-"use client";
-
+import { useRef } from "react";
 import type { AutomationNodeType } from "@/lib/automation/node-catalog";
 import type { AutomationCanvasEdge, AutomationCanvasNode } from "../serialize";
 import {
@@ -7,6 +6,7 @@ import {
   type CardStackSlot,
 } from "./flow-card-stack-adapter";
 import { ScriptActionCard } from "./script-action-card";
+import { ScriptConnectionWires } from "./script-connection-wires";
 import { ScriptConnectorSlot } from "./script-connector-slot";
 
 interface ScriptCardStackProps {
@@ -31,6 +31,7 @@ interface ScriptCardStackProps {
   ) => void;
   activeInsertSlot: CardStackSlot | null;
   onSelectSlot: (slot: CardStackSlot) => void;
+  onMoveNode?: (nodeId: string, slot: CardStackSlot) => void;
 }
 
 export function ScriptCardStack({
@@ -51,11 +52,16 @@ export function ScriptCardStack({
   onMoveToLabel,
   activeInsertSlot,
   onSelectSlot,
+  onMoveNode,
 }: ScriptCardStackProps) {
   const model = buildCardStackModel(nodes, edges);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <section className="min-h-0 flex-1 overflow-y-auto border-0 bg-transparent p-1 pr-2">
+    <section
+      ref={containerRef}
+      className="relative min-h-0 flex-1 overflow-y-auto border-0 bg-transparent p-1 pr-2"
+    >
       <div className="flex w-full flex-col items-start gap-0.5">
         {model.items.map((item, index) => (
           <div key={item.node.id} className="flex w-full flex-col items-start">
@@ -81,10 +87,13 @@ export function ScriptCardStack({
               onInsertNode={onInsertNode}
               onCreateLabel={onCreateLabel}
               onSelectSlot={onSelectSlot}
+              onMoveNode={onMoveNode}
             />
           </div>
         ))}
       </div>
+
+      <ScriptConnectionWires nodes={nodes} containerRef={containerRef} />
     </section>
   );
 }
