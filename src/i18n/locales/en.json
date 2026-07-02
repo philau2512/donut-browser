@@ -2877,6 +2877,23 @@
         "description": "Write CSV file",
         "document": "Writes data to a CSV file.",
         "label": "Write CSV"
+      },
+      "label": {
+        "description": "Set a label in the script",
+        "document": "Sets a label that can be jumped to using a Move to Label action.",
+        "label": "Set label",
+        "params": {
+          "labelName": "Label Name"
+        }
+      },
+      "moveToLabel": {
+        "description": "Jump to a label",
+        "document": "Jumps execution to the specified label in the script.",
+        "label": "Move to label",
+        "params": {
+          "targetLabelNodeId": "Target Label Node ID",
+          "targetLabelName": "Target Label Name"
+        }
       }
     },
     "validation": {

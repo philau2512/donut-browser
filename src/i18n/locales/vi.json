@@ -2875,6 +2875,23 @@
         "description": "Ghi file CSV",
         "document": "Ghi dữ liệu ra file CSV.",
         "label": "Ghi CSV"
+      },
+      "label": {
+        "description": "Thiết lập nhãn trong kịch bản",
+        "document": "Thiết lập nhãn để có thể nhảy đến bằng hành động Di chuyển đến nhãn.",
+        "label": "Đặt Nhãn",
+        "params": {
+          "labelName": "Tên nhãn"
+        }
+      },
+      "moveToLabel": {
+        "description": "Nhảy đến nhãn",
+        "document": "Chuyển hướng thực thi đến nhãn được chỉ định trong kịch bản.",
+        "label": "Di chuyển đến nhãn",
+        "params": {
+          "targetLabelNodeId": "ID nhãn đích",
+          "targetLabelName": "Tên nhãn đích"
+        }
       }
     },
     "validation": {

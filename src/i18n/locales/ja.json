@@ -2373,6 +2373,23 @@
           "select": "Select tab (by index)",
           "other": "Other all tabs"
         }
+      },
+      "label": {
+        "description": "スクリプト内にラベルを設定します",
+        "document": "「ラベルへ移動」アクションを使用してジャンプできるラベルを設定します。",
+        "label": "ラベルを設定",
+        "params": {
+          "labelName": "ラベル名"
+        }
+      },
+      "moveToLabel": {
+        "description": "ラベルへジャンプします",
+        "document": "スクリプト内の指定されたラベルに実行をジャンプします。",
+        "label": "ラベルへ移動",
+        "params": {
+          "targetLabelNodeId": "ターゲットラベルノードID",
+          "targetLabelName": "ターゲットラベル名"
+        }
       }
     }
   }

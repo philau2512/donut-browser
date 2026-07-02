@@ -2373,6 +2373,23 @@
           "select": "Select tab (by index)",
           "other": "Other all tabs"
         }
+      },
+      "label": {
+        "description": "Установить метку в скрипте",
+        "document": "Устанавливает метку, на которую можно перейти с помощью действия Перейти к метке.",
+        "label": "Установить метку",
+        "params": {
+          "labelName": "Имя метки"
+        }
+      },
+      "moveToLabel": {
+        "description": "Перейти к метке",
+        "document": "Переход выполнения к указанной метке в скрипте.",
+        "label": "Перейти к метке",
+        "params": {
+          "targetLabelNodeId": "ID целевой метки",
+          "targetLabelName": "Имя целевой метки"
+        }
       }
     }
   }

@@ -2373,6 +2373,23 @@
           "select": "Select tab (by index)",
           "other": "Other all tabs"
         }
+      },
+      "label": {
+        "description": "在脚本中设置标签",
+        "document": "设置一个标签，可以使用“跳转至标签”操作跳转到该标签。",
+        "label": "设置标签",
+        "params": {
+          "labelName": "标签名称"
+        }
+      },
+      "moveToLabel": {
+        "description": "跳转到标签",
+        "document": "将执行跳转到脚本中的指定标签。",
+        "label": "跳转至标签",
+        "params": {
+          "targetLabelNodeId": "目标标签节点ID",
+          "targetLabelName": "目标标签名称"
+        }
       }
     }
   }

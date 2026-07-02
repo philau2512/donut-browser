@@ -88,7 +88,7 @@ export function ScriptActionCard({
       draggable={!disabled && !isStart}
       onDragStart={(event) => {
         if (disabled || isStart) return;
-        event.dataTransfer.setData("application/donut-node-id", node.id);
+        event.dataTransfer.setData("text/plain", `donut-node-id:${node.id}`);
         event.dataTransfer.effectAllowed = "move";
 
         // Align the top-left corner of the card with the mouse cursor
@@ -154,9 +154,7 @@ export function ScriptActionCard({
       {(() => {
         const paramsPreview = renderNodeParams(node);
         const hasComment = !!node.data.comment;
-        const hasSpecialField =
-          nodeType === "label" || nodeType === "moveToLabel";
-        const hasBody = paramsPreview !== null || hasComment || hasSpecialField;
+        const hasBody = paramsPreview !== null || hasComment;
 
         if (!hasBody) return null;
 
@@ -171,37 +169,29 @@ export function ScriptActionCard({
                 {node.data.comment}
               </p>
             )}
-
-            {/* Custom fields for special nodes */}
-            {nodeType === "label" && (
-              <p className="mt-1 font-mono text-[11px] text-amber-500">
-                #{String(node.data.params.labelName ?? node.id)}
-              </p>
-            )}
-            {nodeType === "moveToLabel" && (
-              <p className="mt-1 text-[11px] text-blue-400">
-                move to:{" "}
-                <span className="font-mono">
-                  {targetLabel?.name ?? "missing label"}
-                </span>
-              </p>
-            )}
           </div>
         );
       })()}
 
       {/* Branch Select */}
-      {!isStart && (
-        <div className="px-2.5 pb-2.5">
-          <BranchConnectorRow
-            nodeId={node.id}
-            handles={handles}
-            labels={labels.filter((label) => label.id !== node.id)}
-            disabled={disabled}
-            onMoveToLabel={onMoveToLabel}
-          />
-        </div>
-      )}
+      {(() => {
+        const availableLabels = labels.filter((label) => label.id !== node.id);
+        const showBranchSelect = !isStart && handles.length > 1 && availableLabels.length > 0;
+
+        if (!showBranchSelect) return null;
+
+        return (
+          <div className="px-2.5 pb-2.5">
+            <BranchConnectorRow
+              nodeId={node.id}
+              handles={handles}
+              labels={availableLabels}
+              disabled={disabled}
+              onMoveToLabel={onMoveToLabel}
+            />
+          </div>
+        );
+      })()}
     </article>
   );
 }
@@ -253,6 +243,20 @@ function renderNodeParams(node: AutomationCanvasNode) {
     return (
       <span className="text-muted-foreground font-mono">
         {String(params.duration || params.timeout || "")} ms
+      </span>
+    );
+  }
+  if (nodeType === "label") {
+    return (
+      <span className="text-muted-foreground font-mono break-all">
+        {String(params.labelName || "")}
+      </span>
+    );
+  }
+  if (nodeType === "moveToLabel") {
+    return (
+      <span className="text-muted-foreground font-mono break-all">
+        {String(params.targetLabelName || "")}
       </span>
     );
   }

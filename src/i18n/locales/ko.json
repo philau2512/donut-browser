@@ -2373,6 +2373,23 @@
           "select": "Select tab (by index)",
           "other": "Other all tabs"
         }
+      },
+      "label": {
+        "description": "스크립트에 레이블 설정",
+        "document": "레이블로 이동 액션을 사용하여 이동할 수 있는 레이블을 설정합니다.",
+        "label": "레이블 설정",
+        "params": {
+          "labelName": "레이블 이름"
+        }
+      },
+      "moveToLabel": {
+        "description": "레이블로 이동",
+        "document": "스크립트의 지정된 레이블로 실행을 이동합니다.",
+        "label": "레이블로 이동",
+        "params": {
+          "targetLabelNodeId": "대상 레이블 노드 ID",
+          "targetLabelName": "대상 레이블 이름"
+        }
       }
     }
   }

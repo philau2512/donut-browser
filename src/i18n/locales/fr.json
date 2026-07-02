@@ -2373,6 +2373,23 @@
           "select": "Select tab (by index)",
           "other": "Other all tabs"
         }
+      },
+      "label": {
+        "description": "Définir une étiquette dans le script",
+        "document": "Définit une étiquette vers laquelle on peut sauter en utilisant une action Aller à l'étiquette.",
+        "label": "Définir l'étiquette",
+        "params": {
+          "labelName": "Nom de l'étiquette"
+        }
+      },
+      "moveToLabel": {
+        "description": "Sauter vers une étiquette",
+        "document": "Sauter l'exécution vers l'étiquette spécifiée dans le script.",
+        "label": "Aller à l'étiquette",
+        "params": {
+          "targetLabelNodeId": "ID de l'étiquette cible",
+          "targetLabelName": "Nom de l'étiquette cible"
+        }
       }
     }
   }

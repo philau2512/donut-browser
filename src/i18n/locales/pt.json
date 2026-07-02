@@ -2373,6 +2373,23 @@
           "select": "Select tab (by index)",
           "other": "Other all tabs"
         }
+      },
+      "label": {
+        "description": "Definir uma etiqueta no script",
+        "document": "Define uma etiqueta para a qual se pode saltar usando uma ação Ir para Etiqueta.",
+        "label": "Definir Etiqueta",
+        "params": {
+          "labelName": "Nome da Etiqueta"
+        }
+      },
+      "moveToLabel": {
+        "description": "Saltar para uma etiqueta",
+        "document": "Salta a execução para a etiqueta especificada no script.",
+        "label": "Ir para Etiqueta",
+        "params": {
+          "targetLabelNodeId": "ID da Etiqueta de Destino",
+          "targetLabelName": "Nome da Etiqueta de Destino"
+        }
       }
     }
   }

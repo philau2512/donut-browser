@@ -96,6 +96,7 @@ export function getBranchHandles(
     return ["loop", "done"];
   }
   if (nodeType === "start" || nodeType === "label") return ["success"];
+  if (nodeType === "moveToLabel") return [];
   return ["success", "fail"];
 }
 

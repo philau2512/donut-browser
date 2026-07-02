@@ -32,7 +32,10 @@ interface ScriptCardStackProps {
   activeInsertSlot: CardStackSlot | null;
   onSelectSlot: (slot: CardStackSlot) => void;
   onMoveNode?: (nodeId: string, slot: CardStackSlot) => void;
+  onConnectSlots?: (source: CardStackSlot, target: CardStackSlot) => void;
 }
+
+import { useState } from "react";
 
 export function ScriptCardStack({
   nodes,
@@ -53,13 +56,43 @@ export function ScriptCardStack({
   activeInsertSlot,
   onSelectSlot,
   onMoveNode,
+  onConnectSlots,
 }: ScriptCardStackProps) {
   const model = buildCardStackModel(nodes, edges);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  // States to track the active connection wire drag
+  const [activeConnectionSource, setActiveConnectionSource] =
+    useState<CardStackSlot | null>(null);
+  const [dragMousePos, setDragMousePos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleDragOver = (event: React.DragEvent) => {
+    // If drawing a connection wire, update coordinates
+    if (activeConnectionSource) {
+      event.preventDefault();
+      const rect = event.currentTarget.getBoundingClientRect();
+      const container = event.currentTarget;
+      setDragMousePos({
+        x: event.clientX - rect.left + container.scrollLeft,
+        y: event.clientY - rect.top + container.scrollTop,
+      });
+    }
+  };
+
+  const handleDragEnd = () => {
+    setActiveConnectionSource(null);
+    setDragMousePos(null);
+  };
+
   return (
     <section
       ref={containerRef}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      aria-label="Script card stack"
       className="relative min-h-0 flex-1 overflow-y-auto border-0 bg-transparent p-1 pr-2"
     >
       <div className="flex w-full flex-col items-start gap-0.5">
@@ -88,12 +121,20 @@ export function ScriptCardStack({
               onCreateLabel={onCreateLabel}
               onSelectSlot={onSelectSlot}
               onMoveNode={onMoveNode}
+              onStartConnectionDrag={setActiveConnectionSource}
+              onEndConnectionDrag={handleDragEnd}
+              onConnectSlots={onConnectSlots}
             />
           </div>
         ))}
       </div>
 
-      <ScriptConnectionWires nodes={nodes} containerRef={containerRef} />
+      <ScriptConnectionWires
+        nodes={nodes}
+        containerRef={containerRef}
+        activeConnectionSource={activeConnectionSource}
+        dragMousePos={dragMousePos}
+      />
     </section>
   );
 }

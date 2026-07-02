@@ -192,6 +192,8 @@ export function FlowEditorPage({
   const [labelCreationSlot, setLabelCreationSlot] =
     useState<CardStackSlot | null>(null);
   const [newLabelName, setNewLabelName] = useState("");
+  const [connectionSourceSlot, setConnectionSourceSlot] =
+    useState<CardStackSlot | null>(null);
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -303,28 +305,59 @@ export function FlowEditorPage({
     const labelName = newLabelName.trim();
     const slot = labelCreationSlot;
 
-    const newNode = createAutomationNode("label", {
+    const labelNode = createAutomationNode("label", {
       x: 360,
       y: 120 + slot.index * 120,
     });
-    newNode.data.params = {
-      ...newNode.data.params,
+    labelNode.data.params = {
+      ...labelNode.data.params,
       labelName,
     };
-    insertExistingNodeAtSlot(newNode, slot);
-    setActiveInsertSlot({
-      previousNodeId: newNode.id,
-      nextNodeId: slot.nextNodeId,
-      index: slot.index + 1,
-    });
+    insertExistingNodeAtSlot(labelNode, slot);
+
+    if (connectionSourceSlot) {
+      const srcSlot = connectionSourceSlot;
+      const moveNode = createAutomationNode("moveToLabel", {
+        x: 520,
+        y: 120 + srcSlot.index * 120,
+      });
+      moveNode.data.params = {
+        ...moveNode.data.params,
+        targetLabelNodeId: labelNode.id,
+        targetLabelName: labelName,
+      };
+      insertExistingNodeAtSlot(moveNode, srcSlot);
+    } else {
+      setActiveInsertSlot({
+        previousNodeId: labelNode.id,
+        nextNodeId: slot.nextNodeId,
+        index: slot.index + 1,
+      });
+    }
 
     setLabelCreationSlot(null);
     setNewLabelName("");
-  }, [labelCreationSlot, newLabelName, insertExistingNodeAtSlot]);
+    setConnectionSourceSlot(null);
+  }, [
+    labelCreationSlot,
+    connectionSourceSlot,
+    newLabelName,
+    insertExistingNodeAtSlot,
+  ]);
 
   const handleCreateLabel = useCallback(
     (slot: CardStackSlot) => {
+      setConnectionSourceSlot(null);
       setLabelCreationSlot(slot);
+      setNewLabelName(generateDefaultLabelName());
+    },
+    [generateDefaultLabelName],
+  );
+
+  const handleConnectSlots = useCallback(
+    (sourceSlot: CardStackSlot, targetSlot: CardStackSlot) => {
+      setConnectionSourceSlot(sourceSlot);
+      setLabelCreationSlot(targetSlot);
       setNewLabelName(generateDefaultLabelName());
     },
     [generateDefaultLabelName],
@@ -948,6 +981,7 @@ export function FlowEditorPage({
         onSelectSlot={setActiveInsertSlot}
         onPaletteItemClick={handlePaletteItemClick}
         onMoveNode={handleMoveNode}
+        onConnectSlots={handleConnectSlots}
       />
 
       <AutomationEditorDialogs

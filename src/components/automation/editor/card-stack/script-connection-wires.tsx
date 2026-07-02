@@ -13,13 +13,53 @@ interface WirePath {
 interface ScriptConnectionWiresProps {
   nodes: AutomationCanvasNode[];
   containerRef: React.RefObject<HTMLDivElement | null>;
+  activeConnectionSource?: any;
+  dragMousePos?: { x: number; y: number } | null;
 }
 
 export function ScriptConnectionWires({
   nodes,
   containerRef,
+  activeConnectionSource,
+  dragMousePos,
 }: ScriptConnectionWiresProps) {
   const [paths, setPaths] = useState<WirePath[]>([]);
+  const [dragPath, setDragPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeConnectionSource || !dragMousePos) {
+      setDragPath(null);
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const arrowEl = document.getElementById(
+      `slot-arrow-${activeConnectionSource.index}`,
+    );
+    if (!arrowEl) return;
+
+    const arrowRect = arrowEl.getBoundingClientRect();
+    const srcX =
+      arrowRect.left +
+      arrowRect.width / 2 -
+      containerRect.left +
+      container.scrollLeft;
+    const srcY =
+      arrowRect.top +
+      arrowRect.height / 2 -
+      containerRect.top +
+      container.scrollTop;
+
+    const tgtX = dragMousePos.x;
+    const tgtY = dragMousePos.y;
+
+    // Draw a Bezier curve from arrow to mouse cursor
+    const path = `M ${srcX} ${srcY} C ${srcX + 50} ${srcY}, ${tgtX - 50} ${tgtY}, ${tgtX} ${tgtY}`;
+    setDragPath(path);
+  }, [activeConnectionSource, dragMousePos, containerRef]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -53,22 +93,29 @@ export function ScriptConnectionWires({
             container.scrollTop +
             srcRect.height / 2;
 
-          const tgtX = tgtRect.left - containerRect.left + container.scrollLeft;
+          const tgtX = tgtRect.right - containerRect.left + container.scrollLeft;
           const tgtY =
             tgtRect.top -
             containerRect.top +
             container.scrollTop +
             tgtRect.height / 2;
 
-          // Compute C-shaped loop path around the cards
+          // Compute C-shaped loop path around the cards on the right side
           const rightOffset = 28;
-          const leftOffset = 18;
+          const isDownward = tgtY > srcY;
 
-          const path = `M ${srcX} ${srcY}
-            C ${srcX + rightOffset} ${srcY}, ${srcX + rightOffset} ${srcY + 8}, ${srcX + rightOffset} ${srcY + 16}
-            L ${srcX + rightOffset} ${tgtY > srcY ? tgtY - 16 : tgtY + 16}
-            C ${srcX + rightOffset} ${tgtY}, ${tgtX - leftOffset} ${tgtY}, ${tgtX - leftOffset} ${tgtY}
-            L ${tgtX} ${tgtY}`;
+          let path = "";
+          if (isDownward) {
+            path = `M ${srcX} ${srcY}
+              C ${srcX + rightOffset} ${srcY}, ${srcX + rightOffset} ${srcY + 8}, ${srcX + rightOffset} ${srcY + 16}
+              L ${srcX + rightOffset} ${tgtY - 16}
+              C ${srcX + rightOffset} ${tgtY}, ${tgtX + 8} ${tgtY}, ${tgtX} ${tgtY}`;
+          } else {
+            path = `M ${srcX} ${srcY}
+              C ${srcX + rightOffset} ${srcY}, ${srcX + rightOffset} ${srcY - 8}, ${srcX + rightOffset} ${srcY - 16}
+              L ${srcX + rightOffset} ${tgtY + 16}
+              C ${srcX + rightOffset} ${tgtY}, ${tgtX + 8} ${tgtY}, ${tgtX} ${tgtY}`;
+          }
 
           const labelX = srcX + rightOffset;
           const labelY = (srcY + tgtY) / 2;
@@ -104,7 +151,7 @@ export function ScriptConnectionWires({
     };
   }, [nodes, containerRef]);
 
-  if (paths.length === 0) return null;
+  if (paths.length === 0 && !dragPath) return null;
 
   return (
     <svg
@@ -148,6 +195,16 @@ export function ScriptConnectionWires({
           </foreignObject>
         </g>
       ))}
+      {dragPath && (
+        <path
+          d={dragPath}
+          stroke="var(--success)"
+          strokeWidth="1.5"
+          strokeDasharray="4 3"
+          fill="none"
+          markerEnd="url(#arrow-green)"
+        />
+      )}
     </svg>
   );
 }
