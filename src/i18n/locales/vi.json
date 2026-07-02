@@ -2907,6 +2907,36 @@
         "label": "Kết thúc If",
         "description": "Kết thúc khối điều kiện",
         "document": "Kết thúc khối điều kiện If."
+      },
+      "profileSuccess": {
+        "label": "Báo cáo thành công",
+        "description": "Báo cáo kết quả chạy kịch bản thành công",
+        "document": "Báo cáo rằng lượt chạy tự động hóa đã thành công, kèm theo tin nhắn và thống kê tùy chọn.",
+        "params": {
+          "message": "Tin nhắn",
+          "messageHelp": "Nội dung tin nhắn, hỗ trợ biến số",
+          "includeResourceStats": "Bao gồm thống kê tài nguyên",
+          "includeResourceStatsHelp": "Bao gồm các số liệu thống kê như thời gian chạy và số lượng thành công",
+          "stopFlow": "Dừng kịch bản",
+          "stopFlowHelp": "Dừng thực thi ngay lập tức sau khi báo cáo thành công"
+        }
+      },
+      "profileFail": {
+        "label": "Báo cáo thất bại",
+        "description": "Báo cáo kết quả chạy kịch bản thất bại",
+        "document": "Báo cáo rằng lượt chạy tự động hóa đã thất bại, ghi nhận lý do và dữ liệu lỗi tùy chọn.",
+        "params": {
+          "message": "Tin nhắn",
+          "messageHelp": "Nội dung tin nhắn thất bại, hỗ trợ biến số",
+          "reasonCode": "Mã lý do",
+          "reasonCodeHelp": "Mã định danh lỗi (ví dụ: LOGIN_FAILED)",
+          "includeLastError": "Bao gồm lỗi cuối cùng",
+          "includeLastErrorHelp": "Đính kèm chi tiết nội dung lỗi cuối cùng",
+          "includeResourceStats": "Bao gồm thống kê tài nguyên",
+          "includeResourceStatsHelp": "Bao gồm thời gian thực thi và các thống kê tài nguyên",
+          "stopFlow": "Dừng kịch bản",
+          "stopFlowHelp": "Dừng thực thi ngay lập tức"
+        }
       }
     },
     "validation": {

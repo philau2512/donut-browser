@@ -2405,6 +2405,36 @@
         "label": "End If",
         "description": "조건 블록 종료",
         "document": "If 조건 블록을 종료합니다."
+      },
+      "profileSuccess": {
+        "label": "Profile Success",
+        "description": "Report successful execution of the profile script",
+        "document": "Reports that the automation run succeeded, with optional message and statistics.",
+        "params": {
+          "message": "Message",
+          "messageHelp": "Message text, supports variables",
+          "includeResourceStats": "Include Resource Stats",
+          "includeResourceStatsHelp": "Include stats like duration and success count",
+          "stopFlow": "Stop Flow",
+          "stopFlowHelp": "Immediately stop execution after logging success"
+        }
+      },
+      "profileFail": {
+        "label": "Profile Failure",
+        "description": "Report failure of the profile script",
+        "document": "Reports that the automation run failed, logging reasons and optional error data.",
+        "params": {
+          "message": "Message",
+          "messageHelp": "Failure message text, supports variables",
+          "reasonCode": "Reason Code",
+          "reasonCodeHelp": "Error identification code (e.g. LOGIN_FAILED)",
+          "includeLastError": "Include Last Error",
+          "includeLastErrorHelp": "Append the detailed last error message",
+          "includeResourceStats": "Include Resource Stats",
+          "includeResourceStatsHelp": "Include execution duration and stats",
+          "stopFlow": "Stop Flow",
+          "stopFlowHelp": "Immediately abort execution"
+        }
       }
     }
   }
