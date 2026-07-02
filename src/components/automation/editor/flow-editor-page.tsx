@@ -11,61 +11,40 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  LuCircleStop,
-  LuList,
-  LuPlay,
-  LuSave,
-  LuVariable,
-} from "react-icons/lu";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useAutomationReport } from "@/hooks/use-automation-report";
 import { useDebugRun } from "@/hooks/use-debug-run";
 import {
   AUTOMATION_NODE_BY_TYPE,
   type AutomationNodeCatalogItem,
   type AutomationNodeType,
 } from "@/lib/automation/node-catalog";
+import type {
+  ResourceDefinition,
+  VariableDefinition,
+} from "@/lib/automation/resource-schema";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import type { BrowserProfile } from "@/types";
-import { FlowCanvas } from "./flow-canvas";
+import { AutomationEditorDialogs } from "./automation-editor-dialogs";
+import { AutomationEditorToolbar } from "./automation-editor-toolbar";
 import {
-  type FlowExecutionStep,
-  type FlowLogLine,
-  FlowLogPanel,
-} from "./flow-log-panel";
+  AutomationEditorWorkspace,
+  type CardStackSlot,
+} from "./automation-editor-workspace";
+import { edgeId } from "./card-stack/flow-card-stack-adapter";
+import type { FlowExecutionStep, FlowLogLine } from "./flow-log-panel";
 import { truncateFlowFromNode } from "./flow-truncation";
-import { NodeCommentDialog } from "./node-comment-dialog";
-import { NodePalette } from "./node-palette";
-import { NodePropertiesDialog } from "./node-properties-dialog";
 import {
   type AutomationCanvasEdge,
   type AutomationCanvasNode,
+  createAutomationNode,
   createStartNode,
-  type DonutFlowV1,
+  type DonutFlow,
   type FlowLayoutSidecarV1,
   fromDonutFlow,
   START_NODE_ID,
   toDonutFlow,
   toLayoutSidecar,
 } from "./serialize";
-import { VariablesPanel } from "./variables-panel";
 
 interface FlowEditorPageProps {
   flowPath?: string;
@@ -81,15 +60,13 @@ export function FlowEditorPage({
   onSaved,
 }: FlowEditorPageProps) {
   const { t } = useTranslation();
-  const [nodes, setNodes, onNodesChange] = useNodesState<AutomationCanvasNode>([
+  const [nodes, setNodes] = useNodesState<AutomationCanvasNode>([
     createStartNode(),
   ]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<AutomationCanvasEdge>(
-    [],
-  );
+  const [edges, setEdges] = useEdgesState<AutomationCanvasEdge>([]);
 
   // Workspace UI states
-  const [isVariablesPanelOpen, setIsVariablesPanelOpen] = useState(false);
+  const [isVariablesPanelOpen, setIsVariablesPanelOpen] = useState(true);
   const [isPropertiesDialogOpen, setIsPropertiesDialogOpen] = useState(false);
   const [isLogPanelOpen, setIsLogPanelOpen] = useState(false);
   const [isCanvasLocked, setIsCanvasLocked] = useState(false);
@@ -183,17 +160,32 @@ export function FlowEditorPage({
   }, [flowPath]);
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [focusNodeTrigger, setFocusNodeTrigger] = useState<{
-    nodeId: string;
-  } | null>(null);
   const [commentingNodeId, setCommentingNodeId] = useState<string | null>(null);
   const [flowName, setFlowName] = useState("Untitled flow");
   const [variables, setVariables] = useState<Record<string, string>>({});
+  // Schema v2 structured variables and resources (resource allocation plan).
+  const [v2Variables, setV2Variables] = useState<VariableDefinition[]>([]);
+  const [v2Resources, setV2Resources] = useState<ResourceDefinition[]>([]);
+  // Report dialog visibility.
+  const [isScriptReportOpen, setIsScriptReportOpen] = useState(false);
+  const [isResourceReportOpen, setIsResourceReportOpen] = useState(false);
+  const [isResourceConfigOpen, setIsResourceConfigOpen] = useState(false);
+  const [selectedResourceIdForConfig, setSelectedResourceIdForConfig] =
+    useState<string | null>(null);
+
+  const handleEditResource = useCallback((id: string) => {
+    setSelectedResourceIdForConfig(id);
+    setIsResourceConfigOpen(true);
+  }, []);
+  // Report state aggregated from automation-log events.
+  const report = useAutomationReport(debugRun.runId ?? null);
   const [isLoading, setIsLoading] = useState(Boolean(flowPath));
   const [isSaving, setIsSaving] = useState(false);
   const [isSaveAsDialogOpen, setIsSaveAsDialogOpen] = useState(false);
   const [saveAsName, setSaveAsName] = useState("");
   const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
+  const [activeInsertSlot, setActiveInsertSlot] =
+    useState<CardStackSlot | null>(null);
 
   const selectedNode = useMemo(
     () => nodes.find((node) => node.id === selectedNodeId) ?? null,
@@ -208,6 +200,7 @@ export function FlowEditorPage({
   const handleEditNode = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
     setIsPropertiesDialogOpen(true);
+    setActiveInsertSlot(null);
   }, []);
 
   const handleCommentNode = useCallback((nodeId: string) => {
@@ -233,36 +226,189 @@ export function FlowEditorPage({
     [setNodes],
   );
 
+  const insertExistingNodeAtSlot = useCallback(
+    (
+      newNode: AutomationCanvasNode,
+      slot: CardStackSlot,
+      sourceHandle = "success",
+    ) => {
+      setNodes((current) => {
+        if (current.some((node) => node.id === newNode.id)) return current;
+        return [...current, newNode];
+      });
+      setEdges((current) => {
+        const filtered = current.filter((edge) => {
+          if (edge.source === newNode.id || edge.target === newNode.id)
+            return false;
+          if (!slot.previousNodeId) return true;
+          return !(
+            edge.source === slot.previousNodeId &&
+            (edge.sourceHandle ?? "success") === sourceHandle
+          );
+        });
+        const additions: AutomationCanvasEdge[] = [];
+        if (slot.previousNodeId) {
+          additions.push({
+            id: edgeId(slot.previousNodeId, newNode.id, sourceHandle),
+            source: slot.previousNodeId,
+            target: newNode.id,
+            sourceHandle,
+          });
+        }
+        if (slot.nextNodeId && sourceHandle === "success") {
+          additions.push({
+            id: edgeId(newNode.id, slot.nextNodeId, "success"),
+            source: newNode.id,
+            target: slot.nextNodeId,
+            sourceHandle: "success",
+          });
+        }
+        return [...filtered, ...additions];
+      });
+      setSelectedNodeId(newNode.id);
+    },
+    [setEdges, setNodes],
+  );
+
+  const handleInsertNode = useCallback(
+    (nodeType: AutomationNodeType, slot: CardStackSlot) => {
+      const newNode = createAutomationNode(nodeType, {
+        x: 360,
+        y: 120 + slot.index * 120,
+      });
+      insertExistingNodeAtSlot(newNode, slot);
+      setActiveInsertSlot({
+        previousNodeId: newNode.id,
+        nextNodeId: slot.nextNodeId,
+        index: slot.index + 1,
+      });
+    },
+    [insertExistingNodeAtSlot],
+  );
+
+  const handleCreateLabel = useCallback(
+    (slot: CardStackSlot) => {
+      const newNode = createAutomationNode("label", {
+        x: 360,
+        y: 120 + slot.index * 120,
+      });
+      newNode.data.params = {
+        ...newNode.data.params,
+        labelName: `label_${Date.now()}`,
+      };
+      insertExistingNodeAtSlot(newNode, slot);
+      setActiveInsertSlot({
+        previousNodeId: newNode.id,
+        nextNodeId: slot.nextNodeId,
+        index: slot.index + 1,
+      });
+    },
+    [insertExistingNodeAtSlot],
+  );
+
+  const handlePaletteItemClick = useCallback(
+    (item: AutomationNodeCatalogItem) => {
+      if (activeInsertSlot) {
+        handleInsertNode(item.type, activeInsertSlot);
+      }
+    },
+    [activeInsertSlot, handleInsertNode],
+  );
+
+  const handleMoveToLabel = useCallback(
+    (sourceNodeId: string, labelId: string, sourceHandle: string) => {
+      const labelNode = nodes.find((node) => node.id === labelId);
+      if (!labelNode) return;
+      const moveNode = createAutomationNode("moveToLabel", {
+        x: 520,
+        y: 120 + nodes.length * 120,
+      });
+      moveNode.data.params = {
+        ...moveNode.data.params,
+        targetLabelNodeId: labelId,
+        targetLabelName: String(labelNode.data.params.labelName ?? labelId),
+      };
+      insertExistingNodeAtSlot(
+        moveNode,
+        { previousNodeId: sourceNodeId, nextNodeId: null, index: nodes.length },
+        sourceHandle,
+      );
+    },
+    [insertExistingNodeAtSlot, nodes],
+  );
+
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
-      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-      setEdges((eds) =>
-        eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
+      const incomingSuccess = edges.find(
+        (edge) =>
+          edge.target === nodeId &&
+          (edge.sourceHandle ?? "success") === "success",
       );
+      const outgoingSuccess = edges.find(
+        (edge) =>
+          edge.source === nodeId &&
+          (edge.sourceHandle ?? "success") === "success",
+      );
+
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => {
+        const filtered = eds.filter(
+          (e) => e.source !== nodeId && e.target !== nodeId,
+        );
+        if (
+          incomingSuccess &&
+          outgoingSuccess &&
+          incomingSuccess.source !== outgoingSuccess.target
+        ) {
+          return [
+            ...filtered,
+            {
+              id: edgeId(
+                incomingSuccess.source,
+                outgoingSuccess.target,
+                "success",
+              ),
+              source: incomingSuccess.source,
+              target: outgoingSuccess.target,
+              sourceHandle: "success",
+            },
+          ];
+        }
+        return filtered;
+      });
       if (selectedNodeId === nodeId) {
         setSelectedNodeId(null);
       }
     },
-    [selectedNodeId, setEdges, setNodes],
+    [edges, selectedNodeId, setEdges, setNodes],
   );
 
   const handleDuplicateNode = useCallback(
     (nodeId: string) => {
       const source = nodes.find((n) => n.id === nodeId);
-      if (!source) return;
-      const newNode = {
+      if (!source || source.data.nodeType === "start") return;
+      const successEdge = edges.find(
+        (edge) =>
+          edge.source === nodeId &&
+          (edge.sourceHandle ?? "success") === "success",
+      );
+      const newNode: AutomationCanvasNode = {
         ...source,
-        id: `${source.type ?? "automation"}-${Date.now()}`,
+        id: `${source.data.nodeType}-${Date.now()}`,
         position: {
-          x: source.position.x + 40,
-          y: source.position.y + 40,
+          x: source.position.x,
+          y: source.position.y + 120,
         },
         selected: false,
-        data: { ...source.data },
+        data: { ...source.data, params: { ...source.data.params } },
       };
-      setNodes((current) => [...current, newNode]);
+      insertExistingNodeAtSlot(newNode, {
+        previousNodeId: nodeId,
+        nextNodeId: successEdge?.target ?? null,
+        index: 0,
+      });
     },
-    [nodes, setNodes],
+    [edges, insertExistingNodeAtSlot, nodes],
   );
 
   const handleStartFromHere = useCallback(
@@ -285,7 +431,11 @@ export function FlowEditorPage({
         : nodeId;
 
       try {
-        const fullFlow = toDonutFlow(flowName.trim(), nodes, edges, variables);
+        const fullFlow = toDonutFlow(flowName.trim(), nodes, edges, variables, {
+          schemaVersion: 2,
+          v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
+          resources: v2Resources,
+        });
         const truncated = truncateFlowFromNode(fullFlow, nodeId);
         if (truncated.nodes.length === 0) {
           showErrorToast(
@@ -312,7 +462,17 @@ export function FlowEditorPage({
         );
       }
     },
-    [nodes, t, selectedDebugProfile, debugRun, flowName, edges, variables],
+    [
+      nodes,
+      t,
+      selectedDebugProfile,
+      debugRun,
+      flowName,
+      edges,
+      variables,
+      v2Variables,
+      v2Resources,
+    ],
   );
 
   // Automatically unlock canvas when debug execution completes
@@ -349,6 +509,8 @@ export function FlowEditorPage({
     if (!currentFlowPath) {
       setFlowName("Untitled flow");
       setVariables({});
+      setV2Variables([]);
+      setV2Resources([]);
       setNodes([createStartNode()]);
       setEdges([]);
       setIsLoading(false);
@@ -366,7 +528,7 @@ export function FlowEditorPage({
         const raw = await invoke<string>("read_automation_flow", {
           path: currentFlowPath,
         });
-        const flow = JSON.parse(raw) as DonutFlowV1;
+        const flow = JSON.parse(raw) as DonutFlow;
         let layout: FlowLayoutSidecarV1 | null = null;
         try {
           const rawLayout = await invoke<string>(
@@ -382,7 +544,9 @@ export function FlowEditorPage({
         if (cancelled) return;
         const canvas = fromDonutFlow(flow, layout);
         setFlowName(flow.name);
-        setVariables(flow.variables ?? {});
+        setVariables(canvas.variables);
+        setV2Variables(canvas.v2Variables);
+        setV2Resources(canvas.resources);
         setNodes(canvas.nodes);
         setEdges(canvas.edges);
       } catch (err) {
@@ -477,7 +641,11 @@ export function FlowEditorPage({
         return;
       }
 
-      const flow = toDonutFlow(activeName, nodes, edges, variables);
+      const flow = toDonutFlow(activeName, nodes, edges, variables, {
+        schemaVersion: 2,
+        v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
+        resources: v2Resources,
+      });
       const json = JSON.stringify(flow, null, 2);
 
       const shouldOverwrite = !isSaveAs && Boolean(currentFlowPath);
@@ -631,272 +799,138 @@ export function FlowEditorPage({
   const selectNodeNoFocus = (nodeId: string | null) => {
     setSelectedNodeId(nodeId);
     setIsPropertiesDialogOpen(false);
+    if (nodeId !== null) {
+      setActiveInsertSlot(null);
+    }
   };
 
   const selectNodeAndFocus = (nodeId: string | null) => {
     setSelectedNodeId(nodeId);
     setIsPropertiesDialogOpen(false);
-    if (nodeId) {
-      setFocusNodeTrigger({ nodeId });
+    if (nodeId !== null) {
+      setActiveInsertSlot(null);
     }
   };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
-      {/* Top Header Bar */}
-      <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card p-3">
-        <Button type="button" variant="ghost" onClick={onBack}>
-          {t("common.buttons.back")}
-        </Button>
-        <div className="max-w-sm flex-1">
-          <Label htmlFor="automation-flow-name" className="sr-only">
-            {t("automation.editor.name")}
-          </Label>
-          <Input
-            id="automation-flow-name"
-            value={flowName}
-            onChange={(event) => setFlowName(event.target.value)}
-            placeholder={t("automation.editor.namePlaceholder")}
-          />
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          {/* Debug Profile Selector */}
-          {profiles && profiles.length > 0 && (
-            <div className="w-44 text-left">
-              <Select
-                value={selectedDebugProfile?.id ?? ""}
-                onValueChange={(id) => {
-                  const p = profiles.find((p) => p.id === id) ?? null;
-                  setSelectedDebugProfile(p);
-                }}
-                disabled={debugRun.isRunning}
-              >
-                <SelectTrigger className="w-full h-9 text-xs">
-                  <SelectValue
-                    placeholder={
-                      t("automation.editor.debugProfile.placeholder") ||
-                      "Select profile..."
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {profiles.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+      <AutomationEditorToolbar
+        flowName={flowName}
+        profiles={profiles}
+        selectedDebugProfileId={selectedDebugProfile?.id}
+        isVariablesPanelOpen={isVariablesPanelOpen}
+        isLogPanelOpen={isLogPanelOpen}
+        isDebugRunning={debugRun.isRunning}
+        isFlowRunning={isFlowRunning}
+        isLoading={isLoading}
+        isSaving={isSaving}
+        hasCurrentFlowPath={Boolean(currentFlowPath)}
+        onBack={onBack}
+        onFlowNameChange={setFlowName}
+        onDebugProfileChange={(id) => {
+          const profile =
+            profiles?.find((profile) => profile.id === id) ?? null;
+          setSelectedDebugProfile(profile);
+        }}
+        onToggleVariablesPanel={() =>
+          setIsVariablesPanelOpen((value) => !value)
+        }
+        onOpenResourceConfig={() => setIsResourceConfigOpen(true)}
+        onOpenScriptReport={() => setIsScriptReportOpen(true)}
+        onOpenResourceReport={() => setIsResourceReportOpen(true)}
+        onToggleLogPanel={() => setIsLogPanelOpen((value) => !value)}
+        onRunFlow={handleRunFlow}
+        onStopDebugRun={() => void debugRun.stopDebugRun()}
+        onSaveAsClick={handleSaveAsClick}
+        onSave={() => void handleSave()}
+      />
 
-          {/* Toggle Variables Panel */}
-          <Button
-            type="button"
-            variant={isVariablesPanelOpen ? "secondary" : "outline"}
-            size="icon"
-            className="size-9"
-            title={t("automation.editor.tabs.variables")}
-            onClick={() => setIsVariablesPanelOpen((v) => !v)}
-          >
-            <LuVariable className="size-4" />
-          </Button>
+      <AutomationEditorWorkspace
+        nodes={nodesWithCallbacks}
+        edges={edges}
+        selectedNodeId={selectedNodeId}
+        draggedNodeType={draggedNodeType}
+        debugNodeStatuses={debugNodeStatuses}
+        disabled={isCanvasLocked || debugRun.isRunning}
+        isVariablesPanelOpen={isVariablesPanelOpen}
+        isLogPanelOpen={isLogPanelOpen}
+        showDebugOutput={debugRun.isRunning || debugRun.logs.length > 0}
+        debugLogs={debugLogs}
+        flowLogs={flowLogs}
+        debugSteps={debugSteps}
+        logSteps={logSteps}
+        variables={variables}
+        resources={v2Resources}
+        isDebugRunning={debugRun.isRunning}
+        onPaletteDragStart={handleDragStart}
+        onSelectNode={selectNodeNoFocus}
+        onInsertNode={handleInsertNode}
+        onDeleteNode={handleDeleteNode}
+        onDuplicateNode={handleDuplicateNode}
+        onEditNode={handleEditNode}
+        onCommentNode={handleCommentNode}
+        onStartFromHereNode={handleStartFromHere}
+        onCreateLabel={handleCreateLabel}
+        onMoveToLabel={handleMoveToLabel}
+        onVariablesChange={setVariables}
+        onResourcesChange={setV2Resources}
+        onEditResource={handleEditResource}
+        onCloseLogPanel={() => setIsLogPanelOpen(false)}
+        onSelectLogNode={selectNodeAndFocus}
+        activeInsertSlot={activeInsertSlot}
+        onSelectSlot={setActiveInsertSlot}
+        onPaletteItemClick={handlePaletteItemClick}
+      />
 
-          {/* Toggle Log Panel */}
-          <Button
-            type="button"
-            variant={isLogPanelOpen ? "secondary" : "outline"}
-            size="icon"
-            className="size-9"
-            title={t("automation.editor.sidebar.showLogs")}
-            onClick={() => setIsLogPanelOpen((v) => !v)}
-          >
-            <LuList className="size-4" />
-          </Button>
-
-          {/* Run / Stop Debug */}
-          {debugRun.isRunning ? (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => void debugRun.stopDebugRun()}
-            >
-              <LuCircleStop className="mr-2 size-4" />
-              {t("common.buttons.stop") || "Stop"}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isFlowRunning || isLoading}
-              onClick={handleRunFlow}
-            >
-              <LuPlay className="mr-2 size-4 text-emerald-500 fill-emerald-500/20" />
-              {t("common.buttons.run")}
-            </Button>
-          )}
-
-          {/* Save As */}
-          {currentFlowPath && (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isSaving || isLoading}
-              onClick={handleSaveAsClick}
-            >
-              {t("common.buttons.saveAs") || "Save As"}
-            </Button>
-          )}
-
-          {/* Save */}
-          <Button
-            type="button"
-            disabled={isSaving || isLoading}
-            onClick={() => void handleSave()}
-          >
-            <LuSave className="mr-2 size-4" />
-            {isSaving
-              ? t("automation.editor.saving")
-              : t("common.buttons.save")}
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Workspace Layout */}
-      <div className="flex min-h-0 flex-1 gap-3 relative">
-        {/* Left Action Palette */}
-        <NodePalette onDragStart={handleDragStart} />
-
-        {/* Center Section: Canvas & Bottom Log Panel */}
-        <div className="flex-1 flex flex-col min-h-0 gap-3">
-          <FlowCanvas
-            nodes={nodesWithCallbacks}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            setNodes={setNodes}
-            setEdges={setEdges}
-            onSelectNode={selectNodeNoFocus}
-            selectedNodeId={selectedNodeId}
-            focusNodeTrigger={focusNodeTrigger}
-            draggedNodeType={draggedNodeType}
-            isLocked={isCanvasLocked}
-            onToggleLock={() => setIsCanvasLocked((v) => !v)}
-            onEditNode={handleEditNode}
-            onDeleteNode={handleDeleteNode}
-            onCommentNode={handleCommentNode}
-            onDuplicateNode={handleDuplicateNode}
-            onStartFromHereNode={handleStartFromHere}
-          />
-
-          {isLogPanelOpen && (
-            <FlowLogPanel
-              logs={
-                debugRun.isRunning || debugRun.logs.length > 0
-                  ? debugLogs
-                  : flowLogs
-              }
-              steps={
-                debugRun.isRunning || debugRun.logs.length > 0
-                  ? debugSteps
-                  : logSteps
-              }
-              variables={variables}
-              onClose={() => setIsLogPanelOpen(false)}
-              onSelectNode={selectNodeAndFocus}
-              selectedNodeId={selectedNodeId}
-            />
-          )}
-        </div>
-
-        {/* Right Sidebar: Variables Panel */}
-        {isVariablesPanelOpen && (
-          <aside className="w-72 shrink-0 border border-border bg-card rounded-lg flex flex-col overflow-hidden shadow-md">
-            <VariablesPanel
-              variables={variables}
-              onChange={setVariables}
-              isDebugRunning={debugRun.isRunning}
-            />
-          </aside>
-        )}
-      </div>
-
-      <NodePropertiesDialog
-        isOpen={isPropertiesDialogOpen}
-        node={selectedNode}
+      <AutomationEditorDialogs
+        isPropertiesDialogOpen={isPropertiesDialogOpen}
+        selectedNode={selectedNode}
         nodes={nodes}
         edges={edges}
         variables={variables}
-        onOpenChange={(open) => {
+        onPropertiesOpenChange={(open) => {
           setIsPropertiesDialogOpen(open);
           if (!open) setSelectedNodeId(null);
         }}
         onParamChange={updateSelectedParam}
         onContinueOnErrorChange={updateSelectedContinueOnError}
         onSleepAfterChange={updateSelectedSleepAfter}
+        onCommentChange={handleSaveComment}
         onCreateVariable={(name) => {
           setVariables((prev) => {
             if (name in prev) return prev;
             return { ...prev, [name]: "" };
           });
         }}
-      />
-
-      <NodeCommentDialog
-        key={commentingNodeId || "none"}
-        node={commentingNode}
-        onClose={(comment) => {
+        commentingNodeId={commentingNodeId}
+        commentingNode={commentingNode}
+        onCloseComment={(comment) => {
           if (commentingNodeId) {
             handleSaveComment(commentingNodeId, comment);
           }
           setCommentingNodeId(null);
         }}
+        isSaveAsDialogOpen={isSaveAsDialogOpen}
+        saveAsName={saveAsName}
+        isSaving={isSaving}
+        onSaveAsOpenChange={setIsSaveAsDialogOpen}
+        onSaveAsNameChange={setSaveAsName}
+        onConfirmSaveAs={handleConfirmSaveAs}
+        isResourceConfigOpen={isResourceConfigOpen}
+        resources={v2Resources}
+        selectedResourceIdForConfig={selectedResourceIdForConfig}
+        onResourceConfigOpenChange={(open) => {
+          setIsResourceConfigOpen(open);
+          if (!open) setSelectedResourceIdForConfig(null);
+        }}
+        onResourcesChange={setV2Resources}
+        isScriptReportOpen={isScriptReportOpen}
+        scriptReport={report.state.scriptReport}
+        onScriptReportOpenChange={setIsScriptReportOpen}
+        isResourceReportOpen={isResourceReportOpen}
+        resourceReport={report.state.resourceReport}
+        onResourceReportOpenChange={setIsResourceReportOpen}
       />
-
-      <Dialog open={isSaveAsDialogOpen} onOpenChange={setIsSaveAsDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {t("automation.editor.saveAsTitle") || "Save Flow As"}
-            </DialogTitle>
-            <DialogDescription>
-              {t("automation.editor.saveAsDescription") ||
-                "Enter a name for the new flow copy."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Label
-              htmlFor="save-as-name"
-              className="text-xs font-semibold mb-2 block"
-            >
-              {t("automation.editor.flowNameLabel") || "Flow Name"}
-            </Label>
-            <Input
-              id="save-as-name"
-              value={saveAsName}
-              onChange={(e) => setSaveAsName(e.target.value)}
-              placeholder="Flow name..."
-              className="h-9 text-xs"
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsSaveAsDialogOpen(false)}
-            >
-              {t("common.buttons.cancel")}
-            </Button>
-            <Button
-              size="sm"
-              disabled={!saveAsName.trim() || isSaving}
-              onClick={handleConfirmSaveAs}
-            >
-              {t("common.buttons.save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

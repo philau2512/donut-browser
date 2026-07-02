@@ -2307,8 +2307,11 @@
         "startFailed": "Debug failed to start: {{error}}"
       },
       "debug": {
-        "noNodes": "No nodes to run from this point",
-        "startFromHere": "Start debug from: {{name}}"
+        "running": "Debugging...",
+        "stopped": "Debug stopped",
+        "completed": "Debug completed",
+        "noNodes": "No reachable nodes from this point",
+        "startFromHere": "Start debugging from: {{name}}"
       },
       "saveAsTitle": "Save Flow As",
       "saveAsDescription": "Enter a name for the new flow copy.",
@@ -2395,16 +2398,6 @@
         "required": "Please select a profile to debug",
         "alreadyRunning": "Profile is already running. Please close it before starting debug."
       },
-      "debug": {
-        "running": "Debugging...",
-        "stopped": "Debug stopped",
-        "completed": "Debug completed",
-        "noNodes": "No reachable nodes from this point",
-        "startFromHere": "Start debugging from: {{name}}"
-      },
-      "saveAsTitle": "Save Flow As",
-      "saveAsDescription": "Enter a name for the new flow copy.",
-      "flowNameLabel": "Flow Name",
       "help": {
         "waitUntil": "Page load wait mode:\n• load: Wait for all resources (HTML, images, styles) to load\n• domcontentloaded: Wait for HTML structure (DOM) to load\n• networkidle: Wait until network requests have stopped for at least 500ms",
         "timeout": "Maximum time to wait (ms) before throwing an error. Default is 30000ms.",
@@ -2418,7 +2411,8 @@
         "include": "Include (contains)",
         "start": "Start with",
         "end": "End with"
-      }
+      },
+      "scriptEditor": "Script Editor"
     },
     "actions": {
       "run": "Run",

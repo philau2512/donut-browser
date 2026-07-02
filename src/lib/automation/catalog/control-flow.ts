@@ -151,4 +151,47 @@ export const CONTROL_FLOW_CATALOG: AutomationNodeCatalogItem[] = [
     ],
     defaults: {},
   },
+  {
+    type: "label",
+    group: "control",
+    labelKey: "automation.nodes.label.label",
+    descriptionKey: "automation.nodes.label.description",
+    documentKey: "automation.nodes.label.document",
+    icon: FiFileText,
+    params: [
+      {
+        key: "labelName",
+        kind: "string",
+        required: true,
+        placeholder: "check_interface_constructor",
+        labelKey: "automation.nodes.label.params.labelName",
+      },
+    ],
+    defaults: { labelName: "new_label" },
+  },
+  {
+    type: "moveToLabel",
+    group: "control",
+    labelKey: "automation.nodes.moveToLabel.label",
+    descriptionKey: "automation.nodes.moveToLabel.description",
+    documentKey: "automation.nodes.moveToLabel.document",
+    icon: FiPlay,
+    params: [
+      {
+        key: "targetLabelNodeId",
+        kind: "string",
+        required: true,
+        placeholder: "label-123456789",
+        labelKey: "automation.nodes.moveToLabel.params.targetLabelNodeId",
+      },
+      {
+        key: "targetLabelName",
+        kind: "string",
+        required: false,
+        placeholder: "check_interface_constructor",
+        labelKey: "automation.nodes.moveToLabel.params.targetLabelName",
+      },
+    ],
+    defaults: { targetLabelNodeId: "", targetLabelName: "" },
+  },
 ];

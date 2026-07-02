@@ -206,3 +206,20 @@ export async function addComment(node, page, ctx) {
   // Intentionally no-op — purely visual in the flow editor.
   ctx.logger.debug(node.id, `comment: ${node.params?.comment ?? "(empty)"}`);
 }
+
+/** label: no-op anchor node used as a runtime jump target. */
+export async function label(node, page, ctx) {
+  const labelName = node.params?.labelName ?? node.id;
+  ctx.logger.info(node.id, `label → ${labelName}`);
+}
+
+/** moveToLabel: dynamic jump directive consumed by engine.mjs. */
+export async function moveToLabel(node, page, ctx) {
+  const targetLabelNodeId = node.params?.targetLabelNodeId;
+  if (typeof targetLabelNodeId !== "string" || targetLabelNodeId.trim() === "") {
+    throw new Error("moveToLabel: targetLabelNodeId is required");
+  }
+  const targetLabelName = node.params?.targetLabelName ?? targetLabelNodeId;
+  ctx.logger.info(node.id, `moveToLabel → ${targetLabelName}`);
+  return { type: "jumpToLabel", targetLabelNodeId, targetLabelName };
+}

@@ -25,6 +25,7 @@ import { interpolateParams, interpolateString } from "./lib/interpolate.mjs";
 import { Logger, createRedactor } from "./lib/logger.mjs";
 import { getPage } from "./lib/execution-target.mjs";
 import { getHandler } from "./nodes/index.mjs";
+import { ResourceManager } from "./resources/index.mjs";
 
 const EXIT_OK = 0;
 const EXIT_NODE_FAILED = 1;
@@ -101,10 +102,10 @@ async function resolvePage(browser, logger) {
   return pages[0];
 }
 
-export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger, flowDir }) {
+export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger, flowDir, resourceManager }) {
   // Inject runSubFlow so control-flow handlers can call sub-scripts without a
   // dynamic import back into engine.mjs (avoids circular-import overhead).
-  const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, ...args });
+  const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, resourceManager, ...args });
   const ctx = {
     logger,
     vars,
@@ -114,10 +115,16 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
     frame: null,
     flowDir,
     runSubFlow,
+    resourceManager: resourceManager ?? null,
   };
   let failed = false;
 
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
+  const labelIndex = new Map(
+    flow.nodes
+      .filter((n) => n.type === "label")
+      .map((n) => [n.id, n]),
+  );
   const getNextNode = (fromId, outcome) => {
     const edge = flow.edges.find((e) => e.from === fromId && (e.sourceHandle ?? "success") === outcome);
     return edge ? byId.get(edge.to) : null;
@@ -151,12 +158,20 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
     const stableNodeId = cur.data?.nodeId ?? cur.id;
     logger.info(stableNodeId, `▶ ${cur.type}`);
     let outcome = "success";
+    let jumpTarget = null;
     const startTime = Date.now();
     try {
       const activePage = getPage(ctx);
       const result = await handler(interpolated, activePage, ctx);
       if (typeof result === "string") {
         outcome = result;
+      } else if (result?.type === "jumpToLabel") {
+        const target = labelIndex.get(result.targetLabelNodeId);
+        if (!target) {
+          throw new Error(`moveToLabel: target label not found: ${result.targetLabelNodeId}`);
+        }
+        jumpTarget = target;
+        logger.info(stableNodeId, `jump → ${result.targetLabelName ?? result.targetLabelNodeId}`);
       }
       logger.info(stableNodeId, `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`);
     } catch (err) {
@@ -204,6 +219,11 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       }
     }
 
+    if (jumpTarget) {
+      cur = jumpTarget;
+      continue;
+    }
+
     const next = getNextNode(cur.id, outcome);
     if (next) {
       cur = next;
@@ -227,6 +247,13 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
         cur = null;
       }
     }
+  }
+  // Auto-release any remaining active leases when the flow ends without an
+  // explicit profileSuccess/profileFail node. Does not increment usage counters.
+  if (ctx.resourceManager) {
+    const profileId = vars?.PROFILE_ID ?? vars?.profile_id ?? "unknown";
+    const runId = vars?.RUN_ID ?? vars?.run_id ?? "unknown";
+    ctx.resourceManager.releaseAll(profileId, runId);
   }
   return failed;
 }
@@ -322,6 +349,27 @@ async function main() {
     return EXIT_SETUP;
   }
 
+
+  // Initialize ResourceManager if the flow defines resources (schema v2).
+  const resourceManager = new ResourceManager();
+  const flowResources = Array.isArray(flow.resources) ? flow.resources : [];
+  if (flowResources.length > 0) {
+    const stateDir = `${args["artifacts-dir"]}/resource-state`;
+    try {
+      await resourceManager.initialize(flowResources, {
+        flowDir: dirname(resolve(args.flow)),
+        stateDir,
+      });
+      // Bridge resource events to stdout as JSON-lines for Phase 4 report wiring.
+      resourceManager.events.on("*", (event) => {
+        logger.info(null, `[resource-event] ${JSON.stringify(event)}`);
+      });
+    } catch (e) {
+      logger.error(null, `ResourceManager init failed: ${e.message}`);
+      return EXIT_SETUP;
+    }
+  }
+
   try {
     const page = await resolvePage(browser, logger);
     logger.info(null, `flow "${flow.name}" started (${flow.nodes.length} nodes)`);
@@ -334,6 +382,7 @@ async function main() {
       continueDefault,
       logger,
       flowDir: dirname(resolve(args.flow)),
+      resourceManager,
     });
     logger.info(null, failed ? `flow stopped on error` : `flow completed`);
     return failed ? EXIT_NODE_FAILED : EXIT_OK;
@@ -341,6 +390,8 @@ async function main() {
     logger.error(null, `fatal: ${e.message}`);
     return EXIT_SETUP;
   } finally {
+    // Flush persisted resource state before disconnect.
+    try { await resourceManager.flush(); } catch { /* non-fatal */ }
     // Disconnect WITHOUT closing the browser — orchestrator owns lifecycle.
     try {
       await browser.close();

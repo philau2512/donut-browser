@@ -2346,7 +2346,8 @@
         "include": "Include (contains)",
         "start": "Start with",
         "end": "End with"
-      }
+      },
+      "scriptEditor": "스크립트 에디터"
     },
     "nodes": {
       "setVariable": {

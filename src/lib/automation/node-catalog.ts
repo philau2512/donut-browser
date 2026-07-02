@@ -55,11 +55,16 @@ export type AutomationNodeType =
   | "runOtherScript"
   | "addLog"
   | "addComment"
+  | "label"
+  | "moveToLabel"
   // Extension (spike)
   | "switchExtensionPopup"
   // Profile Flow Nodes
   | "openProfile"
-  | "closeProfile";
+  | "closeProfile"
+  // Profile Result Nodes (resource allocation plan)
+  | "profileSuccess"
+  | "profileFail";
 
 export type AutomationNodeGroup =
   | "navigator"
@@ -115,6 +120,7 @@ import { LOGIC_CATALOG } from "./catalog/logic";
 import { NAVIGATOR_CATALOG } from "./catalog/navigator";
 import { NETWORK_CATALOG } from "./catalog/network";
 import { PROFILE_CATALOG } from "./catalog/profile";
+import { RESULT_CATALOG } from "./catalog/result";
 
 /** FE catalog mirrors automation-engine/lib/validate.mjs NODE_SCHEMAS.
  * Keep node type + param names in lockstep with the engine validator. */
@@ -130,6 +136,7 @@ export const AUTOMATION_NODE_CATALOG: AutomationNodeCatalogItem[] = [
   ...NETWORK_CATALOG,
   ...CONTROL_FLOW_CATALOG,
   ...PROFILE_CATALOG,
+  ...RESULT_CATALOG,
 ];
 
 export const AUTOMATION_NODE_BY_TYPE = Object.fromEntries(

@@ -14,6 +14,13 @@ import { isAllowedUrlScheme } from "./url-guard.mjs";
 
 export const SCHEMA_VERSION = 1;
 
+/**
+ * Schema v2 introduces structured variables/resources arrays.
+ * The engine still uses version=1 for node execution; schemaVersion=2 is a
+ * frontend-layer contract. The validator accepts both forms.
+ */
+export const SCHEMA_VERSION_V2 = 2;
+
 // Per-node-type param spec. `required` must be present; `optional` may be
 // present; anything else => reject (closed schema). Param NAMES must match the
 // handler destructuring in nodes/*.mjs exactly — a cross-check below asserts the
@@ -254,6 +261,14 @@ export const NODE_SCHEMAS = {
     required: {},
     optional: { comment: "string" },
   },
+  label: {
+    required: { labelName: "string" },
+    optional: {},
+  },
+  moveToLabel: {
+    required: { targetLabelNodeId: "string" },
+    optional: { targetLabelName: "string" },
+  },
 
   // Extension popup (spike)
   switchExtensionPopup: {
@@ -268,6 +283,26 @@ export const NODE_SCHEMAS = {
   closeProfile: {
     required: { profileId: "string" },
     optional: { cleanupMode: "string" },
+  },
+
+  // Profile Result Nodes (resource allocation plan)
+  profileSuccess: {
+    required: {},
+    optional: {
+      message: "string",
+      includeResourceStats: "boolean",
+      stopFlow: "boolean",
+    },
+  },
+  profileFail: {
+    required: {},
+    optional: {
+      message: "string",
+      reasonCode: "string",
+      includeLastError: "boolean",
+      includeResourceStats: "boolean",
+      stopFlow: "boolean",
+    },
   },
 };
 
@@ -306,11 +341,36 @@ export function validateFlow(flow) {
       `Unsupported flow version: ${JSON.stringify(flow.version)} (expected ${SCHEMA_VERSION})`,
     );
   }
+
+  // schemaVersion is optional; when present it must be 1 or 2.
+  if (flow.schemaVersion != null && flow.schemaVersion !== 1 && flow.schemaVersion !== 2) {
+    throw new FlowValidationError(
+      `Unsupported schemaVersion: ${JSON.stringify(flow.schemaVersion)} (expected 1 or 2)`,
+    );
+  }
+
   if (typeof flow.name !== "string" || flow.name.length === 0) {
     throw new FlowValidationError("Flow.name must be a non-empty string");
   }
-  if (flow.variables != null && (typeof flow.variables !== "object" || Array.isArray(flow.variables))) {
-    throw new FlowValidationError("Flow.variables must be an object when present");
+
+  // schema v1: variables is a plain object.
+  // schema v2: variables is an array of VariableDefinition objects.
+  if (flow.variables != null) {
+    const isV2 = flow.schemaVersion === 2;
+    if (isV2) {
+      if (!Array.isArray(flow.variables)) {
+        throw new FlowValidationError("Flow.variables must be an array in schemaVersion 2");
+      }
+    } else {
+      if (typeof flow.variables !== "object" || Array.isArray(flow.variables)) {
+        throw new FlowValidationError("Flow.variables must be an object when present");
+      }
+    }
+  }
+
+  // resources is optional; when present must be an array (schema v2).
+  if (flow.resources != null && !Array.isArray(flow.resources)) {
+    throw new FlowValidationError("Flow.resources must be an array when present");
   }
   if (!Array.isArray(flow.nodes) || flow.nodes.length === 0) {
     throw new FlowValidationError("Flow.nodes must be a non-empty array");
@@ -347,6 +407,7 @@ export function validateFlow(flow) {
     }
   }
 
+  validateLabelTargets(flow.nodes);
   detectCycle(flow.nodes, flow.edges);
   return flow;
 }
@@ -429,6 +490,19 @@ function validateNode(node, ids) {
     if (!isAllowedUrlScheme(params.url)) {
       throw new FlowValidationError(
         `Node ${node.id} (openUrl): url scheme not allowed: ${JSON.stringify(params.url)}`,
+      );
+    }
+  }
+}
+
+function validateLabelTargets(nodes) {
+  const labels = new Set(nodes.filter((node) => node.type === "label").map((node) => node.id));
+  for (const node of nodes) {
+    if (node.type !== "moveToLabel") continue;
+    const target = node.params?.targetLabelNodeId;
+    if (!labels.has(target)) {
+      throw new FlowValidationError(
+        `Node ${node.id} (moveToLabel): targetLabelNodeId must reference an existing label node`,
       );
     }
   }

@@ -3,22 +3,17 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { availableVariablesAtNode } from "@/lib/automation/flow-variable-availability";
 import {
   AUTOMATION_NODE_BY_TYPE,
   type AutomationNodeType,
 } from "@/lib/automation/node-catalog";
 import { validateNodeVariableRefs } from "@/lib/automation/validate-node-variables";
+import { cn } from "@/lib/utils";
 import type { BrowserProfile } from "@/types";
 import { ExpressionInput } from "./expression-input";
 import { CloseProfileForm } from "./nodes/forms/close-profile-form";
@@ -43,8 +38,18 @@ interface NodePropertiesDialogProps {
     key: "sleepAfterFrom" | "sleepAfterTo",
     value: string | number | undefined,
   ) => void;
+  onCommentChange?: (nodeId: string, comment: string) => void;
   onCreateVariable?: (name: string) => void;
 }
+
+const COLORS = [
+  { value: "red", bg: "bg-red-500" },
+  { value: "yellow", bg: "bg-amber-500" },
+  { value: "green", bg: "bg-emerald-500" },
+  { value: "blue", bg: "bg-blue-500" },
+  { value: "purple", bg: "bg-purple-500" },
+  { value: "pink", bg: "bg-pink-500" },
+];
 
 export function NodePropertiesDialog({
   isOpen,
@@ -56,6 +61,7 @@ export function NodePropertiesDialog({
   onParamChange,
   onContinueOnErrorChange,
   onSleepAfterChange,
+  onCommentChange,
   onCreateVariable,
 }: NodePropertiesDialogProps) {
   const { t } = useTranslation();
@@ -167,7 +173,7 @@ export function NodePropertiesDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-2xl h-[480px] flex flex-col"
+        className="max-w-5xl h-[560px] p-0 flex flex-row overflow-hidden"
         onPointerDownOutside={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest("[data-radix-popper-content-wrapper]")) {
@@ -175,134 +181,185 @@ export function NodePropertiesDialog({
           }
         }}
       >
-        <DialogHeader className="shrink-0">
-          <DialogTitle>{t(catalog.labelKey)}</DialogTitle>
-          <DialogDescription>{t(catalog.descriptionKey)}</DialogDescription>
-        </DialogHeader>
-        <Tabs defaultValue="options" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="shrink-0 justify-start w-full bg-transparent p-0 h-auto rounded-none border-b border-border gap-6">
-            <TabsTrigger
-              value="options"
-              className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary border-b-2 border-transparent px-1 pb-2 h-auto text-sm font-semibold text-muted-foreground hover:text-foreground"
-            >
-              {t("automation.editor.properties.options")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="setting"
-              className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary border-b-2 border-transparent px-1 pb-2 h-auto text-sm font-semibold text-muted-foreground hover:text-foreground"
-            >
-              {t("automation.editor.properties.setting")}
-            </TabsTrigger>
-            <TabsTrigger
-              value="document"
-              className="rounded-none bg-transparent shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary border-b-2 border-transparent px-1 pb-2 h-auto text-sm font-semibold text-muted-foreground hover:text-foreground"
-            >
-              {t("automation.editor.properties.document")}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent
-            value="options"
-            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0"
-          >
-            {renderOptionsContent()}
-          </TabsContent>
-          <TabsContent
-            value="setting"
-            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0 space-y-4"
-          >
-            <div className="flex items-center gap-3 rounded-md border border-border p-3">
-              <Checkbox
-                id="dialog-continue-on-error"
-                checked={editableNode.data.continueOnError === true}
-                onCheckedChange={(checked) =>
-                  onContinueOnErrorChange(checked === true)
-                }
+        {/* Left Column: Edit Task (Sidebar) */}
+        <div className="w-80 shrink-0 border-r border-border p-4 bg-muted/10 flex flex-col justify-between select-none">
+          <div className="space-y-4">
+            <h2 className="text-base font-semibold">Edit Task</h2>
+
+            {/* Task Description (Comment) */}
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                Task Description
+              </Label>
+              <textarea
+                value={editableNode.data.comment || ""}
+                onChange={(e) => {
+                  onCommentChange?.(editableNode.id, e.target.value);
+                }}
+                placeholder="Enter description..."
+                className="w-full h-28 rounded-md border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring resize-none font-normal"
               />
-              <div className="space-y-1">
-                <Label
-                  htmlFor="dialog-continue-on-error"
-                  className="cursor-pointer"
-                >
-                  {t("automation.editor.properties.continueOnError")}
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  {t("automation.editor.properties.continueOnErrorHint")}
-                </p>
+            </div>
+
+            {/* Node ID */}
+            <div className="text-xs text-muted-foreground">
+              Id: <span className="font-mono">{editableNode.id}</span>
+            </div>
+
+            {/* Node Color Selection */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Color:</Label>
+              <div className="flex gap-2">
+                {COLORS.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => {
+                      onParamChange("color", c.value);
+                    }}
+                    className={cn(
+                      "size-5 rounded-full border border-zinc-600 transition-transform hover:scale-110",
+                      c.bg,
+                      editableNode.data.params?.color === c.value &&
+                        "ring-2 ring-primary ring-offset-2",
+                    )}
+                  />
+                ))}
+                {editableNode.data.params?.color && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onParamChange("color", "");
+                    }}
+                    className="text-[10px] text-muted-foreground hover:text-foreground transition-colors ml-1 underline"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="space-y-3 pt-3 border-t border-border">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold">
-                  {t("automation.editor.properties.sleepAfter") ||
-                    "Sleep time (milliseconds) before running the next node."}
-                </Label>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium">
-                    {t("automation.editor.properties.sleepAfterFrom") ||
-                      "From (milliseconds)"}
-                  </Label>
-                  <p className="text-[10px] text-muted-foreground">
-                    1 s = 1000 ms
-                  </p>
-                  <ExpressionInput
-                    value={String(editableNode.data.sleepAfterFrom ?? "")}
-                    onChange={(val) => {
-                      let parsed: string | number | undefined = val;
-                      if (val === "") {
-                        parsed = undefined;
-                      } else if (
-                        !val.includes("{{") &&
-                        !Number.isNaN(Number(val))
-                      ) {
-                        parsed = Math.max(0, Number(val));
-                      }
-                      onSleepAfterChange("sleepAfterFrom", parsed);
-                    }}
-                    placeholder="0"
-                    variables={variables}
+            {/* Don't run when recording */}
+            <div className="flex items-center gap-2 pt-2">
+              <Checkbox
+                id="dont-run-recording"
+                checked={
+                  editableNode.data.params?.dontRunWhenRecording === true
+                }
+                onCheckedChange={(checked) => {
+                  onParamChange("dontRunWhenRecording", checked === true);
+                }}
+              />
+              <Label
+                htmlFor="dont-run-recording"
+                className="text-xs font-normal cursor-pointer select-none"
+              >
+                Don't run when recording
+              </Label>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-4 border-t border-border/50">
+            <Button
+              className="flex-1 h-8 text-xs"
+              onClick={() => onOpenChange(false)}
+            >
+              Ok
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 h-8 text-xs"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+
+        {/* Right Column: Node Form Parameters */}
+        <div className="flex-1 flex flex-col min-h-0 bg-background">
+          {/* Header (Breadcrumb) */}
+          <div className="shrink-0 border-b border-border bg-muted/20 px-4 py-3">
+            <div className="text-xs text-muted-foreground font-mono">
+              Main / {t(`automation.editor.groups.${catalog.group}`)} /{" "}
+              {t(catalog.labelKey)}
+            </div>
+          </div>
+
+          {/* Form Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {renderOptionsContent()}
+
+            {/* Additional Settings (Continue on error, Sleep after) */}
+            <div className="border-t border-border pt-4 mt-6">
+              <h3 className="text-xs font-semibold mb-3">
+                Additional settings
+              </h3>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="continue-on-error"
+                    checked={editableNode.data.continueOnError === true}
+                    onCheckedChange={(checked) =>
+                      onContinueOnErrorChange(checked === true)
+                    }
                   />
+                  <Label
+                    htmlFor="continue-on-error"
+                    className="text-xs font-normal cursor-pointer select-none"
+                  >
+                    Continue on error
+                  </Label>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium">
-                    {t("automation.editor.properties.sleepAfterTo") ||
-                      "To (milliseconds)"}
-                  </Label>
-                  <p className="text-[10px] text-muted-foreground">
-                    1 s = 1000 ms
-                  </p>
-                  <ExpressionInput
-                    value={String(editableNode.data.sleepAfterTo ?? "")}
-                    onChange={(val) => {
-                      let parsed: string | number | undefined = val;
-                      if (val === "") {
-                        parsed = undefined;
-                      } else if (
-                        !val.includes("{{") &&
-                        !Number.isNaN(Number(val))
-                      ) {
-                        parsed = Math.max(0, Number(val));
-                      }
-                      onSleepAfterChange("sleepAfterTo", parsed);
-                    }}
-                    placeholder="0"
-                    variables={variables}
-                  />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">
+                      Sleep From (ms)
+                    </Label>
+                    <ExpressionInput
+                      value={String(editableNode.data.sleepAfterFrom ?? "")}
+                      onChange={(val) => {
+                        let parsed: string | number | undefined = val;
+                        if (val === "") parsed = undefined;
+                        else if (
+                          !val.includes("{{") &&
+                          !Number.isNaN(Number(val))
+                        )
+                          parsed = Math.max(0, Number(val));
+                        onSleepAfterChange("sleepAfterFrom", parsed);
+                      }}
+                      placeholder="0"
+                      variables={variables}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">
+                      Sleep To (ms)
+                    </Label>
+                    <ExpressionInput
+                      value={String(editableNode.data.sleepAfterTo ?? "")}
+                      onChange={(val) => {
+                        let parsed: string | number | undefined = val;
+                        if (val === "") parsed = undefined;
+                        else if (
+                          !val.includes("{{") &&
+                          !Number.isNaN(Number(val))
+                        )
+                          parsed = Math.max(0, Number(val));
+                        onSleepAfterChange("sleepAfterTo", parsed);
+                      }}
+                      placeholder="0"
+                      variables={variables}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </TabsContent>
-          <TabsContent
-            value="document"
-            className="flex-1 overflow-y-auto pr-1 mt-4 min-h-0"
-          >
-            <p className="whitespace-pre-line text-sm text-muted-foreground">
-              {t(catalog.documentKey)}
-            </p>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

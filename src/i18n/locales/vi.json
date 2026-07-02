@@ -2409,7 +2409,8 @@
         "include": "Include (contains)",
         "start": "Start with",
         "end": "End with"
-      }
+      },
+      "scriptEditor": "Trình soạn kịch bản"
     },
     "actions": {
       "run": "Chạy",

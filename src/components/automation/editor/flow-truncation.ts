@@ -1,13 +1,13 @@
-import type { DonutFlowV1 } from "./serialize";
+import type { DonutFlow } from "./serialize";
 
 /**
  * Truncate a flow to only include nodes reachable from `startNodeId`
  * following the edge graph. The startNodeId becomes the new root.
  */
-export function truncateFlowFromNode(
-  flow: DonutFlowV1,
+export function truncateFlowFromNode<TFlow extends DonutFlow>(
+  flow: TFlow,
   startNodeId: string,
-): DonutFlowV1 {
+): TFlow {
   // 1. Build adjacency: from → [to]
   const adj = new Map<string, string[]>();
   for (const edge of flow.edges) {
@@ -42,5 +42,5 @@ export function truncateFlowFromNode(
     ...flow,
     nodes: filteredNodes,
     edges: filteredEdges,
-  };
+  } as TFlow;
 }

@@ -2346,7 +2346,8 @@
         "include": "Include (contains)",
         "start": "Start with",
         "end": "End with"
-      }
+      },
+      "scriptEditor": "Editor de guiones"
     },
     "nodes": {
       "setVariable": {

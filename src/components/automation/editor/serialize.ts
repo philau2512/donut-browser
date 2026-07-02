@@ -5,6 +5,10 @@ import {
   isAutomationNodeType,
 } from "@/lib/automation/node-catalog";
 import { generateNodeId } from "@/lib/automation/node-id";
+import type {
+  ResourceDefinition,
+  VariableDefinition,
+} from "@/lib/automation/resource-schema";
 
 export const START_NODE_ID = "__start__";
 
@@ -32,6 +36,44 @@ export interface DonutFlowV1 {
   variables: Record<string, string>;
   nodes: DonutFlowNode[];
   edges: DonutFlowEdge[];
+}
+
+export interface ToDonutFlowOptions {
+  schemaVersion?: 1 | 2;
+  v2Variables?: VariableDefinition[];
+  resources?: ResourceDefinition[];
+}
+
+export interface FromDonutFlowResult {
+  nodes: AutomationCanvasNode[];
+  edges: AutomationCanvasEdge[];
+  variables: Record<string, string>;
+  v2Variables: VariableDefinition[];
+  resources: ResourceDefinition[];
+  schemaVersion: 1 | 2;
+}
+
+/**
+ * Schema v2 flow — structured variables and resources.
+ * Engine still uses version=1 for node execution during transition;
+ * schemaVersion=2 is the frontend-layer marker.
+ */
+export interface DonutFlowV2 {
+  schemaVersion: 2;
+  version: 1;
+  name: string;
+  variables: VariableDefinition[];
+  resources: ResourceDefinition[];
+  nodes: DonutFlowNode[];
+  edges: DonutFlowEdge[];
+}
+
+/** Union type accepted by the editor — either v1 (legacy) or v2 (new schema). */
+export type DonutFlow = DonutFlowV1 | DonutFlowV2;
+
+/** Type guard: check if a flow is schema v2. */
+export function isDonutFlowV2(flow: DonutFlow): flow is DonutFlowV2 {
+  return (flow as DonutFlowV2).schemaVersion === 2;
 }
 
 export interface AutomationNodeData extends Record<string, unknown> {
@@ -95,7 +137,8 @@ export function toDonutFlow(
   nodes: AutomationCanvasNode[],
   edges: AutomationCanvasEdge[],
   variables: Record<string, string> = {},
-): DonutFlowV1 {
+  options: ToDonutFlowOptions = {},
+): DonutFlow {
   const realNodes = nodes.filter(
     (node) => node.id !== START_NODE_ID && node.data.nodeType !== "start",
   );
@@ -115,7 +158,7 @@ export function toDonutFlow(
     return 0;
   });
 
-  return {
+  const baseFlow: DonutFlowV1 = {
     version: 1,
     name,
     variables,
@@ -152,12 +195,26 @@ export function toDonutFlow(
         sourceHandle: edge.sourceHandle ?? "success",
       })),
   };
+
+  const shouldWriteV2 =
+    options.schemaVersion === 2 ||
+    Boolean(options.resources?.length) ||
+    Boolean(options.v2Variables?.length);
+
+  if (!shouldWriteV2) return baseFlow;
+
+  return {
+    ...baseFlow,
+    schemaVersion: 2,
+    variables: options.v2Variables ?? recordToVariableDefinitions(variables),
+    resources: options.resources ?? [],
+  };
 }
 
 export function fromDonutFlow(
-  flow: DonutFlowV1,
+  flow: DonutFlow,
   layout?: FlowLayoutSidecarV1 | null,
-): { nodes: AutomationCanvasNode[]; edges: AutomationCanvasEdge[] } {
+): FromDonutFlowResult {
   const nodes: AutomationCanvasNode[] = [createStartNode()];
   const positions = layout?.positions ?? {};
 
@@ -204,7 +261,25 @@ export function fromDonutFlow(
     });
   }
 
-  return { nodes, edges };
+  if (isDonutFlowV2(flow)) {
+    return {
+      nodes,
+      edges,
+      variables: variableDefinitionsToRecord(flow.variables ?? []),
+      v2Variables: flow.variables ?? [],
+      resources: flow.resources ?? [],
+      schemaVersion: 2,
+    };
+  }
+
+  return {
+    nodes,
+    edges,
+    variables: flow.variables ?? {},
+    v2Variables: recordToVariableDefinitions(flow.variables ?? {}),
+    resources: [],
+    schemaVersion: 1,
+  };
 }
 
 export function toLayoutSidecar(
@@ -226,5 +301,25 @@ function pruneEmptyParams(
 ): Record<string, string | number | boolean> {
   return Object.fromEntries(
     Object.entries(params).filter(([, value]) => value !== "" && value != null),
+  );
+}
+
+function recordToVariableDefinitions(
+  variables: Record<string, string>,
+): VariableDefinition[] {
+  return Object.entries(variables).map(([name, defaultValue]) => ({
+    id: `var-${name.replace(/[^a-zA-Z0-9_-]/g, "-")}`,
+    name,
+    scope: "flow",
+    valueType: "string",
+    defaultValue,
+  }));
+}
+
+function variableDefinitionsToRecord(
+  variables: VariableDefinition[],
+): Record<string, string> {
+  return Object.fromEntries(
+    variables.map((variable) => [variable.name, variable.defaultValue ?? ""]),
   );
 }

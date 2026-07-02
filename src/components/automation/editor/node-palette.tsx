@@ -29,9 +29,10 @@ const GROUPS: AutomationNodeGroup[] = [
 
 interface NodePaletteProps {
   onDragStart: (event: DragEvent, item: AutomationNodeCatalogItem) => void;
+  onClickItem?: (item: AutomationNodeCatalogItem) => void;
 }
 
-export function NodePalette({ onDragStart }: NodePaletteProps) {
+export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<string[]>(["navigator"]);
@@ -58,7 +59,7 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
   }, [query, t]);
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col gap-3 overflow-y-auto rounded-lg border border-border bg-card p-3">
+    <div className="flex h-full flex-col gap-3 overflow-y-auto">
       <div>
         <h2 className="text-sm font-semibold">
           {t("automation.editor.palette")}
@@ -95,7 +96,7 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
                 {t(`automation.editor.groups.${group}`)}
               </AccordionTrigger>
               <AccordionContent className="pb-2">
-                <div className="grid grid-cols-2 gap-2 pt-1.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 pt-1.5">
                   {items.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -105,6 +106,13 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
                         tabIndex={0}
                         draggable
                         onDragStart={(event) => onDragStart(event, item)}
+                        onClick={() => onClickItem?.(item)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onClickItem?.(item);
+                          }
+                        }}
                         className="flex cursor-grab items-center gap-1.5 rounded-md border border-border bg-background/50 p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing min-w-0 select-none"
                       >
                         <Icon className="size-3.5 shrink-0 text-primary" />
@@ -120,6 +128,6 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
           );
         })}
       </Accordion>
-    </aside>
+    </div>
   );
 }

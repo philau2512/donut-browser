@@ -1,16 +1,21 @@
-// {{VAR}} substitution for node params — Phase 2.
+// Variable interpolation for node params — Phase 2 + resource-allocation plan.
 //
-// Flow params may contain placeholders like "{{PROFILE_ID}}" or
-// "https://app.example.com/u/{{PROFILE_NAME}}". At runtime the orchestrator
-// passes a `vars` object (PROFILE_ID, PROFILE_NAME, plus any custom vars from
-// the flow's `variables` block). We substitute every {{KEY}} with its value.
+// Supports two syntaxes:
+//   [[KEY]] / [[scope.KEY]]  — canonical variable token (schema v2)
+//   {{KEY}}                  — legacy variable token (schema v1 compat, no warning here)
+//
+// {{resource:name}} tokens are intentionally NOT resolved here — they are
+// handled by ResourceManager before node execution. If a resource token reaches
+// this layer it means ResourceManager has not resolved it yet; it is left as-is.
 //
 // Security note: interpolated values are user/profile-controlled free text.
-// Downstream consumers MUST treat the result as untrusted — url-guard validates
-// scheme, safe-path sanitizes filenames. Interpolation itself does no escaping;
-// it is a pure string replace.
+// Downstream consumers MUST treat the result as untrusted.
 
+/** Legacy placeholder: {{KEY}} — kept for v1 flow compat. */
 const PLACEHOLDER_RE = /\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g;
+
+/** Canonical variable placeholder: [[KEY]] or [[scope.KEY]] */
+const VAR_TOKEN_RE = /\[\[([A-Za-z_][A-Za-z0-9_.]*)\]\]/g;
 
 /**
  * Replace {{KEY}} occurrences in a single string using vars.
@@ -40,16 +45,28 @@ function lookupVar(vars, key) {
 
 export function interpolateString(str, vars, opts = {}) {
   if (typeof str !== "string") return str;
-  return str.replace(PLACEHOLDER_RE, (match, key) => {
-    const value = lookupVar(vars, key);
-    if (value !== undefined) {
-      return String(value ?? "");
-    }
-    if (opts.strict) {
-      throw new Error(`Unknown variable in template: ${key}`);
-    }
+
+  // Pass 1: resolve canonical [[KEY]] / [[scope.KEY]] tokens.
+  // For scoped tokens the lookup uses only the leaf name (after last dot).
+  let result = str.replace(new RegExp(VAR_TOKEN_RE.source, "g"), (match, full) => {
+    const name = full.includes(".") ? full.slice(full.lastIndexOf(".") + 1) : full;
+    const value = lookupVar(vars, name);
+    if (value !== undefined) return String(value ?? "");
+    if (opts.strict) throw new Error(`Unknown variable in template: ${full}`);
     return match;
   });
+
+  // Pass 2: resolve legacy {{KEY}} tokens — skip {{resource:...}} tokens.
+  result = result.replace(PLACEHOLDER_RE, (match, key) => {
+    // Guard: do not resolve resource references that slipped through.
+    if (key.startsWith("resource:") || key.startsWith("resource ")) return match;
+    const value = lookupVar(vars, key);
+    if (value !== undefined) return String(value ?? "");
+    if (opts.strict) throw new Error(`Unknown variable in template: ${key}`);
+    return match;
+  });
+
+  return result;
 }
 
 /**
@@ -78,4 +95,4 @@ export function interpolateParams(params, vars, opts = {}) {
   return params;
 }
 
-export { PLACEHOLDER_RE };
+export { PLACEHOLDER_RE, VAR_TOKEN_RE };
