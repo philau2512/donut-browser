@@ -192,9 +192,11 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
             {t("common.labels.status", { defaultValue: "Search Results" })} (
             {filtered.length})
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            {filtered.map((item) => {
-              const Icon = item.icon;
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map((item, index) => {
+              const Icon = GROUP_ICONS[item.group] || LuCpu; // Đồng bộ Icon của nhóm cha
+              const colors =
+                PALETTE_GROUP_COLORS[item.group] || PALETTE_GROUP_COLORS.other;
               return (
                 <div
                   key={item.type}
@@ -209,12 +211,42 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
                       onClickItem?.(item);
                     }
                   }}
-                  className="flex cursor-grab items-center gap-1.5 rounded-md border border-border bg-background/50 p-2 text-left transition hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing min-w-0 select-none"
+                  className={cn(
+                    "flex cursor-grab rounded-lg border bg-card/65 transition hover:shadow-sm hover:scale-[1.01] active:cursor-grabbing min-w-0 select-none p-2 gap-2 h-24 text-left",
+                    colors.border,
+                    colors.hoverBg,
+                    colors.hoverBorder,
+                  )}
                 >
-                  <Icon className="size-3.5 shrink-0 text-primary" />
-                  <span className="truncate text-[11px] font-semibold">
-                    {t(item.labelKey)}
-                  </span>
+                  {/* Left Column: Icon & STT */}
+                  <div className="w-8 flex flex-col items-center justify-between py-0.5 border-r border-border/40 shrink-0 select-none">
+                    <Icon className={cn("size-5", colors.text)} />
+                    <span className="text-[9px] font-bold font-mono text-muted-foreground/60 leading-none">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  {/* Right Column: Title, Description, Group Badge */}
+                  <div className="flex-1 flex flex-col justify-between min-w-0">
+                    <div className="space-y-0.5 min-w-0">
+                      <h3 className="font-bold text-[11px] leading-tight truncate text-foreground">
+                        {t(item.labelKey)}
+                      </h3>
+                      <p className="text-[9.5px] text-muted-foreground line-clamp-2 leading-tight">
+                        {t(item.descriptionKey)}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "inline-block self-start text-[7.5px] font-bold px-1.5 py-0.5 rounded border uppercase leading-none tracking-wider scale-90 origin-left mt-0.5",
+                        colors.border,
+                        colors.bg,
+                        colors.text,
+                      )}
+                    >
+                      {t(`automation.editor.groups.${item.group}`)}
+                    </span>
+                  </div>
                 </div>
               );
             })}

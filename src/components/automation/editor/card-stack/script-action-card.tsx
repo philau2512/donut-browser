@@ -7,8 +7,16 @@ import {
   LuCheck,
   LuChevronDown,
   LuChevronUp,
+  LuCompass,
+  LuCpu,
+  LuDatabase,
+  LuGitFork,
+  LuKeyboard,
+  LuMousePointer,
+  LuNetwork,
   LuPlay,
   LuTriangleAlert,
+  LuWrench,
   LuX,
 } from "react-icons/lu";
 import {
@@ -25,6 +33,18 @@ import { cn } from "@/lib/utils";
 import type { AutomationCanvasNode } from "../serialize";
 import { BranchConnectorRow } from "./branch-connector-row";
 import { getBranchHandles } from "./flow-card-stack-adapter";
+
+const GROUP_ICONS: Record<string, any> = {
+  navigator: LuCompass,
+  mouse: LuMousePointer,
+  keyboard: LuKeyboard,
+  data: LuDatabase,
+  network: LuNetwork,
+  control: LuGitFork,
+  utility: LuWrench,
+  other: LuCpu,
+  interaction: LuMousePointer,
+};
 
 interface ScriptActionCardProps {
   node: AutomationCanvasNode;
@@ -88,7 +108,9 @@ export function ScriptActionCard({
   const catalog = isStart
     ? null
     : AUTOMATION_NODE_BY_TYPE[nodeType as AutomationNodeType];
-  const Icon = catalog?.icon;
+  const Icon = catalog
+    ? GROUP_ICONS[catalog.group] || catalog.icon || LuCpu
+    : null;
   const title = isStart
     ? t("automation.editor.start")
     : t(catalog?.labelKey ?? "");
