@@ -32,6 +32,7 @@ export type BackendErrorCode =
   | "FINGERPRINT_REQUIRES_PRO"
   | "PROXY_NOT_WORKING"
   | "PROXY_PAYMENT_REQUIRED"
+  | "PROXY_NOT_WORKING_LAUNCH"
   | "VPN_NOT_WORKING"
   | "CAMOUFOX_IMPORT_DEPRECATED"
   | "WAYFERN_FINGERPRINT_MISSING"
@@ -140,6 +141,8 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.fingerprintRequiresPro");
     case "PROXY_NOT_WORKING":
       return t("backendErrors.proxyNotWorking");
+    case "PROXY_NOT_WORKING_LAUNCH":
+      return t("backendErrors.proxyNotWorkingLaunch");
     case "PROXY_PAYMENT_REQUIRED":
       return t("backendErrors.proxyPaymentRequired");
     case "VPN_NOT_WORKING":

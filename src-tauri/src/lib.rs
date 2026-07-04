@@ -235,16 +235,24 @@ async fn create_stored_proxy(
   name: String,
   proxy_settings: Option<crate::browser::ProxySettings>,
   is_profile_specific: Option<bool>,
+  check_before_start: Option<bool>,
 ) -> Result<crate::proxy::proxy_manager::StoredProxy, String> {
   if let Some(settings) = proxy_settings {
-    crate::proxy::proxy_manager::PROXY_MANAGER
+    let mut proxy = crate::proxy::proxy_manager::PROXY_MANAGER
       .create_stored_proxy(
         &app_handle,
         name,
         settings,
         is_profile_specific.unwrap_or(false),
       )
-      .map_err(|e| format!("Failed to create stored proxy: {e}"))
+      .map_err(|e| format!("Failed to create stored proxy: {e}"))?;
+
+    if let Some(check) = check_before_start {
+      proxy = crate::proxy::proxy_manager::PROXY_MANAGER
+        .set_check_before_start(&proxy.id, check)
+        .map_err(|e| format!("Failed to set check_before_start: {e}"))?;
+    }
+    Ok(proxy)
   } else {
     Err("proxy_settings is required".to_string())
   }
@@ -261,10 +269,19 @@ async fn update_stored_proxy(
   proxy_id: String,
   name: Option<String>,
   proxy_settings: Option<crate::browser::ProxySettings>,
+  check_before_start: Option<bool>,
 ) -> Result<crate::proxy::proxy_manager::StoredProxy, String> {
-  crate::proxy::proxy_manager::PROXY_MANAGER
+  let mut proxy = crate::proxy::proxy_manager::PROXY_MANAGER
     .update_stored_proxy(&app_handle, &proxy_id, name, proxy_settings)
-    .map_err(|e| format!("Failed to update stored proxy: {e}"))
+    .map_err(|e| format!("Failed to update stored proxy: {e}"))?;
+
+  if let Some(check) = check_before_start {
+    proxy = crate::proxy::proxy_manager::PROXY_MANAGER
+      .set_check_before_start(&proxy_id, check)
+      .map_err(|e| format!("Failed to set check_before_start: {e}"))?;
+  }
+
+  Ok(proxy)
 }
 
 #[tauri::command]

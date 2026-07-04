@@ -252,7 +252,12 @@
       "lastOpen": "마지막으로 연 시간",
       "os": "OS",
       "message": "메시지",
-      "changeProxy": "프록시 변경"
+      "changeProxy": "프록시 변경",
+      "statusReady": "준비됨",
+      "statusRunning": "실행 중",
+      "statusLaunching": "시작 중...",
+      "statusStopping": "중지 중...",
+      "errorCannotCheckProxy": "오류: 프록시를 확인할 수 없음"
     },
     "actions": {
       "launch": "실행",
@@ -1947,7 +1952,8 @@
     "wayfernWebrtcAlterIpInvalid": "WebRTC alter 모드에서 유효하지 않은 프록시 출구 IP를 받았습니다.",
     "wayfernNoPageTargets": "Wayfern이 시작되었지만 핑거프린트 주입에 사용할 페이지가 없습니다.",
     "wayfernFingerprintApplyFailed": "Wayfern에 핑거프린트를 적용하지 못했습니다: {{detail}}",
-    "wayfernRehydrateFailed": "복구된 Wayfern 브라우저에서 핑거프린트 보호를 복원하지 못했습니다: {{reason}}"
+    "wayfernRehydrateFailed": "복구된 Wayfern 브라우저에서 핑거프린트 보호를 복원하지 못했습니다: {{reason}}",
+    "proxyNotWorkingLaunch": "선택한 프록시가 작동하지 않습니다. 프로필을 실행할 수 없습니다."
   },
   "rail": {
     "profiles": "프로필",

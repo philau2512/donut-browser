@@ -252,7 +252,12 @@
       "lastOpen": "Última abertura",
       "os": "OS",
       "message": "Mensagem",
-      "changeProxy": "Alterar proxy"
+      "changeProxy": "Alterar proxy",
+      "statusReady": "Pronto",
+      "statusRunning": "Executando",
+      "statusLaunching": "Iniciando...",
+      "statusStopping": "Parando...",
+      "errorCannotCheckProxy": "Erro: Não é possível verificar o proxy"
     },
     "actions": {
       "launch": "Iniciar",
@@ -1947,7 +1952,8 @@
     "wayfernWebrtcAlterIpInvalid": "O modo alter do WebRTC recebeu um IP de saída do proxy inválido.",
     "wayfernNoPageTargets": "O Wayfern iniciou, mas nenhuma página estava disponível para injeção de impressão digital.",
     "wayfernFingerprintApplyFailed": "Falha ao aplicar a impressão digital ao Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "Falha ao restaurar a protecao de impressao digital em um navegador Wayfern recuperado: {{reason}}"
+    "wayfernRehydrateFailed": "Falha ao restaurar a protecao de impressao digital em um navegador Wayfern recuperado: {{reason}}",
+    "proxyNotWorkingLaunch": "O proxy selecionado não está funcionando. Não é possível iniciar o perfil."
   },
   "rail": {
     "profiles": "Perfis",

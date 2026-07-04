@@ -252,7 +252,12 @@
       "lastOpen": "Dernière ouverture",
       "os": "OS",
       "message": "Message",
-      "changeProxy": "Modifier le proxy"
+      "changeProxy": "Modifier le proxy",
+      "statusReady": "Prêt",
+      "statusRunning": "En cours",
+      "statusLaunching": "Démarrage...",
+      "statusStopping": "Arrêt...",
+      "errorCannotCheckProxy": "Erreur : Impossible de vérifier le proxy"
     },
     "actions": {
       "launch": "Lancer",
@@ -1947,7 +1952,8 @@
     "wayfernWebrtcAlterIpInvalid": "Le mode alter WebRTC a reçu une IP de sortie proxy invalide.",
     "wayfernNoPageTargets": "Wayfern a démarré mais aucune page n'était disponible pour l'injection d'empreinte.",
     "wayfernFingerprintApplyFailed": "Échec de l'application de l'empreinte à Wayfern : {{detail}}",
-    "wayfernRehydrateFailed": "Impossible de restaurer la protection d empreinte sur un navigateur Wayfern recupere : {{reason}}"
+    "wayfernRehydrateFailed": "Impossible de restaurer la protection d empreinte sur un navigateur Wayfern recupere : {{reason}}",
+    "proxyNotWorkingLaunch": "Le proxy sélectionné ne fonctionne pas. Impossible de lancer le profil."
   },
   "rail": {
     "profiles": "Profils",

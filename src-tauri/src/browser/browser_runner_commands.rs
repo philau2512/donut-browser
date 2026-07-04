@@ -132,6 +132,53 @@ pub async fn launch_browser_profile_impl(
     profile_for_launch.id
   );
 
+  // Check proxy connectivity before launch if check_before_start is enabled on the proxy.
+  // Skips the cloud proxy (its only failure mode is 402 at request time, not a pre-check).
+  if let Some(ref proxy_id) = profile_for_launch.proxy_id {
+    if proxy_id != crate::proxy::proxy_manager::CLOUD_PROXY_ID {
+      let check_before_start = {
+        let stored_proxies = PROXY_MANAGER.get_stored_proxies();
+        stored_proxies
+          .into_iter()
+          .find(|p| p.id == *proxy_id)
+          .map(|p| p.check_before_start.unwrap_or(true))
+          .unwrap_or(true)
+      };
+
+      if check_before_start {
+        if let Some(settings) = PROXY_MANAGER.get_proxy_settings_by_id(proxy_id) {
+          log::info!(
+            "Checking proxy before launch for profile: {} (proxy: {})",
+            profile_for_launch.name,
+            proxy_id
+          );
+          let check_result = PROXY_MANAGER.check_proxy_validity(proxy_id, &settings).await;
+          let is_valid = matches!(&check_result, Ok(res) if res.is_valid);
+          if !is_valid {
+            log::error!(
+              "Proxy check failed before launch for profile: {}",
+              profile_for_launch.name
+            );
+            // Clear the launching state in the frontend
+            #[derive(serde::Serialize)]
+            struct RunningChangedPayload {
+              id: String,
+              is_running: bool,
+            }
+            let _ = events::emit(
+              "profile-running-changed",
+              &RunningChangedPayload {
+                id: profile_for_launch.id.to_string(),
+                is_running: false,
+              },
+            );
+            return Err(serde_json::json!({ "code": "PROXY_NOT_WORKING_LAUNCH" }).to_string());
+          }
+        }
+      }
+    }
+  }
+
   // Launch browser or open URL in existing instance. Camoufox and Wayfern
   // start their own local proxies inside `launch_browser_internal`; any
   // other browser type is rejected there (we only support those for import,

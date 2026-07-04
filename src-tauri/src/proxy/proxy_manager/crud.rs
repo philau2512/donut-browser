@@ -164,6 +164,7 @@ impl ProxyManager {
         geo_isp: None,
         dynamic_proxy_url: None,
         dynamic_proxy_format: None,
+        check_before_start: None,
       };
       stored_proxies.insert(CLOUD_PROXY_ID.to_string(), cloud_proxy.clone());
       drop(stored_proxies);
@@ -357,6 +358,7 @@ impl ProxyManager {
       geo_isp: isp,
       dynamic_proxy_url: None,
       dynamic_proxy_format: None,
+      check_before_start: None,
     };
 
     {
@@ -456,6 +458,27 @@ impl ProxyManager {
     // Sort case-insensitively by name for consistent ordering across UI/API consumers
     list.sort_by_key(|p| p.name.to_lowercase());
     list
+  }
+
+  /// Update the `check_before_start` flag on a stored proxy and persist to disk.
+  pub fn set_check_before_start(
+    &self,
+    proxy_id: &str,
+    check: bool,
+  ) -> Result<StoredProxy, String> {
+    let updated = {
+      let mut stored_proxies = self.stored_proxies.lock().unwrap();
+      let proxy = stored_proxies
+        .get_mut(proxy_id)
+        .ok_or_else(|| format!("Proxy '{proxy_id}' not found"))?;
+      proxy.check_before_start = Some(check);
+      proxy.updated_at = Some(now_secs());
+      proxy.clone()
+    };
+    if let Err(e) = self.save_proxy(&updated) {
+      log::warn!("Failed to persist check_before_start for proxy {proxy_id}: {e}");
+    }
+    Ok(updated)
   }
 
   /// Insert/replace a stored proxy in the in-memory map. Used by sync's

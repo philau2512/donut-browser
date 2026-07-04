@@ -252,7 +252,12 @@
       "lastOpen": "Lần mở cuối",
       "os": "OS",
       "message": "Thông báo",
-      "changeProxy": "Đổi Proxy"
+      "changeProxy": "Đổi Proxy",
+      "statusReady": "Sẵn sàng",
+      "statusRunning": "Đang chạy",
+      "statusLaunching": "Đang khởi động...",
+      "statusStopping": "Đang dừng...",
+      "errorCannotCheckProxy": "Lỗi: Không thể kiểm tra proxy"
     },
     "actions": {
       "launch": "Khởi chạy",
@@ -1950,7 +1955,8 @@
     "wayfernWebrtcAlterIpInvalid": "Chế độ WebRTC alter nhận IP thoát proxy không hợp lệ.",
     "wayfernNoPageTargets": "Wayfern đã khởi động nhưng không có tab để inject vân tay.",
     "wayfernFingerprintApplyFailed": "Không thể áp dụng vân tay cho Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}"
+    "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}",
+    "proxyNotWorkingLaunch": "Proxy đã chọn không hoạt động. Không thể khởi chạy profile."
   },
   "rail": {
     "profiles": "Profile",

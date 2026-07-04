@@ -252,7 +252,12 @@
       "lastOpen": "上次打开",
       "os": "OS",
       "message": "消息",
-      "changeProxy": "更改代理"
+      "changeProxy": "更改代理",
+      "statusReady": "就绪",
+      "statusRunning": "运行中",
+      "statusLaunching": "启动中...",
+      "statusStopping": "停止中...",
+      "errorCannotCheckProxy": "错误：无法检查代理"
     },
     "actions": {
       "launch": "启动",
@@ -1947,7 +1952,8 @@
     "wayfernWebrtcAlterIpInvalid": "WebRTC alter 模式收到了无效的代理出口 IP。",
     "wayfernNoPageTargets": "Wayfern 已启动，但没有可用于注入指纹的页面。",
     "wayfernFingerprintApplyFailed": "无法将指纹应用到 Wayfern：{{detail}}",
-    "wayfernRehydrateFailed": "无法在已恢复的 Wayfern 浏览器上恢复指纹保护：{{reason}}"
+    "wayfernRehydrateFailed": "无法在已恢复的 Wayfern 浏览器上恢复指纹保护：{{reason}}",
+    "proxyNotWorkingLaunch": "所选代理不可用，无法启动配置。"
   },
   "rail": {
     "profiles": "配置文件",

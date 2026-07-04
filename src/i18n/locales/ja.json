@@ -252,7 +252,12 @@
       "lastOpen": "最終起動",
       "os": "OS",
       "message": "メッセージ",
-      "changeProxy": "プロキシ変更"
+      "changeProxy": "プロキシ変更",
+      "statusReady": "準備完了",
+      "statusRunning": "実行中",
+      "statusLaunching": "起動中...",
+      "statusStopping": "停止中...",
+      "errorCannotCheckProxy": "エラー: プロキシを確認できません"
     },
     "actions": {
       "launch": "起動",
@@ -1947,7 +1952,8 @@
     "wayfernWebrtcAlterIpInvalid": "WebRTC alterモードで無効なプロキシ出口IPを受け取りました。",
     "wayfernNoPageTargets": "Wayfernは起動しましたが、フィンガープリント注入用のページがありませんでした。",
     "wayfernFingerprintApplyFailed": "Wayfernにフィンガープリントを適用できませんでした: {{detail}}",
-    "wayfernRehydrateFailed": "復旧した Wayfern ブラウザでフィンガープリント保護を復元できませんでした: {{reason}}"
+    "wayfernRehydrateFailed": "復旧した Wayfern ブラウザでフィンガープリント保護を復元できませんでした: {{reason}}",
+    "proxyNotWorkingLaunch": "選択したプロキシが機能していません。プロファイルを起動できません。"
   },
   "rail": {
     "profiles": "プロファイル",

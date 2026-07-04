@@ -252,7 +252,12 @@
       "lastOpen": "Última apertura",
       "os": "OS",
       "message": "Mensaje",
-      "changeProxy": "Cambiar proxy"
+      "changeProxy": "Cambiar proxy",
+      "statusReady": "Listo",
+      "statusRunning": "Ejecutando",
+      "statusLaunching": "Iniciando...",
+      "statusStopping": "Deteniendo...",
+      "errorCannotCheckProxy": "Error: No se puede verificar el proxy"
     },
     "actions": {
       "launch": "Iniciar",
@@ -1947,7 +1952,8 @@
     "wayfernWebrtcAlterIpInvalid": "El modo alter de WebRTC recibió una IP de salida del proxy no válida.",
     "wayfernNoPageTargets": "Wayfern se inició pero no había ninguna página disponible para inyectar la huella.",
     "wayfernFingerprintApplyFailed": "No se pudo aplicar la huella a Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "No se pudo restaurar la proteccion de huella en un navegador Wayfern recuperado: {{reason}}"
+    "wayfernRehydrateFailed": "No se pudo restaurar la proteccion de huella en un navegador Wayfern recuperado: {{reason}}",
+    "proxyNotWorkingLaunch": "El proxy seleccionado no funciona. No se puede iniciar el perfil."
   },
   "rail": {
     "profiles": "Perfiles",

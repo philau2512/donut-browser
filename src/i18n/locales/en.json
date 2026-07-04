@@ -252,7 +252,12 @@
       "lastOpen": "Last Open",
       "os": "OS",
       "message": "Message",
-      "changeProxy": "Change Proxy"
+      "changeProxy": "Change Proxy",
+      "statusReady": "Ready",
+      "statusRunning": "Running",
+      "statusLaunching": "Launching...",
+      "statusStopping": "Stopping...",
+      "errorCannotCheckProxy": "Error: Cannot check proxy"
     },
     "actions": {
       "launch": "Launch",
@@ -1951,7 +1956,8 @@
     "wayfernNoPageTargets": "Wayfern started but no browser page was available for fingerprint injection.",
     "wayfernFingerprintApplyFailed": "Failed to apply the fingerprint to Wayfern: {{detail}}",
     "wayfernRehydrateFailed": "Failed to restore fingerprint protection on a recovered Wayfern browser: {{reason}}",
-    "wayfernFingerprintInconsistent": "Fingerprint is inconsistent (e.g., screen resolution mismatch). Regenerate fingerprint to fix: {{reason}}"
+    "wayfernFingerprintInconsistent": "Fingerprint is inconsistent (e.g., screen resolution mismatch). Regenerate fingerprint to fix: {{reason}}",
+    "proxyNotWorkingLaunch": "The selected proxy is not working. The profile cannot be launched."
   },
   "rail": {
     "profiles": "Profiles",

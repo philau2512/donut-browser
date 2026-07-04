@@ -252,7 +252,12 @@
       "lastOpen": "Последний запуск",
       "os": "OS",
       "message": "Сообщение",
-      "changeProxy": "Изменить прокси"
+      "changeProxy": "Изменить прокси",
+      "statusReady": "Готов",
+      "statusRunning": "Выполняется",
+      "statusLaunching": "Запуск...",
+      "statusStopping": "Остановка...",
+      "errorCannotCheckProxy": "Ошибка: невозможно проверить прокси"
     },
     "actions": {
       "launch": "Запустить",
@@ -1947,7 +1952,8 @@
     "wayfernWebrtcAlterIpInvalid": "Режим WebRTC alter получил недействительный IP выхода прокси.",
     "wayfernNoPageTargets": "Wayfern запустился, но не было страницы для внедрения отпечатка.",
     "wayfernFingerprintApplyFailed": "Не удалось применить отпечаток к Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "Не удалось восстановить защиту отпечатка на восстановленном браузере Wayfern: {{reason}}"
+    "wayfernRehydrateFailed": "Не удалось восстановить защиту отпечатка на восстановленном браузере Wayfern: {{reason}}",
+    "proxyNotWorkingLaunch": "Выбранный прокси не работает. Профиль не может быть запущен."
   },
   "rail": {
     "profiles": "Профили",

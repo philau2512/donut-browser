@@ -174,6 +174,7 @@ export function QuickProxyDialog({
         setPort(associatedProxy.proxy_settings.port);
         setUsername(associatedProxy.proxy_settings.username ?? "");
         setPassword(associatedProxy.proxy_settings.password ?? "");
+        setCheckBeforeStart(associatedProxy.check_before_start ?? true);
 
         invoke<ProxyCheckResult | null>("get_cached_proxy_check", {
           proxyId: associatedProxy.id,
@@ -275,6 +276,7 @@ export function QuickProxyDialog({
           username: username.trim() || undefined,
           password: password.trim() || undefined,
         },
+        checkBeforeStart,
       };
 
       if (associatedProxy) {

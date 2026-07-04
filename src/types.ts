@@ -180,6 +180,8 @@ export interface StoredProxy {
   geo_region?: string;
   geo_city?: string;
   geo_isp?: string;
+  /** When true (default), proxy is validated before launching any profile that uses it. */
+  check_before_start?: boolean;
 }
 
 export interface LocationItem {
