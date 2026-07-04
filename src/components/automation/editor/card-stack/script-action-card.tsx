@@ -126,30 +126,55 @@ export function ScriptActionCard({
   const isBlockNode = isBlockStartNode || isBlockEndNode;
 
   const customColor = node.data.params?.color;
-  const colorClasses =
+  const borderClasses =
     customColor === "red"
-      ? "border-red-500/40 bg-red-500/5"
+      ? "border-red-500/45 dark:border-red-500/35"
       : customColor === "yellow"
-        ? "border-amber-500/50 bg-amber-500/5"
+        ? "border-amber-500/55 dark:border-amber-500/35"
         : customColor === "green"
-          ? "border-emerald-500/40 bg-emerald-500/5"
+          ? "border-emerald-500/45 dark:border-emerald-500/35"
           : customColor === "blue"
-            ? "border-blue-500/40 bg-blue-500/5"
+            ? "border-blue-500/45 dark:border-blue-500/35"
             : customColor === "purple"
-              ? "border-purple-500/40 bg-purple-500/5"
+              ? "border-purple-500/45 dark:border-purple-500/35"
               : customColor === "pink"
-                ? "border-pink-500/40 bg-pink-500/5"
+                ? "border-pink-500/45 dark:border-pink-500/35"
                 : isStart
-                  ? "border-emerald-500/40 bg-emerald-500/5"
+                  ? "border-emerald-500/45 dark:border-emerald-500/35"
                   : nodeType === "label"
-                    ? "border-amber-500/40 bg-amber-500/5"
+                    ? "border-amber-500/45 dark:border-amber-500/35"
                     : nodeType === "moveToLabel"
-                      ? "border-blue-500/40 bg-blue-500/5"
+                      ? "border-blue-500/45 dark:border-blue-500/35"
                       : nodeType === "ignoreErrorsStart"
-                        ? "border-amber-500/40 bg-amber-500/5"
+                        ? "border-amber-500/45 dark:border-amber-500/35"
                         : nodeType === "ifCondition"
-                          ? "border-red-500/40 bg-red-500/5"
-                          : "border-border bg-card";
+                          ? "border-red-500/45 dark:border-red-500/35"
+                          : "border-border";
+
+  const headerBgClasses =
+    customColor === "red"
+      ? "bg-red-500/10 dark:bg-red-950/20"
+      : customColor === "yellow"
+        ? "bg-amber-500/12 dark:bg-amber-950/20"
+        : customColor === "green"
+          ? "bg-emerald-500/10 dark:bg-emerald-950/20"
+          : customColor === "blue"
+            ? "bg-blue-500/10 dark:bg-blue-950/20"
+            : customColor === "purple"
+              ? "bg-purple-500/10 dark:bg-purple-950/20"
+              : customColor === "pink"
+                ? "bg-pink-500/10 dark:bg-pink-950/20"
+                : isStart
+                  ? "bg-emerald-500/10 dark:bg-emerald-950/20"
+                  : nodeType === "label"
+                    ? "bg-amber-500/10 dark:bg-amber-950/20"
+                    : nodeType === "moveToLabel"
+                      ? "bg-blue-500/10 dark:bg-blue-950/20"
+                      : nodeType === "ignoreErrorsStart"
+                        ? "bg-amber-500/10 dark:bg-amber-950/20"
+                        : nodeType === "ifCondition"
+                          ? "bg-red-500/10 dark:bg-red-950/20"
+                          : "bg-muted/40";
 
   return (
     <article
@@ -164,8 +189,8 @@ export function ScriptActionCard({
         event.dataTransfer.setDragImage(event.currentTarget, 0, 0);
       }}
       className={cn(
-        "group relative w-52 max-w-full rounded-lg border shadow-sm transition overflow-hidden cursor-pointer",
-        colorClasses,
+        "group relative w-52 max-w-full rounded-lg border shadow-sm transition overflow-hidden cursor-pointer bg-card",
+        borderClasses,
         selected && "border-primary ring-2 ring-primary/30 shadow-md",
         isPending &&
           "animate-pulse ring-2 ring-amber-500/50 border-amber-500 shadow-md scale-[1.01]",
@@ -196,7 +221,8 @@ export function ScriptActionCard({
       {/* Header */}
       <div
         className={cn(
-          "flex items-center justify-between border-b border-border/50 bg-muted/40 px-3 py-1.5 select-none",
+          "flex items-center justify-between border-b border-border/50 px-3 py-1.5 select-none",
+          headerBgClasses,
           !disabled && !isStart && "cursor-grab active:cursor-grabbing",
         )}
       >
@@ -439,7 +465,7 @@ function renderNodeParams(node: AutomationCanvasNode) {
     const firstParamKey = keys[0];
     return (
       <span className="text-muted-foreground font-mono text-[11px] truncate">
-        {`${firstParamKey}: ${String(params[firstParamKey])}`}
+        {String(params[firstParamKey])}
       </span>
     );
   }
