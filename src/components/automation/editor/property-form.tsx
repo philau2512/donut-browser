@@ -34,6 +34,7 @@ interface PropertyFormProps {
   variableWarnings?: ValidationWarning[];
   onParamChange: (key: string, value: string | number | boolean) => void;
   onCreateVariable?: (name: string) => void;
+  functions?: string[];
 }
 
 function formatParamKey(key: string): string {
@@ -65,6 +66,7 @@ export function PropertyForm({
   variableWarnings = [],
   onParamChange,
   onCreateVariable,
+  functions = ["Main"],
 }: PropertyFormProps) {
   const { t, i18n } = useTranslation();
 
@@ -139,7 +141,16 @@ export function PropertyForm({
                   <SelectValue placeholder={param.placeholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  {(param.options ?? []).map((option) => (
+                  {(param.key === "functionName"
+                    ? functions.map(
+                        (f) =>
+                          ({ value: f }) as {
+                            value: string;
+                            labelKey?: string;
+                          },
+                      )
+                    : (param.options ?? [])
+                  ).map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.labelKey ? t(option.labelKey) : option.value}
                     </SelectItem>

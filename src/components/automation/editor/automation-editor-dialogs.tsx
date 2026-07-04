@@ -60,7 +60,7 @@ interface AutomationEditorDialogsProps {
   scriptReport: ScriptReport | null;
   onScriptReportOpenChange: (open: boolean) => void;
   isResourceReportOpen: boolean;
-  resourceReport: ResourceReport;
+  resourceReport: ResourceReport | null;
   onResourceReportOpenChange: (open: boolean) => void;
   labelCreationSlot: CardStackSlot | null;
   newLabelName: string;
@@ -70,6 +70,7 @@ interface AutomationEditorDialogsProps {
   deletingBlockId: string | null;
   onConfirmDeleteBlock: (deleteAll: boolean) => void;
   onCancelDeleteBlock: () => void;
+  functions?: string[];
 }
 
 export function AutomationEditorDialogs({
@@ -114,6 +115,7 @@ export function AutomationEditorDialogs({
   deletingBlockId,
   onConfirmDeleteBlock,
   onCancelDeleteBlock,
+  functions,
 }: AutomationEditorDialogsProps) {
   const { t } = useTranslation();
 
@@ -133,6 +135,7 @@ export function AutomationEditorDialogs({
         onSleepAfterChange={onSleepAfterChange}
         onCommentChange={onCommentChange}
         onCreateVariable={onCreateVariable}
+        functions={functions}
       />
 
       <NodeCommentDialog

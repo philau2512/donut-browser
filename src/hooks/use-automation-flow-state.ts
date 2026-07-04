@@ -29,6 +29,7 @@ import { truncateFlowFromNode } from "@/components/automation/editor/flow-trunca
 import {
   type AutomationCanvasEdge,
   type AutomationCanvasNode,
+  type CanvasFunctionState,
   createAutomationNode,
   createStartNode,
   type DonutFlow,
@@ -103,6 +104,26 @@ export function useAutomationFlowState({
   );
   const [justAddedNodeId, setJustAddedNodeId] = useState<string | null>(null);
 
+  // Multi-function states
+  const [functions, setFunctions] = useState<CanvasFunctionState[]>([
+    { name: "Main", nodes: [createStartNode()], edges: [] },
+  ]);
+  const [activeFunctionName, setActiveFunctionName] = useState<string>("Main");
+
+  // History (Undo/Redo) states per function name
+  const [historyPast, setHistoryPast] = useState<
+    Record<
+      string,
+      Array<{ nodes: AutomationCanvasNode[]; edges: AutomationCanvasEdge[] }>
+    >
+  >({});
+  const [historyFuture, setHistoryFuture] = useState<
+    Record<
+      string,
+      Array<{ nodes: AutomationCanvasNode[]; edges: AutomationCanvasEdge[] }>
+    >
+  >({});
+
   const searchResults = useMemo<string[]>(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return [];
@@ -128,60 +149,178 @@ export function useAutomationFlowState({
     new Set(),
   );
 
-  // History (Undo/Redo) states
-  const [historyPast, setHistoryPast] = useState<
-    Array<{ nodes: AutomationCanvasNode[]; edges: AutomationCanvasEdge[] }>
-  >([]);
-  const [historyFuture, setHistoryFuture] = useState<
-    Array<{ nodes: AutomationCanvasNode[]; edges: AutomationCanvasEdge[] }>
-  >([]);
-
   const pushHistory = useCallback(
     (
       currentNodes: AutomationCanvasNode[],
       currentEdges: AutomationCanvasEdge[],
     ) => {
-      setHistoryPast((prev) => [
+      setHistoryPast((prev) => {
+        const funcPast = prev[activeFunctionName] ?? [];
+        return {
+          ...prev,
+          [activeFunctionName]: [
+            ...funcPast,
+            {
+              nodes: JSON.parse(JSON.stringify(currentNodes)),
+              edges: JSON.parse(JSON.stringify(currentEdges)),
+            },
+          ],
+        };
+      });
+      setHistoryFuture((prev) => ({
         ...prev,
-        {
-          nodes: JSON.parse(JSON.stringify(currentNodes)),
-          edges: JSON.parse(JSON.stringify(currentEdges)),
-        },
-      ]);
-      setHistoryFuture([]);
+        [activeFunctionName]: [],
+      }));
     },
-    [],
+    [activeFunctionName],
   );
 
   const handleUndo = useCallback(() => {
-    if (historyPast.length === 0) return;
-    const previous = historyPast[historyPast.length - 1];
-    setHistoryPast((prev) => prev.slice(0, -1));
-    setHistoryFuture((prev) => [
+    const funcPast = historyPast[activeFunctionName] ?? [];
+    if (funcPast.length === 0) return;
+    const previous = funcPast[funcPast.length - 1];
+    setHistoryPast((prev) => ({
       ...prev,
-      {
-        nodes: JSON.parse(JSON.stringify(nodes)),
-        edges: JSON.parse(JSON.stringify(edges)),
-      },
-    ]);
+      [activeFunctionName]: (prev[activeFunctionName] ?? []).slice(0, -1),
+    }));
+    setHistoryFuture((prev) => {
+      const funcFuture = prev[activeFunctionName] ?? [];
+      return {
+        ...prev,
+        [activeFunctionName]: [
+          ...funcFuture,
+          {
+            nodes: JSON.parse(JSON.stringify(nodes)),
+            edges: JSON.parse(JSON.stringify(edges)),
+          },
+        ],
+      };
+    });
     setNodes(previous.nodes);
     setEdges(previous.edges);
-  }, [historyPast, nodes, edges, setNodes, setEdges]);
+  }, [activeFunctionName, historyPast, nodes, edges, setNodes, setEdges]);
 
   const handleRedo = useCallback(() => {
-    if (historyFuture.length === 0) return;
-    const next = historyFuture[historyFuture.length - 1];
-    setHistoryFuture((prev) => prev.slice(0, -1));
-    setHistoryPast((prev) => [
+    const funcFuture = historyFuture[activeFunctionName] ?? [];
+    if (funcFuture.length === 0) return;
+    const next = funcFuture[funcFuture.length - 1];
+    setHistoryFuture((prev) => ({
       ...prev,
-      {
-        nodes: JSON.parse(JSON.stringify(nodes)),
-        edges: JSON.parse(JSON.stringify(edges)),
-      },
-    ]);
+      [activeFunctionName]: (prev[activeFunctionName] ?? []).slice(0, -1),
+    }));
+    setHistoryPast((prev) => {
+      const funcPast = prev[activeFunctionName] ?? [];
+      return {
+        ...prev,
+        [activeFunctionName]: [
+          ...funcPast,
+          {
+            nodes: JSON.parse(JSON.stringify(nodes)),
+            edges: JSON.parse(JSON.stringify(edges)),
+          },
+        ],
+      };
+    });
     setNodes(next.nodes);
     setEdges(next.edges);
-  }, [historyFuture, nodes, edges, setNodes, setEdges]);
+  }, [activeFunctionName, historyFuture, nodes, edges, setNodes, setEdges]);
+
+  const switchActiveFunction = useCallback(
+    (targetName: string) => {
+      setFunctions((currentFuncs) => {
+        const updated = currentFuncs.map((f) => {
+          if (f.name === activeFunctionName) {
+            return { ...f, nodes, edges };
+          }
+          return f;
+        });
+
+        const target = updated.find((f) => f.name === targetName);
+        if (target) {
+          setNodes(target.nodes);
+          setEdges(target.edges);
+          setActiveFunctionName(targetName);
+        }
+        return updated;
+      });
+    },
+    [activeFunctionName, nodes, edges, setNodes, setEdges],
+  );
+
+  const addFunction = useCallback(
+    (name: string) => {
+      setFunctions((currentFuncs) => {
+        if (currentFuncs.some((f) => f.name === name)) {
+          showErrorToast(
+            t("automation.editor.errors.functionExists") ||
+              "Tên hàm đã tồn tại",
+          );
+          return currentFuncs;
+        }
+        return [
+          ...currentFuncs,
+          { name, nodes: [createStartNode()], edges: [] },
+        ];
+      });
+    },
+    [t],
+  );
+
+  const renameFunction = useCallback(
+    (oldName: string, newName: string) => {
+      if (newName === "Main" || oldName === "Main") {
+        showErrorToast(
+          t("automation.editor.errors.cannotRenameMain") ||
+            "Không thể đổi tên hàm Main",
+        );
+        return;
+      }
+      setFunctions((currentFuncs) => {
+        if (currentFuncs.some((f) => f.name === newName)) {
+          showErrorToast(
+            t("automation.editor.errors.functionExists") ||
+              "Tên hàm đã tồn tại",
+          );
+          return currentFuncs;
+        }
+        return currentFuncs.map((f) => {
+          if (f.name === oldName) {
+            return { ...f, name: newName };
+          }
+          return f;
+        });
+      });
+      if (activeFunctionName === oldName) {
+        setActiveFunctionName(newName);
+      }
+    },
+    [activeFunctionName, t],
+  );
+
+  const deleteFunction = useCallback(
+    (nameToDelete: string) => {
+      if (nameToDelete === "Main") {
+        showErrorToast(
+          t("automation.editor.errors.cannotDeleteMain") ||
+            "Không thể xóa hàm Main",
+        );
+        return;
+      }
+      setFunctions((currentFuncs) => {
+        const filtered = currentFuncs.filter((f) => f.name !== nameToDelete);
+        if (activeFunctionName === nameToDelete) {
+          const main = filtered.find((f) => f.name === "Main") || filtered[0];
+          if (main) {
+            setNodes(main.nodes);
+            setEdges(main.edges);
+            setActiveFunctionName(main.name);
+          }
+        }
+        return filtered;
+      });
+    },
+    [activeFunctionName, setNodes, setEdges, t],
+  );
 
   // System Clipboard Copy/Cut/Paste
   const handleCopy = useCallback(async () => {
@@ -988,11 +1127,29 @@ export function useAutomationFlowState({
         : nodeId;
 
       try {
-        const fullFlow = toDonutFlow(flowName.trim(), nodes, edges, variables, {
-          schemaVersion: 2,
-          v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
-          resources: v2Resources,
+        const currentFuncs = functions.map((f) => {
+          if (f.name === activeFunctionName) {
+            return { ...f, nodes, edges };
+          }
+          return f;
         });
+
+        const activeFunc =
+          currentFuncs.find((f) => f.name === activeFunctionName) ||
+          currentFuncs[0];
+
+        const fullFlow = toDonutFlow(
+          flowName.trim(),
+          activeFunc.nodes,
+          activeFunc.edges,
+          variables,
+          {
+            schemaVersion: 2,
+            v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
+            resources: v2Resources,
+            functions: currentFuncs,
+          },
+        );
         const truncated = truncateFlowFromNode(fullFlow, nodeId);
         if (truncated.nodes.length === 0) {
           showErrorToast(
@@ -1029,6 +1186,8 @@ export function useAutomationFlowState({
       variables,
       v2Variables,
       v2Resources,
+      functions,
+      activeFunctionName,
     ],
   );
 
@@ -1104,8 +1263,25 @@ export function useAutomationFlowState({
         setVariables(canvas.variables);
         setV2Variables(canvas.v2Variables);
         setV2Resources(canvas.resources);
-        setNodes(canvas.nodes);
-        setEdges(canvas.edges);
+
+        if (canvas.functions && canvas.functions.length > 0) {
+          setFunctions(canvas.functions);
+          const main =
+            canvas.functions.find((f) => f.name === "Main") ||
+            canvas.functions[0];
+          if (main) {
+            setNodes(main.nodes);
+            setEdges(main.edges);
+            setActiveFunctionName(main.name);
+          }
+        } else {
+          setFunctions([
+            { name: "Main", nodes: canvas.nodes, edges: canvas.edges },
+          ]);
+          setNodes(canvas.nodes);
+          setEdges(canvas.edges);
+          setActiveFunctionName("Main");
+        }
       } catch (err) {
         showErrorToast(
           t("automation.editor.errors.loadFailed", {
@@ -1234,11 +1410,29 @@ export function useAutomationFlowState({
         return;
       }
 
-      const flow = toDonutFlow(activeName, nodes, edges, variables, {
-        schemaVersion: 2,
-        v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
-        resources: v2Resources,
+      const currentFuncs = functions.map((f) => {
+        if (f.name === activeFunctionName) {
+          return { ...f, nodes, edges };
+        }
+        return f;
       });
+      setFunctions(currentFuncs);
+
+      const mainFunc =
+        currentFuncs.find((f) => f.name === "Main") || currentFuncs[0];
+
+      const flow = toDonutFlow(
+        activeName,
+        mainFunc.nodes,
+        mainFunc.edges,
+        variables,
+        {
+          schemaVersion: 2,
+          v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
+          resources: v2Resources,
+          functions: currentFuncs,
+        },
+      );
       const json = JSON.stringify(flow, null, 2);
 
       const shouldOverwrite = !isSaveAs && Boolean(currentFlowPath);
@@ -1525,5 +1719,12 @@ export function useAutomationFlowState({
     handleCancelProperties,
     justAddedNodeId,
     setJustAddedNodeId,
+    // Multi-function properties
+    functions,
+    activeFunctionName,
+    switchActiveFunction,
+    addFunction,
+    renameFunction,
+    deleteFunction,
   };
 }

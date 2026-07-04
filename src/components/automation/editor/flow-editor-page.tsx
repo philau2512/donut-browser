@@ -132,13 +132,20 @@ export function FlowEditorPage({
     handleCancelProperties,
     justAddedNodeId,
     setJustAddedNodeId,
+    // Multi-function states
+    functions,
+    activeFunctionName,
+    switchActiveFunction,
+    addFunction,
+    renameFunction,
+    deleteFunction,
   } = useAutomationFlowState({
     flowPath,
     onSaved,
   });
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 relative">
       <AutomationEditorToolbar
         flowName={flowName}
         profiles={profiles}
@@ -229,12 +236,19 @@ export function FlowEditorPage({
         // History props
         onUndo={handleUndo}
         onRedo={handleRedo}
-        canUndo={historyPast.length > 0}
-        canRedo={historyFuture.length > 0}
+        canUndo={(historyPast[activeFunctionName] ?? []).length > 0}
+        canRedo={(historyFuture[activeFunctionName] ?? []).length > 0}
         // Clipboard props
         onCopy={handleCopy}
         onCut={handleCut}
         onPaste={handlePaste}
+        // Multi-function props
+        functions={functions}
+        activeFunctionName={activeFunctionName}
+        switchActiveFunction={switchActiveFunction}
+        addFunction={addFunction}
+        renameFunction={renameFunction}
+        deleteFunction={deleteFunction}
       />
 
       <AutomationEditorDialogs
@@ -243,6 +257,7 @@ export function FlowEditorPage({
         nodes={nodes}
         edges={edges}
         variables={variables}
+        functions={functions.map((f) => f.name)}
         onPropertiesOpenChange={(open) => {
           setIsPropertiesDialogOpen(open);
           if (!open) {

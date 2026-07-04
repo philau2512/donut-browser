@@ -194,4 +194,23 @@ export const CONTROL_FLOW_CATALOG: AutomationNodeCatalogItem[] = [
     ],
     defaults: { targetLabelNodeId: "", targetLabelName: "" },
   },
+  {
+    type: "callFunction",
+    group: "control",
+    labelKey: "automation.nodes.callFunction.label",
+    descriptionKey: "automation.nodes.callFunction.description",
+    documentKey: "automation.nodes.callFunction.document",
+    icon: FiPlay,
+    params: [
+      {
+        key: "functionName",
+        kind: "enum",
+        required: true,
+        placeholder: "Main",
+        labelKey: "automation.nodes.callFunction.params.functionName",
+        options: [],
+      },
+    ],
+    defaults: { functionName: "Main" },
+  },
 ];

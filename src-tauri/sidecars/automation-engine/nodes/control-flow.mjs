@@ -244,3 +244,43 @@ export async function ignoreErrorsEnd(node, page, ctx) {
 export async function endIf(node, page, ctx) {
   ctx.logger.debug(node.id, `endIf`);
 }
+
+/** callFunction: call a sub-function defined in the flow's functions list. */
+export async function callFunction(node, page, ctx) {
+  const { functionName } = node.params ?? {};
+  if (typeof functionName !== "string" || functionName.trim() === "") {
+    throw new Error("callFunction: functionName is required");
+  }
+
+  const functions = ctx.flow?.functions ?? [];
+  const targetFunc = functions.find((f) => f.name === functionName);
+  if (!targetFunc) {
+    throw new Error(`callFunction: function "${functionName}" not found`);
+  }
+
+  const depth = Number(ctx.vars.__func_depth ?? 0);
+  const MAX_FUNC_DEPTH = 50;
+  if (depth >= MAX_FUNC_DEPTH) {
+    throw new Error(`callFunction: maximum function call recursion depth (${MAX_FUNC_DEPTH}) reached`);
+  }
+
+  ctx.logger.info(node.id, `callFunction → calling function "${functionName}"`);
+
+  ctx.vars.__func_depth = depth + 1;
+  try {
+    const failed = await ctx.runSubFlow({
+      flow: targetFunc,
+      page,
+      vars: ctx.vars,
+      artifactsDir: ctx.artifactsDir,
+      allowedSchemes: ctx.allowedSchemes,
+    });
+    if (failed) {
+      throw new Error(`callFunction: function "${functionName}" failed`);
+    }
+  } finally {
+    ctx.vars.__func_depth = depth;
+  }
+
+  ctx.logger.info(node.id, `callFunction → "${functionName}" completed`);
+}

@@ -2331,7 +2331,10 @@
         "saveFailed": "保存脚本失败: {{error}}",
         "loadFailed": "加载脚本失败: {{error}}",
         "nameRequired": "流程名称不能为空",
-        "startFailed": "调试启动失败: {{error}}"
+        "startFailed": "调试启动失败: {{error}}",
+        "functionExists": "函数名已存在",
+        "cannotRenameMain": "无法重命名 Main 函数",
+        "cannotDeleteMain": "无法删除 Main 函数"
       },
       "help": {
         "waitUntil": "页面加载等待模式:\n• load: 等待所有资源加载完成\n• domcontentloaded: 等待基本的HTML(DOM)加载完成\n• networkidle: 等待至少500ms无网络活动",
@@ -2445,6 +2448,14 @@
           "includeResourceStatsHelp": "Include execution duration and stats",
           "stopFlow": "Stop Flow",
           "stopFlowHelp": "Immediately abort execution"
+        }
+      },
+      "callFunction": {
+        "description": "执行子函数",
+        "document": "执行指定的子函数序列。",
+        "label": "调用函数",
+        "params": {
+          "functionName": "函数名称"
         }
       }
     }

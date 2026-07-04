@@ -67,7 +67,8 @@ export type AutomationNodeType =
   | "closeProfile"
   // Profile Result Nodes (resource allocation plan)
   | "profileSuccess"
-  | "profileFail";
+  | "profileFail"
+  | "callFunction";
 
 export type AutomationNodeGroup =
   | "navigator"

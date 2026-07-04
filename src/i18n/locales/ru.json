@@ -2331,7 +2331,10 @@
         "saveFailed": "Не удалось сохранить сценарий: {{error}}",
         "loadFailed": "Не удалось загрузить сценарий: {{error}}",
         "nameRequired": "Название сценария обязательно",
-        "startFailed": "Не удалось запустить отладку: {{error}}"
+        "startFailed": "Не удалось запустить отладку: {{error}}",
+        "functionExists": "Имя функции уже существует",
+        "cannotRenameMain": "Невозможно переименовать функцию Main",
+        "cannotDeleteMain": "Невозможно удалить функцию Main"
       },
       "help": {
         "waitUntil": "Режим ожидания загрузки страницы:\n• load: Ожидание полной загрузки (HTML, изображения, стили)\n• domcontentloaded: Ожидание готовности структуры HTML (DOM)\n• networkidle: Ожидание отсутствия сетевых запросов в течение 500 мс",
@@ -2445,6 +2448,14 @@
           "includeResourceStatsHelp": "Include execution duration and stats",
           "stopFlow": "Stop Flow",
           "stopFlowHelp": "Immediately abort execution"
+        }
+      },
+      "callFunction": {
+        "description": "Выполнить подфункцию",
+        "document": "Выполняет указанную последовательность подфункции.",
+        "label": "Вызов функции",
+        "params": {
+          "functionName": "Имя функции"
         }
       }
     }

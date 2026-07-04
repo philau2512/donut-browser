@@ -2302,7 +2302,10 @@
         "loadFailed": "Tải script thất bại: {{error}}",
         "saveFailed": "Lưu script thất bại: {{error}}",
         "nameRequired": "Tên flow không được để trống",
-        "startFailed": "Khởi động debug thất bại: {{error}}"
+        "startFailed": "Khởi động debug thất bại: {{error}}",
+        "functionExists": "Tên hàm đã tồn tại",
+        "cannotRenameMain": "Không thể đổi tên hàm Main",
+        "cannotDeleteMain": "Không thể xóa hàm Main"
       },
       "linearHint": "Chế độ tuyến tính",
       "name": "Tên script",
@@ -2947,6 +2950,14 @@
           "includeResourceStatsHelp": "Bao gồm thời gian thực thi và các thống kê tài nguyên",
           "stopFlow": "Dừng kịch bản",
           "stopFlowHelp": "Dừng thực thi ngay lập tức"
+        }
+      },
+      "callFunction": {
+        "description": "Thực thi một hàm con kịch bản",
+        "document": "Thực thi chuỗi kịch bản trong hàm con được chỉ định.",
+        "label": "Gọi hàm",
+        "params": {
+          "functionName": "Tên hàm"
         }
       }
     },

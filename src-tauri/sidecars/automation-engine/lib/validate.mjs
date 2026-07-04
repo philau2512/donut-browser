@@ -316,6 +316,10 @@ export const NODE_SCHEMAS = {
       stopFlow: "boolean",
     },
   },
+  callFunction: {
+    required: { functionName: "string" },
+    optional: {},
+  },
 };
 
 export const ALLOWED_NODE_TYPES = Object.freeze(Object.keys(NODE_SCHEMAS));
@@ -419,6 +423,44 @@ export function validateFlow(flow) {
     }
   }
 
+  if (flow.functions != null) {
+    if (!Array.isArray(flow.functions)) {
+      throw new FlowValidationError("Flow.functions must be an array when present");
+    }
+    for (const fn of flow.functions) {
+      if (!fn || typeof fn !== "object" || Array.isArray(fn)) {
+        throw new FlowValidationError("Each function must be a JSON object");
+      }
+      if (typeof fn.name !== "string" || fn.name.length === 0) {
+        throw new FlowValidationError("Each function.name must be a non-empty string");
+      }
+      if (!Array.isArray(fn.nodes) || fn.nodes.length === 0) {
+        throw new FlowValidationError(`Function "${fn.name}" nodes must be a non-empty array`);
+      }
+      if (!Array.isArray(fn.edges)) {
+        throw new FlowValidationError(`Function "${fn.name}" edges must be an array`);
+      }
+
+      const fnIds = new Set();
+      for (const node of fn.nodes) {
+        validateNode(node, fnIds);
+      }
+      for (const edge of fn.edges) {
+        if (!edge || typeof edge !== "object") {
+          throw new FlowValidationError(`Each edge in function "${fn.name}" must be an object`);
+        }
+        if (!fnIds.has(edge.from)) {
+          throw new FlowValidationError(`Edge.from in function "${fn.name}" references unknown node: ${JSON.stringify(edge.from)}`);
+        }
+        if (!fnIds.has(edge.to)) {
+          throw new FlowValidationError(`Edge.to in function "${fn.name}" references unknown node: ${JSON.stringify(edge.to)}`);
+        }
+      }
+      validateLabelTargets(fn.nodes);
+      detectCycle(fn.nodes, fn.edges);
+    }
+  }
+
   validateLabelTargets(flow.nodes);
   detectCycle(flow.nodes, flow.edges);
   return flow;
@@ -442,8 +484,8 @@ function validateNode(node, ids) {
     );
   }
 
-  // closed-schema key check: only id/type/params/continueOnError/comment/nodeId/sleepAfterFrom/sleepAfterTo allowed
-  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment", "nodeId", "sleepAfterFrom", "sleepAfterTo"];
+  // closed-schema key check: only id/type/params/continueOnError/comment/nodeId/sleepAfterFrom/sleepAfterTo/position allowed
+  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment", "nodeId", "sleepAfterFrom", "sleepAfterTo", "position"];
   const extraNodeKeys = Object.keys(node).filter((k) => !allowedNodeKeys.includes(k));
   if (extraNodeKeys.length > 0) {
     throw new FlowValidationError(`Node ${node.id}: unknown keys ${extraNodeKeys.join(", ")}`);

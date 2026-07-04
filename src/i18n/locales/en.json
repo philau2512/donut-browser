@@ -2304,7 +2304,10 @@
         "loadFailed": "Failed to load script: {{error}}",
         "saveFailed": "Failed to save script: {{error}}",
         "nameRequired": "Flow name is required",
-        "startFailed": "Debug failed to start: {{error}}"
+        "startFailed": "Debug failed to start: {{error}}",
+        "functionExists": "Function name already exists",
+        "cannotRenameMain": "Cannot rename Main function",
+        "cannotDeleteMain": "Cannot delete Main function"
       },
       "debug": {
         "running": "Debugging...",
@@ -2949,6 +2952,14 @@
           "includeResourceStatsHelp": "Include execution duration and stats",
           "stopFlow": "Stop Flow",
           "stopFlowHelp": "Immediately abort execution"
+        }
+      },
+      "callFunction": {
+        "description": "Execute a sub-function",
+        "document": "Executes the specified sub-function sequence.",
+        "label": "Call Function",
+        "params": {
+          "functionName": "Function Name"
         }
       }
     },

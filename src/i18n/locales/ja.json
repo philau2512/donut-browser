@@ -2331,7 +2331,10 @@
         "saveFailed": "スクリプトの保存に失敗しました: {{error}}",
         "loadFailed": "スクリプトの読み込みに失敗しました: {{error}}",
         "nameRequired": "フロー名を入力してください",
-        "startFailed": "デバッグの開始に失敗しました: {{error}}"
+        "startFailed": "デバッグの開始に失敗しました: {{error}}",
+        "functionExists": "関数名は既に存在します",
+        "cannotRenameMain": "Main 関数は名前変更できません",
+        "cannotDeleteMain": "Main 関数は削除できません"
       },
       "help": {
         "waitUntil": "ページ読み込み待機モード:\n• load: すべてのリソースが読み込まれるのを待機\n• domcontentloaded: HTML構造(DOM)の読み込み完了を待機\n• networkidle: 500msの間ネットワークリクエストが停止するまで待機",
@@ -2445,6 +2448,14 @@
           "includeResourceStatsHelp": "Include execution duration and stats",
           "stopFlow": "Stop Flow",
           "stopFlowHelp": "Immediately abort execution"
+        }
+      },
+      "callFunction": {
+        "description": "サブ関数を実行します",
+        "document": "指定されたサブ関数シーケンスを実行します。",
+        "label": "関数の呼び出し",
+        "params": {
+          "functionName": "関数名"
         }
       }
     }

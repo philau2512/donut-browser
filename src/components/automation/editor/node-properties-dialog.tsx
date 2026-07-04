@@ -42,6 +42,7 @@ interface NodePropertiesDialogProps {
   ) => void;
   onCommentChange?: (nodeId: string, comment: string) => void;
   onCreateVariable?: (name: string) => void;
+  functions?: string[];
 }
 
 const COLORS = [
@@ -67,6 +68,7 @@ export function NodePropertiesDialog({
   onSleepAfterChange,
   onCommentChange,
   onCreateVariable,
+  functions,
 }: NodePropertiesDialogProps) {
   const { t } = useTranslation();
   const editableNode =
@@ -170,6 +172,7 @@ export function NodePropertiesDialog({
         variableWarnings={variableWarnings}
         onParamChange={onParamChange}
         onCreateVariable={onCreateVariable}
+        functions={functions}
       />
     );
   };

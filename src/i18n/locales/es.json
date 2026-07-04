@@ -2331,7 +2331,10 @@
         "saveFailed": "Error al guardar el script: {{error}}",
         "loadFailed": "Error al cargar el script: {{error}}",
         "nameRequired": "El nombre del flujo es obligatorio",
-        "startFailed": "Error al iniciar el debug: {{error}}"
+        "startFailed": "Error al iniciar el debug: {{error}}",
+        "functionExists": "El nombre de la función ya existe",
+        "cannotRenameMain": "No se puede cambiar el nombre de la función Main",
+        "cannotDeleteMain": "No se puede eliminar la función Main"
       },
       "help": {
         "waitUntil": "Modo de espera de carga de página:\n• load: Espera a que se carguen todos los recursos\n• domcontentloaded: Espera a que se cargue la estructura HTML (DOM)\n• networkidle: Espera hasta que no haya peticiones de red por 500ms",
@@ -2445,6 +2448,14 @@
           "includeResourceStatsHelp": "Include execution duration and stats",
           "stopFlow": "Stop Flow",
           "stopFlowHelp": "Immediately abort execution"
+        }
+      },
+      "callFunction": {
+        "description": "Ejecutar una subfunción",
+        "document": "Ejecuta la secuencia de subfunción especificada.",
+        "label": "Llamar función",
+        "params": {
+          "functionName": "Nombre de la función"
         }
       }
     }
