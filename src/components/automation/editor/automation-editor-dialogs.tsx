@@ -32,6 +32,8 @@ interface AutomationEditorDialogsProps {
   edges: AutomationCanvasEdge[];
   variables: Record<string, string>;
   onPropertiesOpenChange: (open: boolean) => void;
+  onConfirmProperties?: () => void;
+  onCancelProperties?: () => void;
   onParamChange: (key: string, value: string | number | boolean) => void;
   onContinueOnErrorChange: (value: boolean) => void;
   onSleepAfterChange: (
@@ -77,6 +79,8 @@ export function AutomationEditorDialogs({
   edges,
   variables,
   onPropertiesOpenChange,
+  onConfirmProperties,
+  onCancelProperties,
   onParamChange,
   onContinueOnErrorChange,
   onSleepAfterChange,
@@ -122,6 +126,8 @@ export function AutomationEditorDialogs({
         edges={edges}
         variables={variables}
         onOpenChange={onPropertiesOpenChange}
+        onConfirm={onConfirmProperties}
+        onCancel={onCancelProperties}
         onParamChange={onParamChange}
         onContinueOnErrorChange={onContinueOnErrorChange}
         onSleepAfterChange={onSleepAfterChange}

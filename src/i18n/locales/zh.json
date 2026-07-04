@@ -2347,7 +2347,18 @@
         "start": "Start with",
         "end": "End with"
       },
-      "scriptEditor": "脚本编辑器"
+      "scriptEditor": "脚本编辑器",
+      "returnToMain": "返回主屏幕",
+      "groupDescriptions": {
+        "navigator": "浏览器导航、标签页、框架和扩展。",
+        "mouse": "模拟鼠标点击、移动和拖放。",
+        "keyboard": "模拟键盘输入和文本输入。",
+        "data": "数据提取和变量管理。",
+        "network": "HTTP 请求和用户代理控制。",
+        "control": "循环、条件和流逻辑。",
+        "utility": "辅助操作，如延迟、截图和日志。",
+        "other": "其他自动化操作。"
+      }
     },
     "nodes": {
       "setVariable": {

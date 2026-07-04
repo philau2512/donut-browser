@@ -2347,7 +2347,18 @@
         "start": "Start with",
         "end": "End with"
       },
-      "scriptEditor": "Editor de guiones"
+      "scriptEditor": "Editor de guiones",
+      "returnToMain": "Volver a la pantalla principal",
+      "groupDescriptions": {
+        "navigator": "Navegación del navegador, pestañas, marcos y extensiones.",
+        "mouse": "Emular clics del ratón, movimientos y arrastrar y soltar.",
+        "keyboard": "Emular entradas de teclado y escritura de texto.",
+        "data": "Extracción de datos y gestión de variables.",
+        "network": "Solicitudes HTTP y control de agente de usuario.",
+        "control": "Bucles, condiciones y lógica de flujo.",
+        "utility": "Ayudantes como retraso, captura de pantalla y registros.",
+        "other": "Otras acciones de automatización."
+      }
     },
     "nodes": {
       "setVariable": {

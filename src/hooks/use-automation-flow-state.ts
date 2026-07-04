@@ -95,6 +95,14 @@ export function useAutomationFlowState({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentResultIndex, setCurrentResultIndex] = useState(0);
 
+  // Pending node states for Palette add-confirm flow
+  const [pendingAddNodeId, setPendingAddNodeId] = useState<string | null>(null);
+  const [draftNode, setDraftNode] = useState<AutomationCanvasNode | null>(null);
+  const [pendingAddSlot, setPendingAddSlot] = useState<CardStackSlot | null>(
+    null,
+  );
+  const [justAddedNodeId, setJustAddedNodeId] = useState<string | null>(null);
+
   const searchResults = useMemo<string[]>(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return [];
@@ -507,10 +515,10 @@ export function useAutomationFlowState({
   const [connectionSourceSlot, setConnectionSourceSlot] =
     useState<CardStackSlot | null>(null);
 
-  const selectedNode = useMemo(
-    () => nodes.find((node) => node.id === selectedNodeId) ?? null,
-    [nodes, selectedNodeId],
-  );
+  const selectedNode = useMemo(() => {
+    if (draftNode) return draftNode;
+    return nodes.find((node) => node.id === selectedNodeId) ?? null;
+  }, [nodes, selectedNodeId, draftNode]);
 
   const commentingNode = useMemo(
     () => nodes.find((node) => node.id === commentingNodeId) ?? null,
@@ -533,6 +541,19 @@ export function useAutomationFlowState({
 
   const handleSaveComment = useCallback(
     (nodeId: string, commentText: string) => {
+      if (draftNode && draftNode.id === nodeId) {
+        setDraftNode((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            data: {
+              ...prev.data,
+              comment: commentText.trim() || undefined,
+            },
+          };
+        });
+        return;
+      }
       pushHistory(nodes, edges);
       setNodes((current) =>
         current.map((node) =>
@@ -548,7 +569,7 @@ export function useAutomationFlowState({
         ),
       );
     },
-    [nodes, edges, pushHistory, setNodes],
+    [draftNode, nodes, edges, pushHistory, setNodes],
   );
 
   const insertExistingNodeAtSlot = useCallback(
@@ -695,13 +716,87 @@ export function useAutomationFlowState({
     [nodes, edges, pushHistory, setEdges],
   );
 
+  const handleConfirmProperties = useCallback(() => {
+    if (draftNode && pendingAddSlot) {
+      pushHistory(nodes, edges);
+      insertExistingNodeAtSlot(draftNode, pendingAddSlot);
+      const addedId = draftNode.id;
+      setJustAddedNodeId(addedId);
+      setTimeout(() => {
+        setJustAddedNodeId((curr) => (curr === addedId ? null : curr));
+      }, 3000);
+    }
+    setDraftNode(null);
+    setPendingAddSlot(null);
+    setPendingAddNodeId(null);
+  }, [
+    draftNode,
+    pendingAddSlot,
+    nodes,
+    edges,
+    pushHistory,
+    insertExistingNodeAtSlot,
+  ]);
+
+  const handleCancelProperties = useCallback(() => {
+    setDraftNode(null);
+    setPendingAddSlot(null);
+    setPendingAddNodeId(null);
+    setSelectedNodeId(null);
+  }, []);
+
   const handlePaletteItemClick = useCallback(
     (item: AutomationNodeCatalogItem) => {
+      let slot: CardStackSlot | null = null;
       if (activeInsertSlot) {
-        handleInsertNode(item.type, activeInsertSlot);
+        slot = activeInsertSlot;
+      } else if (selectedNodeId) {
+        const outgoingEdge = edges.find(
+          (edge) =>
+            edge.source === selectedNodeId &&
+            (edge.sourceHandle ?? "success") === "success",
+        );
+        const nextNodeId = outgoingEdge ? outgoingEdge.target : null;
+        const nodeIndex = nodes.findIndex((n) => n.id === selectedNodeId);
+        slot = {
+          previousNodeId: selectedNodeId,
+          nextNodeId,
+          index: nodeIndex >= 0 ? nodeIndex + 1 : nodes.length,
+        };
+      } else {
+        // Find the last node of the main success branch
+        let currentId = "start";
+        while (true) {
+          const nextEdge = edges.find(
+            (e) =>
+              e.source === currentId &&
+              (e.sourceHandle ?? "success") === "success",
+          );
+          if (!nextEdge) break;
+          currentId = nextEdge.target;
+        }
+        const lastNodeIndex = nodes.findIndex((n) => n.id === currentId);
+        slot = {
+          previousNodeId: currentId,
+          nextNodeId: null,
+          index: lastNodeIndex >= 0 ? lastNodeIndex + 1 : nodes.length,
+        };
+      }
+
+      if (slot) {
+        const newNode = createAutomationNode(item.type, {
+          x: 360,
+          y: 120 + slot.index * 120,
+        });
+
+        setDraftNode(newNode);
+        setPendingAddSlot(slot);
+        setPendingAddNodeId(newNode.id);
+        setIsPropertiesDialogOpen(true);
+        setActiveInsertSlot(null);
       }
     },
-    [activeInsertSlot, handleInsertNode],
+    [activeInsertSlot, selectedNodeId, nodes, edges],
   );
 
   const handleMoveToLabel = useCallback(
@@ -1045,6 +1140,19 @@ export function useAutomationFlowState({
     key: string,
     value: string | number | boolean,
   ) => {
+    if (draftNode) {
+      setDraftNode((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            params: { ...prev.data.params, [key]: value },
+          },
+        };
+      });
+      return;
+    }
     if (!selectedNodeId) return;
     setNodes((current) =>
       current.map((node) =>
@@ -1062,6 +1170,16 @@ export function useAutomationFlowState({
   };
 
   const updateSelectedContinueOnError = (value: boolean) => {
+    if (draftNode) {
+      setDraftNode((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          data: { ...prev.data, continueOnError: value },
+        };
+      });
+      return;
+    }
     if (!selectedNodeId) return;
     setNodes((current) =>
       current.map((node) =>
@@ -1076,6 +1194,19 @@ export function useAutomationFlowState({
     key: "sleepAfterFrom" | "sleepAfterTo",
     value: string | number | undefined,
   ) => {
+    if (draftNode) {
+      setDraftNode((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            [key]: value,
+          },
+        };
+      });
+      return;
+    }
     if (!selectedNodeId) return;
     setNodes((current) =>
       current.map((node) =>
@@ -1389,5 +1520,10 @@ export function useAutomationFlowState({
     selectedNodeIds,
     setSelectedNodeIds,
     handleSelectNode,
+    pendingAddNodeId,
+    handleConfirmProperties,
+    handleCancelProperties,
+    justAddedNodeId,
+    setJustAddedNodeId,
   };
 }

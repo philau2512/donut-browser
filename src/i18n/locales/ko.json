@@ -2347,7 +2347,18 @@
         "start": "Start with",
         "end": "End with"
       },
-      "scriptEditor": "스크립트 에디터"
+      "scriptEditor": "스크립트 에디터",
+      "returnToMain": "메인 화면으로 돌아가기",
+      "groupDescriptions": {
+        "navigator": "브라우저 탐색, 탭, 프레임 및 확장 프로그램.",
+        "mouse": "마우스 클릭, 이동 및 드래그 앤 드롭 시뮬레이션.",
+        "keyboard": "키보드 입력 및 텍스트 타이핑 시뮬레이션.",
+        "data": "데이터 추출 및 변수 관리.",
+        "network": "HTTP 요청 및 사용자 에이전트 제어.",
+        "control": "루프, 조건 및 흐름 로직.",
+        "utility": "대기, 스크린샷, 로그 등 보조 도구.",
+        "other": "기타 자동화 작업."
+      }
     },
     "nodes": {
       "setVariable": {

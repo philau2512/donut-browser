@@ -127,6 +127,11 @@ export function FlowEditorPage({
     selectedNodeIds,
     setSelectedNodeIds,
     handleSelectNode,
+    pendingAddNodeId,
+    handleConfirmProperties,
+    handleCancelProperties,
+    justAddedNodeId,
+    setJustAddedNodeId,
   } = useAutomationFlowState({
     flowPath,
     onSaved,
@@ -169,6 +174,8 @@ export function FlowEditorPage({
         nodes={nodesWithCallbacks}
         edges={edges}
         selectedNodeId={selectedNodeId}
+        pendingAddNodeId={pendingAddNodeId}
+        justAddedNodeId={justAddedNodeId}
         draggedNodeType={draggedNodeType}
         debugNodeStatuses={debugNodeStatuses}
         disabled={isCanvasLocked || debugRun.isRunning}
@@ -238,8 +245,19 @@ export function FlowEditorPage({
         variables={variables}
         onPropertiesOpenChange={(open) => {
           setIsPropertiesDialogOpen(open);
-          if (!open) setSelectedNodeId(null);
+          if (!open) {
+            if (pendingAddNodeId) {
+              handleCancelProperties();
+            } else {
+              if (selectedNodeId !== justAddedNodeId) {
+                setSelectedNodeId(null);
+              }
+              setJustAddedNodeId(null);
+            }
+          }
         }}
+        onConfirmProperties={handleConfirmProperties}
+        onCancelProperties={handleCancelProperties}
         onParamChange={updateSelectedParam}
         onContinueOnErrorChange={updateSelectedContinueOnError}
         onSleepAfterChange={updateSelectedSleepAfter}

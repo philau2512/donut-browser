@@ -2410,7 +2410,18 @@
         "start": "Start with",
         "end": "End with"
       },
-      "scriptEditor": "Trình soạn kịch bản"
+      "scriptEditor": "Trình soạn kịch bản",
+      "returnToMain": "Quay lại màn hình chính",
+      "groupDescriptions": {
+        "navigator": "Điều hướng trình duyệt, tab, khung và tiện ích.",
+        "mouse": "Giả lập nhấp chuột, di chuyển và kéo thả.",
+        "keyboard": "Giả lập nhập phím và gõ văn bản.",
+        "data": "Trích xuất dữ liệu và quản lý biến.",
+        "network": "Yêu cầu HTTP và cấu hình User Agent.",
+        "control": "Vòng lặp, điều kiện và luồng logic.",
+        "utility": "Hành động phụ trợ như chờ, chụp màn hình và ghi log.",
+        "other": "Các hành động tự động hóa khác."
+      }
     },
     "actions": {
       "run": "Chạy",

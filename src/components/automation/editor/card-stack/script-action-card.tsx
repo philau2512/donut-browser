@@ -49,6 +49,8 @@ interface ScriptActionCardProps {
   // Search props
   isSearchMatch?: boolean;
   isActiveSearchMatch?: boolean;
+  isPending?: boolean;
+  isJustAdded?: boolean;
 }
 
 export function ScriptActionCard({
@@ -69,15 +71,17 @@ export function ScriptActionCard({
   onMoveToLabel,
   isSearchMatch = false,
   isActiveSearchMatch = false,
+  isPending = false,
+  isJustAdded = false,
 }: ScriptActionCardProps) {
   useEffect(() => {
-    if (isActiveSearchMatch) {
+    if (isActiveSearchMatch || isPending || isJustAdded) {
       const el = document.getElementById(`node-card-${node.id}`);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     }
-  }, [isActiveSearchMatch, node.id]);
+  }, [isActiveSearchMatch, isPending, isJustAdded, node.id]);
   const { t } = useTranslation();
   const isStart = node.data.nodeType === "start";
   const nodeType = node.data.nodeType as AutomationNodeType | "start";
@@ -141,6 +145,10 @@ export function ScriptActionCard({
         "group relative w-52 max-w-full rounded-lg border shadow-sm transition overflow-hidden cursor-pointer",
         colorClasses,
         selected && "border-primary ring-2 ring-primary/30 shadow-md",
+        isPending &&
+          "animate-pulse ring-2 ring-amber-500/50 border-amber-500 shadow-md scale-[1.01]",
+        isJustAdded &&
+          "animate-[pulse_1s_ease-in-out_infinite] border-amber-500 ring-2 ring-amber-500/35 shadow-md scale-[1.01]",
         isSearchMatch &&
           (isActiveSearchMatch
             ? "border-amber-500 ring-4 ring-amber-500/35 shadow-[0_0_15px_rgba(245,158,11,0.5)] scale-[1.02] z-20"

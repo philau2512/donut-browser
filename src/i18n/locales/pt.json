@@ -2347,7 +2347,18 @@
         "start": "Start with",
         "end": "End with"
       },
-      "scriptEditor": "Editor de script"
+      "scriptEditor": "Editor de script",
+      "returnToMain": "Voltar para a tela principal",
+      "groupDescriptions": {
+        "navigator": "Navegação do navegador, abas, quadros e extensões.",
+        "mouse": "Emular cliques do mouse, movimentos e arrastar e soltar.",
+        "keyboard": "Emular entradas do teclado e digitação de texto.",
+        "data": "Extração de dados e gerenciamento de variáveis.",
+        "network": "Requisições HTTP e controle do agente do usuário.",
+        "control": "Loops, condições e lógica de fluxo.",
+        "utility": "Auxiliares como atraso, captura de tela e logs.",
+        "other": "Outras ações de automação."
+      }
     },
     "nodes": {
       "setVariable": {

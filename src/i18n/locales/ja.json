@@ -2347,7 +2347,18 @@
         "start": "Start with",
         "end": "End with"
       },
-      "scriptEditor": "スクリプトエディタ"
+      "scriptEditor": "スクリプトエディタ",
+      "returnToMain": "メイン画面に戻る",
+      "groupDescriptions": {
+        "navigator": "ブラウザのナビゲーション、タブ、フレーム、および拡張機能。",
+        "mouse": "マウスのクリック、移動、ドラッグアンドドロップをエミュレート。",
+        "keyboard": "キーボード入力とテキスト入力をエミュレート。",
+        "data": "データ抽出と変数管理。",
+        "network": "HTTP リクエストとユーザーエージェント制御。",
+        "control": "ループ、条件、およびフローロジック。",
+        "utility": "遅延、スクリーンショット、ログなどのヘルパー。",
+        "other": "その他の自動化アクション。"
+      }
     },
     "nodes": {
       "setVariable": {

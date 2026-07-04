@@ -2412,7 +2412,18 @@
         "start": "Start with",
         "end": "End with"
       },
-      "scriptEditor": "Script Editor"
+      "scriptEditor": "Script Editor",
+      "returnToMain": "Return to main screen",
+      "groupDescriptions": {
+        "navigator": "Browser navigation, tabs, frames, and extensions.",
+        "mouse": "Emulate mouse clicks, movements, and drag-and-drops.",
+        "keyboard": "Emulate keyboard inputs and text typing.",
+        "data": "Data extraction and variable management.",
+        "network": "HTTP requests and user agent control.",
+        "control": "Loops, conditions, and flow logic.",
+        "utility": "Helpers like delay, screenshot, and logs.",
+        "other": "Other automation actions."
+      }
     },
     "actions": {
       "run": "Run",

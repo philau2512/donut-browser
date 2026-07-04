@@ -42,6 +42,8 @@ interface AutomationEditorWorkspaceProps {
   nodes: AutomationCanvasNode[];
   edges: AutomationCanvasEdge[];
   selectedNodeId: string | null;
+  pendingAddNodeId?: string | null;
+  justAddedNodeId?: string | null;
   draggedNodeType: string | null;
   debugNodeStatuses: Record<string, DebugNodeStatus>;
   disabled: boolean;
@@ -115,6 +117,8 @@ export function AutomationEditorWorkspace({
   nodes,
   edges,
   selectedNodeId,
+  pendingAddNodeId,
+  justAddedNodeId,
   draggedNodeType,
   debugNodeStatuses,
   disabled,
@@ -383,6 +387,8 @@ export function AutomationEditorWorkspace({
           nodes={nodes}
           edges={edges}
           selectedNodeId={selectedNodeId}
+          pendingAddNodeId={pendingAddNodeId}
+          justAddedNodeId={justAddedNodeId}
           draggedNodeType={draggedNodeType}
           debugNodeStatuses={debugNodeStatuses}
           disabled={disabled}

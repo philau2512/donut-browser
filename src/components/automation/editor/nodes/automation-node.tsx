@@ -54,10 +54,63 @@ export function AutomationNode({
   const nodeType = data.nodeType;
   const catalog = AUTOMATION_NODE_BY_TYPE[nodeType];
   const Icon = catalog.icon;
+  const group = catalog.group || "other";
 
-  // Make all action nodes blue, matching the Houston theme primary blue or standard primary
-  const groupBg = "bg-primary text-primary-foreground border-primary/20";
-  const badgeBg = "bg-primary-foreground/15";
+  // Dynamic group colors matching the BAS style palette
+  const GROUP_COLORS: Record<
+    string,
+    { card: string; badge: string; handle: string }
+  > = {
+    navigator: {
+      card: "bg-sky-50/95 dark:bg-sky-950/40 text-sky-950 dark:text-sky-100 border-sky-300 dark:border-sky-800",
+      badge: "bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300",
+      handle: "!border-sky-400",
+    },
+    mouse: {
+      card: "bg-rose-50/95 dark:bg-rose-950/40 text-rose-950 dark:text-rose-100 border-rose-300 dark:border-rose-800",
+      badge: "bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-300",
+      handle: "!border-rose-400",
+    },
+    keyboard: {
+      card: "bg-amber-50/95 dark:bg-amber-950/40 text-amber-950 dark:text-amber-100 border-amber-300 dark:border-amber-800",
+      badge:
+        "bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-300",
+      handle: "!border-amber-400",
+    },
+    data: {
+      card: "bg-emerald-50/95 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 border-emerald-300 dark:border-emerald-800",
+      badge:
+        "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300",
+      handle: "!border-emerald-400",
+    },
+    network: {
+      card: "bg-indigo-50/95 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100 border-indigo-300 dark:border-indigo-800",
+      badge:
+        "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300",
+      handle: "!border-indigo-400",
+    },
+    control: {
+      card: "bg-pink-50/95 dark:bg-pink-950/40 text-pink-950 dark:text-pink-100 border-pink-300 dark:border-pink-800",
+      badge: "bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300",
+      handle: "!border-pink-400",
+    },
+    utility: {
+      card: "bg-teal-50/95 dark:bg-teal-950/40 text-teal-950 dark:text-teal-100 border-teal-300 dark:border-teal-800",
+      badge: "bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-300",
+      handle: "!border-teal-400",
+    },
+    other: {
+      card: "bg-slate-50/95 dark:bg-slate-900/40 text-slate-950 dark:text-slate-100 border-slate-300 dark:border-slate-700",
+      badge:
+        "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300",
+      handle: "!border-slate-400",
+    },
+  };
+
+  const colorConfig = GROUP_COLORS[group] || GROUP_COLORS.other;
+  const groupBg = colorConfig.card;
+  const badgeBg = colorConfig.badge;
+  const _handleBorder = colorConfig.handle;
 
   const debugStatus = (data as any).debugStatus;
 

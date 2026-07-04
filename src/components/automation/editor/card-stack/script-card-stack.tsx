@@ -13,6 +13,8 @@ interface ScriptCardStackProps {
   nodes: AutomationCanvasNode[];
   edges: AutomationCanvasEdge[];
   selectedNodeId: string | null;
+  pendingAddNodeId?: string | null;
+  justAddedNodeId?: string | null;
   draggedNodeType: string | null;
   debugNodeStatuses: Record<string, "idle" | "running" | "success" | "error">;
   disabled?: boolean;
@@ -49,6 +51,8 @@ export function ScriptCardStack({
   nodes,
   edges,
   selectedNodeId,
+  pendingAddNodeId,
+  justAddedNodeId,
   draggedNodeType,
   debugNodeStatuses,
   disabled = false,
@@ -215,6 +219,8 @@ export function ScriptCardStack({
                   onMoveToLabel={onMoveToLabel}
                   isSearchMatch={searchResults?.includes(item.node.id)}
                   isActiveSearchMatch={currentActiveMatchId === item.node.id}
+                  isPending={pendingAddNodeId === item.node.id}
+                  isJustAdded={justAddedNodeId === item.node.id}
                 />
               )}
               <ScriptConnectorSlot

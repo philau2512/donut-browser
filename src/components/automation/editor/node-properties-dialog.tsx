@@ -32,6 +32,8 @@ interface NodePropertiesDialogProps {
   edges: AutomationCanvasEdge[];
   variables: Record<string, string>;
   onOpenChange: (open: boolean) => void;
+  onConfirm?: () => void;
+  onCancel?: () => void;
   onParamChange: (key: string, value: string | number | boolean) => void;
   onContinueOnErrorChange: (value: boolean) => void;
   onSleepAfterChange: (
@@ -58,6 +60,8 @@ export function NodePropertiesDialog({
   edges,
   variables,
   onOpenChange,
+  onConfirm,
+  onCancel,
   onParamChange,
   onContinueOnErrorChange,
   onSleepAfterChange,
@@ -263,14 +267,20 @@ export function NodePropertiesDialog({
           <div className="flex gap-2 pt-4 border-t border-border/50">
             <Button
               className="flex-1 h-8 text-xs"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                onConfirm?.();
+                onOpenChange(false);
+              }}
             >
               Ok
             </Button>
             <Button
               variant="outline"
               className="flex-1 h-8 text-xs"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                onCancel?.();
+                onOpenChange(false);
+              }}
             >
               Cancel
             </Button>
