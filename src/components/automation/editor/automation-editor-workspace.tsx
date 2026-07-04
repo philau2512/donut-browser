@@ -116,6 +116,8 @@ interface AutomationEditorWorkspaceProps {
   searchResults: string[];
   currentResultIndex: number;
   onCurrentResultIndexChange: (idx: number) => void;
+  // Zoom prop
+  zoom: number;
   // Multi-select props
   isMultiSelectMode: boolean;
   onToggleMultiSelectMode: () => void;
@@ -192,6 +194,7 @@ export function AutomationEditorWorkspace({
   searchResults,
   currentResultIndex,
   onCurrentResultIndexChange,
+  zoom,
   // Multi-select props
   isMultiSelectMode,
   onToggleMultiSelectMode,
@@ -219,6 +222,8 @@ export function AutomationEditorWorkspace({
   const { t } = useTranslation();
   const [sidebarWidth, setSidebarWidth] = useState(384);
   const [isResizing, setIsResizing] = useState(false);
+  const [logPanelHeight, setLogPanelHeight] = useState(180);
+  const [isLogResizing, setIsLogResizing] = useState(false);
 
   // Switcher state
   const [funcSearchQuery, setFuncSearchQuery] = useState("");
@@ -232,18 +237,31 @@ export function AutomationEditorWorkspace({
     setIsResizing(true);
   }, []);
 
+  const startLogResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLogResizing(true);
+  }, []);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
-      const newWidth = Math.max(260, Math.min(600, e.clientX));
-      setSidebarWidth(newWidth);
+      if (isResizing) {
+        const newWidth = Math.max(260, Math.min(600, e.clientX));
+        setSidebarWidth(newWidth);
+      } else if (isLogResizing) {
+        const newHeight = Math.max(
+          180,
+          Math.min(600, window.innerHeight - e.clientY - 20),
+        );
+        setLogPanelHeight(newHeight);
+      }
     };
 
     const handleMouseUp = () => {
       setIsResizing(false);
+      setIsLogResizing(false);
     };
 
-    if (isResizing) {
+    if (isResizing || isLogResizing) {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     }
@@ -251,460 +269,480 @@ export function AutomationEditorWorkspace({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isResizing]);
+  }, [isResizing, isLogResizing]);
 
   return (
-    <div className="relative flex min-h-0 flex-1 gap-3">
-      {/* COLUMN 1: Script Editor (formerly Column 2) */}
-      <aside
-        style={{ width: `${sidebarWidth}px` }}
-        className="relative flex shrink-0 flex-col gap-3 overflow-hidden rounded-lg border border-border bg-card p-3 shadow-sm select-none"
-      >
-        <div className="flex flex-col gap-2 border-b border-border pb-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold">
-              {t("automation.editor.scriptEditor")}
-            </h2>
-            <div className="flex items-center gap-1.5">
-              {/* Undo / Redo */}
-              <button
-                type="button"
-                onClick={onUndo}
-                disabled={!canUndo}
-                title="Undo"
-                className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
-              >
-                <Undo2 className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={onRedo}
-                disabled={!canRedo}
-                title="Redo"
-                className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
-              >
-                <Redo2 className="h-4 w-4" />
-              </button>
-
-              <div className="h-4 w-[1px] bg-border mx-1" />
-
-              {/* Copy / Cut / Paste */}
-              <button
-                type="button"
-                onClick={onCopy}
-                disabled={selectedNodeIds.size === 0}
-                title="Copy"
-                className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
-              >
-                <Copy className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={onCut}
-                disabled={selectedNodeIds.size === 0}
-                title="Cut"
-                className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
-              >
-                <Scissors className="h-4 w-4" />
-              </button>
-              {selectedNodeId && (
+    <div
+      className="flex flex-1 flex-col min-h-0 gap-3 relative"
+      style={{ zoom }}
+    >
+      {/* TOP SECTION: Column 1, Column 2, Column 3 */}
+      <div className="flex flex-1 min-h-0 gap-3">
+        {/* COLUMN 1: Script Editor (formerly Column 2) */}
+        <aside
+          style={{ width: `${sidebarWidth}px` }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              onSelectNode(null);
+              onSelectAll?.(new Set());
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              onSelectNode(null);
+              onSelectAll?.(new Set());
+            }
+          }}
+          className="relative flex shrink-0 flex-col gap-3 overflow-hidden rounded-lg border border-border bg-card p-3 shadow-sm select-none"
+        >
+          <div className="flex flex-col gap-2 border-b border-border pb-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">
+                {t("automation.editor.scriptEditor")}
+              </h2>
+              <div className="flex items-center gap-1.5">
+                {/* Undo / Redo */}
                 <button
                   type="button"
-                  onClick={onPaste}
-                  title="Paste"
+                  onClick={onUndo}
+                  disabled={!canUndo}
+                  title="Undo"
                   className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
                 >
-                  <Clipboard className="h-4 w-4 text-primary" />
+                  <Undo2 className="h-4 w-4" />
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={onRedo}
+                  disabled={!canRedo}
+                  title="Redo"
+                  className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  <Redo2 className="h-4 w-4" />
+                </button>
 
-              <div className="h-4 w-[1px] bg-border mx-1" />
+                <div className="h-4 w-[1px] bg-border mx-1" />
 
-              {/* Select All & Multi-select Toggle */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (nodes.length > 0) {
-                    const eligibleNodeIds = nodes
-                      .filter((n) => n.id !== "start")
-                      .map((n) => n.id);
-                    const isAllSelected = eligibleNodeIds.every((id) =>
-                      selectedNodeIds.has(id),
-                    );
-                    if (isAllSelected) {
-                      onSelectAll?.(new Set());
-                    } else {
-                      onSelectNodeWithToggle?.(null);
-                      onSelectAll?.(new Set(eligibleNodeIds));
+                {/* Copy / Cut / Paste */}
+                <button
+                  type="button"
+                  onClick={onCopy}
+                  disabled={selectedNodeIds.size === 0}
+                  title="Copy"
+                  className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  <Copy className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={onCut}
+                  disabled={selectedNodeIds.size === 0}
+                  title="Cut"
+                  className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  <Scissors className="h-4 w-4" />
+                </button>
+                {selectedNodeId && (
+                  <button
+                    type="button"
+                    onClick={onPaste}
+                    title="Paste"
+                    className="p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+                  >
+                    <Clipboard className="h-4 w-4 text-primary" />
+                  </button>
+                )}
+
+                <div className="h-4 w-[1px] bg-border mx-1" />
+
+                {/* Select All & Multi-select Toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (nodes.length > 0) {
+                      const eligibleNodeIds = nodes
+                        .filter((n) => n.id !== "start")
+                        .map((n) => n.id);
+                      const isAllSelected = eligibleNodeIds.every((id) =>
+                        selectedNodeIds.has(id),
+                      );
+                      if (isAllSelected) {
+                        onSelectAll?.(new Set());
+                      } else {
+                        onSelectNodeWithToggle?.(null);
+                        onSelectAll?.(new Set(eligibleNodeIds));
+                      }
                     }
-                  }
-                }}
-                title="Select All"
-                className={cn(
-                  "p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40",
-                  nodes.length > 1 &&
-                    nodes
-                      .filter((n) => n.id !== "start")
-                      .every((n) => selectedNodeIds.has(n.id)) &&
-                    "bg-primary/10 text-primary hover:bg-primary/20",
-                )}
-              >
-                <CheckSquare className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={onToggleMultiSelectMode}
-                title="Toggle Multi-select Mode"
-                className={cn(
-                  "p-1 rounded hover:bg-accent transition-colors",
-                  isMultiSelectMode
-                    ? "bg-primary/10 text-primary hover:bg-primary/20"
-                    : "text-muted-foreground",
-                )}
-              >
-                <Layers className="h-4 w-4" />
-              </button>
+                  }}
+                  title="Select All"
+                  className={cn(
+                    "p-1 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-40",
+                    nodes.length > 1 &&
+                      nodes
+                        .filter((n) => n.id !== "start")
+                        .every((n) => selectedNodeIds.has(n.id)) &&
+                      "bg-primary/10 text-primary hover:bg-primary/20",
+                  )}
+                >
+                  <CheckSquare className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={onToggleMultiSelectMode}
+                  title="Toggle Multi-select Mode"
+                  className={cn(
+                    "p-1 rounded hover:bg-accent transition-colors",
+                    isMultiSelectMode
+                      ? "bg-primary/10 text-primary hover:bg-primary/20"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  <Layers className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-muted-foreground text-center font-medium">
+              Selected:{" "}
+              <span className="font-bold text-foreground">
+                {selectedNodeIds.size}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 bg-muted/50 rounded-md border border-border px-2 py-1">
+              <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchQueryChange(e.target.value)}
+                placeholder="Search nodes..."
+                className="flex-1 min-w-0 bg-transparent text-xs outline-none border-none placeholder-muted-foreground focus:ring-0 p-0"
+              />
+              {searchQuery && (
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <span className="text-[10px] text-muted-foreground mr-1">
+                    {searchResults.length > 0
+                      ? `${currentResultIndex + 1}/${searchResults.length}`
+                      : "0/0"}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={searchResults.length <= 1}
+                    onClick={() => {
+                      const nextIdx =
+                        (currentResultIndex - 1 + searchResults.length) %
+                        searchResults.length;
+                      onCurrentResultIndexChange(nextIdx);
+                    }}
+                    className="p-0.5 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5 rotate-180" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={searchResults.length <= 1}
+                    onClick={() => {
+                      const nextIdx =
+                        (currentResultIndex + 1) % searchResults.length;
+                      onCurrentResultIndexChange(nextIdx);
+                    }}
+                    className="p-0.5 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSearchQueryChange("")}
+                    className="p-0.5 rounded hover:bg-accent text-muted-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+          <ScriptCardStack
+            nodes={nodes}
+            edges={edges}
+            zoom={zoom}
+            selectedNodeId={selectedNodeId}
+            pendingAddNodeId={pendingAddNodeId}
+            justAddedNodeId={justAddedNodeId}
+            draggedNodeType={draggedNodeType}
+            debugNodeStatuses={debugNodeStatuses}
+            disabled={disabled}
+            collapsedBlockIds={collapsedBlockIds}
+            onToggleCollapseBlock={onToggleCollapseBlock}
+            onToggleErrorHandling={onToggleErrorHandling}
+            onSelectNode={onSelectNodeWithToggle || onSelectNode}
+            onInsertNode={onInsertNode}
+            onDeleteNode={onDeleteNode}
+            onDuplicateNode={onDuplicateNode}
+            onEditNode={onEditNode}
+            onCommentNode={onCommentNode}
+            onStartFromHereNode={onStartFromHereNode}
+            onCreateLabel={onCreateLabel}
+            onMoveToLabel={onMoveToLabel}
+            activeInsertSlot={activeInsertSlot}
+            onSelectSlot={onSelectSlot}
+            onMoveNode={onMoveNode}
+            onConnectSlots={onConnectSlots}
+            selectedNodeIds={selectedNodeIds}
+            searchResults={searchResults}
+            currentActiveMatchId={
+              searchResults.length > 0
+                ? searchResults[currentResultIndex]
+                : null
+            }
+          />
 
-          <div className="text-[11px] text-muted-foreground text-center font-medium">
-            Selected:{" "}
-            <span className="font-bold text-foreground">
-              {selectedNodeIds.size}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1 bg-muted/50 rounded-md border border-border px-2 py-1">
-            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchQueryChange(e.target.value)}
-              placeholder="Search nodes..."
-              className="flex-1 min-w-0 bg-transparent text-xs outline-none border-none placeholder-muted-foreground focus:ring-0 p-0"
-            />
-            {searchQuery && (
-              <div className="flex items-center gap-0.5 shrink-0">
-                <span className="text-[10px] text-muted-foreground mr-1">
-                  {searchResults.length > 0
-                    ? `${currentResultIndex + 1}/${searchResults.length}`
-                    : "0/0"}
-                </span>
-                <button
+          {/* Bottom Function Switcher in Left Column */}
+          <div className="border-t border-border pt-2 mt-auto">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
                   type="button"
-                  disabled={searchResults.length <= 1}
-                  onClick={() => {
-                    const nextIdx =
-                      (currentResultIndex - 1 + searchResults.length) %
-                      searchResults.length;
-                    onCurrentResultIndexChange(nextIdx);
-                  }}
-                  className="p-0.5 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
+                  variant="outline"
+                  size="sm"
+                  className="w-full rounded-md shadow-sm bg-background border-border text-xs px-3 py-2 flex items-center justify-center gap-1.5 hover:bg-muted font-medium transition-all relative"
                 >
-                  <ChevronDown className="h-3.5 w-3.5 rotate-180" />
-                </button>
-                <button
-                  type="button"
-                  disabled={searchResults.length <= 1}
-                  onClick={() => {
-                    const nextIdx =
-                      (currentResultIndex + 1) % searchResults.length;
-                    onCurrentResultIndexChange(nextIdx);
-                  }}
-                  className="p-0.5 rounded hover:bg-accent text-muted-foreground disabled:opacity-30"
-                >
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSearchQueryChange("")}
-                  className="p-0.5 rounded hover:bg-accent text-muted-foreground"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <ScriptCardStack
-          nodes={nodes}
-          edges={edges}
-          selectedNodeId={selectedNodeId}
-          pendingAddNodeId={pendingAddNodeId}
-          justAddedNodeId={justAddedNodeId}
-          draggedNodeType={draggedNodeType}
-          debugNodeStatuses={debugNodeStatuses}
-          disabled={disabled}
-          collapsedBlockIds={collapsedBlockIds}
-          onToggleCollapseBlock={onToggleCollapseBlock}
-          onToggleErrorHandling={onToggleErrorHandling}
-          onSelectNode={onSelectNodeWithToggle || onSelectNode}
-          onInsertNode={onInsertNode}
-          onDeleteNode={onDeleteNode}
-          onDuplicateNode={onDuplicateNode}
-          onEditNode={onEditNode}
-          onCommentNode={onCommentNode}
-          onStartFromHereNode={onStartFromHereNode}
-          onCreateLabel={onCreateLabel}
-          onMoveToLabel={onMoveToLabel}
-          activeInsertSlot={activeInsertSlot}
-          onSelectSlot={onSelectSlot}
-          onMoveNode={onMoveNode}
-          onConnectSlots={onConnectSlots}
-          selectedNodeIds={selectedNodeIds}
-          searchResults={searchResults}
-          currentActiveMatchId={
-            searchResults.length > 0 ? searchResults[currentResultIndex] : null
-          }
-        />
-
-        {/* Bottom Function Switcher in Left Column */}
-        <div className="border-t border-border pt-2 mt-auto">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full rounded-md shadow-sm bg-background border-border text-xs px-3 py-2 flex items-center justify-between hover:bg-muted font-medium transition-all"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
                   <LuZap className="size-3 text-amber-500 fill-amber-500/20 shrink-0" />
                   <span className="truncate">{activeFunctionName}</span>
+                  <ChevronDown className="size-3 text-muted-foreground shrink-0 absolute right-3" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[360px] p-3 bg-card border border-border shadow-lg rounded-lg flex flex-col gap-3"
+                side="top"
+                align="center"
+              >
+                <div className="flex items-center justify-between border-b border-border pb-2">
+                  <span className="text-xs font-semibold text-foreground">
+                    Function list ({functions.length})
+                  </span>
                 </div>
-                <ChevronDown className="size-3 text-muted-foreground shrink-0" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-[360px] p-3 bg-card border border-border shadow-lg rounded-lg flex flex-col gap-3"
-              side="top"
-              align="center"
-            >
-              <div className="flex items-center justify-between border-b border-border pb-2">
-                <span className="text-xs font-semibold text-foreground">
-                  Function list ({functions.length})
-                </span>
-              </div>
 
-              {/* Search Box */}
-              <div className="relative">
-                <LuSearch className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
-                <Input
-                  placeholder="Search function..."
-                  value={funcSearchQuery}
-                  onChange={(e) => setFuncSearchQuery(e.target.value)}
-                  className="pl-8 h-8 text-xs bg-muted/20 border-border"
-                />
-              </div>
+                {/* Search Box */}
+                <div className="relative">
+                  <LuSearch className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Search function..."
+                    value={funcSearchQuery}
+                    onChange={(e) => setFuncSearchQuery(e.target.value)}
+                    className="pl-8 h-8 text-xs bg-muted/20 border-border"
+                  />
+                </div>
 
-              {/* Function list */}
-              <div className="max-h-48 overflow-y-auto flex flex-col gap-1 min-h-12 pr-1">
-                {functions
-                  .filter((f) =>
-                    f.name
-                      .toLowerCase()
-                      .includes(funcSearchQuery.toLowerCase()),
-                  )
-                  .map((f) => {
-                    const isActive = f.name === activeFunctionName;
-                    const isEditing = editingFuncName === f.name;
+                {/* Function list */}
+                <div className="max-h-48 overflow-y-auto flex flex-col gap-1 min-h-12 pr-1">
+                  {functions
+                    .filter((f) =>
+                      f.name
+                        .toLowerCase()
+                        .includes(funcSearchQuery.toLowerCase()),
+                    )
+                    .map((f) => {
+                      const isActive = f.name === activeFunctionName;
+                      const isEditing = editingFuncName === f.name;
 
-                    return (
-                      <div
-                        key={f.name}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                          if (!isEditing) {
-                            switchActiveFunction(f.name);
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
+                      return (
+                        <div
+                          key={f.name}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => {
                             if (!isEditing) {
                               switchActiveFunction(f.name);
                             }
-                          }
-                        }}
-                        className={`group flex items-center justify-between px-2 py-1.5 rounded-md text-xs cursor-pointer transition-colors ${
-                          isActive
-                            ? "bg-primary/10 text-primary font-medium"
-                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <LuZap
-                            className={`size-3 shrink-0 ${isActive ? "text-primary fill-primary/10" : "text-muted-foreground"}`}
-                          />
-                          {isEditing ? (
-                            <Input
-                              size={1}
-                              value={renameInputVal}
-                              onChange={(e) =>
-                                setRenameInputVal(e.target.value)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              if (!isEditing) {
+                                switchActiveFunction(f.name);
                               }
-                              onClick={(e) => e.stopPropagation()}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
+                            }
+                          }}
+                          className={`group flex items-center justify-between px-2 py-1.5 rounded-md text-xs cursor-pointer transition-colors ${
+                            isActive
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <LuZap
+                              className={`size-3 shrink-0 ${isActive ? "text-primary fill-primary/10" : "text-muted-foreground"}`}
+                            />
+                            {isEditing ? (
+                              <Input
+                                size={1}
+                                value={renameInputVal}
+                                onChange={(e) =>
+                                  setRenameInputVal(e.target.value)
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.stopPropagation();
+                                    if (renameInputVal.trim()) {
+                                      renameFunction(
+                                        f.name,
+                                        renameInputVal.trim(),
+                                      );
+                                      setEditingFuncName(null);
+                                    }
+                                  } else if (e.key === "Escape") {
+                                    e.stopPropagation();
+                                    setEditingFuncName(null);
+                                  }
+                                }}
+                                className="h-6 text-xs px-1 py-0.5 border-border focus-visible:ring-1"
+                                autoFocus
+                              />
+                            ) : (
+                              <span className="truncate">{f.name}</span>
+                            )}
+                          </div>
+
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {isEditing ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
                                   e.stopPropagation();
                                   if (renameInputVal.trim()) {
                                     renameFunction(
                                       f.name,
                                       renameInputVal.trim(),
                                     );
-                                    setEditingFuncName(null);
                                   }
-                                } else if (e.key === "Escape") {
-                                  e.stopPropagation();
                                   setEditingFuncName(null);
-                                }
-                              }}
-                              className="h-6 text-xs px-1 py-0.5 border-border focus-visible:ring-1"
-                              autoFocus
-                            />
-                          ) : (
-                            <span className="truncate">{f.name}</span>
-                          )}
+                                }}
+                                className="p-1 hover:text-primary rounded-md"
+                              >
+                                ✓
+                              </button>
+                            ) : (
+                              f.name !== "Main" && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingFuncName(f.name);
+                                      setRenameInputVal(f.name);
+                                    }}
+                                    className="p-1 hover:text-foreground rounded-md"
+                                    title="Rename"
+                                  >
+                                    <LuPencil className="size-3 text-muted-foreground hover:text-foreground" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDeletingFuncName(f.name);
+                                    }}
+                                    className="p-1 hover:text-destructive rounded-md"
+                                    title="Delete"
+                                  >
+                                    <LuTrash2 className="size-3 text-muted-foreground hover:text-destructive" />
+                                  </button>
+                                </>
+                              )
+                            )}
+                          </div>
                         </div>
+                      );
+                    })}
+                </div>
 
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {isEditing ? (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (renameInputVal.trim()) {
-                                  renameFunction(f.name, renameInputVal.trim());
-                                }
-                                setEditingFuncName(null);
-                              }}
-                              className="p-1 hover:text-primary rounded-md"
-                            >
-                              ✓
-                            </button>
-                          ) : (
-                            f.name !== "Main" && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingFuncName(f.name);
-                                    setRenameInputVal(f.name);
-                                  }}
-                                  className="p-1 hover:text-foreground rounded-md"
-                                  title="Rename"
-                                >
-                                  <LuPencil className="size-3 text-muted-foreground hover:text-foreground" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeletingFuncName(f.name);
-                                  }}
-                                  className="p-1 hover:text-destructive rounded-md"
-                                  title="Delete"
-                                >
-                                  <LuTrash2 className="size-3 text-muted-foreground hover:text-destructive" />
-                                </button>
-                              </>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
+                {/* Create new function input */}
+                <div className="flex items-center gap-1.5 border-t border-border pt-2 mt-1">
+                  <Input
+                    placeholder="New function name..."
+                    value={newFuncName}
+                    onChange={(e) => setNewFuncName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newFuncName.trim()) {
+                        addFunction(newFuncName.trim());
+                        setNewFuncName("");
+                      }
+                    }}
+                    className="h-8 text-xs bg-muted/20 border-border"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      if (newFuncName.trim()) {
+                        addFunction(newFuncName.trim());
+                        setNewFuncName("");
+                      }
+                    }}
+                    className="h-8 px-2.5 bg-red-600 hover:bg-red-700 text-white shrink-0"
+                  >
+                    <LuPlus className="size-3.5" />
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
 
-              {/* Create new function input */}
-              <div className="flex items-center gap-1.5 border-t border-border pt-2 mt-1">
-                <Input
-                  placeholder="New function name..."
-                  value={newFuncName}
-                  onChange={(e) => setNewFuncName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && newFuncName.trim()) {
-                      addFunction(newFuncName.trim());
-                      setNewFuncName("");
-                    }
-                  }}
-                  className="h-8 text-xs bg-muted/20 border-border"
-                />
+          {/* Confirmation Dialog for Function Deletion inside Left Column */}
+          <Dialog
+            open={deletingFuncName !== null}
+            onOpenChange={(open) => {
+              if (!open) setDeletingFuncName(null);
+            }}
+          >
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Delete Function</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete function &quot;
+                  {deletingFuncName}&quot;? All nodes inside this function will
+                  be deleted. This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="gap-2 justify-end">
                 <Button
                   type="button"
-                  size="sm"
-                  onClick={() => {
-                    if (newFuncName.trim()) {
-                      addFunction(newFuncName.trim());
-                      setNewFuncName("");
-                    }
-                  }}
-                  className="h-8 px-2.5 bg-red-600 hover:bg-red-700 text-white shrink-0"
+                  variant="outline"
+                  onClick={() => setDeletingFuncName(null)}
                 >
-                  <LuPlus className="size-3.5" />
+                  Cancel
                 </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    if (deletingFuncName) {
+                      deleteFunction(deletingFuncName);
+                    }
+                    setDeletingFuncName(null);
+                  }}
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
-        {/* Confirmation Dialog for Function Deletion inside Left Column */}
-        <Dialog
-          open={deletingFuncName !== null}
-          onOpenChange={(open) => {
-            if (!open) setDeletingFuncName(null);
-          }}
-        >
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Delete Function</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete function &quot;
-                {deletingFuncName}&quot;? All nodes inside this function will be
-                deleted. This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="gap-2 justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setDeletingFuncName(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => {
-                  if (deletingFuncName) {
-                    deleteFunction(deletingFuncName);
-                  }
-                  setDeletingFuncName(null);
-                }}
-              >
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          {/* Resize Handle */}
+          <button
+            type="button"
+            onMouseDown={startResizing}
+            className={cn(
+              "absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-primary/40 active:bg-primary transition-colors z-50 p-0 border-0 bg-transparent outline-none focus:ring-0",
+              isResizing && "bg-primary",
+            )}
+            aria-label="Resize sidebar"
+          />
+        </aside>
 
-        {/* Resize Handle */}
-        <button
-          type="button"
-          onMouseDown={startResizing}
-          className={cn(
-            "absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-primary/40 active:bg-primary transition-colors z-50 p-0 border-0 bg-transparent outline-none focus:ring-0",
-            isResizing && "bg-primary",
-          )}
-          aria-label="Resize sidebar"
-        />
-      </aside>
-
-      {/* COLUMN 2: Node Selector / Palette (formerly Column 1) */}
-      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        {/* COLUMN 2: Node Selector / Palette (formerly Column 1) */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-lg border border-border bg-card p-4">
           <NodePalette
             onDragStart={onPaletteDragStart}
@@ -712,7 +750,37 @@ export function AutomationEditorWorkspace({
           />
         </div>
 
-        {isLogPanelOpen && (
+        {/* COLUMN 3: Resource Management / Variables Panel */}
+        {isVariablesPanelOpen && (
+          <aside className="flex w-80 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-md">
+            <VariableResourcePanel
+              variables={v2Variables}
+              resources={resources}
+              onVariablesChange={onV2VariablesChange}
+              onResourcesChange={onResourcesChange}
+              onDoubleClickResource={onEditResource}
+              disabled={disabled}
+            />
+          </aside>
+        )}
+      </div>
+
+      {/* BOTTOM SECTION: Log Panel spanning across full width like BAS */}
+      {isLogPanelOpen && (
+        <div
+          style={{ height: `${logPanelHeight}px` }}
+          className="relative flex shrink-0 flex-col min-h-[180px] max-h-[600px] rounded-lg border border-border bg-card overflow-hidden shadow-lg"
+        >
+          {/* Vertical Resize Handle */}
+          <button
+            type="button"
+            onMouseDown={startLogResizing}
+            className={cn(
+              "absolute top-0 left-0 right-0 h-1 cursor-row-resize hover:bg-primary/50 active:bg-primary transition-colors z-50 p-0 border-0 bg-transparent outline-none focus:ring-0",
+              isLogResizing && "bg-primary h-1.5",
+            )}
+            aria-label="Resize log panel"
+          />
           <FlowLogPanel
             logs={showDebugOutput ? debugLogs : flowLogs}
             steps={showDebugOutput ? debugSteps : logSteps}
@@ -720,22 +788,9 @@ export function AutomationEditorWorkspace({
             onClose={onCloseLogPanel}
             onSelectNode={onSelectLogNode}
             selectedNodeId={selectedNodeId}
+            className="h-full border-t-0 shadow-none"
           />
-        )}
-      </div>
-
-      {/* COLUMN 3: Resource Management / Variables Panel */}
-      {isVariablesPanelOpen && (
-        <aside className="flex w-80 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-md">
-          <VariableResourcePanel
-            variables={v2Variables}
-            resources={resources}
-            onVariablesChange={onV2VariablesChange}
-            onResourcesChange={onResourcesChange}
-            onDoubleClickResource={onEditResource}
-            disabled={disabled}
-          />
-        </aside>
+        </div>
       )}
     </div>
   );

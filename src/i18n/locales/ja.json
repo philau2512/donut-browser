@@ -2248,7 +2248,8 @@
         "interaction": "インタラクション",
         "utility": "ユーティリティ",
         "network": "ネットワーク",
-        "control": "制御フロー"
+        "control": "制御フロー",
+        "other": "その他"
       },
       "variables": {
         "search": "変数を検索...",

@@ -1596,6 +1596,22 @@ export function useAutomationFlowState({
     setIsPropertiesDialogOpen(false);
     if (nodeId !== null) {
       setActiveInsertSlot(null);
+      setTimeout(() => {
+        const el = document.getElementById(`node-card-${nodeId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add(
+            "ring-4",
+            "ring-primary",
+            "scale-[1.01]",
+            "transition-all",
+            "duration-200",
+          );
+          setTimeout(() => {
+            el.classList.remove("ring-4", "ring-primary", "scale-[1.01]");
+          }, 1500);
+        }
+      }, 50);
     }
   };
 

@@ -16,6 +16,7 @@ interface ScriptConnectionWiresProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   activeConnectionSource?: any;
   dragMousePos?: { x: number; y: number } | null;
+  zoom?: number;
 }
 
 export function ScriptConnectionWires({
@@ -23,6 +24,7 @@ export function ScriptConnectionWires({
   containerRef,
   activeConnectionSource,
   dragMousePos,
+  zoom = 1,
 }: ScriptConnectionWiresProps) {
   const [paths, setPaths] = useState<WirePath[]>([]);
   const [dragPath, setDragPath] = useState<string | null>(null);
@@ -47,6 +49,9 @@ export function ScriptConnectionWires({
   };
 
   useEffect(() => {
+    // Reference zoom to trigger effect update when zoom level changes
+    void zoom;
+
     if (!activeConnectionSource || !dragMousePos) {
       setDragPath(null);
       return;
@@ -63,14 +68,10 @@ export function ScriptConnectionWires({
 
     const arrowRect = arrowEl.getBoundingClientRect();
     const srcX =
-      arrowRect.left +
-      arrowRect.width / 2 -
-      containerRect.left +
+      (arrowRect.left + arrowRect.width / 2 - containerRect.left) / zoom +
       container.scrollLeft;
     const srcY =
-      arrowRect.top +
-      arrowRect.height / 2 -
-      containerRect.top +
+      (arrowRect.top + arrowRect.height / 2 - containerRect.top) / zoom +
       container.scrollTop;
 
     const tgtX = dragMousePos.x;
@@ -79,9 +80,12 @@ export function ScriptConnectionWires({
     // Draw a Bezier curve from arrow to mouse cursor
     const path = `M ${srcX} ${srcY} C ${srcX + 50} ${srcY}, ${tgtX - 50} ${tgtY}, ${tgtX} ${tgtY}`;
     setDragPath(path);
-  }, [activeConnectionSource, dragMousePos, containerRef]);
+  }, [activeConnectionSource, dragMousePos, containerRef, zoom]);
 
   useEffect(() => {
+    // Reference zoom to trigger effect update when zoom level changes
+    void zoom;
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -106,20 +110,16 @@ export function ScriptConnectionWires({
           const tgtRect = tgtEl.getBoundingClientRect();
 
           const srcX =
-            srcRect.right - containerRect.left + container.scrollLeft;
+            (srcRect.right - containerRect.left) / zoom + container.scrollLeft;
           const srcY =
-            srcRect.top -
-            containerRect.top +
-            container.scrollTop +
-            srcRect.height / 2;
+            (srcRect.top - containerRect.top + srcRect.height / 2) / zoom +
+            container.scrollTop;
 
           const tgtX =
-            tgtRect.right - containerRect.left + container.scrollLeft;
+            (tgtRect.right - containerRect.left) / zoom + container.scrollLeft;
           const tgtY =
-            tgtRect.top -
-            containerRect.top +
-            container.scrollTop +
-            tgtRect.height / 2;
+            (tgtRect.top - containerRect.top + tgtRect.height / 2) / zoom +
+            container.scrollTop;
 
           // Compute C-shaped loop path around the cards on the right side
           const rightOffset = 28;
@@ -169,7 +169,7 @@ export function ScriptConnectionWires({
       observer.disconnect();
       container.removeEventListener("scroll", updatePaths);
     };
-  }, [nodes, containerRef]);
+  }, [nodes, containerRef, zoom]);
 
   if (paths.length === 0 && !dragPath) return null;
 

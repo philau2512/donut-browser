@@ -2248,7 +2248,8 @@
         "interaction": "交互",
         "utility": "实用工具",
         "network": "网络",
-        "control": "控制流"
+        "control": "控制流",
+        "other": "其他"
       },
       "variables": {
         "search": "搜索变量...",

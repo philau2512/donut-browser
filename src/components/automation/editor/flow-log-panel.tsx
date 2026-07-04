@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { LuCheckCheck, LuInfo, LuX } from "react-icons/lu";
+import { LuX } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -28,23 +28,26 @@ interface FlowLogPanelProps {
   onSelectNode?: (nodeId: string | null) => void;
   selectedNodeId?: string | null;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function FlowLogPanel({
   logs,
-  steps,
-  variables,
+  steps: _steps,
+  variables: _variables,
   onClose,
   onSelectNode,
   selectedNodeId,
   className,
+  style,
 }: FlowLogPanelProps) {
   const { t } = useTranslation();
 
   return (
     <div
+      style={style}
       className={cn(
-        "flex h-64 shrink-0 flex-col border-t border-border bg-card shadow-lg transition-all duration-300 ease-in-out",
+        "flex shrink-0 flex-col border-t border-border bg-card shadow-lg",
         className,
       )}
     >
@@ -71,92 +74,9 @@ export function FlowLogPanel({
       </div>
 
       {/* Panel Content */}
-      <div className="flex flex-1 min-h-0 divide-x divide-border">
-        {/* Left Side: Timeline and Variable State */}
-        <div className="flex flex-1 flex-col p-4 overflow-y-auto space-y-4 min-w-0">
-          {/* Visual Timeline */}
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              {t("automation.editor.logs.timeline") || "Execution Timeline"}
-            </h4>
-            <div className="flex items-center gap-2 overflow-x-auto py-2">
-              {steps.map((step, idx) => (
-                <div key={step.id} className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => onSelectNode?.(step.id)}
-                    className={cn(
-                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition shadow-sm hover:opacity-90 active:scale-95 cursor-pointer",
-                      step.status === "success" &&
-                        "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
-                      step.status === "running" &&
-                        "border-blue-500/30 bg-blue-500/10 text-blue-400 animate-pulse",
-                      step.status === "error" &&
-                        "border-destructive/30 bg-destructive/10 text-destructive",
-                      step.status === "idle" &&
-                        "border-border bg-muted/30 text-muted-foreground",
-                      selectedNodeId === step.id &&
-                        "ring-2 ring-amber-500 border-amber-500",
-                    )}
-                  >
-                    {step.status === "success" && (
-                      <LuCheckCheck className="size-3.5 shrink-0" />
-                    )}
-                    {step.status === "running" && (
-                      <LuInfo className="size-3.5 shrink-0 animate-spin" />
-                    )}
-                    <span className="truncate max-w-[100px]">{step.label}</span>
-                  </button>
-                  {idx < steps.length - 1 && (
-                    <div className="mx-2 h-[2px] w-8 bg-border" />
-                  )}
-                </div>
-              ))}
-              {steps.length === 0 && (
-                <p className="text-xs text-muted-foreground italic">
-                  {t("automation.editor.logs.noSteps") ||
-                    "No steps executed yet."}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Variables State */}
-          <div className="flex-1 flex flex-col min-h-0 space-y-2">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              {t("automation.editor.logs.variablesState") || "Variables State"}
-            </h4>
-            <div className="flex-1 overflow-y-auto rounded-md border border-border bg-background/50 p-3 font-mono text-[11px]">
-              {Object.keys(variables).length > 0 ? (
-                <div className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-1 text-muted-foreground">
-                  {Object.entries(variables).map(([key, val]) => (
-                    <div key={key} className="contents hover:text-foreground">
-                      <span className="text-amber-500/90 truncate font-semibold">
-                        {key}
-                      </span>
-                      <span className="truncate border-l border-border pl-3">
-                        {val || "undefined"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground italic">
-                  {t("automation.editor.logs.noVariables") ||
-                    "No local variables defined."}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Log Console Output */}
-        <div className="flex w-[45%] shrink-0 flex-col bg-background/30 p-4 font-mono text-[11px] leading-relaxed">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-sans">
-              {t("automation.editor.logs.console") || "Logs Output"}
-            </h4>
-          </div>
+      <div className="flex flex-1 min-h-0">
+        {/* Log Console Output */}
+        <div className="flex flex-1 flex-col bg-background/30 p-3 font-mono text-[11px] leading-relaxed">
           <div className="flex-1 overflow-y-auto rounded-md border border-border bg-zinc-950/90 p-3 space-y-1 scrollbar-thin">
             {logs.map((log) => (
               // biome-ignore lint/a11y/useKeyWithClickEvents: Click handler on log line is a helper shortcut

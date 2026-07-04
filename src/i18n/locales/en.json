@@ -2291,7 +2291,8 @@
         "interaction": "Interaction",
         "utility": "Utility",
         "network": "Network",
-        "control": "Control Flow"
+        "control": "Control Flow",
+        "other": "Other"
       },
       "start": "Start",
       "booleanEnabled": "Enabled",

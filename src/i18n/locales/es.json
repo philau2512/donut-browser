@@ -2248,7 +2248,8 @@
         "interaction": "Interacción",
         "utility": "Utilidad",
         "network": "Red",
-        "control": "Control de flujo"
+        "control": "Control de flujo",
+        "other": "Otros"
       },
       "variables": {
         "search": "Buscar variables...",

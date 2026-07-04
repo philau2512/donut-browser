@@ -13,6 +13,7 @@ import {
   LuNetwork,
   LuSearch,
   LuWrench,
+  LuX,
 } from "react-icons/lu";
 import { Input } from "@/components/ui/input";
 import {
@@ -152,16 +153,6 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
     });
   }, [query, t]);
 
-  const itemsCount = useMemo(() => {
-    const counts: Record<string, number> = {};
-    GROUPS.forEach((group) => {
-      counts[group] = AUTOMATION_NODE_CATALOG.filter(
-        (item) => item.group === group,
-      ).length;
-    });
-    return counts;
-  }, []);
-
   const isSearching = !!query.trim();
 
   return (
@@ -181,12 +172,22 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t("automation.editor.searchNodes")}
-          className="pl-8"
+          className="pr-8 pl-8"
         />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            className="-translate-y-1/2 absolute top-1/2 right-2.5 flex size-5 items-center justify-center rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+          >
+            <LuX className="size-3.5" />
+          </button>
+        )}
       </div>
 
       {isSearching ? (
-        /* Search results view (flat grid of actions) */
+        /* Search results view (detailed horizontal cards in grid) */
         <div className="flex-1">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             {t("common.labels.status", { defaultValue: "Search Results" })} (
@@ -194,7 +195,7 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
           </p>
           <div className="grid grid-cols-2 gap-3">
             {filtered.map((item, index) => {
-              const Icon = GROUP_ICONS[item.group] || LuCpu; // Đồng bộ Icon của nhóm cha
+              const Icon = GROUP_ICONS[item.group] || LuCpu;
               const colors =
                 PALETTE_GROUP_COLORS[item.group] || PALETTE_GROUP_COLORS.other;
               return (
@@ -212,7 +213,7 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
                     }
                   }}
                   className={cn(
-                    "flex cursor-grab rounded-lg border bg-card/65 transition hover:shadow-sm hover:scale-[1.01] active:cursor-grabbing min-w-0 select-none p-2 gap-2 h-24 text-left",
+                    "flex cursor-grab rounded border bg-card/65 transition hover:shadow-sm active:cursor-grabbing min-w-0 select-none p-2 gap-2 h-24 text-left",
                     colors.border,
                     colors.hoverBg,
                     colors.hoverBorder,
@@ -260,8 +261,13 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
           )}
         </div>
       ) : selectedGroup === null ? (
-        /* Category grid view (Main screen) */
-        <div className="grid grid-cols-2 gap-3 pt-1">
+        /* Category grid view (Main screen as compact squares) */
+        <div
+          className="grid gap-2 pt-1"
+          style={{
+            gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+          }}
+        >
           {GROUPS.map((group) => {
             const Icon = GROUP_ICONS[group] || LuCpu;
             const colors =
@@ -279,30 +285,26 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
                   }
                 }}
                 className={cn(
-                  "flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all duration-200 hover:scale-[1.02] hover:shadow-sm cursor-pointer select-none h-24",
+                  "flex flex-col items-center justify-between rounded-md border p-2 text-center transition-all duration-200 hover:shadow-sm cursor-pointer select-none aspect-square w-full",
                   colors.border,
                   colors.bg,
                   colors.hoverBg,
                   colors.hoverBorder,
                 )}
               >
-                <Icon className={cn("size-6 mb-2 shrink-0", colors.text)} />
-                <span className="text-[11px] font-bold text-foreground truncate w-full">
+                <span className="text-[11px] font-bold text-foreground leading-tight line-clamp-2 w-full h-8 flex items-center justify-center">
                   {t(`automation.editor.groups.${group}`)}
                 </span>
-                <span className="mt-1 text-[9px] text-muted-foreground">
-                  {itemsCount[group] || 0}{" "}
-                  {t("common.labels.actions").toLowerCase()}
-                </span>
+                <Icon className={cn("size-7 my-auto shrink-0", colors.text)} />
               </div>
             );
           })}
         </div>
       ) : (
         /* Sub-category actions grid view */
-        <div className="flex flex-col gap-4 pt-1">
-          {/* BAS style header */}
-          <div className="flex gap-4 items-center pb-2 border-b border-border/40">
+        <div className="flex flex-col gap-3 pt-1">
+          {/* BAS style header - very compact */}
+          <div className="flex gap-3 items-center pb-2 border-b border-border/40">
             {/* Left side: Category card square */}
             {(() => {
               const colors =
@@ -312,40 +314,46 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
               return (
                 <div
                   className={cn(
-                    "w-20 h-20 shrink-0 flex flex-col items-center justify-between rounded-md border p-2 text-center select-none shadow-sm",
+                    "w-12 h-12 shrink-0 flex flex-col items-center justify-center rounded border p-1 text-center select-none shadow-sm",
                     colors.border,
                     colors.bg,
                   )}
                 >
-                  <span className="text-[10px] font-bold text-foreground truncate w-full">
+                  <GroupIcon className={cn("size-5 shrink-0", colors.text)} />
+                  <span className="text-[8px] font-bold text-foreground truncate w-full mt-0.5 leading-none">
                     {t(`automation.editor.groups.${selectedGroup}`)}
                   </span>
-                  <GroupIcon className={cn("size-8 mb-0.5", colors.text)} />
                 </div>
               );
             })()}
 
             {/* Right side: return link & description */}
-            <div className="flex-1 flex flex-col justify-center gap-1.5 min-w-0">
+            <div className="flex-1 flex flex-col justify-center gap-1 min-w-0">
               <button
                 type="button"
                 onClick={() => setSelectedGroup(null)}
-                className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline transition-all self-start"
+                className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:underline transition-all self-start"
               >
-                <LuArrowLeft className="size-3.5" />
+                <LuArrowLeft className="size-3" />
                 <span>{t("automation.editor.returnToMain")}</span>
               </button>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-[9.5px] text-muted-foreground leading-tight line-clamp-2">
                 {t(`automation.editor.groupDescriptions.${selectedGroup}`)}
               </p>
             </div>
           </div>
 
-          {/* Action buttons (centered text, no icons, rectangular border) */}
-          <div className="grid grid-cols-2 gap-2.5">
+          {/* Action buttons (centered text, custom icons, compact squares) */}
+          <div
+            className="grid gap-2"
+            style={{
+              gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+            }}
+          >
             {AUTOMATION_NODE_CATALOG.filter(
               (item) => item.group === selectedGroup,
             ).map((item) => {
+              const ActionIcon = item.icon || LuCpu;
               return (
                 <div
                   key={item.type}
@@ -360,11 +368,12 @@ export function NodePalette({ onDragStart, onClickItem }: NodePaletteProps) {
                       onClickItem?.(item);
                     }
                   }}
-                  className="flex cursor-grab items-center justify-center rounded border border-border bg-card p-3 text-center transition-all duration-200 hover:border-primary/50 hover:bg-accent/40 active:cursor-grabbing shadow-sm hover:shadow-md min-w-0 select-none h-11"
+                  className="group flex cursor-grab flex-col items-center justify-between rounded border border-border bg-card p-2 text-center transition-all duration-200 hover:border-primary/50 hover:bg-accent/45 active:cursor-grabbing shadow-sm hover:shadow-md min-w-0 select-none aspect-square w-full"
                 >
-                  <span className="truncate text-xs font-medium text-foreground">
+                  <span className="text-[11px] font-semibold text-foreground leading-tight line-clamp-2 w-full h-8 flex items-center justify-center">
                     {t(item.labelKey)}
                   </span>
+                  <ActionIcon className="size-7 my-auto shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
               );
             })}

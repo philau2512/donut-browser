@@ -2248,7 +2248,8 @@
         "interaction": "상호작용",
         "utility": "유틸리티",
         "network": "네트워크",
-        "control": "제어 흐름"
+        "control": "제어 흐름",
+        "other": "기타"
       },
       "variables": {
         "search": "변수 검색...",

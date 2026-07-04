@@ -43,6 +43,7 @@ interface ScriptCardStackProps {
   selectedNodeIds?: Set<string>;
   searchResults?: string[];
   currentActiveMatchId?: string | null;
+  zoom?: number;
 }
 
 import { useState } from "react";
@@ -75,6 +76,7 @@ export function ScriptCardStack({
   selectedNodeIds,
   searchResults = [],
   currentActiveMatchId = null,
+  zoom = 1,
 }: ScriptCardStackProps) {
   const model = buildCardStackModel(nodes, edges);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -94,8 +96,8 @@ export function ScriptCardStack({
       const rect = event.currentTarget.getBoundingClientRect();
       const container = event.currentTarget;
       setDragMousePos({
-        x: event.clientX - rect.left + container.scrollLeft,
-        y: event.clientY - rect.top + container.scrollTop,
+        x: (event.clientX - rect.left) / zoom + container.scrollLeft,
+        y: (event.clientY - rect.top) / zoom + container.scrollTop,
       });
     }
   };
@@ -168,11 +170,28 @@ export function ScriptCardStack({
     });
   }
 
+  const handleSectionClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      !target.closest("article") &&
+      !target.closest("button") &&
+      !target.closest("input")
+    ) {
+      onSelectNode(null);
+    }
+  };
+
   return (
     <section
       ref={containerRef}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onClick={handleSectionClick}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          onSelectNode(null);
+        }
+      }}
       aria-label="Script card stack"
       className="relative min-h-0 flex-1 overflow-y-auto border-0 bg-transparent p-1 pr-2"
     >
@@ -246,6 +265,7 @@ export function ScriptCardStack({
         containerRef={containerRef}
         activeConnectionSource={activeConnectionSource}
         dragMousePos={dragMousePos}
+        zoom={zoom}
       />
     </section>
   );

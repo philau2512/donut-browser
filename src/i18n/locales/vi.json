@@ -2289,7 +2289,8 @@
         "interaction": "Tương tác",
         "utility": "Tiện ích",
         "network": "Mạng",
-        "control": "Điều khiển luồng"
+        "control": "Điều khiển luồng",
+        "other": "Khác"
       },
       "start": "Bắt đầu",
       "booleanEnabled": "Bật",

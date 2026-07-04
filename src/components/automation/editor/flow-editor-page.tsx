@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { useAutomationFlowState } from "@/hooks/use-automation-flow-state";
 import type { BrowserProfile } from "@/types";
 import { AutomationEditorDialogs } from "./automation-editor-dialogs";
@@ -144,6 +145,37 @@ export function FlowEditorPage({
     onSaved,
   });
 
+  const [zoom, setZoom] = useState(0.9);
+
+  const handleZoomIn = useCallback(
+    () => setZoom((z) => Math.min(1.5, z + 0.05)),
+    [],
+  );
+  const handleZoomOut = useCallback(
+    () => setZoom((z) => Math.max(0.7, z - 0.05)),
+    [],
+  );
+  const handleResetZoom = useCallback(() => setZoom(1.0), []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "=" || e.key === "+") {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === "-") {
+          e.preventDefault();
+          handleZoomOut();
+        } else if (e.key === "0") {
+          e.preventDefault();
+          handleResetZoom();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleZoomIn, handleZoomOut, handleResetZoom]);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 relative">
       <AutomationEditorToolbar
@@ -157,6 +189,7 @@ export function FlowEditorPage({
         isLoading={isLoading}
         isSaving={isSaving}
         hasCurrentFlowPath={Boolean(currentFlowPath)}
+        zoom={zoom}
         onBack={onBack}
         onFlowNameChange={setFlowName}
         onDebugProfileChange={(id) => {
@@ -175,6 +208,9 @@ export function FlowEditorPage({
         onStopDebugRun={() => void debugRun.stopDebugRun()}
         onSaveAsClick={handleSaveAsClick}
         onSave={() => void handleSave()}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onResetZoom={handleResetZoom}
       />
 
       <AutomationEditorWorkspace
@@ -227,6 +263,8 @@ export function FlowEditorPage({
         searchResults={searchResults}
         currentResultIndex={currentResultIndex}
         onCurrentResultIndexChange={setCurrentResultIndex}
+        // Zoom prop
+        zoom={zoom}
         // Multi-select props
         isMultiSelectMode={isMultiSelectMode}
         onToggleMultiSelectMode={() => setIsMultiSelectMode((v) => !v)}
