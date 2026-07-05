@@ -44,6 +44,18 @@ export interface ResourceDefinition {
   name: string;
   type: ResourceType;
   direction: ResourceDirection;
+  tabName?: string;
+  descriptionEn?: string;
+  descriptionRu?: string;
+  enableHint?: boolean;
+  wizardType?: string;
+  defaultValue?: string;
+  notEmpty?: boolean;
+  multiline?: boolean;
+  minInteger?: number;
+  maxInteger?: number;
+  selectType?: string;
+  selectDefaultValue?: string;
 
   source: {
     kind: "static" | "file";

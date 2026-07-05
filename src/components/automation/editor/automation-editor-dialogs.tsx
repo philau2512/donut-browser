@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,8 @@ import type {
 import type { CardStackSlot } from "./card-stack/flow-card-stack-adapter";
 import { NodeCommentDialog } from "./node-comment-dialog";
 import { NodePropertiesDialog } from "./node-properties-dialog";
+import { CreateResourceWizardDialog } from "./panels/create-resource-wizard-dialog";
+import { EditResourceDialog } from "./panels/edit-resource-dialog";
 import { ResourceConfigurationDialog } from "./panels/resource-configuration-dialog";
 import { ResourceReportDialog } from "./panels/resource-report-dialog";
 import { ScriptReportDialog } from "./panels/script-report-dialog";
@@ -52,10 +55,15 @@ interface AutomationEditorDialogsProps {
   onSaveAsNameChange: (name: string) => void;
   onConfirmSaveAs: () => void;
   isResourceConfigOpen: boolean;
+  isEditResourceOpen: boolean;
+  selectedResourceIdForEdit: string | null;
+  onEditResourceOpenChange: (open: boolean) => void;
   resources: ResourceDefinition[];
   selectedResourceIdForConfig: string | null;
   onResourceConfigOpenChange: (open: boolean) => void;
   onResourcesChange: (resources: ResourceDefinition[]) => void;
+  isCreateResourceWizardOpen: boolean;
+  onCreateResourceWizardOpenChange: (open: boolean) => void;
   isScriptReportOpen: boolean;
   scriptReport: ScriptReport | null;
   onScriptReportOpenChange: (open: boolean) => void;
@@ -97,10 +105,15 @@ export function AutomationEditorDialogs({
   onSaveAsNameChange,
   onConfirmSaveAs,
   isResourceConfigOpen,
+  isEditResourceOpen,
+  selectedResourceIdForEdit,
+  onEditResourceOpenChange,
   resources,
   selectedResourceIdForConfig,
   onResourceConfigOpenChange,
   onResourcesChange,
+  isCreateResourceWizardOpen,
+  onCreateResourceWizardOpenChange,
   isScriptReportOpen,
   scriptReport,
   onScriptReportOpenChange,
@@ -118,6 +131,11 @@ export function AutomationEditorDialogs({
   functions,
 }: AutomationEditorDialogsProps) {
   const { t } = useTranslation();
+
+  const editingResource = useMemo(() => {
+    if (!selectedResourceIdForEdit) return null;
+    return resources.find((r) => r.id === selectedResourceIdForEdit) ?? null;
+  }, [resources, selectedResourceIdForEdit]);
 
   return (
     <>
@@ -200,6 +218,13 @@ export function AutomationEditorDialogs({
         report={scriptReport}
       />
 
+      <CreateResourceWizardDialog
+        open={isCreateResourceWizardOpen}
+        onOpenChange={onCreateResourceWizardOpenChange}
+        onConfirm={(newRes) => onResourcesChange([...resources, newRes])}
+        existingNames={resources.map((r) => r.name)}
+      />
+
       <ResourceReportDialog
         open={isResourceReportOpen}
         onOpenChange={onResourceReportOpenChange}
@@ -278,6 +303,17 @@ export function AutomationEditorDialogs({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <EditResourceDialog
+        open={isEditResourceOpen}
+        resource={editingResource}
+        onOpenChange={onEditResourceOpenChange}
+        onConfirm={(updated) => {
+          onResourcesChange(
+            resources.map((r) => (r.id === updated.id ? updated : r)),
+          );
+        }}
+      />
     </>
   );
 }

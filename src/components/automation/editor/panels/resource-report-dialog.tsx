@@ -21,7 +21,7 @@ import type {
 interface ResourceReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  report: ResourceReport;
+  report: ResourceReport | null;
 }
 
 export function ResourceReportDialog({
@@ -40,7 +40,7 @@ export function ResourceReportDialog({
           </DialogTitle>
         </DialogHeader>
 
-        {report.resources.length === 0 ? (
+        {!report || report.resources.length === 0 ? (
           <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
             {t("automation.report.resource.empty", "No resource data yet.")}
           </div>

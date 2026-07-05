@@ -58,8 +58,12 @@ export function FlowEditorPage({
     setIsResourceReportOpen,
     isResourceConfigOpen,
     setIsResourceConfigOpen,
+    isEditResourceOpen,
+    setIsEditResourceOpen,
     selectedResourceIdForConfig,
     setSelectedResourceIdForConfig,
+    selectedResourceIdForEdit,
+    setSelectedResourceIdForEdit,
     collapsedBlockIds,
     deletingBlockId,
     setDeletingBlockId,
@@ -145,6 +149,8 @@ export function FlowEditorPage({
     onSaved,
   });
 
+  const [isCreateResourceWizardOpen, setIsCreateResourceWizardOpen] =
+    useState(false);
   const [zoom, setZoom] = useState(0.9);
 
   const handleZoomIn = useCallback(
@@ -249,6 +255,7 @@ export function FlowEditorPage({
         onVariablesChange={setVariables}
         onV2VariablesChange={setV2Variables}
         onResourcesChange={setV2Resources}
+        onAddResource={() => setIsCreateResourceWizardOpen(true)}
         onEditResource={handleEditResource}
         onCloseLogPanel={() => setIsLogPanelOpen(false)}
         onSelectLogNode={selectNodeAndFocus}
@@ -342,7 +349,15 @@ export function FlowEditorPage({
           setIsResourceConfigOpen(open);
           if (!open) setSelectedResourceIdForConfig(null);
         }}
+        isEditResourceOpen={isEditResourceOpen}
+        selectedResourceIdForEdit={selectedResourceIdForEdit}
+        onEditResourceOpenChange={(open) => {
+          setIsEditResourceOpen(open);
+          if (!open) setSelectedResourceIdForEdit(null);
+        }}
         onResourcesChange={setV2Resources}
+        isCreateResourceWizardOpen={isCreateResourceWizardOpen}
+        onCreateResourceWizardOpenChange={setIsCreateResourceWizardOpen}
         isScriptReportOpen={isScriptReportOpen}
         scriptReport={report.state.scriptReport}
         onScriptReportOpenChange={setIsScriptReportOpen}

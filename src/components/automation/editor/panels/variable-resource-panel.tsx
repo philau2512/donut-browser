@@ -23,6 +23,7 @@ interface VariableResourcePanelProps {
   resources: ResourceDefinition[];
   onVariablesChange: (variables: VariableDefinition[]) => void;
   onResourcesChange: (resources: ResourceDefinition[]) => void;
+  onAddResource?: () => void;
   onDoubleClickResource?: (id: string) => void;
   disabled?: boolean;
 }
@@ -32,6 +33,7 @@ export function VariableResourcePanel({
   resources,
   onVariablesChange,
   onResourcesChange,
+  onAddResource,
   onDoubleClickResource,
   disabled = false,
 }: VariableResourcePanelProps) {
@@ -71,6 +73,7 @@ export function VariableResourcePanel({
           <ResourceManagerPanel
             resources={resources}
             onChange={onResourcesChange}
+            onAddResource={onAddResource}
             onDoubleClickResource={onDoubleClickResource}
             disabled={disabled}
           />

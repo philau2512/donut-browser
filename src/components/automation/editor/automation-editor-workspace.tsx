@@ -101,6 +101,7 @@ interface AutomationEditorWorkspaceProps {
   onVariablesChange: (variables: Record<string, string>) => void;
   onV2VariablesChange: (variables: VariableDefinition[]) => void;
   onResourcesChange: (resources: ResourceDefinition[]) => void;
+  onAddResource?: () => void;
   onEditResource: (id: string) => void;
   onCloseLogPanel: () => void;
   onSelectLogNode: (nodeId: string | null) => void;
@@ -179,6 +180,7 @@ export function AutomationEditorWorkspace({
   onVariablesChange: _onVariablesChange,
   onV2VariablesChange,
   onResourcesChange,
+  onAddResource,
   onEditResource,
   onCloseLogPanel,
   onSelectLogNode,
@@ -222,6 +224,8 @@ export function AutomationEditorWorkspace({
   const { t } = useTranslation();
   const [sidebarWidth, setSidebarWidth] = useState(384);
   const [isResizing, setIsResizing] = useState(false);
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(320);
+  const [isRightResizing, setIsRightResizing] = useState(false);
   const [logPanelHeight, setLogPanelHeight] = useState(180);
   const [isLogResizing, setIsLogResizing] = useState(false);
 
@@ -237,6 +241,11 @@ export function AutomationEditorWorkspace({
     setIsResizing(true);
   }, []);
 
+  const startRightResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsRightResizing(true);
+  }, []);
+
   const startLogResizing = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsLogResizing(true);
@@ -247,6 +256,12 @@ export function AutomationEditorWorkspace({
       if (isResizing) {
         const newWidth = Math.max(260, Math.min(600, e.clientX));
         setSidebarWidth(newWidth);
+      } else if (isRightResizing) {
+        const newWidth = Math.max(
+          260,
+          Math.min(700, window.innerWidth - e.clientX - 16),
+        );
+        setRightSidebarWidth(newWidth);
       } else if (isLogResizing) {
         const newHeight = Math.max(
           180,
@@ -258,10 +273,11 @@ export function AutomationEditorWorkspace({
 
     const handleMouseUp = () => {
       setIsResizing(false);
+      setIsRightResizing(false);
       setIsLogResizing(false);
     };
 
-    if (isResizing || isLogResizing) {
+    if (isResizing || isRightResizing || isLogResizing) {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     }
@@ -269,7 +285,7 @@ export function AutomationEditorWorkspace({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isResizing, isLogResizing]);
+  }, [isResizing, isRightResizing, isLogResizing]);
 
   return (
     <div
@@ -752,12 +768,26 @@ export function AutomationEditorWorkspace({
 
         {/* COLUMN 3: Resource Management / Variables Panel */}
         {isVariablesPanelOpen && (
-          <aside className="flex w-80 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-md">
+          <aside
+            style={{ width: `${rightSidebarWidth}px` }}
+            className="relative flex shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-md"
+          >
+            {/* Resize Handle on the left */}
+            <button
+              type="button"
+              onMouseDown={startRightResizing}
+              className={cn(
+                "absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-primary/40 active:bg-primary transition-colors z-50 p-0 border-0 bg-transparent outline-none focus:ring-0",
+                isRightResizing && "bg-primary",
+              )}
+              aria-label="Resize right sidebar"
+            />
             <VariableResourcePanel
               variables={v2Variables}
               resources={resources}
               onVariablesChange={onV2VariablesChange}
               onResourcesChange={onResourcesChange}
+              onAddResource={onAddResource}
               onDoubleClickResource={onEditResource}
               disabled={disabled}
             />

@@ -79,8 +79,12 @@ export function useAutomationFlowState({
   const [isScriptReportOpen, setIsScriptReportOpen] = useState(false);
   const [isResourceReportOpen, setIsResourceReportOpen] = useState(false);
   const [isResourceConfigOpen, setIsResourceConfigOpen] = useState(false);
+  const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [selectedResourceIdForConfig, setSelectedResourceIdForConfig] =
     useState<string | null>(null);
+  const [selectedResourceIdForEdit, setSelectedResourceIdForEdit] = useState<
+    string | null
+  >(null);
   const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(
     new Set(),
   );
@@ -635,8 +639,8 @@ export function useAutomationFlowState({
   }, [flowPath]);
 
   const handleEditResource = useCallback((id: string) => {
-    setSelectedResourceIdForConfig(id);
-    setIsResourceConfigOpen(true);
+    setSelectedResourceIdForEdit(id);
+    setIsEditResourceOpen(true);
   }, []);
 
   // Report state aggregated from automation-log events.
@@ -1657,8 +1661,12 @@ export function useAutomationFlowState({
     setIsResourceReportOpen,
     isResourceConfigOpen,
     setIsResourceConfigOpen,
+    isEditResourceOpen,
+    setIsEditResourceOpen,
     selectedResourceIdForConfig,
     setSelectedResourceIdForConfig,
+    selectedResourceIdForEdit,
+    setSelectedResourceIdForEdit,
     collapsedBlockIds,
     deletingBlockId,
     setDeletingBlockId,

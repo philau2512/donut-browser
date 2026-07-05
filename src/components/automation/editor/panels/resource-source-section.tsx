@@ -18,26 +18,26 @@ export function ResourceSourceSection({
   return (
     <section className="grid grid-cols-[220px_1fr_220px] border-b border-zinc-700">
       <div className="flex items-center justify-end border-r border-zinc-700 px-5 py-5 text-sm text-zinc-200">
-        1. Lấy link từ:
+        Source type:
       </div>
       <div className="space-y-3 border-r border-zinc-700 px-5 py-5">
-        <label className="flex items-center gap-2 text-sm text-zinc-200">
+        <label className="flex items-center gap-2 text-sm text-zinc-200 cursor-pointer select-none">
           <input
             type="radio"
             checked={sourceMode === "text"}
             onChange={() => onChange({ kind: "static" })}
             className="accent-purple-500"
           />
-          text
+          Static items
         </label>
-        <label className="flex items-center gap-2 text-sm text-zinc-200">
+        <label className="flex items-center gap-2 text-sm text-zinc-200 cursor-pointer select-none">
           <input
             type="radio"
             checked={sourceMode === "from_file"}
             onChange={() => onChange({ kind: "file" })}
             className="accent-purple-500"
           />
-          from_file
+          From local file
         </label>
       </div>
       <div className="px-5 py-5 text-xs text-zinc-500">
@@ -46,7 +46,7 @@ export function ResourceSourceSection({
       </div>
 
       <div className="flex items-center justify-end border-r border-zinc-700 px-5 py-5 text-sm text-zinc-200">
-        1.1 Nhập link ref:
+        {sourceMode === "text" ? "Static items:" : "File path:"}
       </div>
       <div className="border-r border-zinc-700 px-5 py-5">
         {sourceMode === "text" ? (
@@ -62,7 +62,7 @@ export function ResourceSourceSection({
               })
             }
             className="min-h-24 w-full resize-y rounded border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-zinc-100 outline-none focus:border-purple-500"
-            placeholder="https://example.com/login"
+            placeholder="Item 1&#10;Item 2"
           />
         ) : (
           <div className="space-y-2">
