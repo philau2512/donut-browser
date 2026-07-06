@@ -25,6 +25,7 @@ import { type ResourceDefinition } from "@/lib/automation/resource-schema";
 interface EditResourceDialogProps {
   open: boolean;
   resource: ResourceDefinition | null;
+  resources?: ResourceDefinition[];
   onOpenChange: (open: boolean) => void;
   onConfirm: (updatedResource: ResourceDefinition) => void;
 }
@@ -32,6 +33,7 @@ interface EditResourceDialogProps {
 export function EditResourceDialog({
   open,
   resource,
+  resources = [],
   onOpenChange,
   onConfirm,
 }: EditResourceDialogProps) {
@@ -42,6 +44,12 @@ export function EditResourceDialog({
   const [lang, setLang] = useState<"en" | "ru">("en");
   const [wizardType, setWizardType] = useState("FixedString");
   const [enableHint, setEnableHint] = useState(false);
+
+  // Compute other resources for visibleIf condition selection
+  const otherResources = useMemo(() => {
+    if (!resources) return [];
+    return resources.filter((r) => r.id !== resource?.id);
+  }, [resources, resource]);
 
   // Read/write modes
   const [readWriteMode, setReadWriteMode] = useState<
@@ -66,8 +74,16 @@ export function EditResourceDialog({
   const [minInteger, setMinInteger] = useState(0);
   const [maxInteger, setMaxInteger] = useState(100);
 
+  // New advanced fields
+  const [enabledToUser, setEnabledToUser] = useState(true);
+  const [visibleToUser, setVisibleToUser] = useState(true);
+  const [isAdvanced, setIsAdvanced] = useState(false);
+  const [visibleIfVariable, setVisibleIfVariable] = useState("");
+  const [visibleIfContains, setVisibleIfContains] = useState("");
+
   // UI States
   const [showValues, setShowValues] = useState(true);
+  const [showMore, setShowMore] = useState(false);
 
   // Load resource data when opened
   useEffect(() => {
@@ -113,7 +129,15 @@ export function EditResourceDialog({
     setInfoMessage(resource.source.inlineItems?.[0] ?? "");
     setMinInteger(resource.minInteger ?? 0);
     setMaxInteger(resource.maxInteger ?? 100);
+
+    setEnabledToUser(resource.enabledToUser ?? true);
+    setVisibleToUser(resource.visibleToUser ?? true);
+    setIsAdvanced(resource.isAdvanced ?? false);
+    setVisibleIfVariable(resource.visibleIfVariable ?? "");
+    setVisibleIfContains(resource.visibleIfContains ?? "");
+
     setShowValues(true);
+    setShowMore(false);
   }, [open, resource]);
 
   const parsedSelectOptions = useMemo(() => {
@@ -228,6 +252,11 @@ export function EditResourceDialog({
       maxInteger,
       selectType,
       selectDefaultValue,
+      enabledToUser,
+      visibleToUser,
+      isAdvanced,
+      visibleIfVariable,
+      visibleIfContains,
     };
 
     onConfirm(updated);
@@ -237,7 +266,7 @@ export function EditResourceDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-xl border-zinc-700 bg-zinc-900 text-zinc-100 p-0 overflow-hidden flex flex-col h-[540px]"
+        className="max-w-xl border-zinc-700 bg-zinc-900 text-zinc-100 p-0 overflow-hidden flex flex-col h-[620px]"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -629,6 +658,143 @@ export function EditResourceDialog({
                 </div>
               )}
             </div>
+
+            {/* Show More / Hide Section */}
+            <div className="flex justify-end pr-2 pt-1">
+              {!showMore ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMore(true)}
+                  className="h-7 bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 text-xs px-3"
+                >
+                  Show more
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMore(false)}
+                  className="h-7 border-purple-500 text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 text-xs px-3"
+                >
+                  Hide
+                </Button>
+              )}
+            </div>
+
+            {/* Expanded Configuration Section */}
+            {showMore && (
+              <div className="border-t border-zinc-850 pt-4 mt-3 space-y-4">
+                {/* Not Empty & Multiline Checkboxes */}
+                <div className="flex flex-col gap-2 pl-[122px]">
+                  <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={notEmpty}
+                      onChange={(e) => setNotEmpty(e.target.checked)}
+                      className="size-4 accent-purple-600 rounded border-zinc-800 bg-zinc-950"
+                    />
+                    <span>Not Empty</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={multiline}
+                      onChange={(e) => setMultiline(e.target.checked)}
+                      className="size-4 accent-purple-600 rounded border-zinc-800 bg-zinc-950"
+                    />
+                    <span>Multiline</span>
+                  </label>
+                </div>
+
+                {/* Enabled to user, Visible to user, Is Advanced */}
+                <div className="flex flex-wrap gap-4 pl-[122px] pt-1">
+                  <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={enabledToUser}
+                      onChange={(e) => setEnabledToUser(e.target.checked)}
+                      className="size-4 accent-purple-600 rounded border-zinc-800 bg-zinc-950"
+                    />
+                    <span>Enabled to user</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={visibleToUser}
+                      onChange={(e) => setVisibleToUser(e.target.checked)}
+                      className="size-4 accent-purple-600 rounded border-zinc-800 bg-zinc-950"
+                    />
+                    <span>Visible to user</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={isAdvanced}
+                      onChange={(e) => setIsAdvanced(e.target.checked)}
+                      className="size-4 accent-purple-600 rounded border-zinc-800 bg-zinc-950"
+                    />
+                    <span>Is Advanced</span>
+                  </label>
+                </div>
+
+                {/* Enable hint */}
+                <div className="flex items-center gap-2 pl-[122px]">
+                  <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={enableHint}
+                      onChange={(e) => setEnableHint(e.target.checked)}
+                      className="size-4 accent-purple-600 rounded border-zinc-800 bg-zinc-950"
+                    />
+                    <span>Enable hint</span>
+                  </label>
+                </div>
+
+                {/* Visible if: Section */}
+                <div className="space-y-2.5">
+                  <span className="text-[11px] font-bold text-zinc-400 block pl-[122px]">
+                    Visible if:
+                  </span>
+                  <div className="grid grid-cols-[110px_1fr] items-center gap-3">
+                    <Label className="text-right text-xs text-zinc-500">
+                      Variable
+                    </Label>
+                    <Select
+                      value={visibleIfVariable || "_none_"}
+                      onValueChange={(val) =>
+                        setVisibleIfVariable(val === "_none_" ? "" : val)
+                      }
+                    >
+                      <SelectTrigger className="h-8 border-zinc-800 bg-zinc-950 text-xs text-white focus:ring-purple-500 font-mono">
+                        <SelectValue placeholder="Select resource variable..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-700 text-white max-h-48 overflow-y-auto">
+                        <SelectItem value="_none_">None</SelectItem>
+                        {otherResources.map((res) => (
+                          <SelectItem key={res.id} value={res.name}>
+                            {res.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-[110px_1fr] items-center gap-3">
+                    <Label className="text-right text-xs text-zinc-500">
+                      Contains
+                    </Label>
+                    <Input
+                      value={visibleIfContains}
+                      onChange={(e) => setVisibleIfContains(e.target.value)}
+                      placeholder="e.g. text"
+                      className="h-8 border-zinc-800 bg-zinc-950 text-xs text-white focus-visible:ring-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

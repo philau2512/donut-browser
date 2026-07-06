@@ -307,6 +307,7 @@ export function AutomationEditorDialogs({
       <EditResourceDialog
         open={isEditResourceOpen}
         resource={editingResource}
+        resources={resources}
         onOpenChange={onEditResourceOpenChange}
         onConfirm={(updated) => {
           onResourcesChange(

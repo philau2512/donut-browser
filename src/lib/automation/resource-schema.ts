@@ -56,6 +56,12 @@ export interface ResourceDefinition {
   maxInteger?: number;
   selectType?: string;
   selectDefaultValue?: string;
+  enabledToUser?: boolean;
+  visibleToUser?: boolean;
+  isAdvanced?: boolean;
+  visibleIfVariable?: string;
+  visibleIfContains?: string;
+  choosableTypes?: string[];
 
   source: {
     kind: "static" | "file";
@@ -184,6 +190,24 @@ export function makeDefaultResourceDefinition(
       itemIdentity: "line-hash",
       preserveUsageAcrossRestart: true,
     },
+    enabledToUser: true,
+    visibleToUser: true,
+    isAdvanced: false,
+    visibleIfVariable: "",
+    visibleIfContains: "",
+    choosableTypes: [
+      "FixedString",
+      "FixedInteger",
+      "RandomString",
+      "RandomInteger",
+      "Select",
+      "Checkbox",
+      "LinesFromFile",
+      "FilesFromDirectory",
+      "LinesFromUrl",
+      "Database",
+      "Information",
+    ],
     ...overrides,
   };
 }
