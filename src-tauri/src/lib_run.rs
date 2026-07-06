@@ -292,6 +292,13 @@ pub fn run() {
       crate::automation::commands::validate_automation_flow,
       crate::commands::automation_profile::open_profile_with_automation,
       crate::commands::automation_profile::close_profile_with_cleanup,
+      // Storage commands
+      crate::settings::storage_commands::get_custom_storage_path,
+      crate::settings::storage_commands::validate_custom_storage_path,
+      crate::settings::storage_commands::set_custom_storage_path,
+      crate::settings::storage_commands::clear_custom_storage_path,
+      crate::settings::storage_commands::is_custom_storage_active,
+      crate::settings::storage_commands::get_storage_info,
     ])
     .build(tauri::generate_context!())
     .expect("error while building tauri application")

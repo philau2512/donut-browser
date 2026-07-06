@@ -2,7 +2,6 @@
 
 import { open as openTauriDialog } from "@tauri-apps/plugin-dialog";
 import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,8 +35,6 @@ export function EditResourceDialog({
   onOpenChange,
   onConfirm,
 }: EditResourceDialogProps) {
-  const { t } = useTranslation();
-
   // State
   const [name, setName] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");

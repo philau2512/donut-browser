@@ -18,6 +18,9 @@ const mcpOnlyCommands = [
   "cloud_get_wayfern_token",
   "cloud_refresh_wayfern_token",
   "lock_profile",
+  // Storage custom configuration and state commands used by API/MCP
+  "get_custom_storage_path",
+  "is_custom_storage_active",
   // Server-side only: called inside write_automation_flow as the validation
   // gate, never invoked directly from the frontend.
   "validate_automation_flow",

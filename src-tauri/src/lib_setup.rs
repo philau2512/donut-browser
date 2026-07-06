@@ -1,4 +1,11 @@
 fn setup_tauri_app(app: &mut tauri::App, startup_url: Option<String>) -> Result<(), Box<dyn std::error::Error>> {
+  // Load and apply custom storage settings before any file operations
+    if let Err(e) = crate::settings::storage_settings::StorageSettings::load()
+      .and_then(|settings| settings.apply())
+    {
+      log::warn!("Failed to apply storage settings: {e}");
+    }
+
   // Recover ephemeral dir mappings from RAM-backed storage (tmpfs/ramdisk)
     browser::ephemeral_dirs::recover_ephemeral_dirs();
 

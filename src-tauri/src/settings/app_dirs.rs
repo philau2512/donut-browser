@@ -59,6 +59,11 @@ pub fn data_dir() -> PathBuf {
     }
   }
 
+  // Check for custom storage override (highest priority after test override)
+  if let Some(custom_path) = super::storage_settings::get_storage_override() {
+    return custom_path;
+  }
+
   if let Ok(dir) = std::env::var("DONUTBROWSER_DATA_DIR") {
     return PathBuf::from(dir);
   }
