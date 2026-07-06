@@ -22,6 +22,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { type ResourceDefinition } from "@/lib/automation/resource-schema";
@@ -54,6 +61,9 @@ export function ResourceConfigurationDialog({
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(
     null,
   );
+
+  // Advanced settings state
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Tabs management states
   const [tabs, setTabs] = useState<string[]>([]);
@@ -271,6 +281,41 @@ export function ResourceConfigurationDialog({
     });
   };
 
+  const updateResource = (
+    resourceId: string,
+    updatedFields: Partial<ResourceDefinition>,
+  ) => {
+    setDraftResources((current) =>
+      current.map((r) => {
+        if (r.id === resourceId) {
+          // Merge updated nested objects correctly
+          const next = { ...r };
+          if (updatedFields.mode) {
+            next.mode = { ...next.mode, ...updatedFields.mode };
+          }
+          if (updatedFields.limits) {
+            next.limits = { ...next.limits, ...updatedFields.limits };
+          }
+          if (updatedFields.fileBehavior) {
+            next.fileBehavior = {
+              ...next.fileBehavior,
+              ...updatedFields.fileBehavior,
+            };
+          }
+          // Merge other top level properties
+          Object.keys(updatedFields).forEach((key) => {
+            if (key !== "mode" && key !== "limits" && key !== "fileBehavior") {
+              // @ts-ignore
+              next[key] = updatedFields[key];
+            }
+          });
+          return next;
+        }
+        return r;
+      }),
+    );
+  };
+
   const handleCancel = () => {
     onOpenChange(false);
   };
@@ -292,6 +337,54 @@ export function ResourceConfigurationDialog({
             Please define resources
           </DialogTitle>
         </DialogHeader>
+
+        {/* Menu bar for File / Settings */}
+        <div className="flex items-center gap-1 px-4 py-1.5 border-b border-zinc-800 bg-zinc-950/40 text-xs shrink-0 select-none">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="px-3 py-1 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded transition outline-none focus:ring-0"
+              >
+                File
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="bg-zinc-900 border-zinc-850 text-zinc-300 text-xs min-w-[120px] z-[60000]"
+            >
+              <DropdownMenuItem
+                onClick={handleCancel}
+                className="hover:bg-zinc-800 cursor-pointer text-xs"
+              >
+                Close
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="px-3 py-1 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded transition outline-none focus:ring-0"
+              >
+                Settings
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="bg-zinc-900 border-zinc-850 text-zinc-300 text-xs min-w-[150px] z-[60000]"
+            >
+              <DropdownMenuCheckboxItem
+                checked={showAdvanced}
+                onCheckedChange={setShowAdvanced}
+                className="hover:bg-zinc-800 cursor-pointer text-xs focus:bg-zinc-800 focus:text-white"
+              >
+                Show Advanced
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <div className="flex min-h-0 flex-1 overflow-hidden">
           {/* LEFT COLUMN: Tab list & Actions */}
@@ -491,6 +584,10 @@ export function ResourceConfigurationDialog({
                           setIsEditOpen={setIsEditOpen}
                           previewValues={previewValues}
                           setPreviewValues={setPreviewValues}
+                          showAdvanced={showAdvanced}
+                          onUpdateResource={(updatedFields) =>
+                            updateResource(res.id, updatedFields)
+                          }
                         />
                       ))}
                     </div>
