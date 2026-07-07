@@ -168,24 +168,43 @@ pub fn resolve_target_profiles(
     };
 
     for i in 0..settings.virtual_profile_count.max(1) {
-      let profile_id = Uuid::new_v4();
-      let name = format!("Virtual-Profile-{}", i + 1);
-
-      let mut wayfern_config = None;
-      let mut camoufox_config = None;
+      let (profile_id, name, mut wayfern_config, mut camoufox_config) =
+        if let Some(p) = profiles.get(i as usize) {
+          (
+            p.id,
+            p.name.clone(),
+            p.wayfern_config.clone(),
+            p.camoufox_config.clone(),
+          )
+        } else {
+          (
+            Uuid::new_v4(),
+            format!("Virtual-Profile-{}", i + 1),
+            None,
+            None,
+          )
+        };
 
       if browser == "wayfern" {
-        wayfern_config = Some(crate::browser::wayfern_manager::WayfernConfig {
-          randomize_fingerprint_on_launch: Some(true),
-          geoip: Some(serde_json::Value::Bool(true)),
-          ..Default::default()
-        });
+        let mut w_cfg = wayfern_config.unwrap_or_default();
+        if w_cfg.randomize_fingerprint_on_launch.is_none() {
+          w_cfg.randomize_fingerprint_on_launch = Some(true);
+        }
+        if w_cfg.geoip.is_none() {
+          w_cfg.geoip = Some(serde_json::Value::Bool(true));
+        }
+        wayfern_config = Some(w_cfg);
+        camoufox_config = None;
       } else {
-        camoufox_config = Some(crate::browser::camoufox_manager::CamoufoxConfig {
-          randomize_fingerprint_on_launch: Some(true),
-          geoip: Some(serde_json::Value::Bool(true)),
-          ..Default::default()
-        });
+        let mut c_cfg = camoufox_config.unwrap_or_default();
+        if c_cfg.randomize_fingerprint_on_launch.is_none() {
+          c_cfg.randomize_fingerprint_on_launch = Some(true);
+        }
+        if c_cfg.geoip.is_none() {
+          c_cfg.geoip = Some(serde_json::Value::Bool(true));
+        }
+        camoufox_config = Some(c_cfg);
+        wayfern_config = None;
       }
 
       let virtual_profile = BrowserProfile {
@@ -625,7 +644,8 @@ async fn kill_and_release(profile: &BrowserProfile, browser_pid: Option<u32>) {
 /// Resolve the real CDP port from WayfernManager and verify /json/version.
 async fn resolve_and_verify_port(profile: &BrowserProfile) -> Option<u16> {
   let profiles_dir = crate::settings::app_dirs::profiles_dir();
-  let profile_path = profile.get_profile_data_path(&profiles_dir);
+  let profile_path =
+    crate::browser::ephemeral_dirs::get_effective_profile_path(profile, &profiles_dir);
   let profile_path_str = profile_path.to_string_lossy().to_string();
 
   // Retry: the port may not be registered the instant launch returns.
@@ -899,5 +919,34 @@ mod tests {
       let err = result.unwrap_err();
       assert!(err.contains("No browser binary downloaded"));
     }
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_with_toggle_and_provided_virtual_profile() {
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    registry.add_browser(
+      crate::browser::downloaded_browsers_registry::DownloadedBrowserInfo {
+        browser: "wayfern".to_string(),
+        version: "999.0.0".to_string(),
+        file_path: std::path::PathBuf::from("mock_path_wayfern"),
+      },
+    );
+
+    let test_uuid = uuid::Uuid::new_v4();
+    let p1 = make_test_profile(test_uuid, "Provided-Virtual-Profile");
+    let input = vec![p1];
+
+    let settings = RunSettings {
+      run_without_profile: true,
+      virtual_profile_count: 1,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(input, &settings, false).unwrap();
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].id, test_uuid);
+    assert_eq!(result[0].name, "Provided-Virtual-Profile");
+    assert!(result[0].ephemeral);
   }
 }

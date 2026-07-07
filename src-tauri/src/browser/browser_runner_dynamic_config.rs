@@ -25,7 +25,8 @@ fn find_profile_by_id(profile_id: &str) -> Result<BrowserProfile, String> {
 
 async fn resolve_and_verify_cdp_port(profile: &BrowserProfile) -> Option<u16> {
   let profiles_dir = crate::settings::app_dirs::profiles_dir();
-  let profile_path = profile.get_profile_data_path(&profiles_dir);
+  let profile_path =
+    crate::browser::ephemeral_dirs::get_effective_profile_path(profile, &profiles_dir);
   let profile_path_str = profile_path.to_string_lossy().to_string();
 
   for _attempt in 0..20 {
