@@ -304,6 +304,7 @@ mod tests2 {
       geo_isp: None,
       dynamic_proxy_url: None,
       dynamic_proxy_format: None,
+      check_before_start: None,
     };
 
     // Before migration

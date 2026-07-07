@@ -30,10 +30,23 @@ export function AutomationRunSettings({
   };
 
   const toggle = (
-    key: "headless" | "closeOnComplete" | "writeLogs" | "noOverlapping",
+    key:
+      | "headless"
+      | "closeOnComplete"
+      | "writeLogs"
+      | "noOverlapping"
+      | "runWithoutProfile",
     value: boolean,
   ) => {
     onChange({ ...settings, [key]: value });
+  };
+
+  const setVirtualProfileCount = (raw: string) => {
+    const n = Number.parseInt(raw, 10);
+    onChange({
+      ...settings,
+      virtualProfileCount: Number.isFinite(n) && n >= 1 ? n : 1,
+    });
   };
 
   return (
@@ -108,6 +121,35 @@ export function AutomationRunSettings({
           disabled={disabled}
           onCheckedChange={(v) => toggle("writeLogs", v)}
         />
+        <ToggleRow
+          id="automation-run-without-profile"
+          label="Chạy không cần Profile"
+          hint="Tự sinh profile ảo tạm thời, ngẫu nhiên hóa vân tay và tự dọn dẹp sau khi chạy"
+          checked={settings.runWithoutProfile || false}
+          disabled={disabled}
+          onCheckedChange={(v) => toggle("runWithoutProfile", v)}
+        />
+
+        {settings.runWithoutProfile && (
+          <div className="space-y-1.5 pl-6 pt-1">
+            <Label htmlFor="automation-virtual-count" className="text-xs">
+              Số lượng luồng ảo chạy song song
+            </Label>
+            <Input
+              id="automation-virtual-count"
+              type="number"
+              min={1}
+              max={50}
+              inputMode="numeric"
+              value={settings.virtualProfileCount}
+              disabled={disabled}
+              onChange={(e) => setVirtualProfileCount(e.target.value)}
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Mỗi luồng ảo sẽ tự động giả lập 1 profile riêng biệt.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

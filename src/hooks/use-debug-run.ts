@@ -17,6 +17,8 @@ const DEBUG_SETTINGS: RunSettings = {
   closeOnComplete: false, // Keep browser open for inspection after completion
   writeLogs: true,
   noOverlapping: true,
+  runWithoutProfile: false,
+  virtualProfileCount: 1,
 };
 
 export interface UseDebugRunReturn {

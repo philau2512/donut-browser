@@ -104,9 +104,31 @@ export function AutomationPage({
   };
 
   const handleRun = async () => {
-    if (!selectedFlow || selectedProfileIds.size === 0) return;
-    const selected = profiles.filter((p) => selectedProfileIds.has(p.id));
-    await start(selectedFlow, selected, settings);
+    if (!selectedFlow) return;
+
+    if (settings.runWithoutProfile) {
+      const dummyProfiles: BrowserProfile[] = Array.from({
+        length: settings.virtualProfileCount || 1,
+      }).map(
+        (_, i) =>
+          ({
+            id: "00000000-0000-0000-0000-000000000000", // uuid::nil() đại diện cho profile ảo
+            name: `Virtual-Profile-${i + 1}`,
+            browser: "wayfern",
+            version: "stable",
+            tags: [],
+            proxy_bypass_rules: [],
+            ephemeral: true,
+            password_protected: false,
+            sync_mode: "Disabled",
+          }) as unknown as BrowserProfile,
+      );
+      await start(selectedFlow, dummyProfiles, settings);
+    } else {
+      if (selectedProfileIds.size === 0) return;
+      const selected = profiles.filter((p) => selectedProfileIds.has(p.id));
+      await start(selectedFlow, selected, settings);
+    }
   };
 
   const handleStopRun = async () => {
@@ -128,7 +150,12 @@ export function AutomationPage({
   }, [profiles]);
 
   const canRun =
-    !!selectedFlow && selectedProfileIds.size > 0 && !isStarting && !isRunLive;
+    !!selectedFlow &&
+    (settings.runWithoutProfile
+      ? (settings.virtualProfileCount ?? 0) > 0
+      : selectedProfileIds.size > 0) &&
+    !isStarting &&
+    !isRunLive;
 
   return (
     <div className="flex min-h-0 flex-1 gap-3 p-3">
@@ -179,17 +206,25 @@ export function AutomationPage({
           )}
         </div>
 
-        <div className="flex min-h-0 flex-col space-y-1.5">
+        <div
+          className={cn(
+            "flex min-h-0 flex-col space-y-1.5",
+            settings.runWithoutProfile && "opacity-50 pointer-events-none",
+          )}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {t("automation.profiles.label", {
-                count: selectedProfileIds.size,
+                count: settings.runWithoutProfile
+                  ? settings.virtualProfileCount
+                  : selectedProfileIds.size,
               })}
             </span>
             <button
               type="button"
               className="text-[11px] text-primary hover:underline"
               onClick={toggleAll}
+              disabled={settings.runWithoutProfile}
             >
               {selectedProfileIds.size === profiles.length
                 ? t("automation.profiles.deselectAll")
@@ -212,6 +247,7 @@ export function AutomationPage({
                     id={`automation-profile-${p.id}`}
                     checked={selectedProfileIds.has(p.id)}
                     onCheckedChange={() => toggleProfile(p.id)}
+                    disabled={settings.runWithoutProfile}
                   />
                   <span className="truncate">{p.name}</span>
                 </label>

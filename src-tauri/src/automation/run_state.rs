@@ -99,6 +99,10 @@ pub struct RunSettings {
   pub write_logs: bool,
   /// "No overlapping profiles" — skip a profile that is already running.
   pub no_overlapping: bool,
+  /// Run automation without profile.
+  pub run_without_profile: bool,
+  /// Number of virtual profiles to spawn when running without profile.
+  pub virtual_profile_count: u32,
 }
 
 impl Default for RunSettings {
@@ -110,6 +114,8 @@ impl Default for RunSettings {
       close_on_complete: true,
       write_logs: true,
       no_overlapping: true,
+      run_without_profile: false,
+      virtual_profile_count: 1,
     }
   }
 }
@@ -156,6 +162,8 @@ mod tests {
     assert!(s.close_on_complete);
     assert!(s.write_logs);
     assert!(s.no_overlapping);
+    assert!(!s.run_without_profile);
+    assert_eq!(s.virtual_profile_count, 1);
   }
 
   #[test]

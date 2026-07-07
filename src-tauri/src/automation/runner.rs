@@ -92,6 +92,9 @@ pub async fn start_automation_run(
     .unwrap_or("flow")
     .to_string();
 
+  // Resolve target profiles. If running without profile, generate virtual ones.
+  let final_profiles = resolve_target_profiles(profiles, &settings, true)?;
+
   let run_id = Uuid::new_v4().to_string();
   let run_dir = crate::settings::app_dirs::automation_runs_dir().join(&run_id);
   std::fs::create_dir_all(&run_dir).map_err(|e| format!("failed to create run dir: {e}"))?;
@@ -105,7 +108,7 @@ pub async fn start_automation_run(
   {
     let mut runs = AUTOMATION_RUNNER.runs.lock().unwrap();
     let mut state = RunState::new(run_id.clone(), flow_name.clone(), settings.clone());
-    for p in &profiles {
+    for p in &final_profiles {
       state.profiles.insert(
         p.id.to_string(),
         ProfileRunState::new(p.id.to_string(), p.name.clone()),
@@ -117,7 +120,7 @@ pub async fn start_automation_run(
   let semaphore = Arc::new(Semaphore::new(settings.concurrency.max(1) as usize));
   let run_id_for_tasks = run_id.clone();
 
-  for (idx, profile) in profiles.into_iter().enumerate() {
+  for (idx, profile) in final_profiles.into_iter().enumerate() {
     let app = app_handle.clone();
     let sem = semaphore.clone();
     let rid = run_id_for_tasks.clone();
@@ -135,6 +138,105 @@ pub async fn start_automation_run(
   }
 
   Ok(run_id)
+}
+
+/// Resolve target profiles. If running without profile, generate virtual ones.
+pub fn resolve_target_profiles(
+  profiles: Vec<BrowserProfile>,
+  settings: &RunSettings,
+  create_dirs: bool,
+) -> Result<Vec<BrowserProfile>, String> {
+  let mut final_profiles = Vec::new();
+  if settings.run_without_profile {
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    #[cfg(not(test))]
+    let _ = registry.load();
+
+    let (browser, version) = if !registry.get_downloaded_versions("wayfern").is_empty() {
+      let mut versions = registry.get_downloaded_versions("wayfern");
+      crate::api::api_client::sort_versions(&mut versions);
+      ("wayfern".to_string(), versions.first().unwrap().clone())
+    } else if !registry.get_downloaded_versions("camoufox").is_empty() {
+      let mut versions = registry.get_downloaded_versions("camoufox");
+      crate::api::api_client::sort_versions(&mut versions);
+      ("camoufox".to_string(), versions.first().unwrap().clone())
+    } else {
+      return Err(
+        "No browser binary downloaded. Please download Wayfern or Camoufox first.".into(),
+      );
+    };
+
+    for i in 0..settings.virtual_profile_count.max(1) {
+      let profile_id = Uuid::new_v4();
+      let name = format!("Virtual-Profile-{}", i + 1);
+
+      let mut wayfern_config = None;
+      let mut camoufox_config = None;
+
+      if browser == "wayfern" {
+        wayfern_config = Some(crate::browser::wayfern_manager::WayfernConfig {
+          randomize_fingerprint_on_launch: Some(true),
+          geoip: Some(serde_json::Value::Bool(true)),
+          ..Default::default()
+        });
+      } else {
+        camoufox_config = Some(crate::browser::camoufox_manager::CamoufoxConfig {
+          randomize_fingerprint_on_launch: Some(true),
+          geoip: Some(serde_json::Value::Bool(true)),
+          ..Default::default()
+        });
+      }
+
+      let virtual_profile = BrowserProfile {
+        id: profile_id,
+        name,
+        browser: browser.clone(),
+        version: version.clone(),
+        proxy_id: None,
+        vpn_id: None,
+        launch_hook: None,
+        automation: None,
+        process_id: None,
+        last_launch: None,
+        release_type: "stable".to_string(),
+        camoufox_config,
+        wayfern_config,
+        group_id: None,
+        tags: Vec::new(),
+        note: Some("Virtual profile created dynamically".to_string()),
+        sync_mode: crate::profile::types::SyncMode::Disabled,
+        encryption_salt: None,
+        last_sync: None,
+        host_os: Some(crate::profile::types::get_host_os()),
+        ephemeral: true,
+        extension_group_id: None,
+        proxy_bypass_rules: Vec::new(),
+        created_by_id: None,
+        created_by_email: None,
+        dns_blocklist: None,
+        password_protected: false,
+        created_at: Some(now_ms() / 1000),
+        updated_at: Some(now_ms() / 1000),
+        profile_status: None,
+      };
+
+      if create_dirs {
+        if let Err(e) =
+          crate::browser::ephemeral_dirs::create_ephemeral_dir(&profile_id.to_string())
+        {
+          return Err(format!(
+            "Failed to create virtual profile ephemeral directory: {e}"
+          ));
+        }
+      }
+
+      final_profiles.push(virtual_profile);
+    }
+  } else {
+    final_profiles = profiles;
+  }
+  Ok(final_profiles)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -677,4 +779,125 @@ pub async fn stop_automation_run(
   let _ = app_handle;
   maybe_mark_run_finished(&run_id);
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::profile::types::SyncMode;
+
+  fn make_test_profile(id: uuid::Uuid, name: &str) -> BrowserProfile {
+    BrowserProfile {
+      id,
+      name: name.to_string(),
+      browser: "wayfern".to_string(),
+      version: "125.0.0".to_string(),
+      proxy_id: None,
+      vpn_id: None,
+      launch_hook: None,
+      automation: None,
+      process_id: None,
+      last_launch: None,
+      release_type: "stable".to_string(),
+      camoufox_config: None,
+      wayfern_config: None,
+      group_id: None,
+      tags: Vec::new(),
+      note: None,
+      sync_mode: SyncMode::Disabled,
+      encryption_salt: None,
+      last_sync: None,
+      host_os: None,
+      ephemeral: false,
+      extension_group_id: None,
+      proxy_bypass_rules: Vec::new(),
+      created_by_id: None,
+      created_by_email: None,
+      dns_blocklist: None,
+      password_protected: false,
+      created_at: None,
+      updated_at: None,
+      profile_status: None,
+    }
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_without_toggle() {
+    let p1 = make_test_profile(uuid::Uuid::new_v4(), "Profile-1");
+    let p2 = make_test_profile(uuid::Uuid::new_v4(), "Profile-2");
+    let input = vec![p1.clone(), p2.clone()];
+
+    let settings = RunSettings {
+      run_without_profile: false,
+      virtual_profile_count: 5,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(input, &settings, false).unwrap();
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0].id, p1.id);
+    assert_eq!(result[1].id, p2.id);
+    assert!(!result[0].ephemeral);
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_with_toggle_and_mock_registry() {
+    // Clear registry to avoid test pollution
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    // Simulate wayfern download in registry with a very high version
+    registry.add_browser(
+      crate::browser::downloaded_browsers_registry::DownloadedBrowserInfo {
+        browser: "wayfern".to_string(),
+        version: "999.0.0".to_string(),
+        file_path: std::path::PathBuf::from("mock_path_wayfern"),
+      },
+    );
+
+    let settings = RunSettings {
+      run_without_profile: true,
+      virtual_profile_count: 3,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(vec![], &settings, false).unwrap();
+    assert_eq!(result.len(), 3);
+
+    for (i, p) in result.iter().enumerate() {
+      assert_eq!(p.name, format!("Virtual-Profile-{}", i + 1));
+      assert_eq!(p.browser, "wayfern");
+      assert_eq!(p.version, "999.0.0");
+      assert!(p.ephemeral);
+
+      // Verification of fingerprint randomize option
+      let wayfern_cfg = p.wayfern_config.as_ref().unwrap();
+      assert_eq!(wayfern_cfg.randomize_fingerprint_on_launch, Some(true));
+      assert_eq!(wayfern_cfg.geoip, Some(serde_json::Value::Bool(true)));
+    }
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_no_browsers_error() {
+    // Clear registry completely
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    if registry.is_browser_registered("wayfern", "125.0.0") {
+      registry.remove_browser("wayfern", "125.0.0");
+    }
+    if registry.is_browser_registered("camoufox", "125.0.0") {
+      registry.remove_browser("camoufox", "125.0.0");
+    }
+
+    let settings = RunSettings {
+      run_without_profile: true,
+      virtual_profile_count: 1,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(vec![], &settings, false);
+    if result.is_err() {
+      let err = result.unwrap_err();
+      assert!(err.contains("No browser binary downloaded"));
+    }
+  }
 }
