@@ -287,17 +287,41 @@ export function QuickProxyDialog({
         });
         toast.success(t("toasts.success.proxyUpdated"));
       } else {
-        // Create new profile-specific proxy
-        const newProxy = await invoke<StoredProxy>("create_stored_proxy", {
-          ...payload,
-          isProfileSpecific: true,
-        });
-        // Assign to profile
+        // Find if a proxy with the same name or host:port already exists
+        const targetName = `Proxy_${host.trim()}:${port}`;
+        const existingProxy = storedProxies.find(
+          (px) =>
+            px.name.toLowerCase() === targetName.toLowerCase() ||
+            (px.proxy_settings.host.trim().toLowerCase() ===
+              host.trim().toLowerCase() &&
+              px.proxy_settings.port === port),
+        );
+
+        let proxyIdToAssign: string;
+
+        if (existingProxy) {
+          // If a proxy exists, update it to match user's inputs
+          await invoke("update_stored_proxy", {
+            proxyId: existingProxy.id,
+            ...payload,
+          });
+          proxyIdToAssign = existingProxy.id;
+          toast.success(t("toasts.success.proxyUpdated"));
+        } else {
+          // Create new profile-specific proxy
+          const newProxy = await invoke<StoredProxy>("create_stored_proxy", {
+            ...payload,
+            isProfileSpecific: true,
+          });
+          proxyIdToAssign = newProxy.id;
+          toast.success(t("toasts.success.proxyCreated"));
+        }
+
+        // Assign the proxy to the profile
         await invoke("update_profile_proxy", {
           profileId: profile.id,
-          proxyId: newProxy.id,
+          proxyId: proxyIdToAssign,
         });
-        toast.success(t("toasts.success.proxyCreated"));
       }
 
       await emit("profile-updated");
