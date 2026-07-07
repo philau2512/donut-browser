@@ -30,6 +30,7 @@ import {
 import { ResourceEventEmitter } from "./resource-event-emitter.mjs";
 import { appendFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { watch } from "node:fs";
 
 export class ResourceManager {
   constructor() {
@@ -71,6 +72,18 @@ export class ResourceManager {
      * @type {Map<string, Promise<void>>}
      */
     this._writeQueues = new Map();
+
+    /**
+     * File watchers to clean up on flow end.
+     * @type {any[]}
+     */
+    this._watchers = [];
+
+    /**
+     * Periodic timers to clean up on flow end.
+     * @type {any[]}
+     */
+    this._intervals = [];
   }
 
   // ─── Initialization ──────────────────────────────────────────────────────
@@ -102,6 +115,105 @@ export class ResourceManager {
       }
 
       this._items.set(def.id, itemMap);
+
+      // 1. Setup Periodic File Watcher for reloadPeriodically
+      if (def.source?.kind === "file" && def.source?.path && def.fileBehavior?.reloadPeriodically) {
+        const filePath = def.source.path.startsWith("/") || /^[A-Za-z]:[/\\]/.test(def.source.path)
+          ? def.source.path
+          : join(this._flowDir, def.source.path);
+
+        try {
+          let debounceTimeout = null;
+          const watcher = watch(filePath, (eventType) => {
+            if (eventType === "change") {
+              if (debounceTimeout) clearTimeout(debounceTimeout);
+              debounceTimeout = setTimeout(async () => {
+                try {
+                  await this.reloadResource(def.id);
+                  this.events.emit("resource-reload", {
+                    resourceId: def.id,
+                    resourceName: def.name,
+                  });
+                } catch (err) {
+                  // non-fatal reload error
+                }
+              }, 200);
+            }
+          });
+          this._watchers.push(watcher);
+        } catch (err) {
+          // ignore watch errors (e.g. file doesn't exist yet)
+        }
+      }
+
+      // 2. Setup periodic renew timer for renewPeriodically
+      if (def.fileBehavior?.renewPeriodically) {
+        const interval = setInterval(() => {
+          this.renewResource(def.id);
+        }, 30000); // Check and renew every 30 seconds
+        this._intervals.push(interval);
+      }
+    }
+  }
+
+  /**
+   * Reload items from file source dynamically.
+   *
+   * @param {string} resourceId
+   */
+  async reloadResource(resourceId) {
+    const def = this._defs.get(resourceId);
+    if (!def) return;
+
+    try {
+      const newItemList = await loadResourceItems(def, this._flowDir);
+      const existingItems = this._items.get(resourceId) ?? new Map();
+      const nextItemMap = new Map();
+
+      for (const newItem of newItemList) {
+        if (existingItems.has(newItem.id)) {
+          // Preserve existing runtime usage metrics, status, leases, lockUntil
+          nextItemMap.set(newItem.id, existingItems.get(newItem.id));
+        } else {
+          // Add new lines as new available items
+          nextItemMap.set(newItem.id, newItem);
+        }
+      }
+
+      this._items.set(resourceId, nextItemMap);
+      this._dirty.add(resourceId);
+    } catch (err) {
+      // non-fatal
+    }
+  }
+
+  /**
+   * Reset usages and lock state for all items of a resource.
+   *
+   * @param {string} resourceId
+   */
+  renewResource(resourceId) {
+    const def = this._defs.get(resourceId);
+    const items = this._items.get(resourceId);
+    if (!def || !items) return;
+
+    let changed = false;
+    for (const item of items.values()) {
+      if (item.status === "exhausted" || item.status === "disabled" || item.successUsage > 0 || item.failUsage > 0) {
+        item.status = "available";
+        item.successUsage = 0;
+        item.failUsage = 0;
+        item.lockUntil = undefined;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      this._dirty.add(resourceId);
+      this.events.emit("resource-renew", {
+        resourceId: def.id,
+        resourceName: def.name,
+      });
     }
   }
 
@@ -125,6 +237,11 @@ export class ResourceManager {
 
     // output-only resources cannot be allocated as input.
     if (def.direction === "output") {
+      return null;
+    }
+
+    // If the resource is associated with file behavior and readFile is explicitly false, prevent allocation.
+    if (def.fileBehavior && def.fileBehavior.readFile === false) {
       return null;
     }
 
@@ -338,6 +455,25 @@ export class ResourceManager {
    * @returns {Promise<void>}
    */
   async flush() {
+    // Clean up watchers and intervals
+    for (const watcher of this._watchers) {
+      try {
+        watcher.close();
+      } catch (err) {
+        // ignore
+      }
+    }
+    this._watchers = [];
+
+    for (const interval of this._intervals) {
+      try {
+        clearInterval(interval);
+      } catch (err) {
+        // ignore
+      }
+    }
+    this._intervals = [];
+
     if (!this._stateDir) return;
     const promises = [];
     for (const resourceId of this._dirty) {

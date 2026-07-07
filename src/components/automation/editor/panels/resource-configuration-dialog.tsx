@@ -512,36 +512,6 @@ export function ResourceConfigurationDialog({
 
           {/* RIGHT COLUMN: Resource Variables List */}
           <main className="flex-1 bg-zinc-900/60 p-6 overflow-y-auto flex flex-col min-h-0">
-            {/* Header / Info box */}
-            <div className="text-center space-y-2 mb-6 max-w-md mx-auto shrink-0">
-              <p className="text-zinc-400 text-xs font-semibold leading-relaxed">
-                Looking for customizable user interface for your scripts? <br />
-                Check{" "}
-                <span className="underline cursor-pointer hover:text-purple-400">
-                  interface constructor
-                </span>{" "}
-                (need premium).
-              </p>
-              <p className="text-zinc-400 text-xs leading-relaxed">
-                See free{" "}
-                <span className="underline cursor-pointer hover:text-purple-400">
-                  demo
-                </span>{" "}
-                to test how it works.
-                <br />
-                And final result as{" "}
-                <span className="underline cursor-pointer hover:text-purple-400">
-                  generated interface
-                </span>
-                .
-              </p>
-            </div>
-
-            {/* This is how user interface will look like label */}
-            <div className="text-zinc-500 text-[11px] font-semibold text-center mb-5 tracking-wide shrink-0">
-              This is how user interface will look like:
-            </div>
-
             {/* Simulated UI container */}
             <div className="flex-1 min-h-[300px] border border-zinc-800 bg-zinc-950/20 rounded p-4 overflow-y-auto">
               {currentTabResources.length === 0 ? (

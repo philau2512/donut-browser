@@ -2384,6 +2384,19 @@
         "settings": "Cài Đặt"
       },
       "resources": {
+        "advanced": {
+          "filenames": "Đường dẫn tuyệt đối hoặc tương đối của tệp (.txt, .csv, .log) hoặc thư mục chứa dữ liệu tài nguyên.",
+          "readFile": "Cho phép đọc các dòng/tệp từ nguồn để làm đầu vào cho script.",
+          "writeFile": "Cho phép ghi hoặc thêm dữ liệu đầu ra ngược trở lại tệp tài nguyên này.",
+          "mix": "Trộn ngẫu nhiên các phần tử khi cấp phát thay vì sử dụng theo thứ tự tuần tự.",
+          "maxSuccess": "Số lần sử dụng thành công tối đa của mỗi phần tử trước khi cạn kiệt (0 = không giới hạn).",
+          "maxFail": "Số lần lỗi tối đa được phép của mỗi phần tử trước khi bị vô hiệu hóa (0 = không giới hạn).",
+          "maxSimultaneous": "Số luồng hoặc profile tối đa được phép sử dụng đồng thời một phần tử này (mặc định là 1).",
+          "interval": "Thời gian giãn cách (cooldown) tối thiểu tính bằng mili-giây trước khi một phần tử có thể tái sử dụng.",
+          "greedy": "Lập tức cấp phát phần tử khả dụng đầu tiên theo thứ tự gốc, bỏ qua cơ chế xáo trộn ngẫu nhiên.",
+          "reload": "Theo dõi tệp nguồn để tự động tải lại danh sách phần tử khi có thay đổi từ bên ngoài.",
+          "renew": "Tự động đặt lại toàn bộ thống kê sử dụng (lượt thành công/thất bại) của phần tử về trạng thái khả dụng mỗi 30 giây."
+        },
         "generalSettings": "Cài Đặt Chung",
         "saveLayout": "Lưu bố cục khi đóng",
         "autoAlign": "Tự động căn chỉnh node",

@@ -94,7 +94,6 @@ export function SortableResourceItem({
           setIsEditOpen(true);
         }
       }}
-      title="Double click to edit resource"
       className="group relative flex border border-zinc-800 bg-zinc-900/40 rounded transition hover:border-zinc-700/60 focus:outline-none focus:ring-1 focus:ring-purple-500 focus-within:ring-1 focus-within:ring-purple-500 cursor-pointer select-none"
     >
       {/* Column 1: Index & Variable Name (Left box / button style like BAS) */}
@@ -126,8 +125,13 @@ export function SortableResourceItem({
         )}
       >
         {/* Left sub-column: Description (Tiếng Anh/Nga làm nhãn hiển thị bên trái của control) */}
-        <div className={cn("flex-1 min-w-0", isBigControl && "pt-1")}>
-          <span className="text-xs text-zinc-300 font-medium break-words block">
+        <div
+          className={cn(
+            "flex-1 min-w-[160px] break-words",
+            isBigControl && "pt-1",
+          )}
+        >
+          <span className="text-xs text-zinc-300 font-medium block">
             {res.descriptionEn || res.name}
           </span>
         </div>

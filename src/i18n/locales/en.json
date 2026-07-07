@@ -2396,6 +2396,19 @@
         "settings": "Settings"
       },
       "resources": {
+        "advanced": {
+          "filenames": "Select the local file (.txt, .csv, .log) or folder source containing the resource lines.",
+          "readFile": "Allow reading lines/files from the source as input variables.",
+          "writeFile": "Allow writing or appending data outputs back into this resource file.",
+          "mix": "Randomly shuffle items upon allocation instead of using sequential declaration order.",
+          "maxSuccess": "Maximum successful leases allowed per item before it becomes exhausted (0 = unlimited).",
+          "maxFail": "Maximum allowed failure count per item before it becomes disabled (0 = unlimited).",
+          "maxSimultaneous": "Maximum concurrent active leases one item can hold (default is 1).",
+          "interval": "Minimum cooldown time in milliseconds required before reusing the same item.",
+          "greedy": "Immediately allocate the first available item in declaration order, bypassing random shuffle.",
+          "reload": "Monitor the source file for external changes and automatically reload items dynamically.",
+          "renew": "Reset all item usage statistics (success/fail count) back to available every 30 seconds."
+        },
         "generalSettings": "General Settings",
         "saveLayout": "Save layout on close",
         "autoAlign": "Auto-align nodes",

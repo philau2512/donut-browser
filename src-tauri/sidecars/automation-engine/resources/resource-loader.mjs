@@ -28,6 +28,9 @@ export async function loadResourceItems(definition, flowDir) {
   let sourcePath = "";
 
   if (source.kind === "file" && source.path) {
+    if (definition.fileBehavior && definition.fileBehavior.readFile === false) {
+      return [];
+    }
     const absPath = source.path.startsWith("/") || /^[A-Za-z]:[/\\]/.test(source.path)
       ? source.path
       : `${flowDir ?? "."}/${source.path}`;
