@@ -2367,10 +2367,8 @@
         }
       },
       "debugProfile": {
-        "label": "Debug Profile",
-        "placeholder": "Select a profile...",
-        "required": "Please select a profile to debug",
-        "alreadyRunning": "配置文件已在运行。请在启动调试前关闭它。"
+        "placeholder": "选择配置...",
+        "virtual": "虚拟配置 (临时)"
       },
       "debug": {
         "running": "Debugging...",
@@ -2383,7 +2381,9 @@
         "delete": "删除",
         "edit": "编辑",
         "startFromHere": "从此处开始",
-        "duplicate": "复制"
+        "duplicate": "复制",
+        "runFull": "运行完整流程",
+        "runStep": "运行单个节点"
       },
       "saveAsTitle": "流程另存为",
       "saveAsDescription": "请输入新流程副本的名称。",

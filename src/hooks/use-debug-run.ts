@@ -60,11 +60,18 @@ export function useDebugRun(): UseDebugRunReturn {
       });
       setLogs([]);
 
+      const settings = {
+        ...DEBUG_SETTINGS,
+        runWithoutProfile:
+          profile.id === "00000000-0000-0000-0000-000000000000" ||
+          profile.ephemeral === true,
+      };
+
       try {
         const id = await invoke<string>("start_automation_run", {
           flowJson,
           profiles: [profile],
-          settings: DEBUG_SETTINGS,
+          settings,
         });
         setRunId(id);
         return id;

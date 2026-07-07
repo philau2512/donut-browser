@@ -47,6 +47,10 @@ pub struct WayfernLaunchArgsOptions<'a> {
   pub block_images: bool,
   pub block_webgl: bool,
   pub url: Option<&'a str>,
+  /// Maximum screen width to clamp window size (prevents oversized windows)
+  pub screen_max_width: Option<u32>,
+  /// Maximum screen height to clamp window size (prevents oversized windows)
+  pub screen_max_height: Option<u32>,
 }
 
 /// Derive window dimensions from a fingerprint JSON blob.
@@ -109,7 +113,20 @@ pub fn build_wayfern_launch_args(opts: WayfernLaunchArgsOptions<'_>) -> Vec<Stri
     .fingerprint_json
     .and_then(window_size_from_fingerprint_json)
   {
-    args.push(format!("--window-size={w},{h}"));
+    // Clamp window size to screen constraints if provided
+    let (clamped_w, clamped_h) = if let Some(max_w) = opts.screen_max_width {
+      if let Some(max_h) = opts.screen_max_height {
+        (w.min(max_w), h.min(max_h))
+      } else {
+        (w.min(max_w), h)
+      }
+    } else if let Some(max_h) = opts.screen_max_height {
+      (w, h.min(max_h))
+    } else {
+      (w, h)
+    };
+
+    args.push(format!("--window-size={clamped_w},{clamped_h}"));
     args.push("--window-position=0,0".to_string());
   }
 
@@ -198,6 +215,8 @@ mod tests {
       block_images: false,
       block_webgl: false,
       url: None,
+      screen_max_width: None,
+      screen_max_height: None,
     });
 
     assert!(args.iter().any(|a| a.contains("--no-first-run")));
@@ -221,6 +240,8 @@ mod tests {
       block_images: true,
       block_webgl: true,
       url: None,
+      screen_max_width: None,
+      screen_max_height: None,
     });
 
     assert!(args.contains(&"--blink-settings=imagesEnabled=false".to_string()));

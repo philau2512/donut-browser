@@ -7,6 +7,19 @@ import { AutomationEditorDialogs } from "./automation-editor-dialogs";
 import { AutomationEditorToolbar } from "./automation-editor-toolbar";
 import { AutomationEditorWorkspace } from "./automation-editor-workspace";
 
+const VIRTUAL_DEBUG_PROFILE: BrowserProfile = {
+  id: "00000000-0000-0000-0000-000000000000",
+  name: "Virtual Profile",
+  browser: "wayfern",
+  version: "latest",
+  release_type: "stable",
+  ephemeral: true,
+  sync_mode: "Disabled" as any,
+  tags: [],
+  proxy_bypass_rules: [],
+  password_protected: false,
+};
+
 interface FlowEditorPageProps {
   flowPath?: string;
   profiles?: BrowserProfile[];
@@ -100,6 +113,9 @@ export function FlowEditorPage({
     handleDeleteNode,
     handleDuplicateNode,
     handleStartFromHere,
+    handleDebugRunFull,
+    handleDebugStep,
+    handleStopDebugRun,
     nodesWithCallbacks,
     handleDragStart,
     updateSelectedParam,
@@ -108,7 +124,6 @@ export function FlowEditorPage({
     handleSave,
     handleSaveAsClick,
     handleConfirmSaveAs,
-    handleRunFlow,
     selectNodeNoFocus,
     selectNodeAndFocus,
     // Search
@@ -199,9 +214,15 @@ export function FlowEditorPage({
         onBack={onBack}
         onFlowNameChange={setFlowName}
         onDebugProfileChange={(id) => {
-          const profile =
-            profiles?.find((profile) => profile.id === id) ?? null;
-          setSelectedDebugProfile(profile);
+          if (!id) {
+            setSelectedDebugProfile(null);
+          } else if (id === "00000000-0000-0000-0000-000000000000") {
+            setSelectedDebugProfile(VIRTUAL_DEBUG_PROFILE);
+          } else {
+            const profile =
+              profiles?.find((profile) => profile.id === id) ?? null;
+            setSelectedDebugProfile(profile);
+          }
         }}
         onToggleVariablesPanel={() =>
           setIsVariablesPanelOpen((value) => !value)
@@ -210,8 +231,9 @@ export function FlowEditorPage({
         onOpenScriptReport={() => setIsScriptReportOpen(true)}
         onOpenResourceReport={() => setIsResourceReportOpen(true)}
         onToggleLogPanel={() => setIsLogPanelOpen((value) => !value)}
-        onRunFlow={handleRunFlow}
-        onStopDebugRun={() => void debugRun.stopDebugRun()}
+        onDebugRunFull={handleDebugRunFull}
+        onDebugStep={handleDebugStep}
+        onStopDebugRun={handleStopDebugRun}
         onSaveAsClick={handleSaveAsClick}
         onSave={() => void handleSave()}
         onZoomIn={handleZoomIn}

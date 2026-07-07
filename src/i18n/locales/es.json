@@ -2367,10 +2367,8 @@
         }
       },
       "debugProfile": {
-        "label": "Debug Profile",
-        "placeholder": "Select a profile...",
-        "required": "Please select a profile to debug",
-        "alreadyRunning": "El perfil ya se está ejecutando. Ciérrelo antes de iniciar la depuración."
+        "placeholder": "Seleccionar perfil...",
+        "virtual": "Perfil virtual (Temporal)"
       },
       "debug": {
         "running": "Debugging...",
@@ -2383,7 +2381,9 @@
         "delete": "Eliminar",
         "edit": "Editar",
         "startFromHere": "Iniciar desde aquí",
-        "duplicate": "Duplicar"
+        "duplicate": "Duplicar",
+        "runFull": "Ejecutar flujo completo",
+        "runStep": "Ejecutar 1 nodo"
       },
       "saveAsTitle": "Guardar flujo como",
       "saveAsDescription": "Ingrese un nombre para la nueva copia de flujo.",

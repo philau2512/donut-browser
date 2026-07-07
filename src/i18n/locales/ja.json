@@ -2367,10 +2367,8 @@
         }
       },
       "debugProfile": {
-        "label": "Debug Profile",
-        "placeholder": "Select a profile...",
-        "required": "Please select a profile to debug",
-        "alreadyRunning": "プロファイルはすでに実行されています。デバッグを開始する前に閉じてください。"
+        "placeholder": "プロファイルを選択...",
+        "virtual": "仮想プロファイル (一時的)"
       },
       "debug": {
         "running": "Debugging...",
@@ -2383,7 +2381,9 @@
         "delete": "削除",
         "edit": "編集",
         "startFromHere": "ここから開始",
-        "duplicate": "複製"
+        "duplicate": "複製",
+        "runFull": "フロー全体を実行",
+        "runStep": "1ノードを実行"
       },
       "saveAsTitle": "フローを名前を付けて保存",
       "saveAsDescription": "新しいフローコピーの名前を入力してください。",

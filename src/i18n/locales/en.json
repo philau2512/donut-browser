@@ -2349,7 +2349,9 @@
         "delete": "Delete",
         "edit": "Edit",
         "startFromHere": "Start from here",
-        "duplicate": "Duplicate"
+        "duplicate": "Duplicate",
+        "runFull": "Run Full Flow",
+        "runStep": "Run 1 Node"
       },
       "variables": {
         "add": "Add Variable",
@@ -2470,10 +2472,8 @@
         }
       },
       "debugProfile": {
-        "label": "Debug Profile",
-        "placeholder": "Select a profile...",
-        "required": "Please select a profile to debug",
-        "alreadyRunning": "Profile is already running. Please close it before starting debug."
+        "placeholder": "Select profile...",
+        "virtual": "Virtual Profile (Ephemeral)"
       },
       "help": {
         "waitUntil": "Page load wait mode:\n• load: Wait for all resources (HTML, images, styles) to load\n• domcontentloaded: Wait for HTML structure (DOM) to load\n• networkidle: Wait until network requests have stopped for at least 500ms",

@@ -22,7 +22,7 @@ pub async fn start_automation_run(
   profiles: Vec<BrowserProfile>,
   settings: RunSettings,
 ) -> Result<String, String> {
-  if profiles.is_empty() {
+  if profiles.is_empty() && !settings.run_without_profile {
     return Err("no profiles selected".into());
   }
   runner::start_automation_run(app_handle, flow_json, profiles, settings).await

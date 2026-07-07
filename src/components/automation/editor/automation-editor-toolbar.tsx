@@ -9,6 +9,7 @@ import {
   LuList,
   LuPlay,
   LuSave,
+  LuSkipForward,
   LuVariable,
 } from "react-icons/lu";
 import type { BrowserProfile } from "@/types";
@@ -33,7 +34,8 @@ interface AutomationEditorToolbarProps {
   onOpenScriptReport: () => void;
   onOpenResourceReport: () => void;
   onToggleLogPanel: () => void;
-  onRunFlow: () => void;
+  onDebugRunFull: () => void;
+  onDebugStep: () => void;
   onStopDebugRun: () => void;
   onSaveAsClick: () => void;
   onSave: () => void;
@@ -62,7 +64,8 @@ export function AutomationEditorToolbar({
   onOpenScriptReport,
   onOpenResourceReport,
   onToggleLogPanel,
-  onRunFlow,
+  onDebugRunFull,
+  onDebugStep,
   onStopDebugRun,
   onSaveAsClick,
   onSave,
@@ -263,31 +266,34 @@ export function AutomationEditorToolbar({
           <div className="h-5 w-px bg-zinc-800 mx-1" />
 
           {/* Profile Selector for Debug */}
-          {profiles && profiles.length > 0 && (
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] text-zinc-500 mr-1 select-none">
-                Profile:
-              </span>
-              <select
-                value={selectedDebugProfileId ?? ""}
-                onChange={(e) => onDebugProfileChange(e.target.value)}
-                disabled={isDebugRunning}
-                className="bg-[#2d2d2d] text-white text-xs border border-zinc-700 rounded px-2 py-1 outline-none h-7 max-w-[150px] focus:border-zinc-500"
-              >
-                <option value="">
-                  {t("automation.editor.debugProfile.placeholder") ||
-                    "Select profile..."}
-                </option>
-                {profiles.map((profile) => (
+          <div className="flex items-center gap-1">
+            <span className="text-[11px] text-zinc-500 mr-1 select-none">
+              Profile:
+            </span>
+            <select
+              value={selectedDebugProfileId ?? ""}
+              onChange={(e) => onDebugProfileChange(e.target.value)}
+              disabled={isDebugRunning}
+              className="bg-[#2d2d2d] text-white text-xs border border-zinc-700 rounded px-2 py-1 outline-none h-7 max-w-[150px] focus:border-zinc-500"
+            >
+              <option value="">
+                {t("automation.editor.debugProfile.placeholder") ||
+                  "Select profile..."}
+              </option>
+              <option value="00000000-0000-0000-0000-000000000000">
+                {t("automation.editor.debugProfile.virtual") ||
+                  "Virtual Profile"}
+              </option>
+              {profiles &&
+                profiles.map((profile) => (
                   <option key={profile.id} value={profile.id}>
                     {profile.name}
                   </option>
                 ))}
-              </select>
-            </div>
-          )}
+            </select>
+          </div>
 
-          {/* Run / Stop Button */}
+          {/* Run / Stop Buttons for Debug */}
           {isDebugRunning ? (
             <button
               type="button"
@@ -298,15 +304,33 @@ export function AutomationEditorToolbar({
               <span>Stop</span>
             </button>
           ) : (
-            <button
-              type="button"
-              disabled={isFlowRunning || isLoading}
-              onClick={onRunFlow}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 rounded text-xs font-medium text-emerald-200 transition-colors disabled:opacity-50"
-            >
-              <LuPlay className="size-4 text-emerald-400 fill-emerald-400/20" />
-              <span>Run</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              {/* Nút 1: Chạy Full Flow */}
+              <button
+                type="button"
+                disabled={isLoading || !selectedDebugProfileId}
+                onClick={onDebugRunFull}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 rounded text-xs font-medium text-emerald-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                title={
+                  t("automation.editor.toolbar.runFull") || "Run Full Flow"
+                }
+              >
+                <LuPlay className="size-4 text-emerald-400 fill-emerald-400/20" />
+                <span>Run Full</span>
+              </button>
+
+              {/* Nút 2: Chạy 1 Node */}
+              <button
+                type="button"
+                disabled={isLoading || !selectedDebugProfileId}
+                onClick={onDebugStep}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-950/80 hover:bg-amber-900 border border-amber-800 rounded text-xs font-medium text-amber-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                title={t("automation.editor.toolbar.runStep") || "Run 1 Node"}
+              >
+                <LuSkipForward className="size-4 text-amber-400" />
+                <span>Step</span>
+              </button>
+            </div>
           )}
         </div>
       </div>

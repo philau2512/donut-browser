@@ -171,6 +171,8 @@ impl WayfernManager {
       block_images: config.block_images.unwrap_or(false),
       block_webgl: config.block_webgl.unwrap_or(false),
       url: None,
+      screen_max_width: config.screen_max_width,
+      screen_max_height: config.screen_max_height,
     });
 
     if !headless {

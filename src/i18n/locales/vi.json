@@ -2337,7 +2337,9 @@
         "delete": "Xóa",
         "edit": "Chỉnh sửa",
         "startFromHere": "Bắt đầu từ đây",
-        "duplicate": "Nhân bản"
+        "duplicate": "Nhân bản",
+        "runFull": "Chạy toàn bộ quy trình",
+        "runStep": "Chạy 1 bước (1 node)"
       },
       "variables": {
         "add": "Thêm biến",
@@ -2458,10 +2460,8 @@
         }
       },
       "debugProfile": {
-        "label": "Profile debug",
         "placeholder": "Chọn profile...",
-        "required": "Vui lòng chọn profile để debug",
-        "alreadyRunning": "Profile đang chạy. Vui lòng đóng profile trước khi bắt đầu debug."
+        "virtual": "Hồ sơ ảo (Tạm thời)"
       },
       "debug": {
         "running": "Đang debug...",

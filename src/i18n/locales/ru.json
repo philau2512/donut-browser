@@ -2367,10 +2367,8 @@
         }
       },
       "debugProfile": {
-        "label": "Debug Profile",
-        "placeholder": "Select a profile...",
-        "required": "Please select a profile to debug",
-        "alreadyRunning": "Профиль уже запущен. Пожалуйста, закройте его перед началом отладки."
+        "placeholder": "Выберите профиль...",
+        "virtual": "Виртуальный профиль (Временный)"
       },
       "debug": {
         "running": "Debugging...",
@@ -2383,7 +2381,9 @@
         "delete": "Удалить",
         "edit": "Редактировать",
         "startFromHere": "Начать отсюда",
-        "duplicate": "Дублировать"
+        "duplicate": "Дублировать",
+        "runFull": "Запустить весь сценарий",
+        "runStep": "Запустить 1 узел"
       },
       "saveAsTitle": "Сохранить сценарий как",
       "saveAsDescription": "Введите имя для новой копии сценария.",

@@ -58,6 +58,19 @@ export interface UseAutomationFlowStateProps {
   onSaved?: (flowPath: string) => void;
 }
 
+export const VIRTUAL_DEBUG_PROFILE: BrowserProfile = {
+  id: "00000000-0000-0000-0000-000000000000",
+  name: "Virtual Profile",
+  browser: "wayfern",
+  version: "latest",
+  release_type: "stable",
+  ephemeral: true,
+  sync_mode: "Disabled" as any,
+  tags: [],
+  proxy_bypass_rules: [],
+  password_protected: false,
+};
+
 export function useAutomationFlowState({
   flowPath,
   onSaved,
@@ -558,6 +571,9 @@ export function useAutomationFlowState({
   // Debug run states
   const [selectedDebugProfile, setSelectedDebugProfile] =
     useState<BrowserProfile | null>(null);
+  const [currentDebugNodeId, setCurrentDebugNodeId] = useState<string | null>(
+    null,
+  );
   const debugRun = useDebugRun();
   const [debugNodeStatuses, setDebugNodeStatuses] = useState<
     Record<string, "idle" | "running" | "success" | "error">
@@ -1111,6 +1127,53 @@ export function useAutomationFlowState({
     [nodes, edges, pushHistory, insertExistingNodeAtSlot],
   );
 
+  const configureProfileForRun = useCallback(
+    (profile: BrowserProfile): BrowserProfile => {
+      let profileToRun = { ...profile };
+
+      if (profileToRun.id === "00000000-0000-0000-0000-000000000000") {
+        const virtualId =
+          typeof window !== "undefined" && window.crypto
+            ? window.crypto.randomUUID()
+            : "00000000-0000-0000-0000-000000000000";
+
+        const screenWidth =
+          typeof window !== "undefined" ? window.screen.width : 1920;
+        const screenHeight =
+          typeof window !== "undefined" ? window.screen.height : 1080;
+
+        // Both Wayfern and Camoufox support screen constraints to prevent oversized windows
+        const screenLimits = {
+          screen_max_width: screenWidth,
+          screen_max_height: screenHeight,
+          screen_min_width: Math.min(1024, screenWidth),
+          screen_min_height: Math.min(768, screenHeight),
+        };
+
+        profileToRun = {
+          ...profileToRun,
+          id: virtualId,
+          name: `Virtual-Debug-${virtualId.substring(0, 8)}`,
+          wayfern_config: {
+            ...profileToRun.wayfern_config,
+            ...screenLimits,
+            randomize_fingerprint_on_launch: true,
+            geoip: true,
+          },
+          camoufox_config: {
+            ...profileToRun.camoufox_config,
+            ...screenLimits,
+            randomize_fingerprint_on_launch: true,
+            geoip: true,
+          },
+        };
+      }
+
+      return profileToRun;
+    },
+    [],
+  );
+
   const handleStartFromHere = useCallback(
     async (nodeId: string) => {
       if (!selectedDebugProfile) {
@@ -1168,10 +1231,12 @@ export function useAutomationFlowState({
             `Bắt đầu debug từ: ${label}`,
         );
 
+        const profileToRun = configureProfileForRun(selectedDebugProfile);
+
         const json = JSON.stringify(truncated, null, 2);
         setIsLogPanelOpen(true);
         setIsCanvasLocked(true);
-        await debugRun.startDebugRun(json, selectedDebugProfile);
+        await debugRun.startDebugRun(json, profileToRun);
       } catch (err) {
         showErrorToast(
           t("automation.editor.errors.startFailed", {
@@ -1192,8 +1257,163 @@ export function useAutomationFlowState({
       v2Resources,
       functions,
       activeFunctionName,
+      configureProfileForRun,
     ],
   );
+
+  const handleDebugRunFull = useCallback(async () => {
+    if (!selectedDebugProfile) {
+      showErrorToast(
+        t("automation.editor.debugProfile.required") ||
+          "Vui lòng chọn profile để debug",
+      );
+      return;
+    }
+    if (debugRun.isRunning) return;
+
+    try {
+      const currentFuncs = functions.map((f) => {
+        if (f.name === activeFunctionName) {
+          return { ...f, nodes, edges };
+        }
+        return f;
+      });
+
+      const activeFunc =
+        currentFuncs.find((f) => f.name === activeFunctionName) ||
+        currentFuncs[0];
+
+      const fullFlow = toDonutFlow(
+        flowName.trim(),
+        activeFunc.nodes,
+        activeFunc.edges,
+        variables,
+        {
+          schemaVersion: 2,
+          v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
+          resources: v2Resources,
+          functions: currentFuncs,
+        },
+      );
+
+      const json = JSON.stringify(fullFlow, null, 2);
+      setIsLogPanelOpen(true);
+      setIsCanvasLocked(true);
+      const profileToRun = configureProfileForRun(selectedDebugProfile);
+      await debugRun.startDebugRun(json, profileToRun);
+    } catch (err) {
+      showErrorToast(
+        t("automation.editor.errors.startFailed", {
+          error: JSON.stringify(err),
+        }) || `Debug failed to start: ${JSON.stringify(err)}`,
+      );
+    }
+  }, [
+    nodes,
+    t,
+    selectedDebugProfile,
+    debugRun,
+    flowName,
+    edges,
+    variables,
+    v2Variables,
+    v2Resources,
+    functions,
+    activeFunctionName,
+    configureProfileForRun,
+  ]);
+
+  const handleDebugStep = useCallback(async () => {
+    if (!selectedDebugProfile) {
+      showErrorToast(
+        t("automation.editor.debugProfile.required") ||
+          "Vui lòng chọn profile để debug",
+      );
+      return;
+    }
+    if (debugRun.isRunning) return;
+
+    let targetNodeId: string | null = currentDebugNodeId;
+    if (!targetNodeId) {
+      const startEdge = edges.find((e) => e.source === START_NODE_ID);
+      if (startEdge) {
+        targetNodeId = startEdge.target;
+      }
+    }
+
+    if (!targetNodeId) {
+      showErrorToast("Không tìm thấy node tiếp theo để chạy");
+      return;
+    }
+
+    const targetNode = nodes.find((n) => n.id === targetNodeId);
+    if (!targetNode) {
+      showErrorToast(`Không tìm thấy node có ID: ${targetNodeId}`);
+      return;
+    }
+
+    try {
+      const currentFuncs = functions.map((f) => {
+        if (f.name === activeFunctionName) {
+          return { ...f, nodes, edges };
+        }
+        return f;
+      });
+
+      const stepFlow = toDonutFlow(
+        flowName.trim(),
+        [targetNode],
+        [],
+        variables,
+        {
+          schemaVersion: 2,
+          v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
+          resources: v2Resources,
+          functions: currentFuncs,
+        },
+      );
+
+      const nextEdge = edges.find(
+        (e) =>
+          e.source === targetNodeId &&
+          (e.sourceHandle ?? "success") === "success",
+      );
+      const nextNodeId = nextEdge ? nextEdge.target : null;
+
+      setCurrentDebugNodeId(nextNodeId);
+
+      const json = JSON.stringify(stepFlow, null, 2);
+      setIsLogPanelOpen(true);
+      setIsCanvasLocked(true);
+      const profileToRun = configureProfileForRun(selectedDebugProfile);
+      await debugRun.startDebugRun(json, profileToRun);
+    } catch (err) {
+      showErrorToast(
+        t("automation.editor.errors.startFailed", {
+          error: JSON.stringify(err),
+        }) || `Debug failed to start: ${JSON.stringify(err)}`,
+      );
+    }
+  }, [
+    nodes,
+    edges,
+    t,
+    selectedDebugProfile,
+    debugRun,
+    flowName,
+    variables,
+    v2Variables,
+    v2Resources,
+    functions,
+    activeFunctionName,
+    currentDebugNodeId,
+    configureProfileForRun,
+  ]);
+
+  const handleStopDebugRun = useCallback(async () => {
+    setCurrentDebugNodeId(null);
+    await debugRun.stopDebugRun();
+  }, [debugRun]);
 
   // Automatically unlock canvas when debug execution completes
   useEffect(() => {
@@ -1706,6 +1926,10 @@ export function useAutomationFlowState({
     handleDeleteNode,
     handleDuplicateNode,
     handleStartFromHere,
+    handleDebugRunFull,
+    handleDebugStep,
+    handleStopDebugRun,
+    currentDebugNodeId,
     nodesWithCallbacks,
     handleDragStart,
     updateSelectedParam,

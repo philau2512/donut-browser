@@ -146,6 +146,8 @@ impl Browser for WayfernBrowser {
       block_images: false,
       block_webgl: false,
       url: url.as_deref(),
+      screen_max_width: None,
+      screen_max_height: None,
     }))
   }
 
