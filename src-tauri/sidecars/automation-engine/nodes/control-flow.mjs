@@ -7,7 +7,7 @@ import { validateFlow } from "../lib/validate.mjs";
 
 // Per-while-loop iteration cap (independent of engine MAX_STEPS=1000 total).
 // Stored in ctx.vars under __while_state_<nodeId>.
-const MAX_WHILE_ITERATIONS = 500;
+const MAX_WHILE_ITERATIONS = 200;
 
 // Re-export condition evaluation (mirrors ifCondition in logic.mjs)
 function evaluateCondition(left, operator, right) {

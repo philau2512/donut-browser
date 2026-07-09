@@ -87,10 +87,13 @@ impl ProxyManager {
     proxy_settings: ProxySettings,
     is_profile_specific: bool,
   ) -> Result<StoredProxy, String> {
-    // Check if name already exists
-    {
+    // Check if name already exists (only for non-profile-specific global proxies)
+    if !is_profile_specific {
       let stored_proxies = self.stored_proxies.lock().unwrap();
-      if stored_proxies.values().any(|p| p.name == name) {
+      if stored_proxies
+        .values()
+        .any(|p| !p.is_profile_specific && p.name == name)
+      {
         return Err(format!("Proxy with name '{name}' already exists"));
       }
     }
@@ -519,11 +522,16 @@ impl ProxyManager {
         return Err("Cannot edit a cloud-managed proxy".to_string());
       }
 
-      // Check if new name conflicts with existing proxies
+      // Check if new name conflicts with existing proxies (only for non-profile-specific global proxies)
       if let Some(ref new_name) = name {
-        if stored_proxies
-          .values()
-          .any(|p| p.id != proxy_id && p.name == *new_name)
+        let is_specific = stored_proxies
+          .get(proxy_id)
+          .map(|p| p.is_profile_specific)
+          .unwrap_or(false);
+        if !is_specific
+          && stored_proxies
+            .values()
+            .any(|p| p.id != proxy_id && !p.is_profile_specific && p.name == *new_name)
         {
           return Err(format!("Proxy with name '{new_name}' already exists"));
         }

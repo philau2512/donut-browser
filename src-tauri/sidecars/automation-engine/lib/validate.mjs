@@ -456,12 +456,12 @@ export function validateFlow(flow) {
           throw new FlowValidationError(`Edge.to in function "${fn.name}" references unknown node: ${JSON.stringify(edge.to)}`);
         }
       }
-      validateLabelTargets(fn.nodes);
+      validateLabelTargets(fn.nodes, flow.isPartial);
       detectCycle(fn.nodes, fn.edges);
     }
   }
 
-  validateLabelTargets(flow.nodes);
+  validateLabelTargets(flow.nodes, flow.isPartial);
   detectCycle(flow.nodes, flow.edges);
   return flow;
 }
@@ -555,7 +555,8 @@ function validateNode(node, ids) {
   }
 }
 
-function validateLabelTargets(nodes) {
+function validateLabelTargets(nodes, isPartial = false) {
+  if (isPartial) return;
   const labels = new Set(nodes.filter((node) => node.type === "label").map((node) => node.id));
   for (const node of nodes) {
     if (node.type !== "moveToLabel") continue;

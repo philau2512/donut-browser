@@ -174,6 +174,11 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       } else if (result?.type === "jumpToLabel") {
         const target = labelIndex.get(result.targetLabelNodeId);
         if (!target) {
+          if (flow.isPartial) {
+            logger.info(stableNodeId, `moveToLabel: target label not found in active nodes list during partial/debug run, stopping execution gracefully.`);
+            cur = null;
+            continue;
+          }
           throw new Error(`moveToLabel: target label not found: ${result.targetLabelNodeId}`);
         }
         jumpTarget = target;

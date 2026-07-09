@@ -43,7 +43,6 @@ export function FlowEditorPage({
     isLogPanelOpen,
     setIsLogPanelOpen,
     isCanvasLocked,
-    isFlowRunning,
     logSteps,
     flowLogs,
     selectedDebugProfile,
@@ -114,7 +113,8 @@ export function FlowEditorPage({
     handleDuplicateNode,
     handleStartFromHere,
     handleDebugRunFull,
-    handleDebugStep,
+    handleDebugStepNext,
+    handleDebugStepCurrent,
     handleStopDebugRun,
     nodesWithCallbacks,
     handleDragStart,
@@ -206,7 +206,6 @@ export function FlowEditorPage({
         isVariablesPanelOpen={isVariablesPanelOpen}
         isLogPanelOpen={isLogPanelOpen}
         isDebugRunning={debugRun.isRunning}
-        isFlowRunning={isFlowRunning}
         isLoading={isLoading}
         isSaving={isSaving}
         hasCurrentFlowPath={Boolean(currentFlowPath)}
@@ -232,7 +231,8 @@ export function FlowEditorPage({
         onOpenResourceReport={() => setIsResourceReportOpen(true)}
         onToggleLogPanel={() => setIsLogPanelOpen((value) => !value)}
         onDebugRunFull={handleDebugRunFull}
-        onDebugStep={handleDebugStep}
+        onDebugStepNext={handleDebugStepNext}
+        onDebugStepCurrent={handleDebugStepCurrent}
         onStopDebugRun={handleStopDebugRun}
         onSaveAsClick={handleSaveAsClick}
         onSave={() => void handleSave()}

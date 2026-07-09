@@ -200,6 +200,11 @@ export function ScriptActionCard({
           (isActiveSearchMatch
             ? "border-amber-500 ring-4 ring-amber-500/35 shadow-[0_0_15px_rgba(245,158,11,0.5)] scale-[1.02] z-20"
             : "border-amber-500/60 border-dashed bg-amber-500/5"),
+        debugStatus === "running" &&
+          "ring-2 ring-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.6)] border-blue-500 animate-pulse scale-[1.01] z-10",
+        debugStatus === "success" &&
+          "border-emerald-500/80 ring-2 ring-emerald-500/20",
+        debugStatus === "error" && "border-red-500 ring-2 ring-red-500/20",
       )}
       onClick={(event) => onSelect(node.id, event.ctrlKey || event.metaKey)}
       onDoubleClick={(event) => {

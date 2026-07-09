@@ -15,10 +15,14 @@ const __dirname = dirname(__filename);
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function createMockPage(overrides = {}) {
+function createMockPage(overrides = {}, vars = {}) {
   const page = {
     url: () => "https://test.example.com/page",
     goto: async () => {},
+    evaluate: async (code) => {
+      const fn = new Function("vars", `return eval(${JSON.stringify(code)})`);
+      return fn(vars);
+    },
     screenshot: async () =>
       Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]), // minimal PNG header
     context: () => ({
@@ -67,7 +71,7 @@ async function runTestFlow({
   const flow = makeFlow(nodes, edges);
   return runFlow({
     flow,
-    page: page ?? createMockPage(),
+    page: page ?? createMockPage({}, vars),
     vars,
     artifactsDir: ARTIFACTS_DIR,
     allowedSchemes: ["http:", "https:"],
@@ -324,8 +328,10 @@ test("Phase 7 — Control-flow nodes", async (t) => {
       ],
     });
     assert.strictEqual(failed, false);
-    // No side effects on vars
-    assert.strictEqual(Object.keys(vars).length, 0);
+    // No side effects on vars other than WAS_ERROR and LAST_ERROR injected by runFlow
+    assert.strictEqual(vars.WAS_ERROR, "false");
+    assert.strictEqual(vars.LAST_ERROR, "");
+    assert.strictEqual(Object.keys(vars).length, 2);
   });
 
   // ── while + stopLoop ─────────────────────────────────────────────────────
@@ -351,7 +357,7 @@ test("Phase 7 — Control-flow nodes", async (t) => {
         },
       ];
       const edges = [
-        { from: "n1", to: "n2", sourceHandle: "success" },
+        { from: "n1", to: "n2", sourceHandle: "loop" },
         { from: "n2", to: "n1", sourceHandle: "success" },
       ];
 
@@ -386,7 +392,7 @@ test("Phase 7 — Control-flow nodes", async (t) => {
         { id: "n2", type: "addComment", params: { comment: "body" } },
       ];
       const edges = [
-        { from: "n1", to: "n2", sourceHandle: "success" },
+        { from: "n1", to: "n2", sourceHandle: "loop" },
         { from: "n2", to: "n1", sourceHandle: "success" },
       ];
 
@@ -413,7 +419,7 @@ test("Phase 7 — Control-flow nodes", async (t) => {
       { id: "n4", type: "addLog", params: { message: "after loop" } },
     ];
     const edges = [
-      { from: "n1", to: "n2", sourceHandle: "success" },
+      { from: "n1", to: "n2", sourceHandle: "loop" },
       { from: "n2", to: "n3", sourceHandle: "success" },
       { from: "n3", to: "n4", sourceHandle: "done" },
     ];

@@ -105,13 +105,23 @@ export class ResourceManager {
       this._nameIndex.set(def.name.toLowerCase(), def.id);
 
       // Load items from source.
-      const itemList = await loadResourceItems(def, this._flowDir);
+      let itemList = [];
+      try {
+        itemList = await loadResourceItems(def, this._flowDir);
+      } catch (err) {
+        console.warn(`[Warning] ResourceManager: ${err.message}`);
+        def._loadError = err.message;
+      }
       const itemMap = new Map(itemList.map((item) => [item.id, item]));
 
       // Restore persisted usage state (quota, exhausted/disabled).
       if (def.persistence?.preserveUsageAcrossRestart !== false) {
-        const persisted = await loadPersistedState(stateDir, def.id);
-        mergePersistedState(itemMap, persisted);
+        try {
+          const persisted = await loadPersistedState(stateDir, def.id);
+          mergePersistedState(itemMap, persisted);
+        } catch (err) {
+          // non-fatal
+        }
       }
 
       this._items.set(def.id, itemMap);
@@ -182,8 +192,10 @@ export class ResourceManager {
 
       this._items.set(resourceId, nextItemMap);
       this._dirty.add(resourceId);
+      def._loadError = undefined;
     } catch (err) {
       // non-fatal
+      def._loadError = err.message;
     }
   }
 
@@ -234,6 +246,10 @@ export class ResourceManager {
   allocate(profileId, runId, resourceName) {
     const def = this._getDefByName(resourceName);
     if (!def) return null;
+
+    if (def._loadError) {
+      throw new Error(`ResourceManager: failed to load resource '${resourceName}': ${def._loadError}`);
+    }
 
     // output-only resources cannot be allocated as input.
     if (def.direction === "output") {
@@ -383,6 +399,9 @@ export class ResourceManager {
   async writeOutput(profileId, runId, resourceName, data, mode = "append-line") {
     const def = this._getDefByName(resourceName);
     if (!def) throw new Error(`ResourceManager: unknown resource '${resourceName}'`);
+    if (def._loadError) {
+      throw new Error(`ResourceManager: failed to load resource '${resourceName}': ${def._loadError}`);
+    }
     if (def.direction === "input") {
       throw new Error(`ResourceManager: resource '${resourceName}' is input-only and cannot be written`);
     }

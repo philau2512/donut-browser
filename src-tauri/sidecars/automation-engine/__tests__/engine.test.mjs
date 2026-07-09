@@ -95,6 +95,35 @@ test("validate accepts a well-formed flow", () => {
   assert.equal(validateFlow(structuredClone(goodFlow)).name, "t");
 });
 
+test("validate accepts missing label target if isPartial is true", () => {
+  const f = structuredClone(goodFlow);
+  f.isPartial = true;
+  f.nodes = [
+    {
+      id: "m1",
+      type: "moveToLabel",
+      params: { targetLabelNodeId: "missing-label-id" },
+      position: { x: 0, y: 0 },
+    },
+  ];
+  f.edges = [];
+  assert.equal(validateFlow(f).isPartial, true);
+});
+
+test("validate rejects missing label target if isPartial is false/omitted", () => {
+  const f = structuredClone(goodFlow);
+  f.nodes = [
+    {
+      id: "m1",
+      type: "moveToLabel",
+      params: { targetLabelNodeId: "missing-label-id" },
+      position: { x: 0, y: 0 },
+    },
+  ];
+  f.edges = [];
+  assert.throws(() => validateFlow(f), FlowValidationError);
+});
+
 test("validate rejects unknown node type", () => {
   const f = structuredClone(goodFlow);
   f.nodes[0].type = "evilEval";

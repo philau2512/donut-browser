@@ -89,7 +89,7 @@ export function FlowLogPanel({
                   }
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 cursor-pointer py-0.5 px-1 rounded transition-colors hover:bg-zinc-800/40 select-none",
+                  "flex items-center flex-nowrap gap-1.5 cursor-pointer py-0.5 px-1 rounded transition-colors hover:bg-zinc-800/40 w-full min-w-0",
                   log.type === "success" && "text-emerald-400",
                   log.type === "info" && "text-blue-400",
                   log.type === "warn" && "text-amber-500",
@@ -99,7 +99,7 @@ export function FlowLogPanel({
                     "bg-amber-500/10 border-l-2 border-amber-500 pl-1",
                 )}
               >
-                <span className="shrink-0 opacity-70">
+                <span className="shrink-0 opacity-70 whitespace-nowrap">
                   {log.type === "success" && "[Success]"}
                   {log.type === "info" && "[Info]"}
                   {log.type === "warn" && "[Warning]"}
@@ -113,7 +113,7 @@ export function FlowLogPanel({
                       onSelectNode?.(log.nodeId ?? null);
                     }}
                     className={cn(
-                      "font-mono text-[9px] px-1 py-0.5 rounded border leading-none hover:bg-white/10 hover:text-white transition shrink-0 cursor-pointer",
+                      "font-mono text-[9px] px-1 py-0.5 rounded border leading-none hover:bg-white/10 hover:text-white transition shrink-0 cursor-pointer whitespace-nowrap",
                       selectedNodeId === log.nodeId
                         ? "border-amber-500 bg-amber-500/20 text-amber-300 font-semibold"
                         : "border-zinc-700 bg-zinc-800 text-zinc-400",
@@ -122,7 +122,7 @@ export function FlowLogPanel({
                     {log.nodeId}
                   </button>
                 )}
-                <span>
+                <span className="min-w-0 truncate whitespace-nowrap select-text">
                   {log.message}
                   {log.duration !== undefined && ` | ${log.duration}ms`}
                 </span>

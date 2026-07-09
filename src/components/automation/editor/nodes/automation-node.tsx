@@ -21,12 +21,18 @@ export function AutomationNode({
 }: NodeProps<AutomationCanvasNode>) {
   const { t } = useTranslation();
   if (data.nodeType === "start") {
+    const isDebugNext = (data as any).isDebugNext;
+    const debugStatus = (data as any).debugStatus;
     return (
       <div
         className={cn(
           "flex flex-col items-center justify-center rounded-full border text-center shadow-md",
           "w-20 h-20 bg-success text-success-foreground border-success-foreground/20",
           selected && "ring-4 ring-success/35",
+          isDebugNext &&
+            "ring-4 ring-amber-500 animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.5)]",
+          debugStatus === "running" &&
+            "ring-4 ring-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-pulse",
         )}
       >
         <svg
@@ -197,6 +203,10 @@ export function AutomationNode({
           "w-[138px] rounded-xl border p-2 shadow-md transition-all",
           groupBg,
           selected && "brightness-[0.70] ring-2 ring-primary/35",
+          (data as any).isDebugNext &&
+            "ring-2 ring-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)] border-amber-500 animate-pulse",
+          debugStatus === "running" &&
+            "ring-2 ring-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)] border-blue-500 animate-pulse font-semibold scale-[1.03]",
         )}
       >
         <Handle
@@ -237,7 +247,9 @@ export function AutomationNode({
               className="!bg-destructive !w-3 !h-3 !border !border-background hover:scale-125 transition-transform"
             />
           </>
-        ) : nodeType === "loopFor" || nodeType === "loopElements" ? (
+        ) : nodeType === "loopFor" ||
+          nodeType === "loopElements" ||
+          nodeType === "while" ? (
           <>
             <Handle
               type="source"

@@ -27,7 +27,10 @@ export async function loadResourceItems(definition, flowDir) {
   let lines = [];
   let sourcePath = "";
 
-  if (source.kind === "file" && source.path) {
+  if (source.kind === "file") {
+    if (!source.path || source.path.trim() === "") {
+      throw new Error(`ResourceLoader: file path is missing or empty for resource '${resourceId}'`);
+    }
     if (definition.fileBehavior && definition.fileBehavior.readFile === false) {
       return [];
     }

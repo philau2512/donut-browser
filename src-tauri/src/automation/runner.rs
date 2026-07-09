@@ -351,6 +351,30 @@ async fn run_one_profile(
         .and_then(|profiles| profiles.into_iter().find(|p| p.id == profile.id))
         .unwrap_or_else(|| profile.clone());
       browser_pid = updated_profile.process_id;
+
+      if browser_pid.is_none() {
+        // Fallback for virtual/ephemeral profiles which are not listed in standard profiles
+        let profiles_dir = crate::settings::app_dirs::profiles_dir();
+        let profile_path =
+          crate::browser::ephemeral_dirs::get_effective_profile_path(&profile, &profiles_dir);
+        let profile_path_str = profile_path.to_string_lossy().to_string();
+        if profile.browser == "wayfern" {
+          if let Some(wayfern_process) = crate::browser::wayfern_manager::WayfernManager::instance()
+            .find_wayfern_by_profile(&profile_path_str)
+            .await
+          {
+            browser_pid = wayfern_process.processId;
+          }
+        } else if profile.browser == "camoufox" {
+          if let Ok(Some(camoufox_process)) =
+            crate::browser::camoufox_manager::CamoufoxManager::instance()
+              .find_camoufox_by_profile(&profile_path_str)
+              .await
+          {
+            browser_pid = camoufox_process.processId;
+          }
+        }
+      }
       already_running = browser_pid.is_some();
     }
   }

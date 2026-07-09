@@ -44,6 +44,7 @@ export interface DonutFlowV1 {
   nodes: DonutFlowNode[];
   edges: DonutFlowEdge[];
   functions?: DonutFunction[];
+  isPartial?: boolean;
 }
 
 export interface ToDonutFlowOptions {
@@ -77,6 +78,7 @@ export interface DonutFlowV2 {
   nodes: DonutFlowNode[];
   edges: DonutFlowEdge[];
   functions?: DonutFunction[];
+  isPartial?: boolean;
 }
 
 /** Union type accepted by the editor — either v1 (legacy) or v2 (new schema). */

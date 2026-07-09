@@ -21,7 +21,6 @@ interface AutomationEditorToolbarProps {
   isVariablesPanelOpen: boolean;
   isLogPanelOpen: boolean;
   isDebugRunning: boolean;
-  isFlowRunning: boolean;
   isLoading: boolean;
   isSaving: boolean;
   hasCurrentFlowPath: boolean;
@@ -35,7 +34,8 @@ interface AutomationEditorToolbarProps {
   onOpenResourceReport: () => void;
   onToggleLogPanel: () => void;
   onDebugRunFull: () => void;
-  onDebugStep: () => void;
+  onDebugStepNext: () => void;
+  onDebugStepCurrent: () => void;
   onStopDebugRun: () => void;
   onSaveAsClick: () => void;
   onSave: () => void;
@@ -51,7 +51,6 @@ export function AutomationEditorToolbar({
   isVariablesPanelOpen,
   isLogPanelOpen,
   isDebugRunning,
-  isFlowRunning,
   isLoading,
   isSaving,
   hasCurrentFlowPath,
@@ -65,7 +64,8 @@ export function AutomationEditorToolbar({
   onOpenResourceReport,
   onToggleLogPanel,
   onDebugRunFull,
-  onDebugStep,
+  onDebugStepNext,
+  onDebugStepCurrent,
   onStopDebugRun,
   onSaveAsClick,
   onSave,
@@ -284,12 +284,11 @@ export function AutomationEditorToolbar({
                 {t("automation.editor.debugProfile.virtual") ||
                   "Virtual Profile"}
               </option>
-              {profiles &&
-                profiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.name}
-                  </option>
-                ))}
+              {profiles?.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -319,16 +318,33 @@ export function AutomationEditorToolbar({
                 <span>Run Full</span>
               </button>
 
-              {/* Nút 2: Chạy 1 Node */}
+              {/* Nút 2: Next Node */}
               <button
                 type="button"
                 disabled={isLoading || !selectedDebugProfileId}
-                onClick={onDebugStep}
+                onClick={onDebugStepNext}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-950/80 hover:bg-amber-900 border border-amber-800 rounded text-xs font-medium text-amber-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                title={t("automation.editor.toolbar.runStep") || "Run 1 Node"}
+                title={
+                  t("automation.editor.toolbar.runStepNext") || "Run Next Node"
+                }
               >
                 <LuSkipForward className="size-4 text-amber-400" />
-                <span>Step</span>
+                <span>Next Node</span>
+              </button>
+
+              {/* Nút 3: Current Node */}
+              <button
+                type="button"
+                disabled={isLoading || !selectedDebugProfileId}
+                onClick={onDebugStepCurrent}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-950/80 hover:bg-blue-900 border border-blue-800 rounded text-xs font-medium text-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                title={
+                  t("automation.editor.toolbar.runStepCurrent") ||
+                  "Run Current Node"
+                }
+              >
+                <LuPlay className="size-4 text-blue-400" />
+                <span>Current Node</span>
               </button>
             </div>
           )}

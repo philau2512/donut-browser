@@ -571,29 +571,52 @@ export function useAutomationFlowState({
   // Debug run states
   const [selectedDebugProfile, setSelectedDebugProfile] =
     useState<BrowserProfile | null>(null);
+  const [activeDebugProfile, setActiveDebugProfile] =
+    useState<BrowserProfile | null>(null);
   const [currentDebugNodeId, setCurrentDebugNodeId] = useState<string | null>(
     null,
   );
   const debugRun = useDebugRun();
+
+  // Clear active debug profile state when selectedDebugProfile changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: trigger on change
+  useEffect(() => {
+    setActiveDebugProfile(null);
+    setCurrentDebugNodeId(null);
+  }, [selectedDebugProfile]);
   const [debugNodeStatuses, setDebugNodeStatuses] = useState<
     Record<string, "idle" | "running" | "success" | "error">
   >({});
 
   const debugLogs = useMemo<FlowLogLine[]>(() => {
-    return debugRun.logs.map((l, idx) => {
-      let logType: "success" | "info" | "warn" | "error" = "info";
-      if (l.level === "error") logType = "error";
-      else if (l.level === "warn") logType = "warn";
-      else if (l.level === "info" && l.msg?.startsWith("✓"))
-        logType = "success";
+    return debugRun.logs
+      .filter((l) => {
+        const msg = l.msg ?? "";
+        // Filter out noisy backend/engine system logs during step debugging
+        if (
+          msg.includes("reusing launch page") ||
+          msg.includes('flow "') ||
+          msg.includes("flow completed") ||
+          msg.trim() === ""
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .map((l, idx) => {
+        let logType: "success" | "info" | "warn" | "error" = "info";
+        if (l.level === "error") logType = "error";
+        else if (l.level === "warn") logType = "warn";
+        else if (l.level === "info" && l.msg?.startsWith("✓"))
+          logType = "success";
 
-      return {
-        id: `debug-${idx}-${l.ts ?? ""}`,
-        type: logType,
-        message: l.msg ?? "",
-        nodeId: l.nodeId ?? undefined,
-      };
-    });
+        return {
+          id: `debug-${idx}-${l.ts ?? ""}`,
+          type: logType,
+          message: l.msg ?? "",
+          nodeId: l.nodeId ?? undefined,
+        };
+      });
   }, [debugRun.logs]);
 
   const debugSteps = useMemo<FlowExecutionStep[]>(() => {
@@ -615,34 +638,61 @@ export function useAutomationFlowState({
 
   // Parse debug logs -> update node statuses
   useEffect(() => {
-    if (debugRun.logs.length === 0) return;
-    const latest = debugRun.logs[debugRun.logs.length - 1];
-    const { nodeId, msg } = latest;
-    if (!nodeId || !msg) return;
+    if (debugRun.logs.length === 0) {
+      setDebugNodeStatuses({});
+      return;
+    }
 
-    setDebugNodeStatuses((prev) => {
-      const next = { ...prev };
-      if (msg.startsWith("▶")) {
-        // Mark previously running nodes as success
-        for (const [id, status] of Object.entries(next)) {
-          if (status === "running") next[id] = "success";
+    setDebugNodeStatuses(() => {
+      const next: Record<string, "idle" | "running" | "success" | "error"> = {};
+      for (const log of debugRun.logs) {
+        const { nodeId, msg } = log;
+        if (!nodeId || !msg) continue;
+
+        if (msg.startsWith("▶")) {
+          // Mark previously running nodes as success
+          for (const [id, status] of Object.entries(next)) {
+            if (status === "running") {
+              next[id] = "success";
+            }
+          }
+          next[nodeId] = "running";
+        } else if (msg.startsWith("✓")) {
+          next[nodeId] = "success";
+        } else if (msg.startsWith("✗")) {
+          next[nodeId] = "error";
         }
-        next[nodeId] = "running";
-      } else if (msg.startsWith("✓")) {
-        next[nodeId] = "success";
-      } else if (msg.startsWith("✗")) {
-        next[nodeId] = "error";
       }
       return next;
     });
   }, [debugRun.logs]);
 
-  // Clear statuses when debug starts
+  // Auto-scroll to running or next debug node
   useEffect(() => {
+    let targetNodeId: string | null = null;
+
     if (debugRun.isRunning) {
-      setDebugNodeStatuses({});
+      // While running, only scroll to the currently executing node
+      const runningId = Object.keys(debugNodeStatuses).find(
+        (id) => debugNodeStatuses[id] === "running",
+      );
+      if (runningId) {
+        targetNodeId = runningId;
+      }
+    } else {
+      // When stopped or waiting for the next step, scroll to the next target node
+      if (currentDebugNodeId) {
+        targetNodeId = currentDebugNodeId;
+      }
     }
-  }, [debugRun.isRunning]);
+
+    if (targetNodeId) {
+      const el = document.getElementById(`node-card-${targetNodeId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [debugNodeStatuses, currentDebugNodeId, debugRun.isRunning]);
 
   const [currentFlowPath, setCurrentFlowPath] = useState<string | undefined>(
     flowPath,
@@ -1231,12 +1281,27 @@ export function useAutomationFlowState({
             `Bắt đầu debug từ: ${label}`,
         );
 
-        const profileToRun = configureProfileForRun(selectedDebugProfile);
+        const profileToRun =
+          activeDebugProfile || configureProfileForRun(selectedDebugProfile);
 
-        const json = JSON.stringify(truncated, null, 2);
+        // Reset statuses for a new start
+        setDebugNodeStatuses({});
+
+        if (!activeDebugProfile) {
+          setActiveDebugProfile(profileToRun);
+        }
+
+        const json = JSON.stringify(
+          {
+            ...truncated,
+            isPartial: true,
+          },
+          null,
+          2,
+        );
         setIsLogPanelOpen(true);
         setIsCanvasLocked(true);
-        await debugRun.startDebugRun(json, profileToRun);
+        await debugRun.startDebugRun(json, profileToRun, false);
       } catch (err) {
         showErrorToast(
           t("automation.editor.errors.startFailed", {
@@ -1258,6 +1323,7 @@ export function useAutomationFlowState({
       functions,
       activeFunctionName,
       configureProfileForRun,
+      activeDebugProfile,
     ],
   );
 
@@ -1299,8 +1365,16 @@ export function useAutomationFlowState({
       const json = JSON.stringify(fullFlow, null, 2);
       setIsLogPanelOpen(true);
       setIsCanvasLocked(true);
-      const profileToRun = configureProfileForRun(selectedDebugProfile);
-      await debugRun.startDebugRun(json, profileToRun);
+
+      // Reset statuses for a new full run
+      setDebugNodeStatuses({});
+
+      const profileToRun =
+        activeDebugProfile || configureProfileForRun(selectedDebugProfile);
+      if (!activeDebugProfile) {
+        setActiveDebugProfile(profileToRun);
+      }
+      await debugRun.startDebugRun(json, profileToRun, false);
     } catch (err) {
       showErrorToast(
         t("automation.editor.errors.startFailed", {
@@ -1321,9 +1395,10 @@ export function useAutomationFlowState({
     functions,
     activeFunctionName,
     configureProfileForRun,
+    activeDebugProfile,
   ]);
 
-  const handleDebugStep = useCallback(async () => {
+  const handleDebugStepNext = useCallback(async () => {
     if (!selectedDebugProfile) {
       showErrorToast(
         t("automation.editor.debugProfile.required") ||
@@ -1335,9 +1410,13 @@ export function useAutomationFlowState({
 
     let targetNodeId: string | null = currentDebugNodeId;
     if (!targetNodeId) {
-      const startEdge = edges.find((e) => e.source === START_NODE_ID);
-      if (startEdge) {
-        targetNodeId = startEdge.target;
+      if (selectedNodeId && selectedNodeId !== START_NODE_ID) {
+        targetNodeId = selectedNodeId;
+      } else {
+        const startEdge = edges.find((e) => e.source === START_NODE_ID);
+        if (startEdge) {
+          targetNodeId = startEdge.target;
+        }
       }
     }
 
@@ -1382,11 +1461,28 @@ export function useAutomationFlowState({
 
       setCurrentDebugNodeId(nextNodeId);
 
-      const json = JSON.stringify(stepFlow, null, 2);
+      const json = JSON.stringify(
+        {
+          ...stepFlow,
+          isPartial: true,
+        },
+        null,
+        2,
+      );
       setIsLogPanelOpen(true);
       setIsCanvasLocked(true);
-      const profileToRun = configureProfileForRun(selectedDebugProfile);
-      await debugRun.startDebugRun(json, profileToRun);
+
+      const isContinuingNext = !!activeDebugProfile;
+      if (!isContinuingNext) {
+        setDebugNodeStatuses({});
+      }
+
+      const profileToRun =
+        activeDebugProfile || configureProfileForRun(selectedDebugProfile);
+      if (!activeDebugProfile) {
+        setActiveDebugProfile(profileToRun);
+      }
+      await debugRun.startDebugRun(json, profileToRun, isContinuingNext);
     } catch (err) {
       showErrorToast(
         t("automation.editor.errors.startFailed", {
@@ -1408,12 +1504,128 @@ export function useAutomationFlowState({
     activeFunctionName,
     currentDebugNodeId,
     configureProfileForRun,
+    activeDebugProfile,
+    selectedNodeId,
+  ]);
+
+  const handleDebugStepCurrent = useCallback(async () => {
+    if (!selectedDebugProfile) {
+      showErrorToast(
+        t("automation.editor.debugProfile.required") ||
+          "Vui lòng chọn profile để debug",
+      );
+      return;
+    }
+    if (debugRun.isRunning) return;
+
+    // For "Current Node", priority is: selectedNodeId (if valid) -> currentDebugNodeId -> Start node's target
+    let targetNodeId: string | null = null;
+    if (selectedNodeId && selectedNodeId !== START_NODE_ID) {
+      targetNodeId = selectedNodeId;
+    } else {
+      targetNodeId = currentDebugNodeId;
+    }
+
+    if (!targetNodeId) {
+      const startEdge = edges.find((e) => e.source === START_NODE_ID);
+      if (startEdge) {
+        targetNodeId = startEdge.target;
+      }
+    }
+
+    if (!targetNodeId) {
+      showErrorToast("Không tìm thấy node hiện tại để chạy");
+      return;
+    }
+
+    const targetNode = nodes.find((n) => n.id === targetNodeId);
+    if (!targetNode) {
+      showErrorToast(`Không tìm thấy node có ID: ${targetNodeId}`);
+      return;
+    }
+
+    try {
+      const currentFuncs = functions.map((f) => {
+        if (f.name === activeFunctionName) {
+          return { ...f, nodes, edges };
+        }
+        return f;
+      });
+
+      const stepFlow = toDonutFlow(
+        flowName.trim(),
+        [targetNode],
+        [],
+        variables,
+        {
+          schemaVersion: 2,
+          v2Variables: v2Variables.length > 0 ? v2Variables : undefined,
+          resources: v2Resources,
+          functions: currentFuncs,
+        },
+      );
+
+      // Do NOT update currentDebugNodeId (preserve execution state)
+
+      const json = JSON.stringify(
+        {
+          ...stepFlow,
+          isPartial: true,
+        },
+        null,
+        2,
+      );
+      setIsLogPanelOpen(true);
+      setIsCanvasLocked(true);
+
+      const isContinuingCurrent = !!activeDebugProfile;
+      if (!isContinuingCurrent) {
+        setDebugNodeStatuses({});
+      }
+
+      const profileToRun =
+        activeDebugProfile || configureProfileForRun(selectedDebugProfile);
+      if (!activeDebugProfile) {
+        setActiveDebugProfile(profileToRun);
+      }
+      await debugRun.startDebugRun(json, profileToRun, isContinuingCurrent);
+    } catch (err) {
+      showErrorToast(
+        t("automation.editor.errors.startFailed", {
+          error: JSON.stringify(err),
+        }) || `Debug failed to start: ${JSON.stringify(err)}`,
+      );
+    }
+  }, [
+    nodes,
+    edges,
+    t,
+    selectedDebugProfile,
+    debugRun,
+    flowName,
+    variables,
+    v2Variables,
+    v2Resources,
+    functions,
+    activeFunctionName,
+    currentDebugNodeId,
+    configureProfileForRun,
+    activeDebugProfile,
+    selectedNodeId,
   ]);
 
   const handleStopDebugRun = useCallback(async () => {
+    if (activeDebugProfile) {
+      try {
+        await invoke("kill_browser_profile", { profile: activeDebugProfile });
+      } catch (err) {
+        console.error("Failed to kill browser profile on stop:", err);
+      }
+    }
     setCurrentDebugNodeId(null);
+    setActiveDebugProfile(null);
     await debugRun.stopDebugRun();
-  }, [debugRun]);
+  }, [debugRun, activeDebugProfile]);
 
   // Automatically unlock canvas when debug execution completes
   useEffect(() => {
@@ -1433,6 +1645,7 @@ export function useAutomationFlowState({
         onStartFromHere: handleStartFromHere,
         onComment: handleCommentNode,
         debugStatus: debugNodeStatuses[node.id] ?? undefined,
+        isDebugNext: currentDebugNodeId === node.id,
       },
     }));
   }, [
@@ -1443,6 +1656,7 @@ export function useAutomationFlowState({
     handleStartFromHere,
     handleCommentNode,
     debugNodeStatuses,
+    currentDebugNodeId,
   ]);
 
   useEffect(() => {
@@ -1927,7 +2141,8 @@ export function useAutomationFlowState({
     handleDuplicateNode,
     handleStartFromHere,
     handleDebugRunFull,
-    handleDebugStep,
+    handleDebugStepNext,
+    handleDebugStepCurrent,
     handleStopDebugRun,
     currentDebugNodeId,
     nodesWithCallbacks,

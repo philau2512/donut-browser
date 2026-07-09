@@ -29,6 +29,7 @@ export interface UseDebugRunReturn {
   startDebugRun: (
     flowJson: string,
     profile: BrowserProfile,
+    append?: boolean,
   ) => Promise<string | null>;
   stopDebugRun: () => Promise<void>;
   clearLogs: () => void;
@@ -51,6 +52,7 @@ export function useDebugRun(): UseDebugRunReturn {
     async (
       flowJson: string,
       profile: BrowserProfile,
+      append?: boolean,
     ): Promise<string | null> => {
       setIsRunning(true);
       setProfileState({
@@ -58,7 +60,9 @@ export function useDebugRun(): UseDebugRunReturn {
         profile_name: profile.name,
         status: "idle",
       });
-      setLogs([]);
+      if (!append) {
+        setLogs([]);
+      }
 
       const settings = {
         ...DEBUG_SETTINGS,
