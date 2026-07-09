@@ -171,7 +171,11 @@ impl ProfileManager {
       .find(|p| p.id == profile_uuid)
       .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
 
-    profile.window_color = window_color;
+    profile.window_color = window_color.and_then(|c| {
+      let hex = c.trim().trim_start_matches('#');
+      (hex.len() == 6 && hex.chars().all(|ch| ch.is_ascii_hexdigit()))
+        .then(|| format!("#{}", hex.to_lowercase()))
+    });
     profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
 
     self.save_profile(&profile)?;

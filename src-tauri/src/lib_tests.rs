@@ -39,8 +39,6 @@ mod tests {
       // Storage path commands — used via MCP/API, not directly in frontend
       "get_custom_storage_path",
       "is_custom_storage_active",
-      // Window color command — frontend UI deferred to Phase 3.2 (upstream 63a1f4c)
-      "update_profile_window_color",
     ];
     let lib_rs_content = fs::read_to_string("src/lib_run.rs").expect("Failed to read lib_run.rs");
     let commands = extract_tauri_commands(&lib_rs_content);
