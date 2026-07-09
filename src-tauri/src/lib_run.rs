@@ -165,6 +165,7 @@ pub fn run() {
       import_proxies_from_parsed,
       update_camoufox_config,
       update_wayfern_config,
+      update_profile_window_color,
       generate_sample_fingerprint,
       get_profile_groups,
       get_groups_with_profile_counts,

@@ -55,7 +55,7 @@ use profile::manager::{
   list_browser_profiles, rename_profile, update_camoufox_config, update_profile_dns_blocklist,
   update_profile_launch_hook, update_profile_note, update_profile_proxy,
   update_profile_proxy_bypass_rules, update_profile_status, update_profile_tags,
-  update_profile_vpn, update_wayfern_config,
+  update_profile_vpn, update_profile_window_color, update_wayfern_config,
 };
 
 use profile::password::{
