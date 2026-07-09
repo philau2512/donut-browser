@@ -114,18 +114,18 @@ pub async fn enable_extension_group_sync_if_needed(extension_group_id: &str) -> 
 
   // Cascade to every extension referenced by the group so the other device
   // has the actual extension binaries when it pulls the group.
-  for ext_id in extension_ids {
+  for ext_id in &extension_ids {
     let already_synced = {
       let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
       manager
-        .get_extension(&ext_id)
+        .get_extension(ext_id)
         .ok()
         .map(|e| e.sync_enabled)
         .unwrap_or(true)
     };
     if !already_synced {
       let manager = crate::browser::extension_manager::EXTENSION_MANAGER.lock().unwrap();
-      if let Ok(mut ext) = manager.get_extension(&ext_id) {
+      if let Ok(mut ext) = manager.get_extension(ext_id) {
         ext.sync_enabled = true;
         if let Err(e) = manager.update_extension_internal(&ext) {
           log::warn!("Failed to auto-enable sync for extension {}: {e}", ext_id);
@@ -133,6 +133,18 @@ pub async fn enable_extension_group_sync_if_needed(extension_group_id: &str) -> 
           log::info!("Auto-enabled sync for extension {}", ext_id);
         }
       }
+    }
+  }
+
+  // Enabling sync only flips a local flag; without queueing a sync run the
+  // group and its extensions are never uploaded, so the other device never
+  // receives them (issue #477). Queue them now.
+  if let Some(scheduler) = crate::sync::get_global_scheduler() {
+    scheduler
+      .queue_extension_group_sync(extension_group_id.to_string())
+      .await;
+    for ext_id in &extension_ids {
+      scheduler.queue_extension_sync(ext_id.clone()).await;
     }
   }
 

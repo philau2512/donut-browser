@@ -418,6 +418,7 @@ impl ProfileManager {
       host_os: Some(get_host_os()),
       ephemeral: false,
       extension_group_id: source.extension_group_id,
+      window_color: source.window_color,
       proxy_bypass_rules: source.proxy_bypass_rules,
       created_by_id: None,
       created_by_email: None,

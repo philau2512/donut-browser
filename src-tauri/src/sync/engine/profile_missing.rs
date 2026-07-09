@@ -603,10 +603,88 @@ impl SyncEngine {
       }
     }
 
+    // Check for remote extensions not present locally. The extensions/ prefix
+    // also holds binary files under extensions/{id}/file/..., so the `/` filter
+    // keeps only the top-level extensions/{id}.json entries.
+    let remote_extensions = self.client.list("extensions/").await?;
+    for obj in &remote_extensions.objects {
+      if let Some(ext_id) = obj
+        .key
+        .strip_prefix("extensions/")
+        .and_then(|s| s.strip_suffix(".json"))
+        .filter(|s| !s.contains('/'))
+      {
+        let exists_locally = {
+          let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+          manager
+            .list_extensions()
+            .unwrap_or_default()
+            .iter()
+            .any(|e| e.id == ext_id)
+        };
+        if !exists_locally {
+          let tombstone_key = format!("tombstones/extensions/{}.json", ext_id);
+          if let Ok(stat) = self.client.stat(&tombstone_key).await {
+            if stat.exists {
+              continue;
+            }
+          }
+          log::info!(
+            "Extension {} exists remotely but not locally, downloading...",
+            ext_id
+          );
+          if let Err(e) = self.download_extension(ext_id, Some(app_handle)).await {
+            log::warn!("Failed to download missing extension {}: {}", ext_id, e);
+          }
+        }
+      }
+    }
+
+    // Check for remote extension groups not present locally
+    let remote_ext_groups = self.client.list("extension_groups/").await?;
+    for obj in &remote_ext_groups.objects {
+      if let Some(group_id) = obj
+        .key
+        .strip_prefix("extension_groups/")
+        .and_then(|s| s.strip_suffix(".json"))
+        .filter(|s| !s.contains('/'))
+      {
+        let exists_locally = {
+          let manager = crate::extension_manager::EXTENSION_MANAGER.lock().unwrap();
+          manager
+            .list_groups()
+            .unwrap_or_default()
+            .iter()
+            .any(|g| g.id == group_id)
+        };
+        if !exists_locally {
+          let tombstone_key = format!("tombstones/extension_groups/{}.json", group_id);
+          if let Ok(stat) = self.client.stat(&tombstone_key).await {
+            if stat.exists {
+              continue;
+            }
+          }
+          log::info!(
+            "Extension group {} exists remotely but not locally, downloading...",
+            group_id
+          );
+          if let Err(e) = self
+            .download_extension_group(group_id, Some(app_handle))
+            .await
+          {
+            log::warn!(
+              "Failed to download missing extension group {}: {}",
+              group_id,
+              e
+            );
+          }
+        }
+      }
+    }
+
     log::info!("Missing synced entities check complete");
     Ok(())
   }
-
 }
 
 /// Check if proxy is used by any synced profile
