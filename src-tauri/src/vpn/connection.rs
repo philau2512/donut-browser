@@ -21,6 +21,12 @@ pub struct UdpAssoc {
 pub struct PendingDns {
   pub query: dns::QueryHandle,
   pub port: u16,
+  /// Original domain name, used for fallback queries.
+  pub domain: String,
+  /// true if this is an AAAA query (resolving to IPv6); false for A.
+  pub want_ipv6: bool,
+  /// Whether we've already retried with the other address family.
+  pub fell_back: bool,
 }
 
 /// Represents a single SOCKS5 client connection with its state machine.

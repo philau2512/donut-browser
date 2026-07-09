@@ -27,24 +27,25 @@ pub fn parse_key(key: &str) -> Result<[u8; 32], VpnError> {
   Ok(key_bytes)
 }
 
-/// Parse a CIDR address string (e.g., "10.0.0.2/24") into smoltcp types.
-/// Supports comma-separated multi-address format; only the first is used.
-pub fn parse_cidr_address(addr: &str) -> Result<(IpCidr, IpAddress), VpnError> {
-  let first_addr = addr.split(',').next().unwrap_or(addr).trim();
-
-  let parts: Vec<&str> = first_addr.split('/').collect();
-  let ip_str = parts[0];
-  let prefix = if parts.len() > 1 {
-    parts[1]
-      .parse::<u8>()
-      .map_err(|_| VpnError::InvalidWireGuard(format!("Invalid prefix length: {}", parts[1])))?
-  } else {
-    32
-  };
+/// Parse a single CIDR entry (no commas) into smoltcp types.
+pub fn parse_one_cidr(entry: &str) -> Result<(IpCidr, IpAddress), VpnError> {
+  let parts: Vec<&str> = entry.split('/').collect();
+  let ip_str = parts[0].trim();
 
   let ip: std::net::IpAddr = ip_str
     .parse()
     .map_err(|_| VpnError::InvalidWireGuard(format!("Invalid IP address: {ip_str}")))?;
+
+  let prefix = if parts.len() > 1 {
+    parts[1]
+      .trim()
+      .parse::<u8>()
+      .map_err(|_| VpnError::InvalidWireGuard(format!("Invalid prefix length: {}", parts[1])))?
+  } else if ip.is_ipv6() {
+    128
+  } else {
+    32
+  };
 
   match ip {
     std::net::IpAddr::V4(v4) => {
@@ -66,6 +67,43 @@ pub fn parse_cidr_address(addr: &str) -> Result<(IpCidr, IpAddress), VpnError> {
         IpAddress::Ipv6(smol_ip),
       ))
     }
+  }
+}
+
+/// Parse every address in a (comma-separated) WireGuard `Address` line. A
+/// dual-stack config yields both the IPv4 and IPv6 entries so the tunnel
+/// interface is addressed for each family it carries.
+pub fn parse_cidr_addresses(addr: &str) -> Result<Vec<(IpCidr, IpAddress)>, VpnError> {
+  let mut out = Vec::new();
+  for entry in addr.split(',') {
+    let entry = entry.trim();
+    if entry.is_empty() {
+      continue;
+    }
+    out.push(parse_one_cidr(entry)?);
+  }
+  if out.is_empty() {
+    return Err(VpnError::InvalidWireGuard(format!(
+      "No interface address in: {addr}"
+    )));
+  }
+  Ok(out)
+}
+
+/// Backward-compat wrapper: parse only the first address (IPv4-preferred).
+/// Used by code that hasn't been updated for dual-stack yet.
+#[allow(dead_code)]
+pub fn parse_cidr_address(addr: &str) -> Result<(IpCidr, IpAddress), VpnError> {
+  let first = addr.split(',').next().unwrap_or(addr).trim();
+  parse_one_cidr(first)
+}
+
+/// Convert a smoltcp `IpAddress` to a std `IpAddr`. Both smoltcp address types
+/// are re-exports of `core::net`, so this is a straight variant map.
+pub fn smol_to_std_ip(ip: IpAddress) -> std::net::IpAddr {
+  match ip {
+    IpAddress::Ipv4(v4) => std::net::IpAddr::V4(v4),
+    IpAddress::Ipv6(v6) => std::net::IpAddr::V6(v6),
   }
 }
 
@@ -195,21 +233,32 @@ mod tests {
 
   #[test]
   fn test_parse_cidr_ipv4() {
-    let (cidr, ip) = parse_cidr_address("10.0.0.2/24").unwrap();
+    let (cidr, ip) = parse_one_cidr("10.0.0.2/24").unwrap();
     assert_eq!(cidr.prefix_len(), 24);
     assert_eq!(ip, IpAddress::Ipv4(Ipv4Address::new(10, 0, 0, 2)));
   }
 
   #[test]
   fn test_parse_cidr_no_prefix() {
-    let (cidr, _) = parse_cidr_address("10.0.0.2").unwrap();
+    let (cidr, _) = parse_one_cidr("10.0.0.2").unwrap();
     assert_eq!(cidr.prefix_len(), 32);
   }
 
   #[test]
-  fn test_parse_cidr_multi_address() {
-    let (_, ip) = parse_cidr_address("10.0.0.2/24, fd00::2/128").unwrap();
-    assert_eq!(ip, IpAddress::Ipv4(Ipv4Address::new(10, 0, 0, 2)));
+  fn test_parse_cidr_ipv6_default_prefix() {
+    let (cidr, ip) = parse_one_cidr("fd00::2").unwrap();
+    assert_eq!(cidr.prefix_len(), 128);
+    assert!(matches!(ip, IpAddress::Ipv6(_)));
+  }
+
+  #[test]
+  fn test_parse_cidr_addresses_dual_stack() {
+    let addrs = parse_cidr_addresses("10.0.0.2/24, fd00::2/128").unwrap();
+    assert_eq!(addrs.len(), 2);
+    assert_eq!(addrs[0].1, IpAddress::Ipv4(Ipv4Address::new(10, 0, 0, 2)));
+    assert!(matches!(addrs[1].1, IpAddress::Ipv6(_)));
+    assert!(addrs.iter().any(|(_, ip)| matches!(ip, IpAddress::Ipv4(_))));
+    assert!(addrs.iter().any(|(_, ip)| matches!(ip, IpAddress::Ipv6(_))));
   }
 
   #[test]
