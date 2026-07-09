@@ -341,6 +341,40 @@ pub async fn complete_onboarding() -> Result<(), String> {
     .map_err(|e| format!("Failed to save settings: {e}"))
 }
 
+/// Read current feature flags from settings.json.
+/// Available via MCP/API only — no frontend UI yet (deferred follow-up work).
+#[tauri::command]
+pub async fn get_feature_flags() -> Result<crate::settings::feature_flags::FeatureFlags, String> {
+  let manager = SettingsManager::instance();
+  let settings = manager
+    .load_settings()
+    .map_err(|e| format!("Failed to load settings: {e}"))?;
+  Ok(settings.feature_flags)
+}
+
+/// Set a single feature flag by name.
+/// Authorization: MCP/API token-gated only (added to mcp_only_commands allowlist).
+/// Not exposed to untrusted webview content — capability scoped by MCP token auth.
+/// Supported flag names: "ipv6_vpn", "window_colors", "sync_events".
+#[tauri::command]
+pub async fn set_feature_flag(flag: String, value: bool) -> Result<(), String> {
+  let manager = SettingsManager::instance();
+  let mut settings = manager
+    .load_settings()
+    .map_err(|e| format!("Failed to load settings: {e}"))?;
+
+  match flag.as_str() {
+    "ipv6_vpn" => settings.feature_flags.ipv6_vpn = value,
+    "window_colors" => settings.feature_flags.window_colors = value,
+    "sync_events" => settings.feature_flags.sync_events = value,
+    _ => return Err(format!("Unknown feature flag: {flag}. Valid flags: ipv6_vpn, window_colors, sync_events")),
+  }
+
+  manager
+    .save_settings(&settings)
+    .map_err(|e| format!("Failed to save settings: {e}"))
+}
+
 #[tauri::command]
 pub fn get_system_language() -> String {
   sys_locale::get_locale()
@@ -482,6 +516,7 @@ mod tests {
       onboarding_completed: false,
       disable_auto_updates: false,
       keep_decrypted_profiles_in_ram: false,
+      feature_flags: crate::settings::feature_flags::FeatureFlags::default(),
     };
 
     let save_result = manager.save_settings(&test_settings);

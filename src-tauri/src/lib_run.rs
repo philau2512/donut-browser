@@ -122,6 +122,8 @@ pub fn run() {
       rename_profile,
       get_app_settings,
       save_app_settings,
+      get_feature_flags,
+      set_feature_flag,
       read_log_files,
       open_log_directory,
       get_table_sorting_settings,

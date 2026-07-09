@@ -1,5 +1,6 @@
 pub mod app_dirs;
 pub mod commercial_license;
+pub mod feature_flags;
 pub mod settings_manager;
 pub mod settings_types;
 pub mod storage_commands;
