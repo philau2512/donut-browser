@@ -3,6 +3,7 @@
 //! Defines the Connection state machine and UdpAssoc for UDP ASSOCIATE relay.
 
 use smoltcp::iface::SocketHandle;
+use smoltcp::socket::dns;
 use std::net::SocketAddr;
 use tokio::net::TcpStream;
 
@@ -15,6 +16,13 @@ pub struct UdpAssoc {
   pub client_addr: Option<SocketAddr>,
 }
 
+/// An in-flight through-tunnel DNS resolution for a domain-name CONNECT.
+/// Kept on the connection until the smoltcp DNS socket resolves it.
+pub struct PendingDns {
+  pub query: dns::QueryHandle,
+  pub port: u16,
+}
+
 /// Represents a single SOCKS5 client connection with its state machine.
 ///
 /// State transitions:
@@ -23,6 +31,7 @@ pub struct UdpAssoc {
 /// - connecting: true → false when smoltcp TCP socket may_send()
 /// - socks_done: false → true when handshake complete and ready for data relay
 /// - udp: Some(UdpAssoc) for UDP ASSOCIATE mode (replaces TCP socket)
+/// - pending_dns: Some(PendingDns) while resolving domain CONNECT through tunnel
 pub struct Connection {
   pub smol_handle: SocketHandle,
   pub tcp_stream: TcpStream,
@@ -32,4 +41,5 @@ pub struct Connection {
   pub read_buf: Vec<u8>,
   pub dest_addr: Option<SocketAddr>,
   pub udp: Option<UdpAssoc>,
+  pub pending_dns: Option<PendingDns>,
 }

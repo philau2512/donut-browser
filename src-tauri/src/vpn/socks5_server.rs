@@ -23,12 +23,13 @@ use super::udp_datagram::{build_udp_datagram, parse_udp_datagram};
 use super::wg_device::WgDevice;
 use super::wireguard_tunnel::{create_tunnel, do_handshake, parse_cidr_address, resolve_endpoint};
 use smoltcp::iface::{Config as IfaceConfig, Interface, SocketSet};
+use smoltcp::socket::dns;
 use smoltcp::socket::tcp::{Socket as TcpSocket, SocketBuffer};
 use smoltcp::socket::udp;
 use smoltcp::time::Instant as SmolInstant;
 use smoltcp::wire::{HardwareAddress, IpAddress, Ipv4Address};
 use std::collections::VecDeque;
-use std::net::{SocketAddr, ToSocketAddrs, UdpSocket as StdUdpSocket};
+use std::net::{SocketAddr, UdpSocket as StdUdpSocket};
 use std::sync::{Arc, Mutex};
 use tokio::net::TcpListener;
 
@@ -151,6 +152,29 @@ impl WireGuardSocks5Server {
 
     let mut sockets = SocketSet::new(vec![]);
 
+    // DNS resolution for domain-name CONNECT requests must go THROUGH the tunnel, never
+    // the host resolver (which would leak the query to the local network — the
+    // whole point of the VPN). Resolve via the WireGuard config's DNS server
+    // (default 1.1.1.1, still routed through the tunnel). `dns_servers` must
+    // outlive `sockets` since the socket borrows it, so declare it first.
+    let dns_servers = [self
+      .config
+      .dns
+      .as_deref()
+      .and_then(|s| s.trim().parse::<std::net::Ipv4Addr>().ok())
+      .map(|v4| {
+        let o = v4.octets();
+        IpAddress::Ipv4(Ipv4Address::new(o[0], o[1], o[2], o[3]))
+      })
+      .unwrap_or_else(|| IpAddress::Ipv4(Ipv4Address::new(1, 1, 1, 1)))];
+
+    // Single DNS socket shared by all connections; queries are driven through
+    // the tunnel by iface.poll like every other socket. Build the query storage
+    // without vec![None; N] since DnsQuery isn't Clone.
+    let dns_queries: Vec<Option<dns::DnsQuery>> = (0..64).map(|_| None).collect();
+    let dns_socket = dns::Socket::new(&dns_servers, dns_queries);
+    let dns_handle = sockets.add(dns_socket);
+
     let mut connections: Vec<Connection> = Vec::new();
     let mut timer_counter: u64 = 0;
 
@@ -173,6 +197,7 @@ impl WireGuardSocks5Server {
           read_buf: Vec::new(),
           dest_addr: None,
           udp: None,
+          pending_dns: None,
         });
       }
 
@@ -189,7 +214,67 @@ impl WireGuardSocks5Server {
       // Process each connection
       let mut completed = Vec::new();
       for (idx, conn) in connections.iter_mut().enumerate() {
-        if conn.connecting {
+        if let Some(pending) = conn.pending_dns.take() {
+          // A through-tunnel DNS resolution is in flight for this connection.
+          let result = {
+            let dns_sock = sockets.get_mut::<dns::Socket>(dns_handle);
+            dns_sock.get_query_result(pending.query)
+          };
+          match result {
+            Ok(addrs) => {
+              // Tunnel routing is IPv4-only, so take the first A record.
+              let resolved = addrs.iter().copied().find_map(|a| match a {
+                IpAddress::Ipv4(v4) => Some(v4),
+                _ => None,
+              });
+              match resolved {
+                Some(v4) => {
+                  let o = v4.octets();
+                  conn.dest_addr = Some(SocketAddr::new(
+                    std::net::IpAddr::V4(std::net::Ipv4Addr::new(o[0], o[1], o[2], o[3])),
+                    pending.port,
+                  ));
+                  let socket = sockets.get_mut::<TcpSocket>(conn.smol_handle);
+                  let local_port = 10000 + (rand::random::<u16>() % 50000);
+                  if socket
+                    .connect(
+                      iface.context(),
+                      (IpAddress::Ipv4(v4), pending.port),
+                      local_port,
+                    )
+                    .is_err()
+                  {
+                    let _ = conn
+                      .tcp_stream
+                      .try_write(&[0x05, 0x05, 0x00, 0x01, 0, 0, 0, 0, 0, 0]);
+                    completed.push(idx);
+                    continue;
+                  }
+                  conn.connecting = true;
+                }
+                None => {
+                  // Resolved, but no usable A record — host unreachable.
+                  let _ = conn
+                    .tcp_stream
+                    .try_write(&[0x05, 0x04, 0x00, 0x01, 0, 0, 0, 0, 0, 0]);
+                  completed.push(idx);
+                  continue;
+                }
+              }
+            }
+            Err(dns::GetQueryResultError::Pending) => {
+              // Still resolving; put it back and check again next poll.
+              conn.pending_dns = Some(pending);
+            }
+            Err(_) => {
+              let _ = conn
+                .tcp_stream
+                .try_write(&[0x05, 0x04, 0x00, 0x01, 0, 0, 0, 0, 0, 0]);
+              completed.push(idx);
+              continue;
+            }
+          }
+        } else if conn.connecting {
           let socket = sockets.get_mut::<TcpSocket>(conn.smol_handle);
           if socket.may_send() {
             let _ = conn.tcp_stream.try_write(&[
@@ -291,27 +376,42 @@ impl WireGuardSocks5Server {
                 let port_start = 5 + domain_len;
                 let port =
                   u16::from_be_bytes([conn.read_buf[port_start], conn.read_buf[port_start + 1]]);
-                // Resolve domain
-                match format!("{}:{}", domain, port).to_socket_addrs() {
-                  Ok(mut addrs) => {
-                    if let Some(addr) = addrs.next() {
-                      (addr, needed)
-                    } else {
-                      // Send SOCKS5 error: host unreachable
+                if cmd == 0x03 {
+                  // UDP ASSOCIATE ignores the DST address (the relay learns the
+                  // client's source from its first datagram), so no resolution
+                  // is needed — never resolve it on the host.
+                  (
+                    SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED), port),
+                    needed,
+                  )
+                } else {
+                  // TCP CONNECT: resolve the domain THROUGH THE TUNNEL via the
+                  // config DNS server, never the host resolver (which would leak
+                  // the query onto the local network). Start an async query and
+                  // defer the connection until it resolves.
+                  conn.read_buf.drain(..needed);
+                  let dns_sock = sockets.get_mut::<dns::Socket>(dns_handle);
+                  match dns_sock.start_query(
+                    iface.context(),
+                    &domain,
+                    smoltcp::wire::DnsQueryType::A,
+                  ) {
+                    Ok(query) => {
+                      conn.pending_dns = Some(super::connection::PendingDns { query, port });
+                    }
+                    Err(e) => {
+                      log::warn!(
+                        "[vpn-worker] Failed to start DNS query for {}: {:?}",
+                        domain,
+                        e
+                      );
                       let _ = conn
                         .tcp_stream
                         .try_write(&[0x05, 0x04, 0x00, 0x01, 0, 0, 0, 0, 0, 0]);
                       completed.push(idx);
-                      continue;
                     }
                   }
-                  Err(_) => {
-                    let _ = conn
-                      .tcp_stream
-                      .try_write(&[0x05, 0x04, 0x00, 0x01, 0, 0, 0, 0, 0, 0]);
-                    completed.push(idx);
-                    continue;
-                  }
+                  continue;
                 }
               }
               0x04 => {
@@ -534,6 +634,11 @@ impl WireGuardSocks5Server {
       completed.dedup();
       for idx in completed.into_iter().rev() {
         let conn = connections.remove(idx);
+        if let Some(pending) = conn.pending_dns {
+          sockets
+            .get_mut::<dns::Socket>(dns_handle)
+            .cancel_query(pending.query);
+        }
         sockets.remove(conn.smol_handle);
       }
 
