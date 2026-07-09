@@ -112,6 +112,10 @@ impl WayfernManager {
       })),
       http_client: Client::builder()
         .timeout(Duration::from_secs(2))
+        // CDP is always on loopback. Disable env/system proxies so a Windows
+        // WinHTTP/IE proxy (or HTTP_PROXY) cannot intercept /json/version and
+        // return 502 Bad Gateway while the browser is actually listening.
+        .no_proxy()
         .build()
         .expect("Failed to build reqwest client for wayfern_manager"),
     }
@@ -434,7 +438,6 @@ impl WayfernManager {
       .arg(format!("--remote-debugging-port={port}"))
       .arg("--remote-debugging-address=127.0.0.1")
       .arg(format!("--user-data-dir={}", temp_profile_dir.display()))
-      .arg("--disable-gpu")
       .arg("--no-first-run")
       .arg("--no-default-browser-check")
       .arg("--disable-background-mode")
