@@ -197,6 +197,7 @@ impl ProfileManager {
           host_os: None,
           ephemeral: false,
           extension_group_id: None,
+          window_color: None,
           proxy_bypass_rules: Vec::new(),
           created_by_id: None,
           created_by_email: None,
@@ -303,6 +304,7 @@ impl ProfileManager {
           host_os: None,
           ephemeral: false,
           extension_group_id: None,
+          window_color: None,
           proxy_bypass_rules: Vec::new(),
           created_by_id: None,
           created_by_email: None,
@@ -378,6 +380,11 @@ impl ProfileManager {
       host_os: Some(get_host_os()),
       ephemeral,
       extension_group_id: None,
+      // A random-looking pastel derived from the (random) profile id, so every
+      // new profile gets a distinct, stable window color it can later override.
+      window_color: Some(crate::browser::wayfern_manager::derive_profile_color(
+        &profile_id,
+      )),
       proxy_bypass_rules: Vec::new(),
       created_by_id: None,
       created_by_email: None,

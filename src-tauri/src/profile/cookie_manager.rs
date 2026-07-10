@@ -578,12 +578,22 @@ impl CookieManager {
       .duration_since(std::time::UNIX_EPOCH)
       .unwrap()
       .as_secs() as i64;
+    // Session cookies get 30 days of persistence so they survive restart,
+    // mirroring write_firefox_cookies. A login imported from another browser is
+    // routinely exported as a session cookie; writing it as memory-only
+    // (is_persistent = 0) makes Chromium drop it on the next flush, so the
+    // imported account silently signs out on relaunch. Persisting it with a real
+    // expiry keeps it alive (expires_utc=0 would otherwise mean 1601-01-01).
+    let session_cookie_expiry = now + 30 * 86400;
 
     for cookie in cookies {
-      // Session cookies (no expiry) must have has_expires/is_persistent = 0.
-      // Otherwise Chromium interprets expires_utc=0 as 1601-01-01 (expired).
-      let has_expires = if cookie.expires > 0 { 1 } else { 0 };
-      let is_persistent = has_expires;
+      let expires = if cookie.expires > 0 {
+        cookie.expires
+      } else {
+        session_cookie_expiry
+      };
+      let has_expires = 1;
+      let is_persistent = 1;
       // HTTPS cookies use 443, HTTP uses 80. source_port participates in
       // Chromium's scheme-bound cookie enforcement.
       let source_port: i32 = if cookie.is_secure { 443 } else { 80 };
@@ -606,7 +616,7 @@ impl CookieManager {
                      WHERE host_key = ?12 AND name = ?13 AND path = ?14",
             params![
               &cookie.value,
-              Self::unix_to_chrome_time(cookie.expires),
+              Self::unix_to_chrome_time(expires),
               cookie.is_secure as i32,
               cookie.is_http_only as i32,
               cookie.same_site,
@@ -638,7 +648,7 @@ impl CookieManager {
               &cookie.name,
               &cookie.value,
               &cookie.path,
-              Self::unix_to_chrome_time(cookie.expires),
+              Self::unix_to_chrome_time(expires),
               cookie.is_secure as i32,
               cookie.is_http_only as i32,
               Self::unix_to_chrome_time(cookie.last_accessed),

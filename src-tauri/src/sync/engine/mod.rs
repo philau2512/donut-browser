@@ -91,6 +91,24 @@ fn is_critical_file(path: &str) -> bool {
     .any(|pattern| path.contains(pattern))
 }
 
+/// Validate that a manifest-supplied relative file path is safe to join onto a
+/// profile directory before writing/deleting. The manifest is remote-controlled
+/// (a self-hosted or compromised sync server, a MITM on a plaintext Regular-mode
+/// manifest, or a malicious team member who shares the E2E key), so an
+/// unvalidated `path` is an arbitrary file write/delete primitive:
+/// `profile_dir.join(path)` escapes the profile dir when `path` is absolute
+/// (`join` replaces the base) or contains `..`. Accept only plain relative paths
+/// built from normal components; reject absolute paths, `..`, and root/prefix.
+fn is_safe_manifest_path(path: &str) -> bool {
+  use std::path::{Component, Path};
+  let p = Path::new(path);
+  if path.is_empty() || p.is_absolute() {
+    return false;
+  }
+  p.components()
+    .all(|c| matches!(c, Component::Normal(_) | Component::CurDir))
+}
+
 /// Checkpoint all SQLite WAL files in a profile directory.
 ///
 /// When a browser crashes or is killed, SQLite WAL files may contain

@@ -372,17 +372,17 @@ mod tests {
     let extractor = Extractor::instance();
     let temp_dir = TempDir::new().unwrap();
 
-    // Create a Firefox.app directory
-    let firefox_app = temp_dir.path().join("Firefox.app");
-    create_dir_all(&firefox_app).unwrap();
+    // Create a Wayfern.app directory
+    let wayfern_app = temp_dir.path().join("Wayfern.app");
+    create_dir_all(&wayfern_app).unwrap();
 
     // Create the standard macOS app structure
-    let contents_dir = firefox_app.join("Contents");
+    let contents_dir = wayfern_app.join("Contents");
     let macos_dir = contents_dir.join("MacOS");
     create_dir_all(&macos_dir).unwrap();
 
     // Create the executable
-    let executable = macos_dir.join("firefox");
+    let executable = macos_dir.join("Wayfern");
     File::create(&executable).unwrap();
 
     // Test finding the app
@@ -390,7 +390,7 @@ mod tests {
     assert!(result.is_ok());
 
     let found_app = result.unwrap();
-    assert_eq!(found_app.file_name().unwrap(), "Firefox.app");
+    assert_eq!(found_app.file_name().unwrap(), "Wayfern.app");
     assert!(found_app.exists());
   }
 

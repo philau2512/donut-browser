@@ -112,6 +112,10 @@ impl WayfernManager {
       })),
       http_client: Client::builder()
         .timeout(Duration::from_secs(2))
+        // CDP is always on loopback. Disable env/system proxies so a Windows
+        // WinHTTP/IE proxy (or HTTP_PROXY) cannot intercept /json/version and
+        // return 502 Bad Gateway while the browser is actually listening.
+        .no_proxy()
         .build()
         .expect("Failed to build reqwest client for wayfern_manager"),
     }
@@ -434,7 +438,6 @@ impl WayfernManager {
       .arg(format!("--remote-debugging-port={port}"))
       .arg("--remote-debugging-address=127.0.0.1")
       .arg(format!("--user-data-dir={}", temp_profile_dir.display()))
-      .arg("--disable-gpu")
       .arg("--no-first-run")
       .arg("--no-default-browser-check")
       .arg("--disable-background-mode")
@@ -859,6 +862,42 @@ impl WayfernManager {
 
     Ok(())
   }
+}
+
+/// Deterministically derive a pleasant, distinct window frame color from a
+/// profile id so concurrent profile windows are visually distinguishable even
+/// when the user has not picked a custom color. Stable per profile (same id
+/// always yields the same color). Returns "#RRGGBB".
+pub fn derive_profile_color(id: &uuid::Uuid) -> String {
+  // FNV-1a over the 16 id bytes -> hue in [0,360). The hue varies per profile
+  // while saturation/lightness are fixed to a pastel band (see below).
+  let mut h: u32 = 2166136261;
+  for &b in id.as_bytes() {
+    h = (h ^ u32::from(b)).wrapping_mul(16777619);
+  }
+  let hue = f64::from(h % 360);
+  // Pastel: high lightness + soft saturation so windows stay easy to tell apart
+  // without a garish frame.
+  let (r, g, b) = hsl_to_rgb(hue, 0.6, 0.8);
+  format!("#{r:02x}{g:02x}{b:02x}")
+}
+
+/// Convert HSL (h in [0,360), s/l in [0,1]) to 8-bit RGB.
+fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {
+  let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
+  let hp = h / 60.0;
+  let x = c * (1.0 - (hp % 2.0 - 1.0).abs());
+  let (r1, g1, b1) = match hp as i32 {
+    0 => (c, x, 0.0),
+    1 => (x, c, 0.0),
+    2 => (0.0, c, x),
+    3 => (0.0, x, c),
+    4 => (x, 0.0, c),
+    _ => (c, 0.0, x),
+  };
+  let m = l - c / 2.0;
+  let to_u8 = |v: f64| ((v + m) * 255.0).round().clamp(0.0, 255.0) as u8;
+  (to_u8(r1), to_u8(g1), to_u8(b1))
 }
 
 include!("wayfern_manager_fingerprint.rs");
