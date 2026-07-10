@@ -95,6 +95,18 @@ pub fn update_profile_note(
 }
 
 #[tauri::command]
+pub fn update_profile_window_color(
+  app_handle: tauri::AppHandle,
+  profile_id: String,
+  window_color: Option<String>,
+) -> Result<BrowserProfile, String> {
+  let profile_manager = ProfileManager::instance();
+  profile_manager
+    .update_profile_window_color(&app_handle, &profile_id, window_color)
+    .map_err(|e| format!("Failed to update profile window color: {e}"))
+}
+
+#[tauri::command]
 pub fn update_profile_status(
   app_handle: tauri::AppHandle,
   profile_id: String,

@@ -172,7 +172,8 @@ impl SettingsManager {
     file_data.extend_from_slice(&(ciphertext.len() as u32).to_le_bytes());
     file_data.extend_from_slice(&ciphertext);
 
-    std::fs::write(token_file, file_data)?;
+    std::fs::write(&token_file, file_data)?;
+    crate::settings::app_dirs::restrict_to_owner(std::path::Path::new(&token_file));
     Ok(())
   }
 
@@ -340,7 +341,8 @@ impl SettingsManager {
     file_data.extend_from_slice(&(ciphertext.len() as u32).to_le_bytes());
     file_data.extend_from_slice(&ciphertext);
 
-    std::fs::write(token_file, file_data)?;
+    std::fs::write(&token_file, file_data)?;
+    crate::settings::app_dirs::restrict_to_owner(std::path::Path::new(&token_file));
     Ok(())
   }
 
@@ -479,7 +481,8 @@ impl SettingsManager {
     file_data.extend_from_slice(&(ciphertext.len() as u32).to_le_bytes());
     file_data.extend_from_slice(&ciphertext);
 
-    std::fs::write(token_file, file_data)?;
+    std::fs::write(&token_file, file_data)?;
+    crate::settings::app_dirs::restrict_to_owner(std::path::Path::new(&token_file));
     Ok(())
   }
 

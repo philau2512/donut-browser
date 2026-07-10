@@ -173,6 +173,41 @@ impl WayfernManager {
       url: None,
       screen_max_width: config.screen_max_width,
       screen_max_height: config.screen_max_height,
+      profile_name: if !profile.name.is_empty() {
+        Some(profile.name.as_str())
+      } else {
+        None
+      },
+      // Window color — only inject when feature flag is enabled.
+      // Backfill the derived color so old profiles get a consistent swatch.
+      profile_color: {
+        let enabled = crate::settings::settings_manager::SettingsManager::instance()
+          .load_settings()
+          .map(|s| s.feature_flags.window_colors)
+          .unwrap_or(false);
+        if enabled {
+          // Backfill: persist derived color for profiles created before this feature.
+          if profile.window_color.as_deref().map(str::trim).unwrap_or("").is_empty() {
+            let mut backfilled = profile.clone();
+            backfilled.window_color =
+              Some(crate::browser::wayfern_manager::derive_profile_color(&backfilled.id));
+            let _ = crate::profile::ProfileManager::instance().save_profile(&backfilled);
+          }
+          // Use stored color or derived color.
+          Some(
+            profile
+              .window_color
+              .clone()
+              .filter(|c| !c.trim().is_empty())
+              .unwrap_or_else(|| {
+                crate::browser::wayfern_manager::derive_profile_color(&profile.id)
+              }),
+          )
+        } else {
+          None
+        }
+      }
+      .as_deref(),
     });
 
     if !headless {

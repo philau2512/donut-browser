@@ -148,6 +148,8 @@ impl Browser for WayfernBrowser {
       url: url.as_deref(),
       screen_max_width: None,
       screen_max_height: None,
+      profile_name: None,
+      profile_color: None,
     }))
   }
 

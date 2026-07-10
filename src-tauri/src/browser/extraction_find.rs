@@ -91,14 +91,9 @@ impl Extractor {
       dest_dir.display()
     );
 
-    // Look for .exe files, preferring main browser executables
-    let priority_exe_names = [
-      "firefox.exe",
-      "chrome.exe",
-      "chromium.exe",
-      "camoufox.exe",
-      "wayfern.exe",
-    ];
+    // Look for .exe files, preferring main browser executables. Wayfern is the
+    // current name; chromium/chrome cover builds extracted before the rename.
+    let priority_exe_names = ["wayfern.exe", "chromium.exe", "chrome.exe"];
 
     // First try priority executable names
     for exe_name in &priority_exe_names {
@@ -160,8 +155,7 @@ impl Extractor {
               .to_lowercase();
 
             // Check if it's a browser executable
-            if file_name.contains("firefox")
-              || file_name.contains("chrome")
+            if file_name.contains("chrome")
               || file_name.contains("chromium")
               || file_name.contains("browser")
               || file_name.contains("camoufox")
@@ -211,12 +205,15 @@ impl Extractor {
   ) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     log::info!("Searching for Linux executable in: {}", dest_dir.display());
 
-    // Enhanced list of common browser executable names
+    // Enhanced list of common browser executable names, Wayfern first since it
+    // is the current name. Chrome/Chromium cover builds extracted before the
+    // rename.
     let exe_names = [
-      // Firefox variants (used by Camoufox)
-      "firefox",
-      "firefox-bin",
-      // Chrome/Chromium variants (used by Wayfern)
+      // Wayfern variants (current naming)
+      "wayfern",
+      "wayfern-bin",
+      "wayfern-browser",
+      // Chrome/Chromium variants (builds extracted before the rename)
       "chrome",
       "chromium",
       "chromium-browser",
@@ -225,10 +222,6 @@ impl Extractor {
       "camoufox",
       "camoufox-bin",
       "camoufox-browser",
-      // Wayfern variants
-      "wayfern",
-      "wayfern-bin",
-      "wayfern-browser",
     ];
 
     // First, try direct lookup in the main directory
@@ -248,17 +241,17 @@ impl Extractor {
       "opt",
       "sbin",
       "usr/sbin",
-      "firefox",
+      "wayfern",
+      "wayfern-linux",
       "chrome",
       "chromium",
       "camoufox",
-      "wayfern",
+      "chrome-linux",
       ".",
       "./",
       "Browser",
       "browser",
       "opt/camoufox",
-      "usr/lib/firefox",
       "usr/lib/chromium",
       "usr/lib/camoufox",
       "usr/share/applications",
@@ -357,8 +350,7 @@ impl Extractor {
           // Prefer files with browser-like names
           if let Some(file_name) = path.file_name().and_then(|n| n.to_str()) {
             let name_lower = file_name.to_lowercase();
-            if name_lower.contains("firefox")
-              || name_lower.contains("chrome")
+            if name_lower.contains("chrome")
               || name_lower.contains("brave")
               || name_lower.contains("zen")
               || name_lower.contains("camoufox")

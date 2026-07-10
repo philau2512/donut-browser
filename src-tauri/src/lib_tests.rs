@@ -33,6 +33,12 @@ mod tests {
       "validate_automation_flow",
       "open_profile_with_automation",
       "close_profile_with_cleanup",
+      // Feature flag commands — MCP/API only; no frontend UI yet (deferred follow-up)
+      "get_feature_flags",
+      "set_feature_flag",
+      // Storage path commands — used via MCP/API, not directly in frontend
+      "get_custom_storage_path",
+      "is_custom_storage_active",
     ];
     let lib_rs_content = fs::read_to_string("src/lib_run.rs").expect("Failed to read lib_run.rs");
     let commands = extract_tauri_commands(&lib_rs_content);
