@@ -108,13 +108,17 @@ pub fn validate_storage_path(path: &Path) -> StorageValidationResult {
     }
   }
 
-  // Warn if path is in temp directory
-  if let Some(temp) = std::env::temp_dir().to_str() {
-    if path_str.starts_with(&temp.to_lowercase()) {
-      warnings.push(
-        "Storage path is in a temporary directory. Data may be deleted by the system.".to_string(),
-      );
-    }
+  // Warn if path is in temp directory. Canonicalize temp_dir so the
+  // comparison works on Windows where canonicalize() adds the \\?\ extended
+  // path prefix but temp_dir().to_str() does not.
+  let temp_canonical = std::env::temp_dir()
+    .canonicalize()
+    .unwrap_or_else(|_| std::env::temp_dir());
+  let temp_str = temp_canonical.to_string_lossy().to_lowercase();
+  if path_str.starts_with(&*temp_str) {
+    warnings.push(
+      "Storage path is in a temporary directory. Data may be deleted by the system.".to_string(),
+    );
   }
 
   // Check available disk space
