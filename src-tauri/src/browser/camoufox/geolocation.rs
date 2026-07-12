@@ -1,13 +1,9 @@
 //! IP-based geolocation lookup using the MaxMind GeoLite2 database,
 //! and locale generation based on country/territory information.
 
-<<<<<<<< HEAD:src-tauri/src/browser/camoufox/geolocation.rs
 use crate::browser::camoufox::data;
 use crate::updater::geoip_downloader::GeoIPDownloader;
 use directories::BaseDirs;
-========
-use crate::geoip_downloader::GeoIPDownloader;
->>>>>>>> upstream/main:src-tauri/src/geolocation.rs
 use maxminddb::{geoip2, Reader};
 use quick_xml::events::Event;
 use quick_xml::Reader as XmlReader;
@@ -16,14 +12,8 @@ use std::collections::HashMap;
 use std::net::IpAddr;
 use std::str::FromStr;
 
-<<<<<<<< HEAD:src-tauri/src/browser/camoufox/geolocation.rs
 // Re-export IP utilities for backward compatibility
 pub use crate::proxy::ip_utils::{fetch_public_ip, is_ipv4, is_ipv6, validate_ip, IpError};
-========
-const TERRITORY_INFO_XML: &str = include_str!("territory_info.xml");
-
-pub use crate::ip_utils::IpError;
->>>>>>>> upstream/main:src-tauri/src/geolocation.rs
 
 #[derive(Debug, thiserror::Error)]
 pub enum GeolocationError {
@@ -76,7 +66,6 @@ pub struct Geolocation {
   pub timezone: String,
 }
 
-<<<<<<<< HEAD:src-tauri/src/browser/camoufox/geolocation.rs
 impl Geolocation {
   /// Return key-value pairs suitable for a Camoufox fingerprint config.
   pub fn as_config(&self) -> Vec<(String, serde_json::Value)> {
@@ -93,8 +82,6 @@ impl Geolocation {
   }
 }
 
-========
->>>>>>>> upstream/main:src-tauri/src/geolocation.rs
 struct LanguagePopulation {
   language: String,
   population_percent: f64,
@@ -108,7 +95,7 @@ impl LocaleSelector {
   pub fn new() -> Result<Self, GeolocationError> {
     let mut territories: HashMap<String, Vec<LanguagePopulation>> = HashMap::new();
 
-    let mut reader = XmlReader::from_str(TERRITORY_INFO_XML);
+    let mut reader = XmlReader::from_str(data::TERRITORY_INFO_XML);
     reader.config_mut().trim_text(true);
 
     let mut current_territory: Option<String> = None;
@@ -247,7 +234,6 @@ fn normalize_locale(locale: &str) -> Locale {
   Locale { language, region }
 }
 
-<<<<<<<< HEAD:src-tauri/src/browser/camoufox/geolocation.rs
 /// Check if the GeoIP database is available.
 pub fn is_geoip_available() -> bool {
   GeoIPDownloader::get_mmdb_file_path()
@@ -255,8 +241,6 @@ pub fn is_geoip_available() -> bool {
     .unwrap_or(false)
 }
 
-========
->>>>>>>> upstream/main:src-tauri/src/geolocation.rs
 pub fn get_geolocation(ip: &str) -> Result<Geolocation, GeolocationError> {
   let mmdb_path =
     GeoIPDownloader::get_mmdb_file_path().map_err(|_| GeolocationError::DatabaseNotFound)?;

@@ -431,13 +431,26 @@ impl AppAutoUpdater {
     })
   }
 
-  /// Compute SHA-256 of a file and return the lowercase hex digest.
+  /// Compute SHA-256 of a file using buffered streaming — avoids loading
+  /// large update packages (50–200 MB) entirely into memory.
   pub(crate) fn sha256_file(
     path: &std::path::Path,
   ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     use sha2::{Digest, Sha256};
-    let data = std::fs::read(path)?;
-    let digest = Sha256::digest(&data);
+    use std::io::{BufReader, Read};
+
+    let file = std::fs::File::open(path)?;
+    let mut reader = BufReader::with_capacity(64 * 1024, file);
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 65536];
+    loop {
+      let n = reader.read(&mut buf)?;
+      if n == 0 {
+        break;
+      }
+      hasher.update(&buf[..n]);
+    }
+    let digest = hasher.finalize();
     let mut hex = String::with_capacity(digest.len() * 2);
     for byte in digest {
       hex.push_str(&format!("{byte:02x}"));
