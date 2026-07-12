@@ -647,8 +647,19 @@ impl WayfernManager {
               .map_err(|e| e.to_string())
             {
               Ok(worker) => {
-                let local_url = format!("http://127.0.0.1:{}", worker.local_port.unwrap_or(0));
-                (Some(local_url), Some(worker.id))
+                match worker.local_port {
+                  Some(port) => {
+                    let local_url = format!("http://127.0.0.1:{}", port);
+                    (Some(local_url), Some(worker.id))
+                  }
+                  None => {
+                    log::warn!(
+                      "Proxy worker started but reported no local_port; using socks upstream directly"
+                    );
+                    let _ = crate::proxy_runner::stop_proxy_process(&worker.id).await;
+                    (config.proxy.clone(), None)
+                  }
+                }
               }
               Err(e) => {
                 log::warn!(

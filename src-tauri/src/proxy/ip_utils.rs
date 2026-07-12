@@ -17,6 +17,26 @@ pub fn validate_ip(ip: &str) -> bool {
   IpAddr::from_str(ip).is_ok()
 }
 
+/// Returns true if the string is a plain IPv4 address (not IPv4-mapped IPv6).
+pub fn is_ipv4(ip: &str) -> bool {
+  ip.parse::<std::net::Ipv4Addr>().is_ok()
+}
+
+/// Returns true if the string is an IPv6 address (including IPv4-mapped like ::ffff:1.2.3.4).
+/// Note: plain IPv4 addresses return false — use `is_ipv4` for those.
+pub fn is_ipv6(ip: &str) -> bool {
+  match IpAddr::from_str(ip) {
+    Ok(IpAddr::V6(_)) => true,
+    // IPv4-mapped IPv6 in mixed notation (e.g. "::ffff:8.8.8.8") fails IpAddr::from_str
+    // on some platforms; normalise by stripping the prefix and checking.
+    _ => ip
+      .to_lowercase()
+      .strip_prefix("::ffff:")
+      .map(|v4| v4.parse::<std::net::Ipv4Addr>().is_ok())
+      .unwrap_or(false),
+  }
+}
+
 /// Fetch public IP address, optionally through a proxy.
 pub async fn fetch_public_ip(proxy: Option<&str>) -> Result<String, IpError> {
   let urls = [
@@ -110,14 +130,22 @@ mod tests {
     assert!(!validate_ip("invalid"));
     assert!(!validate_ip("256.256.256.256"));
   }
-}
 
-/// Returns true if the string is a valid IPv4 address.
-pub fn is_ipv4(ip: &str) -> bool {
-  ip.parse::<std::net::Ipv4Addr>().is_ok()
-}
+  #[test]
+  fn test_is_ipv4() {
+    assert!(is_ipv4("8.8.8.8"));
+    assert!(is_ipv4("192.168.1.1"));
+    assert!(!is_ipv4("2001:4860:4860::8888"));
+    assert!(!is_ipv4("::ffff:8.8.8.8"));
+    assert!(!is_ipv4("invalid"));
+  }
 
-/// Returns true if the string is a valid IPv6 address.
-pub fn is_ipv6(ip: &str) -> bool {
-  ip.parse::<std::net::Ipv6Addr>().is_ok()
+  #[test]
+  fn test_is_ipv6() {
+    assert!(is_ipv6("2001:4860:4860::8888"));
+    assert!(is_ipv6("::1"));
+    assert!(is_ipv6("::ffff:8.8.8.8")); // IPv4-mapped IPv6
+    assert!(!is_ipv6("8.8.8.8"));
+    assert!(!is_ipv6("invalid"));
+  }
 }
