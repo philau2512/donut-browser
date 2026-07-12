@@ -2337,7 +2337,9 @@
       "saving": "Đang lưu...",
       "toast": {
         "saved": "Đã lưu script",
-        "startFromHere": "Bắt đầu từ đây"
+        "startFromHere": "Bắt đầu từ đây",
+        "copied": "[TODO: Thêm bản dịch tiếng Việt]",
+        "pasted": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "toolbar": {
         "delete": "Xóa",
@@ -2345,7 +2347,9 @@
         "startFromHere": "Bắt đầu từ đây",
         "duplicate": "Nhân bản",
         "runFull": "Chạy toàn bộ quy trình",
-        "runStep": "Chạy 1 bước (1 node)"
+        "runStep": "Chạy 1 bước (1 node)",
+        "runStepCurrent": "[TODO: Thêm bản dịch tiếng Việt]",
+        "runStepNext": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "variables": {
         "add": "Thêm biến",
@@ -2357,7 +2361,13 @@
         "system": "Biến Hệ Thống",
         "user": "Biến Người Dùng",
         "empty": "Chưa có biến nào",
-        "changesWarning": "⚠️ Thay đổi sẽ áp dụng ở lần chạy sau"
+        "changesWarning": "⚠️ Thay đổi sẽ áp dụng ở lần chạy sau",
+        "defaultValue": "[TODO: Thêm bản dịch tiếng Việt]",
+        "edit": "[TODO: Thêm bản dịch tiếng Việt]",
+        "name": "[TODO: Thêm bản dịch tiếng Việt]",
+        "scope": "[TODO: Thêm bản dịch tiếng Việt]",
+        "unnamed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "valueType": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "logs": {
         "title": "Nhật ký",
@@ -2463,11 +2473,13 @@
           "step4_db_connection_help": "Cung cấp chi tiết kết nối cơ sở dữ liệu.",
           "step4_message": "Thông điệp",
           "step4_info_message_help": "Văn bản này sẽ hiển thị cho người dùng khi thực thi."
-        }
+        },
+        "add": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "debugProfile": {
         "placeholder": "Chọn profile...",
-        "virtual": "Hồ sơ ảo (Tạm thời)"
+        "virtual": "Hồ sơ ảo (Tạm thời)",
+        "required": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "debug": {
         "running": "Đang debug...",
@@ -2504,7 +2516,8 @@
         "control": "Vòng lặp, điều kiện và luồng logic.",
         "utility": "Hành động phụ trợ như chờ, chụp màn hình và ghi log.",
         "other": "Các hành động tự động hóa khác."
-      }
+      },
+      "noMatches": "[TODO: Thêm bản dịch tiếng Việt]"
     },
     "actions": {
       "run": "Chạy",
@@ -3045,6 +3058,41 @@
       "profileRequired": "Phải chọn profile",
       "ipCheckNeedsProxy": "Kiểm tra IP yêu cầu phải cấu hình proxy động",
       "profileNotFound": "Không tìm thấy profile: {{profileId}}"
+    },
+    "report": {
+      "resource": {
+        "activeLeases": "[TODO: Thêm bản dịch tiếng Việt]",
+        "available": "[TODO: Thêm bản dịch tiếng Việt]",
+        "cooldown": "[TODO: Thêm bản dịch tiếng Việt]",
+        "disabled": "[TODO: Thêm bản dịch tiếng Việt]",
+        "empty": "[TODO: Thêm bản dịch tiếng Việt]",
+        "exhausted": "[TODO: Thêm bản dịch tiếng Việt]",
+        "failUsage": "[TODO: Thêm bản dịch tiếng Việt]",
+        "leased": "[TODO: Thêm bản dịch tiếng Việt]",
+        "successUsage": "[TODO: Thêm bản dịch tiếng Việt]",
+        "title": "[TODO: Thêm bản dịch tiếng Việt]",
+        "total": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writes": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesFailed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesSuccess": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesTotal": "[TODO: Thêm bản dịch tiếng Việt]"
+      },
+      "script": {
+        "cancelled": "[TODO: Thêm bản dịch tiếng Việt]",
+        "duration": "[TODO: Thêm bản dịch tiếng Việt]",
+        "empty": "[TODO: Thêm bản dịch tiếng Việt]",
+        "failed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "finishedAt": "[TODO: Thêm bản dịch tiếng Việt]",
+        "messages": "[TODO: Thêm bản dịch tiếng Việt]",
+        "nodeStats": "[TODO: Thêm bản dịch tiếng Việt]",
+        "profileStats": "[TODO: Thêm bản dịch tiếng Việt]",
+        "running": "[TODO: Thêm bản dịch tiếng Việt]",
+        "skipped": "[TODO: Thêm bản dịch tiếng Việt]",
+        "startedAt": "[TODO: Thêm bản dịch tiếng Việt]",
+        "success": "[TODO: Thêm bản dịch tiếng Việt]",
+        "title": "[TODO: Thêm bản dịch tiếng Việt]",
+        "total": "[TODO: Thêm bản dịch tiếng Việt]"
+      }
     }
   },
   "wayfernConfigDialog": {
