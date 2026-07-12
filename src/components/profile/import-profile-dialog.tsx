@@ -39,9 +39,7 @@ import type { DetectedProfile, WayfernConfig } from "@/types";
 import { RippleButton } from "../ui/ripple";
 import { WayfernConfigForm } from "./camoufox/wayfern-config-form";
 
-const getMappedBrowser = (browser: string): "camoufox" | "wayfern" => {
-  if (["firefox", "firefox-developer", "zen"].includes(browser))
-    return "camoufox";
+const getMappedBrowser = (_browser: string): "wayfern" => {
   return "wayfern";
 };
 
@@ -90,8 +88,7 @@ export function ImportProfileDialog({
     useBrowserSupport();
   const { storedProxies } = useProxyEvents();
 
-  // Firefox-based browsers map to the deprecated Camoufox and can no longer be
-  // imported (the backend rejects them); only offer Chromium-family sources.
+  // Only Chromium-family browsers can be imported as Wayfern profiles.
   const importableBrowsers = supportedBrowsers.filter(
     (browser) => getMappedBrowser(browser) === "wayfern",
   );
@@ -189,8 +186,6 @@ export function ImportProfileDialog({
         browserType,
         newProfileName,
         proxyId: selectedProxyId ?? null,
-        // Camoufox import is deprecated/blocked; only Wayfern configs are sent.
-        camoufoxConfig: null,
         wayfernConfig: mappedBrowser === "wayfern" ? wayfernConfig : null,
       });
 
@@ -522,11 +517,11 @@ export function ImportProfileDialog({
                         {t("importProfile.examplePaths")}
                         <br />
                         macOS: ~/Library/Application
-                        Support/Firefox/Profiles/xxx.default
+                        Support/Google/Chrome/Default
                         <br />
-                        Windows: %APPDATA%\Mozilla\Firefox\Profiles\xxx.default
+                        Windows: %LOCALAPPDATA%\Google\Chrome\User Data\Default
                         <br />
-                        Linux: ~/.mozilla/firefox/xxx.default
+                        Linux: ~/.config/google-chrome/Default
                       </p>
                     </div>
 
@@ -587,8 +582,6 @@ export function ImportProfileDialog({
                 </Select>
               </div>
 
-              {/* Only Wayfern profiles are importable now (Camoufox/Firefox
-                  import is deprecated and blocked). */}
               <WayfernConfigForm
                 config={wayfernConfig}
                 onConfigChange={(key, value) => {

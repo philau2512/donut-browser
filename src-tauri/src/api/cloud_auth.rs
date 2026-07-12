@@ -1,5 +1,5 @@
 use aes_gcm::{
-  aead::{Aead, AeadCore, KeyInit, OsRng},
+  aead::{Aead, KeyInit},
   Aes256Gcm, Key, Nonce,
 };
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
@@ -243,7 +243,7 @@ impl CloudAuthManager {
     }
 
     let vault_password = Self::get_vault_password();
-    let salt = SaltString::generate(&mut OsRng);
+    let salt = SaltString::encode_b64(&rand::random::<[u8; 16]>()).expect("salt encode");
     let argon2 = Argon2::default();
     let password_hash = argon2
       .hash_password(vault_password.as_bytes(), &salt)
@@ -255,7 +255,7 @@ impl CloudAuthManager {
       .map_err(|_| "Invalid key length".to_string())?;
     let key = Key::<Aes256Gcm>::from(key_bytes);
     let cipher = Aes256Gcm::new(&key);
-    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    let nonce = Nonce::from(rand::random::<[u8; 12]>());
     let ciphertext = cipher
       .encrypt(&nonce, data.as_bytes())
       .map_err(|e| format!("Encryption failed: {e}"))?;

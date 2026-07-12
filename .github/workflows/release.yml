@@ -208,7 +208,7 @@ jobs:
           rm -f $CERT_PATH $KEY_PATH $PEM_PATH $P12_PATH
 
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 #v0.6.2
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f #v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
@@ -279,6 +279,29 @@ jobs:
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
           rm -f $RUNNER_TEMP/build_certificate.p12 || true
+
+  # Runs after every matrix leg (including the portable ZIP upload) so the
+  # sums cover the complete, final asset set. The app self-updater refuses to
+  # install a release it cannot verify against this file.
+  checksums:
+    if: github.repository == 'zhom/donutbrowser'
+    needs: [release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Generate and upload SHA256SUMS.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          ASSETS_DIR="/tmp/release-assets"
+          mkdir -p "$ASSETS_DIR"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir "$ASSETS_DIR"
+          cd "$ASSETS_DIR"
+          sha256sum Donut* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release upload "$TAG" SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"
 
   changelog:
     if: github.repository == 'zhom/donutbrowser'

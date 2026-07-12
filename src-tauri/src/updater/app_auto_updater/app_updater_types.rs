@@ -17,6 +17,10 @@ pub struct AppReleaseAsset {
   pub name: String,
   pub browser_download_url: String,
   pub size: u64,
+  /// GitHub-computed digest ("sha256:<hex>"); absent on assets uploaded
+  /// before GitHub started calculating digests.
+  #[serde(default)]
+  pub digest: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -41,6 +45,14 @@ pub struct AppUpdateInfo {
   pub release_page_url: Option<String>,
   /// True when a system package manager repo is configured (apt/dnf/zypper)
   pub repo_update: bool,
+  /// URL of the release's SHA256SUMS.txt asset. The downloaded update is
+  /// verified against it before installation; without it the update is refused.
+  #[serde(default)]
+  pub checksums_url: Option<String>,
+  /// GitHub's server-side digest of the chosen asset ("sha256:<hex>"),
+  /// cross-checked in addition to SHA256SUMS.txt when present.
+  #[serde(default)]
+  pub asset_digest: Option<String>,
 }
 
 pub struct AppAutoUpdater {

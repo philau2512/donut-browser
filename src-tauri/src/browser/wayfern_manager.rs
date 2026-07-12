@@ -319,6 +319,31 @@ impl WayfernManager {
     }
   }
 
+  /// True when `url` is a socks proxy on a remote (non-loopback) host — the
+  /// case where reqwest's SOCKS connector can't be trusted with the
+  /// geolocation fetch. Loopback socks URLs are the app's own donut-proxy
+  /// workers, whose single-segment replies don't trigger the connector bug.
+  fn is_remote_socks_url(url: &str) -> bool {
+    url.starts_with("socks")
+      && url::Url::parse(url)
+        .ok()
+        .and_then(|u| match u.host() {
+          Some(url::Host::Ipv4(ip)) => Some(!ip.is_loopback()),
+          Some(url::Host::Ipv6(ip)) => Some(!ip.is_loopback()),
+          // socks is a non-special scheme, so the url crate keeps even
+          // IP-literal hosts as Domain — parse them before comparing.
+          Some(url::Host::Domain(domain)) => Some(
+            domain != "localhost"
+              && domain
+                .parse::<std::net::IpAddr>()
+                .map(|ip| !ip.is_loopback())
+                .unwrap_or(true),
+          ),
+          None => None,
+        })
+        .unwrap_or(false)
+  }
+
   /// Apply timezone/geolocation fields to a fingerprint object from the proxy's
   /// exit IP (or a fixed geoip IP). Mutates `fingerprint` in place. Returns true
   /// if fresh geolocation was fetched and applied, false if geolocation is
@@ -603,13 +628,48 @@ impl WayfernManager {
         let mut normalized = Self::normalize_fingerprint(fp);
 
         // Apply timezone/geolocation for the proxy this fingerprint is being
-        // generated against. Shared with the launch-time location refresh.
+        // generated against. Route through a local donut-proxy worker when the
+        // upstream is a remote SOCKS URL — reqwest's SOCKS connector can corrupt
+        // its parse buffer on multi-segment handshake replies, causing spurious
+        // geolocation failures. Loopback SOCKS URLs (our own workers) are exempt.
+        let needs_proxied_geo_fetch = !matches!(
+          config.geoip.as_ref(),
+          Some(serde_json::Value::Bool(false)) | Some(serde_json::Value::String(_))
+        );
+        let remote_socks_upstream = config
+          .proxy
+          .as_deref()
+          .filter(|url| Self::is_remote_socks_url(url));
+        let (geo_proxy, temp_worker_id) = match remote_socks_upstream {
+          Some(url) if needs_proxied_geo_fetch => {
+            match crate::proxy_runner::start_proxy_process(Some(url.to_string()), None)
+              .await
+              .map_err(|e| e.to_string())
+            {
+              Ok(worker) => {
+                let local_url = format!("http://127.0.0.1:{}", worker.local_port.unwrap_or(0));
+                (Some(local_url), Some(worker.id))
+              }
+              Err(e) => {
+                log::warn!(
+                  "Could not start local proxy worker for geolocation ({e}); using the socks upstream directly"
+                );
+                (config.proxy.clone(), None)
+              }
+            }
+          }
+          _ => (config.proxy.clone(), None),
+        };
         Self::apply_geolocation(
           &mut normalized,
-          config.proxy.as_deref(),
+          geo_proxy.as_deref(),
           config.geoip.as_ref(),
         )
         .await;
+        // Clean up the temporary proxy worker if we started one.
+        if let Some(worker_id) = temp_worker_id {
+          let _ = crate::proxy_runner::stop_proxy_process(&worker_id).await;
+        }
 
         normalized
       }

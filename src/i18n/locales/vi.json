@@ -302,7 +302,8 @@
       "confirmButton": "Xóa {{count}} hồ sơ"
     },
     "note": {
-      "placeholder": "Thêm ghi chú..."
+      "placeholder": "Thêm ghi chú...",
+      "empty": "Không có ghi chú"
     },
     "aria": {
       "profileInfo": "Thông tin hồ sơ"
@@ -1957,7 +1958,11 @@
     "wayfernNoPageTargets": "Wayfern đã khởi động nhưng không có tab để inject vân tay.",
     "wayfernFingerprintApplyFailed": "Không thể áp dụng vân tay cho Wayfern: {{detail}}",
     "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}",
-    "proxyNotWorkingLaunch": "Proxy đã chọn không hoạt động. Không thể khởi chạy profile."
+    "proxyNotWorkingLaunch": "Proxy đã chọn không hoạt động. Không thể khởi chạy profile.",
+    "updateChecksumsUnavailable": "Không thể xác minh bản cập nhật {{version}} vì không lấy được tệp checksum. Bản cập nhật chưa được cài đặt và sẽ thử lại sau.",
+    "updateChecksumMismatch": "Tệp cập nhật {{file}} đã tải xuống không khớp checksum và đã bị xóa. Vui lòng thử lại.",
+    "nameCannotBeEmpty": "Tên không được để trống",
+    "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải. Phiên bản hiện tại là {{current}}."
   },
   "rail": {
     "profiles": "Profile",
@@ -3041,5 +3046,16 @@
       "ipCheckNeedsProxy": "Kiểm tra IP yêu cầu phải cấu hình proxy động",
       "profileNotFound": "Không tìm thấy profile: {{profileId}}"
     }
+  },
+  "wayfernConfigDialog": {
+    "titleView": "Xem cài đặt dấu vân tay - {{name}} ({{browser}})",
+    "titleConfigure": "Cấu hình dấu vân tay - {{name}} ({{browser}})",
+    "invalidFingerprint": "Cấu hình dấu vân tay không hợp lệ",
+    "invalidFingerprintDescription": "Cấu hình dấu vân tay chứa JSON không hợp lệ. Vui lòng kiểm tra lại cài đặt nâng cao.",
+    "saveFailed": "Không thể lưu cấu hình",
+    "unknownError": "Đã xảy ra lỗi không xác định"
+  },
+  "cookieCopy": {
+    "noOtherTargets": "Không có hồ sơ Wayfern nào khác được chọn"
   }
 }

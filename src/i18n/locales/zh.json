@@ -34,10 +34,7 @@
       "saving": "正在保存…",
       "saved": "已保存",
       "copied": "已复制",
-      "learnMore": "了解更多",
-      "toggleTheme": "切换主题",
-      "run": "运行",
-      "saveAs": "另存为"
+      "learnMore": "了解更多"
     },
     "status": {
       "active": "活跃",
@@ -248,16 +245,7 @@
       "cantModifyRunning": "无法修改正在运行的配置文件",
       "cantModifyLaunching": "启动期间无法修改配置文件",
       "cantModifyStopping": "停止期间无法修改配置文件",
-      "cantModifyUpdating": "浏览器更新期间无法修改配置文件",
-      "lastOpen": "上次打开",
-      "os": "OS",
-      "message": "消息",
-      "changeProxy": "更改代理",
-      "statusReady": "就绪",
-      "statusRunning": "运行中",
-      "statusLaunching": "启动中...",
-      "statusStopping": "停止中...",
-      "errorCannotCheckProxy": "错误：无法检查代理"
+      "cantModifyUpdating": "浏览器更新期间无法修改配置文件"
     },
     "actions": {
       "launch": "启动",
@@ -302,6 +290,7 @@
       "confirmButton": "删除 {{count}} 个配置文件"
     },
     "note": {
+      "empty": "无备注",
       "placeholder": "添加备注..."
     },
     "aria": {
@@ -319,17 +308,7 @@
       "copyCookies": "复制 Cookie",
       "runSelected": "运行所选",
       "stopSelected": "停止所选",
-      "proRequired": "批量运行/停止需要 Pro 套餐",
-      "startCount": "启动 {{count}} 个配置",
-      "start": "启动配置",
-      "stopCount": "停止 {{count}} 个配置",
-      "stop": "停止配置",
-      "automation": "自动化",
-      "updateMultiple": "批量更新",
-      "proxy": "代理",
-      "exportCookies": "导出 Cookie",
-      "moreAction": "更多操作",
-      "synchronize": "同步操作"
+      "proRequired": "批量运行/停止需要 Pro 套餐"
     },
     "passwordProtectedBadge": "密码保护",
     "launchHook": {
@@ -352,23 +331,6 @@
       "nameDesc": "名称 (Z–A)",
       "newest": "最新优先",
       "oldest": "最早优先"
-    },
-    "status": {
-      "noStatus": "无状态",
-      "setting": "状态设置",
-      "addStatus": "添加状态",
-      "labelPlaceholder": "状态标签...",
-      "manageTitle": "管理状态"
-    },
-    "menu": {
-      "rename": "重命名",
-      "edit": "编辑设置",
-      "copyCookies": "复制 Cookie",
-      "manageCookies": "管理 Cookie",
-      "clone": "克隆配置",
-      "assignGroup": "分配给分组",
-      "assignExtension": "分配扩展",
-      "configureCamoufox": "配置 Camoufox"
     }
   },
   "createProfile": {
@@ -378,7 +340,6 @@
       "title": "防检测浏览器",
       "description": "选择具有防检测功能的浏览器",
       "chromium": "Wayfern",
-      "firefox": "Camoufox",
       "badge": "防检测浏览器"
     },
     "regular": {
@@ -414,30 +375,13 @@
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "由 Wayfern 驱动",
-    "firefoxLabel": "Firefox",
-    "firefoxSubtitle": "由 Camoufox 驱动",
-    "camoufoxWarning": "Firefox（Camoufox）由第三方组织维护。在生产环境中，请使用 Chromium。",
     "platformUnavailable": "{{browser}} 在您的平台上尚不可用。",
     "passwordProtect": {
       "label": "为此配置文件设置密码保护",
       "description": "加密磁盘上的配置文件数据。启动时需要密码。"
     },
     "downloadingSubtitle": "正在下载…",
-    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。",
-    "tabs": {
-      "baseInfo": "基本信息",
-      "location": "位置",
-      "proxy": "代理",
-      "cookies": "Cookies",
-      "hardware": "硬件",
-      "command": "命令行",
-      "bookmark": "书签",
-      "extension": "扩展程序",
-      "requests": "网络请求",
-      "other": "其他"
-    },
-    "quantity": "数量",
-    "getFingerprint": "获取新指纹"
+    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。"
   },
   "deleteDialog": {
     "title": "删除配置文件",
@@ -586,15 +530,6 @@
       "vpnsTitle": "删除所选 VPN",
       "vpnsDescription": "此操作无法撤销。将永久删除 {{count}} 个 VPN：{{names}}。",
       "confirmButton": "删除 {{count}}"
-    },
-    "quickEdit": {
-      "quickEditTitle": "快速编辑代理",
-      "formatLabel": "代理格式",
-      "formatPlaceholder": "type://user:pass@ip:port 或 ip:port",
-      "checkHostLabel": "代理检查主机",
-      "checkBeforeStart": "启动配置前检查代理。",
-      "checkButton": "检查代理",
-      "saveButton": "编辑代理"
     }
   },
   "groups": {
@@ -810,42 +745,6 @@
     "error": "导入配置文件失败"
   },
   "config": {
-    "camoufox": {
-      "title": "Camoufox 配置",
-      "fingerprint": {
-        "title": "指纹",
-        "randomize": "启动时随机化",
-        "randomizeDescription": "每次启动浏览器时生成新的指纹。",
-        "osCpuPlaceholder": "例如: Intel Mac OS X 10.15",
-        "webglRendererPlaceholder": "例如: llvmpipe 或类似"
-      },
-      "os": {
-        "title": "操作系统",
-        "description": "用于生成指纹的模拟操作系统。",
-        "windows": "Windows",
-        "macos": "macOS",
-        "linux": "Linux"
-      },
-      "screen": {
-        "title": "屏幕尺寸",
-        "minWidth": "最小宽度",
-        "maxWidth": "最大宽度",
-        "minHeight": "最小高度",
-        "maxHeight": "最大高度"
-      },
-      "geoip": {
-        "title": "GeoIP",
-        "auto": "自动（基于代理）",
-        "manual": "手动",
-        "disabled": "禁用"
-      },
-      "blocking": {
-        "title": "阻止",
-        "images": "阻止图片",
-        "webrtc": "阻止 WebRTC",
-        "webgl": "阻止 WebGL"
-      }
-    },
     "wayfern": {
       "title": "Wayfern 配置",
       "fingerprint": {
@@ -900,7 +799,7 @@
       "sourcePlaceholder": "选择要复制 Cookie 的配置文件",
       "running": "(运行中)",
       "targetProfiles": "目标配置文件 ({{count}})",
-      "noOtherTargets": "未选择其他 Wayfern/Camoufox 配置文件",
+      "noOtherTargets": "未选择其他 Wayfern 配置文件",
       "selectSourceFirst": "请先选择源配置文件",
       "selectionStatus": "(已选择 {{selected}} / {{total}})",
       "searchPlaceholder": "搜索域名或 Cookie...",
@@ -1001,9 +900,7 @@
       "syncFailed": "同步失败",
       "profileSyncFailed": "配置文件 '{{name}}' 同步失败",
       "cacheClearFailed": "清除缓存失败",
-      "unknown": "发生未知错误",
-      "profileCrashTitle": "浏览器配置文件 '{{name}}' 异常崩溃",
-      "profileCrashDesc": "浏览器异常退出: {{status}}"
+      "unknown": "发生未知错误"
     },
     "loading": {
       "downloading": "正在下载 {{browser}} {{version}}",
@@ -1031,7 +928,6 @@
     "serverError": "服务器错误。请稍后重试。",
     "unknownError": "发生未知错误。请重试。",
     "noProfilesForUrl": "没有可用的配置文件。请先创建配置文件再打开 URL。",
-    "updateCamoufoxConfigFailed": "更新 camoufox 配置失败: {{error}}",
     "updateWayfernConfigFailed": "更新 wayfern 配置失败: {{error}}",
     "createProfileFailed": "创建配置文件失败: {{error}}",
     "launchBrowserFailed": "启动浏览器失败: {{error}}",
@@ -1040,7 +936,7 @@
     "renameProfileFailed": "重命名配置文件失败: {{error}}",
     "killBrowserFailed": "终止浏览器失败: {{error}}",
     "deleteSelectedProfilesFailed": "删除所选配置文件失败: {{error}}",
-    "cookieCopyUnsupportedBrowser": "Cookie 复制仅适用于 Wayfern 和 Camoufox 配置文件",
+    "cookieCopyUnsupportedBrowser": "Cookie 复制仅适用于 Wayfern 配置文件",
     "updateSyncSettingsFailed": "更新同步设置失败",
     "cloneProfileFailed": "克隆配置文件失败: {{error}}",
     "loadSupportedBrowsersFailed": "加载受支持的浏览器失败",
@@ -1057,7 +953,6 @@
     "setProfilePasswordFailed": "设置配置文件密码失败: {{error}}"
   },
   "browser": {
-    "camoufox": "Camoufox",
     "wayfern": "Wayfern"
   },
   "fingerprint": {
@@ -1163,28 +1058,11 @@
     "refreshFingerprint": "刷新指纹",
     "canvasNoiseSeedPlaceholder": "输入用于 canvas 指纹的种子字符串",
     "addFontsPlaceholder": "添加字体...",
-    "enterAsJson": "以 JSON 格式输入 {{title}}",
-    "webrtcMode": "WebRTC 模式",
-    "webrtcModes": {
-      "forward": "转发 (代理)",
-      "forwardGoogle": "谷歌转发",
-      "alter": "修改 (欺骗)",
-      "real": "真实",
-      "disable": "禁用"
-    },
-    "subTabs": {
-      "screen": "屏幕",
-      "system": "系统 (CPU & 内存)",
-      "graphics": "图形与音频"
-    },
-    "customizeDetails": "自定义详细硬件参数",
-    "customizeDetailsDesc": "手动调整种子、渲染器 và JSON 参数"
+    "enterAsJson": "以 JSON 格式输入 {{title}}"
   },
   "warnings": {
     "windowResizeTitle": "自定义窗口尺寸",
     "windowResizeDescription": "更改浏览器窗口尺寸可能会增加网站检测到浏览器信息被伪装的概率。",
-    "windowResizeCamoufoxTitle": "视口已被 Camoufox 锁定",
-    "windowResizeCamoufoxDescription": "Camoufox 将视口锁定为伪装的屏幕尺寸以防止指纹识别。调整窗口大小可能会导致内容被裁剪或出现灰色区域。这是预期行为。",
     "dontShowAgain": "不再显示",
     "continue": "继续",
     "cancel": "取消"
@@ -1315,9 +1193,9 @@
       "cannotWhileRunning": "更改密码前请先停止此配置文件。"
     },
     "fingerprint": {
-      "notSupported": "指纹编辑仅适用于 Camoufox 和 Wayfern 配置文件。",
+      "notSupported": "指纹编辑仅适用于 Wayfern 配置文件。",
       "lockedTitle": "查看和编辑指纹是 Pro 功能",
-      "lockedDescription": "所有方案都包含指纹保护。查看和编辑配置文件的指纹数值才需要有效的付费方案。"
+      "lockedDescription": "每个配置文件中都会保护你的设备信息。查看和编辑配置文件的指纹需要有效的付费方案。"
     },
     "syncStatusValue": {
       "waiting": "等待中",
@@ -1345,9 +1223,7 @@
     "extensionGroup": "扩展程序组",
     "compatibility": {
       "label": "兼容性",
-      "chromium": "Chromium",
-      "firefox": "Firefox",
-      "both": "Chromium 和 Firefox"
+      "chromium": "Chromium"
     },
     "selectedFile": "已选文件",
     "namePlaceholder": "扩展程序名称",
@@ -1581,14 +1457,7 @@
     "noneOption": "无",
     "noValidProfiles": "未选择有效的配置文件。",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "为配置文件分配代理/VPN 失败",
-    "changeProxyTitle": "修改代理",
-    "bulkChangeDescription": "更新选中的 {{count}} 个配置的代理设置",
-    "pleaseSelectProxy": "请选择代理配置",
-    "pleaseInputProxy": "请输入代理列表",
-    "invalidJson": "无效的 JSON 字符串",
-    "successClear": "成功清除代理/VPN设置",
-    "withoutProxyWarning": "提交后，所有选中的配置将切换到“无代理”模式。"
+    "failedFallback": "为配置文件分配代理/VPN 失败"
   },
   "groupAssignment": {
     "title": "分配分组",
@@ -1741,14 +1610,6 @@
     "tooltipSent": "↑ 已发送: ",
     "tooltipReceived": "↓ 已接收: "
   },
-  "camoufoxDialog": {
-    "titleView": "查看指纹设置 - {{name}} ({{browser}})",
-    "titleConfigure": "配置指纹设置 - {{name}} ({{browser}})",
-    "invalidFingerprint": "无效的指纹配置",
-    "invalidFingerprintDescription": "指纹配置包含无效的 JSON。请检查高级设置。",
-    "saveFailed": "保存配置失败",
-    "unknownError": "发生未知错误"
-  },
   "proxyCheck": {
     "unknownLocation": "未知",
     "locationToast": "你的代理位置:",
@@ -1787,15 +1648,6 @@
     "noteHeader": "备注",
     "vpnsHeading": "VPN",
     "createByCountryHeading": "按国家创建"
-  },
-  "releaseTypeSelector": {
-    "noReleaseTypes": "没有可用的发布类型。",
-    "placeholder": "选择发布类型...",
-    "stable": "Stable",
-    "nightly": "Nightly",
-    "downloaded": "已下载",
-    "downloadBrowser": "下载浏览器",
-    "downloading": "正在下载..."
   },
   "dataTableActionBar": {
     "selected": "已选择 {{count}}",
@@ -1946,15 +1798,11 @@
     "proxyNotWorking": "所选代理无法使用，因此未创建配置文件。",
     "proxyPaymentRequired": "所选代理需要付费（402），其订阅可能已过期，因此未创建配置文件。",
     "vpnNotWorking": "所选 VPN 无法使用，因此未创建配置文件。",
-    "camoufoxImportDeprecated": "不再支持导入基于 Firefox 的 (Camoufox) 配置文件。Camoufox 即将停用——请改用 Wayfern。",
-    "wayfernFingerprintMissing": "此配置文件没有指纹。启动 Wayfern 前请先生成指纹。",
-    "wayfernGeolocationRequired": "指纹缺少时区或地理位置，且无法解析代理出口。",
-    "wayfernWebrtcAlterIpUnavailable": "WebRTC alter 模式需要代理出口 IP，但无法获取。",
-    "wayfernWebrtcAlterIpInvalid": "WebRTC alter 模式收到了无效的代理出口 IP。",
-    "wayfernNoPageTargets": "Wayfern 已启动，但没有可用于注入指纹的页面。",
-    "wayfernFingerprintApplyFailed": "无法将指纹应用到 Wayfern：{{detail}}",
-    "wayfernRehydrateFailed": "无法在已恢复的 Wayfern 浏览器上恢复指纹保护：{{reason}}",
-    "proxyNotWorkingLaunch": "所选代理不可用，无法启动配置。"
+    "camoufoxImportDeprecated": "不再支持导入此类型的配置文件。请改用 Wayfern。",
+    "updateChecksumsUnavailable": "无法验证更新 {{version}}：无法获取其校验和文件。更新未安装，稍后将重试。",
+    "updateChecksumMismatch": "下载的更新文件 {{file}} 未通过校验和验证，已被丢弃。请重试。",
+    "nameCannotBeEmpty": "名称不能为空",
+    "wayfernVersionNotAvailable": "Wayfern 版本 {{requested}} 无法下载。当前版本为 {{current}}。"
   },
   "rail": {
     "profiles": "配置文件",
@@ -1971,8 +1819,7 @@
     },
     "network": "网络",
     "integrations": "集成",
-    "account": "账号",
-    "automation": "自动化"
+    "account": "账号"
   },
   "pageTitle": {
     "proxies": "网络",
@@ -1983,8 +1830,7 @@
     "integrations": "集成",
     "account": "账户",
     "import": "导入配置文件",
-    "shortcuts": "键盘快捷键",
-    "automation": "自动化"
+    "shortcuts": "键盘快捷键"
   },
   "encryption": {
     "required": {
@@ -2083,10 +1929,6 @@
     "show": "显示 Donut Browser",
     "quit": "退出"
   },
-  "browserSupport": {
-    "endingSoonTitle": "浏览器支持即将结束",
-    "endingSoonDescription": "以下配置文件的支持将于 2026 年 3 月 15 日移除：{{profiles}}。请迁移到 Wayfern 配置文件。"
-  },
   "onboarding": {
     "steps": {
       "createProfile": {
@@ -2168,358 +2010,15 @@
     "title": "浏览器自动化已暂停",
     "description": "您的账户暂时被限制使用 Pro 浏览器功能，通常是因为同时在多台设备上登录。请退出其他设备的登录，然后重新启动配置文件即可恢复。"
   },
-  "camoufoxDeprecation": {
-    "title": "Camoufox 支持即将结束",
-    "description": "Camoufox 配置文件的支持将于 2026 年 7 月 8 日结束。您有一个或多个 Camoufox 配置文件。请在此之前迁移到 Wayfern——之后 Camoufox 配置文件可能会停止工作。",
-    "acknowledge": "知道了"
+  "wayfernConfigDialog": {
+    "titleView": "查看指纹设置 - {{name}} ({{browser}})",
+    "titleConfigure": "配置指纹设置 - {{name}} ({{browser}})",
+    "invalidFingerprint": "无效的指纹配置",
+    "invalidFingerprintDescription": "指纹配置包含无效的 JSON。请检查高级设置。",
+    "saveFailed": "保存配置失败",
+    "unknownError": "发生未知错误"
   },
-  "tags": {
-    "title": "标签",
-    "assignSuccess": "已成功为 {{count}} 个配置添加标签",
-    "failed": "分配标签失败: {{error}}",
-    "placeholder": "选择或创建标签...",
-    "description_one": "为所选配置分配标签。",
-    "description_other": "为所选的 {{count}} 个配置分配标签。",
-    "selectedProfilesLabel": "所选配置",
-    "assignTagsLabel": "分配标签",
-    "assignButton": "添加",
-    "deleteConfirmTitle": "删除标签",
-    "deleteConfirmDesc": "您确定要删除标签“{{tag}}”吗？这将从所有配置和全局系统中将其删除。",
-    "deleteSuccess": "标签“{{tag}}”已成功删除",
-    "deleteFailed": "删除标签失败: {{error}}"
-  },
-  "automation": {
-    "cleanupMode": {
-      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
-      "fullDesc": "Delete the entire profile directory",
-      "cookiesAndCache": "Cookies & Cache Only",
-      "full": "Full Profile Deletion"
-    },
-    "title": "Automation",
-    "addNode": "Add Task",
-    "securityWarning": {
-      "title": "Security Warning",
-      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
-    },
-    "afterClose": {
-      "description": "Tasks to execute after the browser closes",
-      "title": "After Closing Profile"
-    },
-    "masterSwitch": "Enable Automation",
-    "fields": {
-      "allowedCountries": "Allowed Countries",
-      "protocol": "Protocol",
-      "requestBody": "Request Body",
-      "message": "Message",
-      "timeoutSeconds": "Timeout (seconds)",
-      "label": "Label",
-      "jsonPathPort": "JSON Path for Port",
-      "apiUrl": "API URL",
-      "maxFraudScore": "Max Fraud Score",
-      "cleanupMode": "Cleanup Mode",
-      "jsonPathIp": "JSON Path for IP",
-      "chatId": "Chat ID",
-      "timeout": "Timeout (seconds)",
-      "botToken": "Bot Token",
-      "variablesAvailable": "Available variables",
-      "webhookUrl": "Webhook URL",
-      "method": "HTTP Method",
-      "labelPlaceholder": "My Task",
-      "responseFormat": "Response Format",
-      "maxAttempts": "Max Retry Attempts",
-      "command": "Command"
-    },
-    "noNodes": "No automation tasks configured yet",
-    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
-    "warnings": {
-      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
-      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
-    },
-    "beforeOpen": {
-      "description": "Tasks to execute before the browser launches",
-      "title": "Before Opening Profile"
-    },
-    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
-    "nodeTypes": {
-      "ipCheck": "IP Check",
-      "webhook": "Webhook",
-      "localCommand": "Local Command",
-      "cleanup": "Cleanup",
-      "dynamicProxy": "Dynamic Proxy",
-      "telegramAlert": "Telegram Alert",
-      "openProfile": "Browser Settings"
-    },
-    "dependencyWarning": "Dependency issue",
-    "editor": {
-      "groups": {
-        "interaction": "交互",
-        "utility": "实用工具",
-        "network": "网络",
-        "control": "控制流",
-        "other": "其他"
-      },
-      "variables": {
-        "search": "搜索变量...",
-        "system": "系统变量",
-        "user": "用户变量",
-        "empty": "尚未定义变量",
-        "changesWarning": "⚠️ Changes apply on next run"
-      },
-      "properties": {
-        "selectNodeHint": "在画布上选择一个节点以查看其属性",
-        "sleepAfter": "运行下一个节点前的休眠时间（毫秒）。",
-        "sleepAfterFrom": "从（毫秒）",
-        "sleepAfterTo": "至（毫秒）"
-      },
-      "logs": {
-        "title": "日志",
-        "timeline": "执行时间线",
-        "noSteps": "尚未执行任何步骤",
-        "variablesState": "变量状态",
-        "noVariables": "作用域中没有变量",
-        "console": "控制台输出",
-        "consoleEmpty": "无日志输出"
-      },
-      "comment": {
-        "placeholder": "输入您的注释..."
-      },
-      "controls": {
-        "zoomIn": "放大",
-        "zoomOut": "缩小",
-        "fitView": "适合视图",
-        "lock": "锁定画布",
-        "unlock": "解锁画布"
-      },
-      "tabs": {
-        "properties": "属性",
-        "variables": "变量",
-        "resources": "资源"
-      },
-      "actions": {
-        "run": "运行",
-        "running": "运行中...",
-        "stop": "停止"
-      },
-      "sidebar": {
-        "collapse": "折叠侧边栏",
-        "showLogs": "显示日志",
-        "hideLogs": "隐藏日志",
-        "settings": "设置"
-      },
-      "resources": {
-        "generalSettings": "常规设置",
-        "saveLayout": "关闭时保存布局",
-        "autoAlign": "自动对齐节点",
-        "title": "流程资源",
-        "empty": "此流程中未加载额外资源。",
-        "wizard": {
-          "title": "创建资源",
-          "step1_title": "名称。",
-          "step1_subtitle": "选择资源的内部名称和描述。",
-          "step1_name_label": "名称。",
-          "step1_name_help": "这是在脚本内部使用的资源内部名称。",
-          "step1_desc_en_label": "英文描述。",
-          "step1_desc_en_help": "针对英语用户的描述。",
-          "step1_desc_ru_label": "俄文描述。",
-          "step1_desc_ru_help": "针对俄语用户的描述。",
-          "step1_hint_label": "启用提示",
-          "step2_title": "类型。",
-          "step2_subtitle": "选择资源类型。",
-          "step3_title": "读/写模式。",
-          "step3_subtitle": "设置读/写模式。",
-          "step3_only_read": "仅读取。",
-          "step3_read_delete": "读取并在使用后删除行。",
-          "step3_read_delete_help": "仅在一段时间后或脚本重启后才会从文件中删除行。",
-          "step3_only_write": "仅写入。",
-          "step3_mix": "打乱行顺序。",
-          "step4_title_string": "字符串属性。",
-          "step4_subtitle_string": "选择默认值并设置字符串是否可以为空？",
-          "step4_default_value": "默认值",
-          "step4_default_value_help": "留空让用户填写。",
-          "step4_not_empty": "字符串不能为空",
-          "step4_multiline": "字符串必须是多行",
-          "btn_back": "< 上一步",
-          "btn_next": "下一步 >",
-          "btn_finish": "完成",
-          "btn_cancel": "取消",
-          "step4_title_select": "Select constructor.",
-          "step4_subtitle_select": "Configure select options.",
-          "step4_title_generic": "{{type}} properties",
-          "step4_subtitle_generic": "Configure properties for this resource type.",
-          "step4_min_value": "Min value",
-          "step4_max_value": "Max value",
-          "step4_not_empty_number": "Number must be not empty",
-          "step4_file_path": "File path",
-          "step4_directory_path": "Directory path",
-          "step4_btn_choose_file": "Choose File",
-          "step4_btn_choose_folder": "Choose Folder",
-          "step4_file_path_help": "Specify the absolute path of the text file containing the resource lines.",
-          "step4_directory_path_help": "Specify the absolute path of the directory.",
-          "step4_url": "URL",
-          "step4_url_help": "Specify the URL containing the resource data.",
-          "step4_select_type": "Type:",
-          "step4_select_options": "Options:",
-          "step4_select_placeholder": "Select default option...",
-          "step4_checkbox_help": "If the checkbox is enabled, the resource will return true, otherwise false.",
-          "step4_connection_string": "Connection string",
-          "step4_db_connection_help": "Provide the database connection details.",
-          "step4_message": "Message",
-          "step4_info_message_help": "This text will be shown to the user on execution."
-        }
-      },
-      "debugProfile": {
-        "placeholder": "选择配置...",
-        "virtual": "虚拟配置 (临时)"
-      },
-      "debug": {
-        "running": "Debugging...",
-        "stopped": "Debug stopped",
-        "completed": "Debug completed",
-        "noNodes": "No reachable nodes from this point",
-        "startFromHere": "Start debugging from: {{name}}"
-      },
-      "toolbar": {
-        "delete": "删除",
-        "edit": "编辑",
-        "startFromHere": "从此处开始",
-        "duplicate": "复制",
-        "runFull": "运行完整流程",
-        "runStep": "运行单个节点"
-      },
-      "saveAsTitle": "流程另存为",
-      "saveAsDescription": "请输入新流程副本的名称。",
-      "flowNameLabel": "流程名称",
-      "errors": {
-        "saveFailed": "保存脚本失败: {{error}}",
-        "loadFailed": "加载脚本失败: {{error}}",
-        "nameRequired": "流程名称不能为空",
-        "startFailed": "调试启动失败: {{error}}",
-        "functionExists": "函数名已存在",
-        "cannotRenameMain": "无法重命名 Main 函数",
-        "cannotDeleteMain": "无法删除 Main 函数"
-      },
-      "help": {
-        "waitUntil": "页面加载等待模式:\n• load: 等待所有资源加载完成\n• domcontentloaded: 等待基本的HTML(DOM)加载完成\n• networkidle: 等待至少500ms无网络活动",
-        "timeout": "报错前的最大等待时间（毫秒）。默认为30000ms。",
-        "url": "要导航到的网站地址（URL）。",
-        "selector": "用于定位元素的CSS选择器或XPath。",
-        "value": "要插入/选择的文本值或内容。",
-        "milliseconds": "暂停执行的时间（毫秒）。"
-      },
-      "selector": {
-        "exact": "Exact match",
-        "include": "Include (contains)",
-        "start": "Start with",
-        "end": "End with"
-      },
-      "scriptEditor": "脚本编辑器",
-      "returnToMain": "返回主屏幕",
-      "groupDescriptions": {
-        "navigator": "浏览器导航、标签页、框架和扩展。",
-        "mouse": "模拟鼠标点击、移动和拖放。",
-        "keyboard": "模拟键盘输入和文本输入。",
-        "data": "数据提取和变量管理。",
-        "network": "HTTP 请求和用户代理控制。",
-        "control": "循环、条件和流逻辑。",
-        "utility": "辅助操作，如延迟、截图和日志。",
-        "other": "其他自动化操作。"
-      }
-    },
-    "nodes": {
-      "setVariable": {
-        "operator": {
-          "assign": "Assign (=)",
-          "add": "Add (+)",
-          "subtract": "Subtract (-)",
-          "multiply": "Multiply (*)",
-          "divide": "Divide (/)",
-          "concat": "Concatenate"
-        }
-      },
-      "switchTab": {
-        "matchBy": {
-          "url": "URL",
-          "title": "Title",
-          "index": "Tab Index"
-        }
-      },
-      "closeTab": {
-        "target": {
-          "current": "Current tab",
-          "select": "Select tab (by index)",
-          "other": "Other all tabs"
-        }
-      },
-      "label": {
-        "description": "在脚本中设置标签",
-        "document": "设置一个标签，可以使用“跳转至标签”操作跳转到该标签。",
-        "label": "设置标签",
-        "params": {
-          "labelName": "标签名称"
-        }
-      },
-      "moveToLabel": {
-        "description": "跳转到标签",
-        "document": "将执行跳转到脚本中的指定标签。",
-        "label": "跳转至标签",
-        "params": {
-          "targetLabelNodeId": "目标标签节点ID",
-          "targetLabelName": "目标标签名称"
-        }
-      },
-      "ignoreErrorsStart": {
-        "label": "忽略错误",
-        "description": "开始忽略错误块",
-        "document": "忽略此块内发生的 any 错误。"
-      },
-      "ignoreErrorsEnd": {
-        "label": "结束忽略错误",
-        "description": "结束忽略错误块",
-        "document": "结束忽略错误块。"
-      },
-      "endIf": {
-        "label": "结束 If",
-        "description": "条件块结束",
-        "document": "结束 If 条件块。"
-      },
-      "profileSuccess": {
-        "label": "Profile Success",
-        "description": "Report successful execution of the profile script",
-        "document": "Reports that the automation run succeeded, with optional message and statistics.",
-        "params": {
-          "message": "Message",
-          "messageHelp": "Message text, supports variables",
-          "includeResourceStats": "Include Resource Stats",
-          "includeResourceStatsHelp": "Include stats like duration and success count",
-          "stopFlow": "Stop Flow",
-          "stopFlowHelp": "Immediately stop execution after logging success"
-        }
-      },
-      "profileFail": {
-        "label": "Profile Failure",
-        "description": "Report failure of the profile script",
-        "document": "Reports that the automation run failed, logging reasons and optional error data.",
-        "params": {
-          "message": "Message",
-          "messageHelp": "Failure message text, supports variables",
-          "reasonCode": "Reason Code",
-          "reasonCodeHelp": "Error identification code (e.g. LOGIN_FAILED)",
-          "includeLastError": "Include Last Error",
-          "includeLastErrorHelp": "Append the detailed last error message",
-          "includeResourceStats": "Include Resource Stats",
-          "includeResourceStatsHelp": "Include execution duration and stats",
-          "stopFlow": "Stop Flow",
-          "stopFlowHelp": "Immediately abort execution"
-        }
-      },
-      "callFunction": {
-        "description": "执行子函数",
-        "document": "执行指定的子函数序列。",
-        "label": "调用函数",
-        "params": {
-          "functionName": "函数名称"
-        }
-      }
-    }
+  "cookieCopy": {
+    "noOtherTargets": "未选择其他 Wayfern 配置文件"
   }
 }

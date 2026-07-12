@@ -95,12 +95,33 @@ impl AppAutoUpdater {
       // Find the appropriate asset for current platform
       let download_url = self.get_download_url_for_platform(&latest_release.assets);
 
+      // Locate checksums file and the chosen asset's GitHub-computed digest for
+      // post-download verification.
+      let checksums_url = Self::find_checksums_url(&latest_release.assets);
+      let asset_digest = download_url.as_deref().and_then(|url| {
+        latest_release
+          .assets
+          .iter()
+          .find(|a| a.browser_download_url == url)
+          .and_then(|a| a.digest.clone())
+      });
+
       // On Linux, when a package repo is configured, notify users to update via
       // their package manager instead of auto-downloading from GitHub.
       #[cfg(target_os = "linux")]
       {
         let repo_update = self.is_repo_configured();
         let manual_update_required = download_url.is_none() || repo_update;
+        // On Linux auto-download path, gate on checksums being available.
+        let auto_download_possible = download_url.is_some() && !repo_update;
+        if auto_download_possible && checksums_url.is_none() {
+          log::info!(
+            "Release {} has no {} yet; treating as not ready for auto-update",
+            latest_release.tag_name,
+            Self::CHECKSUMS_ASSET_NAME
+          );
+          return Ok(None);
+        }
         let update_info = AppUpdateInfo {
           current_version,
           new_version: latest_release.tag_name.clone(),
@@ -111,6 +132,8 @@ impl AppAutoUpdater {
           manual_update_required,
           release_page_url: Some(release_page_url),
           repo_update,
+          checksums_url,
+          asset_digest,
         };
 
         log::info!(
@@ -125,6 +148,15 @@ impl AppAutoUpdater {
 
       #[cfg(not(target_os = "linux"))]
       {
+        // Gate auto-download on checksums file being present in the release.
+        if download_url.is_some() && checksums_url.is_none() {
+          log::info!(
+            "Release {} has no {} yet; treating as not ready for auto-update",
+            latest_release.tag_name,
+            Self::CHECKSUMS_ASSET_NAME
+          );
+          return Ok(None);
+        }
         if let Some(url) = download_url {
           let update_info = AppUpdateInfo {
             current_version,
@@ -136,6 +168,8 @@ impl AppAutoUpdater {
             manual_update_required: false,
             release_page_url: Some(release_page_url),
             repo_update: false,
+            checksums_url,
+            asset_digest,
           };
 
           log::info!(
@@ -369,5 +403,120 @@ impl AppAutoUpdater {
       LinuxInstallationMethod::Rpm => Self::is_rpm_repo_configured(),
       _ => false,
     }
+  }
+
+  /// Name of the checksums asset both release workflows publish.
+  const CHECKSUMS_ASSET_NAME: &'static str = "SHA256SUMS.txt";
+
+  /// Find the SHA256SUMS.txt download URL in a release's asset list.
+  fn find_checksums_url(assets: &[super::app_updater_types::AppReleaseAsset]) -> Option<String> {
+    assets
+      .iter()
+      .find(|a| a.name == Self::CHECKSUMS_ASSET_NAME)
+      .map(|a| a.browser_download_url.clone())
+  }
+
+  /// Extract the hex digest for `filename` from standard `sha256sum` output
+  /// (`<hex>  <name>`, optionally with the `*` binary-mode marker).
+  fn find_checksum_for_file(checksums_text: &str, filename: &str) -> Option<String> {
+    checksums_text.lines().find_map(|line| {
+      let line = line.trim();
+      // sha256sum format: "<hex>  <name>" or "<hex> *<name>"
+      let (hex, name) = line.split_once("  ").or_else(|| line.split_once(" *"))?;
+      if name.trim() == filename {
+        Some(hex.trim().to_string())
+      } else {
+        None
+      }
+    })
+  }
+
+  /// Compute SHA-256 of a file and return the lowercase hex digest.
+  pub(crate) fn sha256_file(
+    path: &std::path::Path,
+  ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    use sha2::{Digest, Sha256};
+    let data = std::fs::read(path)?;
+    let digest = Sha256::digest(&data);
+    let mut hex = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+      hex.push_str(&format!("{byte:02x}"));
+    }
+    Ok(hex)
+  }
+
+  /// Fetch SHA256SUMS.txt and verify the downloaded file against it.
+  /// Also cross-checks GitHub's `asset_digest` when present.
+  pub(crate) async fn verify_download_checksum(
+    &self,
+    file_path: &std::path::Path,
+    update_info: &AppUpdateInfo,
+    asset_digest: Option<&str>,
+  ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let filename = file_path
+      .file_name()
+      .and_then(|n| n.to_str())
+      .ok_or("Could not determine filename")?;
+
+    let Some(checksums_url) = update_info.checksums_url.as_deref() else {
+      // No checksums URL — maps to UPDATE_CHECKSUMS_UNAVAILABLE
+      return Err(
+        serde_json::json!({
+          "code": "UPDATE_CHECKSUMS_UNAVAILABLE",
+          "params": { "version": update_info.new_version }
+        })
+        .to_string()
+        .into(),
+      );
+    };
+
+    let checksums_text = self
+      .client
+      .get(checksums_url)
+      .header("User-Agent", "Mozilla/5.0")
+      .send()
+      .await?
+      .text()
+      .await?;
+
+    let Some(expected) = Self::find_checksum_for_file(&checksums_text, filename) else {
+      return Err(
+        format!(
+          "No entry for {filename} found in {}",
+          Self::CHECKSUMS_ASSET_NAME
+        )
+        .into(),
+      );
+    };
+
+    let actual = Self::sha256_file(file_path)?;
+
+    // Cross-check GitHub's asset digest if available
+    if let Some(hex) = asset_digest.and_then(|d| d.strip_prefix("sha256:")) {
+      if hex != actual {
+        return Err(
+          serde_json::json!({
+            "code": "UPDATE_CHECKSUM_MISMATCH",
+            "params": { "file": filename }
+          })
+          .to_string()
+          .into(),
+        );
+      }
+    }
+
+    if expected != actual {
+      return Err(
+        serde_json::json!({
+          "code": "UPDATE_CHECKSUM_MISMATCH",
+          "params": { "file": filename }
+        })
+        .to_string()
+        .into(),
+      );
+    }
+
+    log::info!("Checksum verified OK for {filename}: {actual}");
+    Ok(())
   }
 }

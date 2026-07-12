@@ -23,6 +23,8 @@ export type BackendErrorCode =
   | "PROXY_NOT_FOUND"
   | "GROUP_NOT_FOUND"
   | "GROUP_ALREADY_EXISTS"
+  | "NAME_CANNOT_BE_EMPTY"
+  | "WAYFERN_VERSION_NOT_AVAILABLE"
   | "VPN_NOT_FOUND"
   | "EXTENSION_NOT_FOUND"
   | "EXTENSION_GROUP_NOT_FOUND"
@@ -43,6 +45,8 @@ export type BackendErrorCode =
   | "WAYFERN_FINGERPRINT_APPLY_FAILED"
   | "WAYFERN_REHYDRATE_FAILED"
   | "WAYFERN_FINGERPRINT_INCONSISTENT"
+  | "UPDATE_CHECKSUMS_UNAVAILABLE"
+  | "UPDATE_CHECKSUM_MISMATCH"
   | "INTERNAL_ERROR";
 
 export interface BackendError {
@@ -125,6 +129,13 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.groupNotFound");
     case "GROUP_ALREADY_EXISTS":
       return t("backendErrors.groupAlreadyExists");
+    case "NAME_CANNOT_BE_EMPTY":
+      return t("backendErrors.nameCannotBeEmpty");
+    case "WAYFERN_VERSION_NOT_AVAILABLE":
+      return t("backendErrors.wayfernVersionNotAvailable", {
+        requested: parsed.params?.requested ?? "",
+        current: parsed.params?.current ?? "",
+      });
     case "VPN_NOT_FOUND":
       return t("backendErrors.vpnNotFound");
     case "EXTENSION_NOT_FOUND":
@@ -170,6 +181,14 @@ export function translateBackendError(t: TFunction, err: unknown): string {
     case "WAYFERN_FINGERPRINT_INCONSISTENT":
       return t("backendErrors.wayfernFingerprintInconsistent", {
         reason: parsed.params?.reason ?? "",
+      });
+    case "UPDATE_CHECKSUMS_UNAVAILABLE":
+      return t("backendErrors.updateChecksumsUnavailable", {
+        version: parsed.params?.version ?? "",
+      });
+    case "UPDATE_CHECKSUM_MISMATCH":
+      return t("backendErrors.updateChecksumMismatch", {
+        file: parsed.params?.file ?? "",
       });
     case "INTERNAL_ERROR":
       return t("backendErrors.internal", {

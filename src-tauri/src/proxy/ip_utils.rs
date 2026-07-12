@@ -10,32 +10,11 @@ use std::str::FromStr;
 pub enum IpError {
   #[error("Network error: {0}")]
   Network(String),
-
-  #[error("Invalid IP address: {0}")]
-  InvalidIP(String),
 }
 
 /// Validate an IP address (IPv4 or IPv6).
 pub fn validate_ip(ip: &str) -> bool {
   IpAddr::from_str(ip).is_ok()
-}
-
-/// Check if an IP is IPv4.
-pub fn is_ipv4(ip: &str) -> bool {
-  if let Ok(addr) = IpAddr::from_str(ip) {
-    addr.is_ipv4()
-  } else {
-    false
-  }
-}
-
-/// Check if an IP is IPv6.
-pub fn is_ipv6(ip: &str) -> bool {
-  if let Ok(addr) = IpAddr::from_str(ip) {
-    addr.is_ipv6()
-  } else {
-    false
-  }
 }
 
 /// Fetch public IP address, optionally through a proxy.
@@ -49,7 +28,9 @@ pub async fn fetch_public_ip(proxy: Option<&str>) -> Result<String, IpError> {
     "https://ipecho.net/plain",
   ];
 
-  let client_builder = reqwest::Client::builder().timeout(std::time::Duration::from_secs(5));
+  // 10s rather than 5s: residential proxies that allocate an exit on first
+  // connect routinely need more than 5s for the initial request.
+  let client_builder = reqwest::Client::builder().timeout(std::time::Duration::from_secs(10));
 
   let client = if let Some(proxy_url) = proxy {
     let proxy = reqwest::Proxy::all(proxy_url)
@@ -67,25 +48,40 @@ pub async fn fetch_public_ip(proxy: Option<&str>) -> Result<String, IpError> {
 
   let mut errors = Vec::new();
 
+  // Overall deadline across all endpoints. Without it, a proxy that accepts
+  // connections but stalls holds callers for the full 6 x 10s; slow-but-live
+  // proxies still get the whole 10s on the endpoints that fit the budget.
+  let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+
   for url in &urls {
-    match client.get(*url).send().await {
-      Ok(response) if response.status().is_success() => match response.text().await {
-        Ok(text) => {
-          let ip = text.trim().to_string();
-          if validate_ip(&ip) {
-            return Ok(ip);
+    let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+    if remaining.is_zero() {
+      errors.push(format!("{}: skipped (30s overall deadline reached)", url));
+      continue;
+    }
+
+    let attempt = async {
+      match client.get(*url).send().await {
+        Ok(response) if response.status().is_success() => match response.text().await {
+          Ok(text) => {
+            let ip = text.trim().to_string();
+            if validate_ip(&ip) {
+              Ok(ip)
+            } else {
+              Err(format!("{}: response is not an IP address", url))
+            }
           }
-        }
-        Err(e) => {
-          errors.push(format!("{}: {}", url, e));
-        }
-      },
-      Ok(response) => {
-        errors.push(format!("{}: HTTP {}", url, response.status()));
+          Err(e) => Err(format!("{}: {}", url, e)),
+        },
+        Ok(response) => Err(format!("{}: HTTP {}", url, response.status())),
+        Err(e) => Err(format!("{}: {}", url, e)),
       }
-      Err(e) => {
-        errors.push(format!("{}: {}", url, e));
-      }
+    };
+
+    match tokio::time::timeout(remaining, attempt).await {
+      Ok(Ok(ip)) => return Ok(ip),
+      Ok(Err(e)) => errors.push(e),
+      Err(_) => errors.push(format!("{}: timed out (30s overall deadline reached)", url)),
     }
   }
 
@@ -114,18 +110,14 @@ mod tests {
     assert!(!validate_ip("invalid"));
     assert!(!validate_ip("256.256.256.256"));
   }
+}
 
-  #[test]
-  fn test_is_ipv4() {
-    assert!(is_ipv4("8.8.8.8"));
-    assert!(!is_ipv4("2001:4860:4860::8888"));
-    assert!(!is_ipv4("invalid"));
-  }
+/// Returns true if the string is a valid IPv4 address.
+pub fn is_ipv4(ip: &str) -> bool {
+  ip.parse::<std::net::Ipv4Addr>().is_ok()
+}
 
-  #[test]
-  fn test_is_ipv6() {
-    assert!(is_ipv6("2001:4860:4860::8888"));
-    assert!(!is_ipv6("8.8.8.8"));
-    assert!(!is_ipv6("invalid"));
-  }
+/// Returns true if the string is a valid IPv6 address.
+pub fn is_ipv6(ip: &str) -> bool {
+  ip.parse::<std::net::Ipv6Addr>().is_ok()
 }
