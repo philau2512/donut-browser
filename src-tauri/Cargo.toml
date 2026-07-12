@@ -1,6 +1,6 @@
 [package]
 name = "donutbrowser"
-version = "0.28.1"
+version = "0.28.2"
 description = "Simple Yet Powerful Anti-Detect Browser"
 authors = ["zhom@github"]
 edition = "2021"
@@ -75,7 +75,10 @@ axum = { version = "0.8.9", features = ["ws"] }
 tower = "0.5"
 tower-http = { version = "0.7", features = ["cors"] }
 rand = "0.10.2"
+<<<<<<< HEAD
 regex = "1"
+=======
+>>>>>>> upstream/main
 utoipa = { version = "5", features = ["axum_extras", "chrono"] }
 utoipa-axum = "0.2"
 argon2 = "0.5"
