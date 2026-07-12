@@ -1962,7 +1962,8 @@
     "updateChecksumsUnavailable": "Không thể xác minh bản cập nhật {{version}} vì không lấy được tệp checksum. Bản cập nhật chưa được cài đặt và sẽ thử lại sau.",
     "updateChecksumMismatch": "Tệp cập nhật {{file}} đã tải xuống không khớp checksum và đã bị xóa. Vui lòng thử lại.",
     "nameCannotBeEmpty": "Tên không được để trống",
-    "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải. Phiên bản hiện tại là {{current}}."
+    "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải. Phiên bản hiện tại là {{current}}.",
+    "wayfernFingerprintInconsistent": "Vân tay Wayfern không nhất quán: {{reason}}"
   },
   "rail": {
     "profiles": "Profile",
