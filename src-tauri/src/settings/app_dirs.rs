@@ -59,6 +59,11 @@ pub fn data_dir() -> PathBuf {
     }
   }
 
+  // Check for custom storage override (highest priority after test override)
+  if let Some(custom_path) = super::storage_settings::get_storage_override() {
+    return custom_path;
+  }
+
   if let Ok(dir) = std::env::var("DONUTBROWSER_DATA_DIR") {
     return PathBuf::from(dir);
   }
@@ -186,6 +191,25 @@ impl Drop for TestDirGuard {
   }
 }
 
+/// Restrict a just-written file to owner-only read/write (`0600`) on Unix so
+/// other local users/processes can't read secret material (tokens, E2E
+/// password, encrypted vault files). Best-effort: the write already succeeded,
+/// so a permission failure is logged, not propagated. On Windows the per-user
+/// profile ACL already restricts access, so this is a no-op there.
+pub fn restrict_to_owner(path: &std::path::Path) {
+  #[cfg(unix)]
+  {
+    use std::os::unix::fs::PermissionsExt;
+    if let Err(e) = std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600)) {
+      log::warn!("Failed to restrict permissions on {}: {e}", path.display());
+    }
+  }
+  #[cfg(not(unix))]
+  {
+    let _ = path;
+  }
+}
+
 #[cfg(test)]
 pub fn set_test_data_dir(dir: PathBuf) -> TestDirGuard {
   TEST_DATA_DIR.with(|cell| *cell.borrow_mut() = Some(dir));
@@ -201,6 +225,7 @@ pub fn set_test_cache_dir(dir: PathBuf) -> TestDirGuard {
     kind: TestDirKind::Cache,
   }
 }
+
 
 #[cfg(test)]
 mod tests {

@@ -73,7 +73,17 @@ export default function Home() {
     profiles,
     runningProfiles,
     isLoading: profilesLoading,
+    loadProfiles,
+    loadGroups,
   } = useProfileEvents();
+
+  const handleRefreshProfiles = useCallback(async () => {
+    try {
+      await Promise.all([loadProfiles(), loadGroups()]);
+    } catch (err) {
+      console.error("Failed to manual refresh profiles/groups:", err);
+    }
+  }, [loadProfiles, loadGroups]);
 
   const { startOnborda, setCurrentStep, isOnbordaVisible, currentStep } =
     useOnborda();
@@ -615,6 +625,7 @@ export default function Home() {
         selectedGroupId={selectedGroupId}
         onGroupSelect={handleSelectGroup}
         pageTitle={subPageTitle}
+        onRefresh={handleRefreshProfiles}
       />
       <div className="flex min-h-0 flex-1">
         <RailNav

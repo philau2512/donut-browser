@@ -10,6 +10,7 @@ export type AutomationNodeType =
   | "goForward"
   | "switchFrame"
   | "click"
+  | "moveAndClick"
   | "hover"
   | "scroll"
   | "dragAndDrop"
@@ -54,8 +55,20 @@ export type AutomationNodeType =
   | "runOtherScript"
   | "addLog"
   | "addComment"
+  | "label"
+  | "moveToLabel"
+  | "ignoreErrorsStart"
+  | "ignoreErrorsEnd"
+  | "endIf"
   // Extension (spike)
-  | "switchExtensionPopup";
+  | "switchExtensionPopup"
+  // Profile Flow Nodes
+  | "openProfile"
+  | "closeProfile"
+  // Profile Result Nodes (resource allocation plan)
+  | "profileSuccess"
+  | "profileFail"
+  | "callFunction";
 
 export type AutomationNodeGroup =
   | "navigator"
@@ -68,7 +81,7 @@ export type AutomationNodeGroup =
   | "control"
   | "interaction";
 
-export type ParamKind = "string" | "number" | "boolean" | "enum";
+export type ParamKind = "string" | "number" | "boolean" | "enum" | "selector";
 
 export interface ParamOption {
   value: string;
@@ -85,6 +98,8 @@ export interface ParamSpec {
   options?: ParamOption[];
   labelKey?: string;
   helpKey?: string;
+  /** Show this param only when the referenced param key equals the given value */
+  showIf?: { key: string; value: string | number | boolean };
 }
 
 export interface AutomationNodeCatalogItem {
@@ -108,6 +123,8 @@ import { KEYBOARD_CATALOG } from "./catalog/keyboard";
 import { LOGIC_CATALOG } from "./catalog/logic";
 import { NAVIGATOR_CATALOG } from "./catalog/navigator";
 import { NETWORK_CATALOG } from "./catalog/network";
+import { PROFILE_CATALOG } from "./catalog/profile";
+import { RESULT_CATALOG } from "./catalog/result";
 
 /** FE catalog mirrors automation-engine/lib/validate.mjs NODE_SCHEMAS.
  * Keep node type + param names in lockstep with the engine validator. */
@@ -122,6 +139,8 @@ export const AUTOMATION_NODE_CATALOG: AutomationNodeCatalogItem[] = [
   ...EXTRACTION_CATALOG,
   ...NETWORK_CATALOG,
   ...CONTROL_FLOW_CATALOG,
+  ...PROFILE_CATALOG,
+  ...RESULT_CATALOG,
 ];
 
 export const AUTOMATION_NODE_BY_TYPE = Object.fromEntries(

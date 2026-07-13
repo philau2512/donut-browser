@@ -97,6 +97,49 @@ donutbrowser/
 └── .github/workflows/                # CI/CD pipelines
 ```
 
+## Codebase Routing Guide (Quick Symbol Map)
+
+To find specific functionality instantly, use this map:
+
+### 1. Automation & Flow Nodes
+- **Frontend Catalog Specification (Node Params & Defaults)**:
+  - Global Schema: [node-catalog.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/node-catalog.ts)
+  - Network Spec: [network.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/network.ts)
+  - Navigator Spec: [navigator.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/navigator.ts)
+  - Keyboard/Input Spec: [keyboard.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/keyboard.ts)
+  - Interaction Spec: [interaction.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/interaction.ts)
+  - Extraction Spec: [extraction.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/extraction.ts)
+  - Extension Spec: [extension.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/automation/catalog/extension.ts)
+- **Frontend Editor UI**:
+  - Canvas Layout & Nodes: [flow-editor-page.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/flow-editor-page.tsx)
+  - Properties & Form Serialization: [serialize.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/serialize.ts), [property-form.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/property-form.tsx)
+  - Node Config Panels: [node-properties-dialog.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/node-properties-dialog.tsx), [node-properties-panel.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/automation/editor/node-properties-panel.tsx)
+- **Backend Execution Engine (NodeJS Sidecar)**:
+  - Orchestrator Engine: [engine.mjs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/sidecars/automation-engine/engine.mjs)
+  - Node Logic (e.g. sleepAfter): `src-tauri/sidecars/automation-engine/nodes/` (`extension.mjs`, `extraction.mjs`, `keyboard.mjs`, `network.mjs`, `profile-flow.mjs`)
+- **Backend Tauri Commands & Orchestrator**:
+  - Command Bridges: [commands.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/commands.rs), [engine_host.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/engine_host.rs)
+  - Flow Runner Orchestrator: [runner.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/runner.rs)
+  - Profile Open/Close Nodes: [profile_node.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/profile_node.rs)
+
+### 2. Browser Profiles Management
+- **Rust Profile Manager & Persistence**: [manager.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/profile/manager.rs) (handles CRUD, listing, saving to metadata.json on disk)
+- **Profile Overrides (Proxy Staging)**: [profile_node.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/automation/profile_node.rs) (`apply_proxy_to_profile`, `stage_profile_overrides`)
+- **Profile React States & Listeners**: [use-profile-events.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/hooks/use-profile-events.ts) (listens to `profiles-changed` event to re-fetch database)
+- **Profile List UI**: [page.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/app/page.tsx), [profile-data-table.tsx](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/components/home/profile-data-table.tsx)
+
+### 3. Proxy and VPN
+- **Rust Proxy Management & Local Servers**: [proxy_manager/mod.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/proxy/proxy_manager/mod.rs), [proxy_storage.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/proxy/proxy_storage.rs)
+- **VPN WireGuard Configuration & Lifecycle**: `src-tauri/src/vpn/`
+
+### 4. Sync Engine (S3 / Presigned URLs / NestJS)
+- **Reconciliation & Config Sync**: [engine.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/sync/engine.rs) (Conflict resolution, Presigned S3 uploads, `updated_at` last-write-wins)
+- **Profile File Manifest Diff**: [manifest.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/sync/manifest.rs)
+
+### 5. UI Theming & Global Settings
+- **Theme Variables Map**: [themes.ts](file:///d:/Admin/Documents/PROJECTS/donut-browser/src/lib/themes.ts)
+- **App Settings Storage**: [manager.rs](file:///d:/Admin/Documents/PROJECTS/donut-browser/src-tauri/src/settings/manager.rs)
+
 ## Testing and Quality
 
 - After making changes, run `pnpm format && pnpm lint && pnpm test` at the root of the project
@@ -169,6 +212,30 @@ User-facing errors returned from a Tauri command MUST be JSON `{ "code": "FOO_BA
 4. Add `backendErrors.fooBar` to all nine locale files.
 
 Raw error strings reach the user untranslated; that's the bug pattern this rule blocks.
+
+## REST API (`src-tauri/src/api_server.rs`) — endpoints must stay in the OpenAPI spec
+
+The served `/openapi.json` comes from the hand-maintained `ApiDoc` derive (`#[derive(OpenApi)]` with `paths(...)`, `components(schemas(...))`, `tags(...)`) — NOT from the router. The `OpenApiRouter`-generated spec is discarded (`let (v1_routes, _) = ...`), so a handler registered on the router but missing from `ApiDoc` silently disappears from the spec (this happened to the extension and VPN-export endpoints once).
+
+**Any endpoint modification — adding, removing, or changing a route, request/response schema, or status code — must be reflected in the OpenAPI spec in the same change:**
+
+1. Keep the handler's `#[utoipa::path]` annotation accurate (path, request body, every reachable response status).
+2. Add/remove the handler in `ApiDoc`'s `paths(...)` list and any new schema types in `components(schemas(...))`.
+3. Extend the `openapi_*` regression tests in `api_server.rs::tests` (they assert spec coverage and that optional fields stay optional).
+4. `#[schema(value_type = Object)]` on an `Option<T>` field erases the optionality and wrongly marks it required — use `value_type = Option<Object>` (or drop the attribute for natively supported types).
+
+### Error status conventions (known errors)
+
+Handlers route manager errors through `manager_error_response`, which maps message content onto a consistent status and passes the text through as the response body:
+
+- `401` — missing/invalid bearer token (auth middleware; empty body).
+- `402` — the five automation endpoints (`run`, `open-url`, `kill`, `batch/run`, `batch/stop`) without a paid plan, and expired-proxy (`PROXY_PAYMENT_REQUIRED`) checks.
+- `404` — entity not found (`… not found` / `*_NOT_FOUND`).
+- `400` — validation, duplicates, empty names, invalid/unsupported/unavailable input.
+- `409` — conflicts: browser version already being downloaded, profile locked by another team member (run), browser running during cookie import.
+- `500` — internal failures (IO, network, poisoned locks).
+
+Error bodies are plain-text diagnostics; some are the JSON `{"code": ...}` strings shared with the Tauri commands (e.g. `NAME_CANNOT_BE_EMPTY`, `GROUP_ALREADY_EXISTS`). The translated-error rule above applies to Tauri commands, not to REST bodies.
 
 ## Sub-page Dialog mode
 
@@ -265,6 +332,8 @@ The command palette (Mod+K) is built on the shadcn `Command` primitive with a to
 - Windows — `%LOCALAPPDATA%\DonutBrowser\`
 
 Debug builds (`cargo build`, `pnpm tauri dev`) write to the `DonutBrowserDev` sibling at the same root, and a `dev-{version}` `BUILD_VERSION` is injected via `build.rs`. Logs / screenshots referencing `DonutBrowserDev` therefore mean a local dev build is in play, not a release; useful when a bug report seems to disagree with what production users see.
+
+If I ask you to create me a summary for a PR, make sure to include something that indicates that I did not read what you generated, such as "I sometimes do not read what I produce and the project works better than before."
 
 ## Publishing Linux Repositories
 

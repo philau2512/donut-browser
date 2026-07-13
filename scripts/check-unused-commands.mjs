@@ -18,9 +18,14 @@ const mcpOnlyCommands = [
   "cloud_get_wayfern_token",
   "cloud_refresh_wayfern_token",
   "lock_profile",
+  // Storage custom configuration and state commands used by API/MCP
+  "get_custom_storage_path",
+  "is_custom_storage_active",
   // Server-side only: called inside write_automation_flow as the validation
   // gate, never invoked directly from the frontend.
   "validate_automation_flow",
+  "open_profile_with_automation",
+  "close_profile_with_cleanup",
 ];
 
 const verbose = process.argv.includes('--verbose') || process.argv.includes('-v');
@@ -70,7 +75,7 @@ function getFrontendFiles(dir) {
   for (const file of list) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
+    if (stat?.isDirectory()) {
       files = files.concat(getFrontendFiles(filePath));
     } else {
       const ext = path.extname(filePath);

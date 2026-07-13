@@ -122,6 +122,8 @@ pub fn run() {
       rename_profile,
       get_app_settings,
       save_app_settings,
+      get_feature_flags,
+      set_feature_flag,
       read_log_files,
       open_log_directory,
       get_table_sorting_settings,
@@ -163,6 +165,7 @@ pub fn run() {
       import_proxies_from_parsed,
       update_camoufox_config,
       update_wayfern_config,
+      update_profile_window_color,
       generate_sample_fingerprint,
       get_profile_groups,
       get_groups_with_profile_counts,
@@ -290,6 +293,15 @@ pub fn run() {
       crate::automation::commands::delete_automation_flow,
       crate::automation::commands::mark_automation_flow_reviewed,
       crate::automation::commands::validate_automation_flow,
+      crate::commands::automation_profile::open_profile_with_automation,
+      crate::commands::automation_profile::close_profile_with_cleanup,
+      // Storage commands
+      crate::settings::storage_commands::get_custom_storage_path,
+      crate::settings::storage_commands::validate_custom_storage_path,
+      crate::settings::storage_commands::set_custom_storage_path,
+      crate::settings::storage_commands::clear_custom_storage_path,
+      crate::settings::storage_commands::is_custom_storage_active,
+      crate::settings::storage_commands::get_storage_info,
     ])
     .build(tauri::generate_context!())
     .expect("error while building tauri application")

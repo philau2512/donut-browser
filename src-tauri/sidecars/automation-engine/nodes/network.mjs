@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import { assertNavigableUrl } from "../lib/url-guard.mjs";
 import { containArtifactPath } from "../lib/safe-path.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** http: send an HTTP request and save response body to a variable */
 export async function http(node, page, ctx) {

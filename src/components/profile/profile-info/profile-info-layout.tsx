@@ -1,7 +1,9 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
+import Color from "color";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import {
   LuClipboard,
   LuClipboardCheck,
@@ -18,6 +20,19 @@ import {
   LuX,
 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
+import {
+  ColorPicker,
+  ColorPickerEyeDropper,
+  ColorPickerFormat,
+  ColorPickerHue,
+  ColorPickerOutput,
+  ColorPickerSelection,
+} from "@/components/ui/color-picker";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { formatRelativeTime } from "@/lib/flag-utils";
 import { cn } from "@/lib/utils";
 import type { BrowserProfile, StoredProxy, VpnConfig } from "@/types";
@@ -71,6 +86,71 @@ export type ProfileSection =
   | "automation"
   | "security"
   | "delete";
+
+// Shown only for legacy profiles that predate the feature and have no stored
+// color yet (new profiles get a backend-derived one at creation/launch).
+const DEFAULT_SWATCH_COLOR = "#94a3b8";
+
+function WindowColorSwatch({ profile }: { profile: BrowserProfile }) {
+  const { t } = useTranslation();
+  const [color, setColor] = React.useState(profile.window_color);
+
+  React.useEffect(() => {
+    setColor(profile.window_color);
+  }, [profile.window_color]);
+
+  const persist = React.useCallback(
+    async (hex: string) => {
+      try {
+        await invoke("update_profile_window_color", {
+          profileId: profile.id,
+          windowColor: hex,
+        });
+      } catch {
+        setColor(profile.window_color);
+      }
+    },
+    [profile.id, profile.window_color],
+  );
+
+  return (
+    <Popover
+      onOpenChange={(open) => {
+        if (!open && color && color !== profile.window_color)
+          void persist(color);
+      }}
+    >
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={t("profileInfo.fields.windowColor")}
+          title={t("profileInfo.fields.windowColor")}
+          className="size-9 shrink-0 cursor-pointer rounded-lg border shadow-sm ring-offset-background transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          style={{ backgroundColor: color ?? DEFAULT_SWATCH_COLOR }}
+        />
+      </PopoverTrigger>
+      <PopoverContent align="end" sideOffset={6} className="w-[264px] p-3">
+        <ColorPicker
+          className="rounded-md border bg-background p-3 shadow-sm"
+          value={color ?? DEFAULT_SWATCH_COLOR}
+          onColorChange={([r, g, b]) => {
+            setColor(Color({ r, g, b }).hex().toLowerCase());
+          }}
+        >
+          <ColorPickerSelection className="h-32 rounded" />
+          <div className="mt-3 flex items-center gap-3">
+            <ColorPickerEyeDropper />
+            <ColorPickerHue className="flex-1" />
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <ColorPickerOutput />
+            <ColorPickerFormat />
+          </div>
+        </ColorPicker>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function InfoCard({ label, value }: { label: string; value: string }) {
   return (
@@ -358,6 +438,7 @@ export function ProfileInfoLayout({
                     </span>
                   </div>
                 </div>
+                <WindowColorSwatch profile={profile} />
               </div>
 
               <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">

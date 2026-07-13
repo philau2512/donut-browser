@@ -47,6 +47,15 @@ pub struct WayfernLaunchArgsOptions<'a> {
   pub block_images: bool,
   pub block_webgl: bool,
   pub url: Option<&'a str>,
+  /// Maximum screen width to clamp window size (prevents oversized windows)
+  pub screen_max_width: Option<u32>,
+  /// Maximum screen height to clamp window size (prevents oversized windows)
+  pub screen_max_height: Option<u32>,
+  /// Per-profile label shown in the window title (upstream 63a1f4c). None = omit flag.
+  pub profile_name: Option<&'a str>,
+  /// Per-profile frame color as bare RRGGBB (no '#'). None = omit flag.
+  /// Caller is responsible for feature-flag check and color derivation.
+  pub profile_color: Option<&'a str>,
 }
 
 /// Derive window dimensions from a fingerprint JSON blob.
@@ -109,7 +118,20 @@ pub fn build_wayfern_launch_args(opts: WayfernLaunchArgsOptions<'_>) -> Vec<Stri
     .fingerprint_json
     .and_then(window_size_from_fingerprint_json)
   {
-    args.push(format!("--window-size={w},{h}"));
+    // Clamp window size to screen constraints if provided
+    let (clamped_w, clamped_h) = if let Some(max_w) = opts.screen_max_width {
+      if let Some(max_h) = opts.screen_max_height {
+        (w.min(max_w), h.min(max_h))
+      } else {
+        (w.min(max_w), h)
+      }
+    } else if let Some(max_h) = opts.screen_max_height {
+      (w, h.min(max_h))
+    } else {
+      (w, h)
+    };
+
+    args.push(format!("--window-size={clamped_w},{clamped_h}"));
     args.push("--window-position=0,0".to_string());
   }
 
@@ -133,6 +155,22 @@ pub fn build_wayfern_launch_args(opts: WayfernLaunchArgsOptions<'_>) -> Vec<Stri
       "--load-extension={}",
       opts.extension_paths.join(",")
     ));
+  }
+
+  // Per-profile window label and frame color so concurrent profile windows are
+  // easy to tell apart. Only injected when the caller provides these fields
+  // (gated by the window_colors feature flag in the caller).
+  if let Some(name) = opts.profile_name {
+    if !name.is_empty() {
+      args.push(format!("--wayfern-profile-label={name}"));
+    }
+  }
+  if let Some(color) = opts.profile_color {
+    if !color.is_empty() {
+      // Wayfern expects bare RRGGBB hex without '#'.
+      let color = color.trim().trim_start_matches('#');
+      args.push(format!("--wayfern-profile-color={color}"));
+    }
   }
 
   if let Some(token) = opts.wayfern_token {
@@ -198,6 +236,10 @@ mod tests {
       block_images: false,
       block_webgl: false,
       url: None,
+      screen_max_width: None,
+      screen_max_height: None,
+      profile_name: None,
+      profile_color: None,
     });
 
     assert!(args.iter().any(|a| a.contains("--no-first-run")));
@@ -221,6 +263,10 @@ mod tests {
       block_images: true,
       block_webgl: true,
       url: None,
+      screen_max_width: None,
+      screen_max_height: None,
+      profile_name: None,
+      profile_color: None,
     });
 
     assert!(args.contains(&"--blink-settings=imagesEnabled=false".to_string()));

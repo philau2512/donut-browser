@@ -124,6 +124,15 @@ impl SyncEngine {
         );
         break;
       }
+      // Reject paths that would escape the profile dir (path traversal /
+      // absolute path). On download the manifest is remote-controlled, so this
+      // is the load-bearing containment check; on upload it is defense-in-depth.
+      // Legitimate profile files are always plain relative paths, so a real file
+      // is never skipped.
+      if !is_safe_manifest_path(&file.path) {
+        log::warn!("Skipping file with unsafe relative path: {:?}", file.path);
+        continue;
+      }
       let sem = semaphore.clone();
       let file_path = profile_dir.join(&file.path);
       let relative_path = file.path.clone();
@@ -400,6 +409,15 @@ impl SyncEngine {
           profile_id_owned
         );
         break;
+      }
+      // Reject paths that would escape the profile dir (path traversal /
+      // absolute path). On download the manifest is remote-controlled, so this
+      // is the load-bearing containment check; on upload it is defense-in-depth.
+      // Legitimate profile files are always plain relative paths, so a real file
+      // is never skipped.
+      if !is_safe_manifest_path(&file.path) {
+        log::warn!("Skipping file with unsafe relative path: {:?}", file.path);
+        continue;
       }
       let sem = semaphore.clone();
       let file_path = profile_dir.join(&file.path);

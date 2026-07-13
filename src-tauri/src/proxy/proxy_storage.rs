@@ -16,8 +16,7 @@ pub struct ProxyConfig {
   pub bypass_rules: Vec<String>,
   #[serde(default)]
   pub blocklist_file: Option<String>,
-  /// Protocol the local worker serves to the browser: "http" (default, used
-  /// by Camoufox/Firefox) or "socks5" (used by Wayfern/Chromium so QUIC and
+  /// Protocol the local worker serves to the browser: "socks5" (Wayfern/Chromium so QUIC and
   /// WebRTC UDP can be proxied without leaking the real IP). Independent of
   /// `upstream_url`, which is the real upstream proxy/VPN this worker dials.
   #[serde(default)]
@@ -191,7 +190,7 @@ mod tests {
   #[test]
   fn test_is_process_running_returns_false_for_dead_pid() {
     // Spawn a short-lived child and wait for it to exit
-    let child = std::process::Command::new(if cfg!(windows) { "cmd" } else { "true" })
+    let mut child = std::process::Command::new(if cfg!(windows) { "cmd" } else { "true" })
       .args(if cfg!(windows) {
         vec!["/C", "exit"]
       } else {
@@ -200,11 +199,26 @@ mod tests {
       .spawn()
       .expect("failed to spawn child");
     let pid = child.id();
-    let mut child = child;
     child.wait().expect("child failed");
+    // On Windows a terminated process remains a live kernel object (and sysinfo
+    // keeps reporting it) until the LAST handle to it is closed. std::Child
+    // holds that handle until dropped, so the check below would otherwise see
+    // the just-exited process as still running. Drop the handle, then allow a
+    // brief moment for the OS to reclaim the process before asserting. (In
+    // production these PIDs belong to detached browsers/workers that no handle
+    // outlives, so is_process_running already observes their exit promptly.)
+    drop(child);
 
+    let mut became_dead = false;
+    for _ in 0..50 {
+      if !is_process_running(pid) {
+        became_dead = true;
+        break;
+      }
+      std::thread::sleep(std::time::Duration::from_millis(20));
+    }
     assert!(
-      !is_process_running(pid),
+      became_dead,
       "is_process_running must return false for a dead process (PID {pid})"
     );
   }

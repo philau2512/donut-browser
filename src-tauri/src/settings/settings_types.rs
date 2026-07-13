@@ -1,3 +1,4 @@
+use crate::settings::feature_flags::FeatureFlags;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -54,6 +55,11 @@ pub struct AppSettings {
   /// copy is always re-encrypted regardless of this flag.
   #[serde(default)]
   pub keep_decrypted_profiles_in_ram: bool,
+  /// Runtime feature flags for upstream sync features.
+  /// Persisted in settings.json. Edit directly or use `set_feature_flag` command.
+  /// Frontend toggle UI is deferred — use settings.json to enable features.
+  #[serde(default)]
+  pub feature_flags: FeatureFlags,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -90,6 +96,7 @@ impl Default for AppSettings {
       onboarding_completed: false,
       disable_auto_updates: false,
       keep_decrypted_profiles_in_ram: false,
+      feature_flags: FeatureFlags::default(),
     }
   }
 }

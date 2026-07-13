@@ -26,12 +26,12 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "button[type=submit]",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
       {
         key: "button",
         kind: "enum",
@@ -40,7 +40,33 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
       },
       { key: "clickCount", kind: "number", placeholder: "1" },
     ],
-    defaults: { selector: "button" },
+    defaults: { selector: "button", timeout: 60000 },
+  },
+  {
+    type: "moveAndClick",
+    group: "mouse",
+    labelKey: "automation.nodes.moveAndClick.label",
+    descriptionKey: "automation.nodes.moveAndClick.description",
+    documentKey: "automation.nodes.moveAndClick.document",
+    icon: LuMousePointerClick,
+    params: [
+      {
+        key: "selector",
+        kind: "selector",
+        required: true,
+        placeholder: "button[type=submit]",
+        supportsExpression: true,
+      },
+      { key: "steps", kind: "number", placeholder: "10" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
+      {
+        key: "button",
+        kind: "enum",
+        placeholder: "left",
+        options: BUTTON_OPTIONS,
+      },
+    ],
+    defaults: { selector: "button", steps: 10, timeout: 60000 },
   },
   {
     type: "hover",
@@ -52,14 +78,14 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: ".menu-item",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { selector: ".menu-item" },
+    defaults: { selector: ".menu-item", timeout: 60000 },
   },
   {
     type: "scroll",
@@ -71,7 +97,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         placeholder: "body",
         supportsExpression: true,
       },
@@ -90,21 +116,21 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "sourceSelector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "#drag-source",
         supportsExpression: true,
       },
       {
         key: "targetSelector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "#drop-target",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { sourceSelector: "", targetSelector: "" },
+    defaults: { sourceSelector: "", targetSelector: "", timeout: 60000 },
   },
   {
     type: "clickDown",
@@ -116,7 +142,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: ".canvas",
         supportsExpression: true,
@@ -127,9 +153,9 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "left",
         options: BUTTON_OPTIONS,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { selector: ".canvas" },
+    defaults: { selector: ".canvas", timeout: 60000 },
   },
   {
     type: "clickUp",
@@ -141,7 +167,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: ".canvas",
         supportsExpression: true,
@@ -152,9 +178,9 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "left",
         options: BUTTON_OPTIONS,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { selector: ".canvas" },
+    defaults: { selector: ".canvas", timeout: 60000 },
   },
   {
     type: "type",
@@ -166,7 +192,7 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: true,
         placeholder: "input[name=email]",
         supportsExpression: true,
@@ -178,9 +204,9 @@ export const INTERACTION_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "{{EMAIL}}",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
       { key: "delay", kind: "number", placeholder: "25" },
     ],
-    defaults: { selector: "input", text: "" },
+    defaults: { selector: "input", text: "", timeout: 60000 },
   },
 ];

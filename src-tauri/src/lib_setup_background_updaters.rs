@@ -121,14 +121,18 @@ fn spawn_dns_blocklist_refresh(_app: &AppHandle) {
 // App auto-updater task (every 3 hours) with frontend event emission
 fn spawn_app_auto_updater(_app: &AppHandle) {
   tauri::async_runtime::spawn(async move {
-    let updater = crate::updater::app_auto_updater::AppAutoUpdater::instance();
     let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(3 * 60 * 60));
 
     loop {
       interval.tick().await;
 
       log::info!("Checking for app updates...");
-      match updater.check_for_updates().await {
+      // Route through check_for_app_updates (not the raw check_for_updates)
+      // so the background loop respects portable mode and the
+      // disable_auto_updates setting. Previously it bypassed both, so a
+      // portable install would auto-download and run the NSIS installer,
+      // clobbering the portable folder instead of updating in place (#468).
+      match crate::updater::app_auto_updater::check_for_app_updates().await {
         Ok(Some(update_info)) => {
           log::info!(
             "App update available: {} -> {}",

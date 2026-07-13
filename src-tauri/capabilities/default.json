@@ -47,6 +47,9 @@
     "dialog:default",
     "dialog:allow-open",
     "dialog:allow-save",
+    "dialog:allow-confirm",
+    "dialog:allow-message",
+    "dialog:allow-ask",
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [{ "path": "$APPLOCALDATA/**" }]

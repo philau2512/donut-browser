@@ -45,7 +45,7 @@ pub async fn launch_browser_profile_impl(
   let browser_runner = BrowserRunner::instance();
 
   // Resolve the most up-to-date profile from disk by ID to avoid using stale proxy_id/browser state
-  let profile_for_launch = match browser_runner
+  let mut profile_for_launch = match browser_runner
     .profile_manager
     .list_profiles()
     .map_err(|e| format!("Failed to list profiles: {e}"))
@@ -59,6 +59,67 @@ pub async fn launch_browser_profile_impl(
     }
   };
 
+  // Apply active launch overrides from LAUNCH_OVERRIDES if present
+  let profile_id_str = profile_for_launch.id.to_string();
+  if let Ok(guard) = LAUNCH_OVERRIDES.lock() {
+    if let Some(overrides) = guard.get(&profile_id_str) {
+      log::info!(
+        "[AUTOMATION] [LAUNCH] Applying active launch overrides for profile {}: {:?}",
+        profile_for_launch.name,
+        overrides
+      );
+
+      // Overwrite dns blocklist
+      if let Some(ref dns_opt) = overrides.dns_blocklist {
+        profile_for_launch.dns_blocklist = dns_opt.clone();
+      }
+
+      // Overwrite proxy/VPN fields so they don't overwrite or conflict
+      if overrides.proxy.is_some() {
+        profile_for_launch.proxy_id = None;
+        profile_for_launch.vpn_id = None;
+      }
+
+      // Overwrite Wayfern config fields
+      if let Some(ref mut wayfern_config) = profile_for_launch.wayfern_config {
+        if let Some(block) = overrides.block_webrtc {
+          wayfern_config.block_webrtc = Some(block);
+        }
+        if let Some(ref mode) = overrides.webrtc_mode {
+          wayfern_config.webrtc_mode = Some(mode.clone());
+        }
+        if let Some(ref geo) = overrides.change_geolocation {
+          if geo == "false" {
+            wayfern_config.geoip = Some(serde_json::Value::Bool(false));
+          } else if geo != "true" {
+            wayfern_config.geoip = Some(serde_json::Value::String(geo.clone()));
+          } else {
+            wayfern_config.geoip = Some(serde_json::Value::Bool(true));
+          }
+        }
+      }
+
+      // Overwrite Camoufox config fields
+      if let Some(ref mut camoufox_config) = profile_for_launch.camoufox_config {
+        if let Some(block) = overrides.block_webrtc {
+          camoufox_config.block_webrtc = Some(block);
+        }
+        if let Some(ref mode) = overrides.webrtc_mode {
+          camoufox_config.webrtc_mode = Some(mode.clone());
+        }
+        if let Some(ref geo) = overrides.change_geolocation {
+          if geo == "false" {
+            camoufox_config.geoip = Some(serde_json::Value::Bool(false));
+          } else if geo != "true" {
+            camoufox_config.geoip = Some(serde_json::Value::String(geo.clone()));
+          } else {
+            camoufox_config.geoip = Some(serde_json::Value::Bool(true));
+          }
+        }
+      }
+    }
+  }
+
   log::info!(
     "Resolved profile for launch: {} (ID: {})",
     profile_for_launch.name,
@@ -70,6 +131,53 @@ pub async fn launch_browser_profile_impl(
     profile_for_launch.name,
     profile_for_launch.id
   );
+
+  // Check proxy connectivity before launch if check_before_start is enabled on the proxy.
+  // Skips the cloud proxy (its only failure mode is 402 at request time, not a pre-check).
+  if let Some(ref proxy_id) = profile_for_launch.proxy_id {
+    if proxy_id != crate::proxy::proxy_manager::CLOUD_PROXY_ID {
+      let check_before_start = {
+        let stored_proxies = PROXY_MANAGER.get_stored_proxies();
+        stored_proxies
+          .into_iter()
+          .find(|p| p.id == *proxy_id)
+          .map(|p| p.check_before_start.unwrap_or(true))
+          .unwrap_or(true)
+      };
+
+      if check_before_start {
+        if let Some(settings) = PROXY_MANAGER.get_proxy_settings_by_id(proxy_id) {
+          log::info!(
+            "Checking proxy before launch for profile: {} (proxy: {})",
+            profile_for_launch.name,
+            proxy_id
+          );
+          let check_result = PROXY_MANAGER.check_proxy_validity(proxy_id, &settings).await;
+          let is_valid = matches!(&check_result, Ok(res) if res.is_valid);
+          if !is_valid {
+            log::error!(
+              "Proxy check failed before launch for profile: {}",
+              profile_for_launch.name
+            );
+            // Clear the launching state in the frontend
+            #[derive(serde::Serialize)]
+            struct RunningChangedPayload {
+              id: String,
+              is_running: bool,
+            }
+            let _ = events::emit(
+              "profile-running-changed",
+              &RunningChangedPayload {
+                id: profile_for_launch.id.to_string(),
+                is_running: false,
+              },
+            );
+            return Err(serde_json::json!({ "code": "PROXY_NOT_WORKING_LAUNCH" }).to_string());
+          }
+        }
+      }
+    }
+  }
 
   // Launch browser or open URL in existing instance. Camoufox and Wayfern
   // start their own local proxies inside `launch_browser_internal`; any
@@ -264,6 +372,17 @@ pub async fn open_url_with_profile(
     .await
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct LaunchOverrides {
+  pub proxy: Option<Option<ProxySettings>>, // Some(None) = Direct/No proxy, Some(Some(p)) = Override proxy, None = No override (use db/original)
+  pub block_webrtc: Option<bool>,
+  pub webrtc_mode: Option<String>,
+  pub change_timezone: Option<String>,
+  pub change_geolocation: Option<String>,
+  pub change_language: Option<String>,
+  pub dns_blocklist: Option<Option<String>>, // Some(None) = Disable blocklist, Some(Some(d)) = Override blocklist, None = No override
+}
+
 // Global singleton instance
 lazy_static::lazy_static! {
   static ref BROWSER_RUNNER: BrowserRunner = BrowserRunner::new();
@@ -271,5 +390,7 @@ lazy_static::lazy_static! {
     std::sync::Mutex::new(std::collections::HashMap::new());
   pub static ref EXPECTED_PROFILE_STOPS: std::sync::Mutex<std::collections::HashSet<String>> =
     std::sync::Mutex::new(std::collections::HashSet::new());
+  pub static ref LAUNCH_OVERRIDES: std::sync::Mutex<std::collections::HashMap<String, LaunchOverrides>> =
+    std::sync::Mutex::new(std::collections::HashMap::new());
 }
 

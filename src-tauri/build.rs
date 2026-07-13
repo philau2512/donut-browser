@@ -56,17 +56,15 @@ fn main() {
   // Only run tauri_build if all external binaries exist
   // This allows building donut-proxy sidecar without the other binaries present
   if external_binaries_exist() {
-    tauri_build::build();
+    let windows = tauri_build::WindowsAttributes::new_without_app_manifest();
+    tauri_build::try_build(tauri_build::Attributes::new().windows_attributes(windows))
+      .expect("Failed to run tauri-build");
 
-    // tauri_build embeds the manifest for bin targets only (cargo:rustc-link-arg-bins).
-    // Test binaries (including `cargo test --lib`) also need the comctl32 v6 manifest
-    // or they crash with STATUS_ENTRYPOINT_NOT_FOUND (0xc0000139). We embed the
-    // manifest for all targets, then suppress the duplicate for bins with /MANIFEST:NO
-    // (tauri_build's resource-embedded manifest still takes effect for bins).
+    // We embed the manifest for all targets via embed_windows_manifest()
+    // instead of letting tauri_build embed a duplicate manifest for bins.
     #[cfg(target_os = "windows")]
     {
       embed_windows_manifest();
-      println!("cargo:rustc-link-arg-bins=/MANIFEST:NO");
     }
   } else {
     println!("cargo:warning=Skipping tauri_build: external binaries not found. This is expected when building sidecar binaries.");

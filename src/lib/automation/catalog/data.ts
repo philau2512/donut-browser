@@ -24,6 +24,15 @@ const WAIT_STATE_OPTIONS: ParamOption[] = [
   { value: "detached" },
 ];
 
+const OPERATOR_OPTIONS: ParamOption[] = [
+  { value: "=", labelKey: "automation.nodes.setVariable.operator.assign" },
+  { value: "+", labelKey: "automation.nodes.setVariable.operator.add" },
+  { value: "-", labelKey: "automation.nodes.setVariable.operator.subtract" },
+  { value: "*", labelKey: "automation.nodes.setVariable.operator.multiply" },
+  { value: "/", labelKey: "automation.nodes.setVariable.operator.divide" },
+  { value: "concat", labelKey: "automation.nodes.setVariable.operator.concat" },
+];
+
 export const DATA_CATALOG: AutomationNodeCatalogItem[] = [
   {
     type: "setVariable",
@@ -46,8 +55,14 @@ export const DATA_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "hello world",
         supportsExpression: true,
       },
+      {
+        key: "operator",
+        kind: "enum",
+        placeholder: "=",
+        options: OPERATOR_OPTIONS,
+      },
     ],
-    defaults: { name: "", value: "" },
+    defaults: { name: "", value: "", operator: "=" },
   },
   {
     type: "readCsv",
@@ -148,7 +163,7 @@ export const DATA_CATALOG: AutomationNodeCatalogItem[] = [
     params: [
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         placeholder: ".ready",
         supportsExpression: true,
       },

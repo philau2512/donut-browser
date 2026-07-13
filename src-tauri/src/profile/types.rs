@@ -64,6 +64,11 @@ pub struct BrowserProfile {
   pub ephemeral: bool,
   #[serde(default)]
   pub extension_group_id: Option<String>,
+  /// Window border color for this profile. `None` = auto-derive from profile ID.
+  /// Populated by Phase 3.2 (upstream 63a1f4c). Added here for sync metadata
+  /// compatibility so peers don't lose the field before Phase 3.2 ships.
+  #[serde(default)]
+  pub window_color: Option<String>,
   #[serde(default)]
   pub proxy_bypass_rules: Vec<String>,
   #[serde(default)]

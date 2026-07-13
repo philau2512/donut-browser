@@ -1,6 +1,6 @@
 import { getLocatorRoot, getPage } from "../lib/execution-target.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** typeText: Hidemium Type text — global keyboard (focus field with Click first) */
 export async function typeText(node, page, ctx) {

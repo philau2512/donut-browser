@@ -27,6 +27,7 @@ export interface BrowserProfile {
   group_id?: string; // Reference to profile group
   tags?: string[];
   note?: string; // User note
+  window_color?: string; // Per-profile window frame color "#RRGGBB"; auto-derived from the id when unset
   sync_mode?: SyncMode;
   encryption_salt?: string;
   last_sync?: number; // Timestamp of last successful sync (epoch seconds)
@@ -180,6 +181,8 @@ export interface StoredProxy {
   geo_region?: string;
   geo_city?: string;
   geo_isp?: string;
+  /** When true (default), proxy is validated before launching any profile that uses it. */
+  check_before_start?: boolean;
 }
 
 export interface LocationItem {

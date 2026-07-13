@@ -8,6 +8,7 @@ import {
   LuChevronLeft,
   LuChevronRight,
   LuMoon,
+  LuRefreshCw,
   LuSearch,
   LuSun,
   LuX,
@@ -34,10 +35,15 @@ interface AppSettings {
 const HOLD_MS = 150;
 const DRAG_THRESHOLD_PX = 3;
 
-const isTextInputTarget = (target: EventTarget | null): boolean => {
+// Any interactive control (buttons, links, inputs) must NOT start a window
+// drag when pressed — otherwise the press-and-hold / drag-threshold logic below
+// hands the pointer to the OS window-move loop and the control's click never
+// fires (e.g. the "+ New" button needing a double-click, and the window
+// un-maximizing on Windows). Mirrors the guard handleDoubleClick already uses.
+const isInteractiveTarget = (target: EventTarget | null): boolean => {
   if (!(target instanceof Element)) return false;
   const el = target.closest(
-    "input, select, textarea, [contenteditable=''], [contenteditable='true']",
+    "button, a, [role='button'], input, select, textarea, [contenteditable=''], [contenteditable='true']",
   );
   return el !== null;
 };
@@ -53,6 +59,7 @@ interface Props {
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string) => void;
   pageTitle?: string;
+  onRefresh?: () => void;
 }
 
 const HomeHeader = ({
@@ -64,10 +71,12 @@ const HomeHeader = ({
   selectedGroupId,
   onGroupSelect,
   pageTitle,
+  onRefresh,
 }: Props) => {
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
   const [platform, setPlatform] = useState<string>("macos");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     setPlatform(getCurrentOS());
@@ -143,7 +152,7 @@ const HomeHeader = ({
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (e.button !== 0) return;
-      if (isTextInputTarget(e.target)) return;
+      if (isInteractiveTarget(e.target)) return;
 
       dragStartedRef.current = false;
       dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -189,8 +198,7 @@ const HomeHeader = ({
 
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (isTextInputTarget(e.target)) return;
-      if (e.target instanceof Element && e.target.closest("button")) return;
+      if (isInteractiveTarget(e.target)) return;
       clearHold();
       void getCurrentWindow().toggleMaximize();
     },
@@ -402,6 +410,35 @@ const HomeHeader = ({
             </span>
           </TooltipTrigger>
           <TooltipContent>{t("header.createProfile")}</TooltipContent>
+        </Tooltip>
+      )}
+
+      {onRefresh && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={async () => {
+                if (isRefreshing) return;
+                setIsRefreshing(true);
+                try {
+                  await onRefresh();
+                } finally {
+                  // Keep the spin animation visible briefly for feedback
+                  setTimeout(() => setIsRefreshing(false), 500);
+                }
+              }}
+              className="h-7 w-7 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              aria-label={t("common.buttons.refresh")}
+            >
+              <LuRefreshCw
+                className={cn("size-3.5", isRefreshing && "animate-spin")}
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("common.buttons.refresh")}</TooltipContent>
         </Tooltip>
       )}
 

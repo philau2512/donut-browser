@@ -2,3 +2,10 @@
 # Omit jobs setting to use all cores
 
 incremental = true
+
+[target.x86_64-pc-windows-msvc]
+rustflags = [
+  "-C", "linker=rust-lld.exe",
+  "-C", "link-arg=/MANIFEST:EMBED"
+]
+

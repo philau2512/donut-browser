@@ -32,7 +32,7 @@
 - **VPN support**: WireGuard configs per profile
 - **Local API & MCP**: REST API and [Model Context Protocol](https://modelcontextprotocol.io) server for integration with Claude, automation tools, and custom workflows
 - **Profile groups**: organize profiles and apply bulk settings
-- **Import profiles**: migrate from Chrome, Firefox, Edge, Brave, or other Chromium browsers
+- **Import profiles**: migrate from Chrome, Edge, Brave, or other Chromium browsers
 - **Cookie & extension management**: import/export cookies, manage extensions per profile
 - **Default browser**: set Donut as your default browser and choose which profile opens each link
 - **Cloud sync**: sync profiles, proxies, and groups across devices (self-hostable)
@@ -46,7 +46,7 @@
 
 | | Apple Silicon | Intel |
 |---|---|---|
-| **DMG** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_aarch64.dmg) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_x64.dmg) |
+| **DMG** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_aarch64.dmg) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_x64.dmg) |
 
 Or install via Homebrew:
 
@@ -56,15 +56,15 @@ brew install --cask donut
 
 ### Windows
 
-[Download Windows Installer (x64)](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_x64-setup.exe) · [Portable (x64)](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_x64-portable.zip)
+[Download Windows Installer (x64)](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_x64-setup.exe) · [Portable (x64)](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_x64-portable.zip)
 
 ### Linux
 
 | Format | x86_64 | ARM64 |
 |---|---|---|
-| **deb** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_amd64.deb) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_arm64.deb) |
-| **rpm** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut-0.27.1-1.x86_64.rpm) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut-0.27.1-1.aarch64.rpm) |
-| **AppImage** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_amd64.AppImage) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.27.1/Donut_0.27.1_aarch64.AppImage) |
+| **deb** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_amd64.deb) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_arm64.deb) |
+| **rpm** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut-0.28.2-1.x86_64.rpm) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut-0.28.2-1.aarch64.rpm) |
+| **AppImage** | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_amd64.AppImage) | [Download](https://github.com/zhom/donutbrowser/releases/download/v0.28.2/Donut_0.28.2_aarch64.AppImage) |
 <!-- install-links-end -->
 
 Or install via package manager:

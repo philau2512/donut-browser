@@ -1,6 +1,6 @@
 use super::settings_types::{AppSettings, SyncSettings, TableSortingSettings};
 use aes_gcm::{
-  aead::{Aead, AeadCore, KeyInit, OsRng},
+  aead::{Aead, KeyInit},
   Aes256Gcm, Key, Nonce,
 };
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
@@ -130,7 +130,7 @@ impl SettingsManager {
     let vault_password = Self::get_vault_password();
 
     // Generate a random salt for Argon2
-    let salt = SaltString::generate(&mut OsRng);
+    let salt = SaltString::encode_b64(&rand::random::<[u8; 16]>()).expect("salt encode");
 
     // Use Argon2 to derive a 32-byte key from the vault password
     let argon2 = Argon2::default();
@@ -148,7 +148,7 @@ impl SettingsManager {
     let cipher = Aes256Gcm::new(&key);
 
     // Generate a random nonce
-    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    let nonce = Nonce::from(rand::random::<[u8; 12]>());
 
     // Encrypt the token
     let ciphertext = cipher
@@ -172,7 +172,8 @@ impl SettingsManager {
     file_data.extend_from_slice(&(ciphertext.len() as u32).to_le_bytes());
     file_data.extend_from_slice(&ciphertext);
 
-    std::fs::write(token_file, file_data)?;
+    std::fs::write(&token_file, file_data)?;
+    crate::settings::app_dirs::restrict_to_owner(std::path::Path::new(&token_file));
     Ok(())
   }
 
@@ -313,7 +314,7 @@ impl SettingsManager {
     }
 
     let vault_password = Self::get_vault_password();
-    let salt = SaltString::generate(&mut OsRng);
+    let salt = SaltString::encode_b64(&rand::random::<[u8; 16]>()).expect("salt encode");
     let argon2 = Argon2::default();
     let password_hash = argon2
       .hash_password(vault_password.as_bytes(), &salt)
@@ -325,7 +326,7 @@ impl SettingsManager {
       .map_err(|_| "Invalid key length")?;
     let key = Key::<Aes256Gcm>::from(key_bytes);
     let cipher = Aes256Gcm::new(&key);
-    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    let nonce = Nonce::from(rand::random::<[u8; 12]>());
     let ciphertext = cipher
       .encrypt(&nonce, token.as_bytes())
       .map_err(|e| format!("Encryption failed: {e}"))?;
@@ -340,7 +341,8 @@ impl SettingsManager {
     file_data.extend_from_slice(&(ciphertext.len() as u32).to_le_bytes());
     file_data.extend_from_slice(&ciphertext);
 
-    std::fs::write(token_file, file_data)?;
+    std::fs::write(&token_file, file_data)?;
+    crate::settings::app_dirs::restrict_to_owner(std::path::Path::new(&token_file));
     Ok(())
   }
 
@@ -452,7 +454,7 @@ impl SettingsManager {
     }
 
     let vault_password = Self::get_vault_password();
-    let salt = SaltString::generate(&mut OsRng);
+    let salt = SaltString::encode_b64(&rand::random::<[u8; 16]>()).expect("salt encode");
     let argon2 = Argon2::default();
     let password_hash = argon2
       .hash_password(vault_password.as_bytes(), &salt)
@@ -464,7 +466,7 @@ impl SettingsManager {
       .map_err(|_| "Invalid key length")?;
     let key = Key::<Aes256Gcm>::from(key_bytes);
     let cipher = Aes256Gcm::new(&key);
-    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    let nonce = Nonce::from(rand::random::<[u8; 12]>());
     let ciphertext = cipher
       .encrypt(&nonce, token.as_bytes())
       .map_err(|e| format!("Encryption failed: {e}"))?;
@@ -479,7 +481,8 @@ impl SettingsManager {
     file_data.extend_from_slice(&(ciphertext.len() as u32).to_le_bytes());
     file_data.extend_from_slice(&ciphertext);
 
-    std::fs::write(token_file, file_data)?;
+    std::fs::write(&token_file, file_data)?;
+    crate::settings::app_dirs::restrict_to_owner(std::path::Path::new(&token_file));
     Ok(())
   }
 

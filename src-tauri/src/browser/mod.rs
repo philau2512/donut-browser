@@ -1,6 +1,7 @@
 #[allow(clippy::module_inception)]
 pub mod browser;
 pub mod browser_runner;
+pub mod browser_runner_dynamic_config;
 pub mod browser_version_manager;
 pub mod camoufox;
 pub mod camoufox_manager;

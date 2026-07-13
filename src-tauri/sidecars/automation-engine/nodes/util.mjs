@@ -3,7 +3,7 @@
 
 import { containArtifactPath, sanitizeFilenameFragment } from "../lib/safe-path.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** screenshot: capture the page to a file INSIDE artifactsDir (#11 contained). */
 export async function screenshot(node, page, ctx) {

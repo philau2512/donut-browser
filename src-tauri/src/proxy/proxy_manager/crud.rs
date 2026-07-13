@@ -87,10 +87,13 @@ impl ProxyManager {
     proxy_settings: ProxySettings,
     is_profile_specific: bool,
   ) -> Result<StoredProxy, String> {
-    // Check if name already exists
-    {
+    // Check if name already exists (only for non-profile-specific global proxies)
+    if !is_profile_specific {
       let stored_proxies = self.stored_proxies.lock().unwrap();
-      if stored_proxies.values().any(|p| p.name == name) {
+      if stored_proxies
+        .values()
+        .any(|p| !p.is_profile_specific && p.name == name)
+      {
         return Err(format!("Proxy with name '{name}' already exists"));
       }
     }
@@ -164,6 +167,7 @@ impl ProxyManager {
         geo_isp: None,
         dynamic_proxy_url: None,
         dynamic_proxy_format: None,
+        check_before_start: None,
       };
       stored_proxies.insert(CLOUD_PROXY_ID.to_string(), cloud_proxy.clone());
       drop(stored_proxies);
@@ -357,6 +361,7 @@ impl ProxyManager {
       geo_isp: isp,
       dynamic_proxy_url: None,
       dynamic_proxy_format: None,
+      check_before_start: None,
     };
 
     {
@@ -458,6 +463,27 @@ impl ProxyManager {
     list
   }
 
+  /// Update the `check_before_start` flag on a stored proxy and persist to disk.
+  pub fn set_check_before_start(
+    &self,
+    proxy_id: &str,
+    check: bool,
+  ) -> Result<StoredProxy, String> {
+    let updated = {
+      let mut stored_proxies = self.stored_proxies.lock().unwrap();
+      let proxy = stored_proxies
+        .get_mut(proxy_id)
+        .ok_or_else(|| format!("Proxy '{proxy_id}' not found"))?;
+      proxy.check_before_start = Some(check);
+      proxy.updated_at = Some(now_secs());
+      proxy.clone()
+    };
+    if let Err(e) = self.save_proxy(&updated) {
+      log::warn!("Failed to persist check_before_start for proxy {proxy_id}: {e}");
+    }
+    Ok(updated)
+  }
+
   /// Insert/replace a stored proxy in the in-memory map. Used by sync's
   /// download_proxy after it writes the file to disk, mirroring how
   /// download_group/download_vpn/download_extension keep their managers'
@@ -496,11 +522,16 @@ impl ProxyManager {
         return Err("Cannot edit a cloud-managed proxy".to_string());
       }
 
-      // Check if new name conflicts with existing proxies
+      // Check if new name conflicts with existing proxies (only for non-profile-specific global proxies)
       if let Some(ref new_name) = name {
-        if stored_proxies
-          .values()
-          .any(|p| p.id != proxy_id && p.name == *new_name)
+        let is_specific = stored_proxies
+          .get(proxy_id)
+          .map(|p| p.is_profile_specific)
+          .unwrap_or(false);
+        if !is_specific
+          && stored_proxies
+            .values()
+            .any(|p| p.id != proxy_id && !p.is_profile_specific && p.name == *new_name)
         {
           return Err(format!("Proxy with name '{new_name}' already exists"));
         }

@@ -22,7 +22,7 @@ pub async fn start_automation_run(
   profiles: Vec<BrowserProfile>,
   settings: RunSettings,
 ) -> Result<String, String> {
-  if profiles.is_empty() {
+  if profiles.is_empty() && !settings.run_without_profile {
     return Err("no profiles selected".into());
   }
   runner::start_automation_run(app_handle, flow_json, profiles, settings).await
@@ -260,9 +260,9 @@ fn sanitize_flow_name(name: &str) -> Result<String, String> {
   }
   if !stem
     .chars()
-    .all(|c| c.is_ascii_alphanumeric() || c == ' ' || c == '_' || c == '-')
+    .all(|c| c.is_alphanumeric() || c == ' ' || c == '_' || c == '-' || c == '.')
   {
-    return Err("flow name may only contain letters, digits, space, '_' or '-'".into());
+    return Err("flow name may only contain letters, digits, space, '_', '-' or '.'".into());
   }
   Ok(format!("{stem}.donutflow"))
 }
@@ -445,8 +445,14 @@ mod tests {
 
   #[test]
   fn sanitize_rejects_disallowed_chars() {
-    // A foreign extension collapses to a disallowed '.' in the stem.
-    assert!(sanitize_flow_name("flow.exe").is_err());
+    assert_eq!(
+      sanitize_flow_name("flow.exe").unwrap(),
+      "flow.exe.donutflow"
+    );
+    assert_eq!(
+      sanitize_flow_name("flow.v1.0").unwrap(),
+      "flow.v1.0.donutflow"
+    );
     assert!(sanitize_flow_name("flow$").is_err());
     assert!(sanitize_flow_name("flow:name").is_err());
     assert!(sanitize_flow_name("").is_err());

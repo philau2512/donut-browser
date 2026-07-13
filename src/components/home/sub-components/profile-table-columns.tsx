@@ -607,14 +607,49 @@ export function getProfileTableColumns(
         const isLaunching = meta.launchingProfiles.has(profile.id);
         const isStopping = meta.stoppingProfiles.has(profile.id);
 
-        let msg = "Ready";
-        if (isRunning) msg = "Running";
-        else if (isLaunching) msg = "Launching...";
-        else if (isStopping) msg = "Stopping...";
+        if (isRunning)
+          return (
+            <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
+              {meta.t("profiles.table.statusRunning")}
+            </span>
+          );
+        if (isLaunching)
+          return (
+            <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
+              {meta.t("profiles.table.statusLaunching")}
+            </span>
+          );
+        if (isStopping)
+          return (
+            <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
+              {meta.t("profiles.table.statusStopping")}
+            </span>
+          );
+
+        // Show proxy error if last check failed — click to open quick proxy edit for the profile
+        if (profile.proxy_id) {
+          const proxyResult = meta.proxyCheckResults[profile.proxy_id];
+          if (proxyResult && !proxyResult.is_valid) {
+            return (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={() => meta.onQuickProxyEdit?.(profile)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ")
+                    meta.onQuickProxyEdit?.(profile);
+                }}
+                className="text-xs text-destructive underline underline-offset-2 cursor-pointer hover:text-destructive/80 font-medium block text-center truncate max-w-full"
+              >
+                {meta.t("profiles.table.errorCannotCheckProxy")}
+              </span>
+            );
+          }
+        }
 
         return (
           <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
-            {msg}
+            {meta.t("profiles.table.statusReady")}
           </span>
         );
       },

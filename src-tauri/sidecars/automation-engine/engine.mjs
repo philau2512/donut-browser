@@ -21,10 +21,11 @@ import { dirname, resolve } from "node:path";
 import { chromium } from "playwright-core";
 
 import { validateFlow } from "./lib/validate.mjs";
-import { interpolateParams } from "./lib/interpolate.mjs";
+import { interpolateParams, interpolateString } from "./lib/interpolate.mjs";
 import { Logger, createRedactor } from "./lib/logger.mjs";
 import { getPage } from "./lib/execution-target.mjs";
 import { getHandler } from "./nodes/index.mjs";
+import { ResourceManager } from "./resources/index.mjs";
 
 const EXIT_OK = 0;
 const EXIT_NODE_FAILED = 1;
@@ -101,10 +102,14 @@ async function resolvePage(browser, logger) {
   return pages[0];
 }
 
-export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger, flowDir }) {
+export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger, flowDir, resourceManager }) {
+  if (vars) {
+    vars.WAS_ERROR = "false";
+    vars.LAST_ERROR = "";
+  }
   // Inject runSubFlow so control-flow handlers can call sub-scripts without a
   // dynamic import back into engine.mjs (avoids circular-import overhead).
-  const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, ...args });
+  const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, resourceManager, ...args });
   const ctx = {
     logger,
     vars,
@@ -114,10 +119,18 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
     frame: null,
     flowDir,
     runSubFlow,
+    resourceManager: resourceManager ?? null,
+    ignoreErrors: false,
+    flow,
   };
   let failed = false;
 
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
+  const labelIndex = new Map(
+    flow.nodes
+      .filter((n) => n.type === "label")
+      .map((n) => [n.id, n]),
+  );
   const getNextNode = (fromId, outcome) => {
     const edge = flow.edges.find((e) => e.from === fromId && (e.sourceHandle ?? "success") === outcome);
     return edge ? byId.get(edge.to) : null;
@@ -151,17 +164,87 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
     const stableNodeId = cur.data?.nodeId ?? cur.id;
     logger.info(stableNodeId, `▶ ${cur.type}`);
     let outcome = "success";
+    let jumpTarget = null;
+    const startTime = Date.now();
     try {
       const activePage = getPage(ctx);
       const result = await handler(interpolated, activePage, ctx);
       if (typeof result === "string") {
         outcome = result;
+      } else if (result?.type === "jumpToLabel") {
+        const target = labelIndex.get(result.targetLabelNodeId);
+        if (!target) {
+          if (flow.isPartial) {
+            logger.info(stableNodeId, `moveToLabel: target label not found in active nodes list during partial/debug run, stopping execution gracefully.`);
+            cur = null;
+            continue;
+          }
+          throw new Error(`moveToLabel: target label not found: ${result.targetLabelNodeId}`);
+        }
+        jumpTarget = target;
+        logger.info(stableNodeId, `jump → ${result.targetLabelName ?? result.targetLabelNodeId}`);
+      } else if (result?.type === "jumpToNode") {
+        const target = byId.get(result.targetNodeId);
+        if (!target) {
+          throw new Error(`jumpToNode: target node not found: ${result.targetNodeId}`);
+        }
+        jumpTarget = target;
+        logger.info(stableNodeId, `jump to node → ${result.targetNodeId}`);
       }
       logger.info(stableNodeId, `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`);
     } catch (err) {
       outcome = "fail";
       const msg = err instanceof Error ? err.message : String(err);
       logger.error(stableNodeId, `✗ ${cur.type}: ${msg}`);
+      if (ctx.ignoreErrors) {
+        vars.WAS_ERROR = "true";
+        vars.LAST_ERROR = msg;
+        logger.warn(stableNodeId, `ignoreErrors is active → capturing error and continuing`);
+      }
+    }
+    const duration = Date.now() - startTime;
+
+    // Sleep after node execution (calculating target sleep time minus execution duration)
+    const rawFrom = cur.sleepAfterFrom;
+    const rawTo = cur.sleepAfterTo;
+    if (rawFrom != null || rawTo != null) {
+      let from = 0;
+      let to = 0;
+
+      if (rawFrom != null) {
+        const interpolatedFrom = typeof rawFrom === "string" ? interpolateString(rawFrom, vars) : rawFrom;
+        const parsedFrom = Number(interpolatedFrom);
+        from = Number.isFinite(parsedFrom) ? Math.max(0, parsedFrom) : 0;
+      }
+
+      if (rawTo != null) {
+        const interpolatedTo = typeof rawTo === "string" ? interpolateString(rawTo, vars) : rawTo;
+        const parsedTo = Number(interpolatedTo);
+        to = Number.isFinite(parsedTo) ? Math.max(0, parsedTo) : 0;
+      }
+
+      if (from > 0 || to > 0) {
+        let sleepTarget = 0;
+        if (from === to) {
+          sleepTarget = from;
+        } else {
+          const minVal = Math.min(from, to);
+          const maxVal = Math.max(from, to);
+          sleepTarget = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+        }
+        const sleepTime = sleepTarget - duration;
+        if (sleepTime > 0) {
+          logger.info(stableNodeId, `sleep after node → sleeping ${sleepTime}ms (target: ${sleepTarget}ms, execution duration: ${duration}ms)`);
+          await new Promise((resolve) => setTimeout(resolve, sleepTime));
+        } else {
+          logger.debug(stableNodeId, `sleep after node → skipped (execution duration ${duration}ms exceeded target ${sleepTarget}ms)`);
+        }
+      }
+    }
+
+    if (jumpTarget) {
+      cur = jumpTarget;
+      continue;
     }
 
     const next = getNextNode(cur.id, outcome);
@@ -169,7 +252,7 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       cur = next;
     } else {
       if (outcome === "fail") {
-        const cont = cur.continueOnError ?? continueDefault;
+        const cont = cur.continueOnError ?? continueDefault ?? ctx.ignoreErrors;
         if (cont) {
           logger.warn(cur.id, `continueOnError → skipping failed node, proceeding to success branch`);
           // Clean up loop state if this node was a loop node that failed
@@ -187,6 +270,13 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
         cur = null;
       }
     }
+  }
+  // Auto-release any remaining active leases when the flow ends without an
+  // explicit profileSuccess/profileFail node. Does not increment usage counters.
+  if (ctx.resourceManager) {
+    const profileId = vars?.PROFILE_ID ?? vars?.profile_id ?? "unknown";
+    const runId = vars?.RUN_ID ?? vars?.run_id ?? "unknown";
+    ctx.resourceManager.releaseAll(profileId, runId);
   }
   return failed;
 }
@@ -282,6 +372,27 @@ async function main() {
     return EXIT_SETUP;
   }
 
+
+  // Initialize ResourceManager if the flow defines resources (schema v2).
+  const resourceManager = new ResourceManager();
+  const flowResources = Array.isArray(flow.resources) ? flow.resources : [];
+  if (flowResources.length > 0) {
+    const stateDir = `${args["artifacts-dir"]}/resource-state`;
+    try {
+      await resourceManager.initialize(flowResources, {
+        flowDir: dirname(resolve(args.flow)),
+        stateDir,
+      });
+      // Bridge resource events to stdout as JSON-lines for Phase 4 report wiring.
+      resourceManager.events.on("*", (event) => {
+        logger.info(null, `[resource-event] ${JSON.stringify(event)}`);
+      });
+    } catch (e) {
+      logger.error(null, `ResourceManager init failed: ${e.message}`);
+      return EXIT_SETUP;
+    }
+  }
+
   try {
     const page = await resolvePage(browser, logger);
     logger.info(null, `flow "${flow.name}" started (${flow.nodes.length} nodes)`);
@@ -294,6 +405,7 @@ async function main() {
       continueDefault,
       logger,
       flowDir: dirname(resolve(args.flow)),
+      resourceManager,
     });
     logger.info(null, failed ? `flow stopped on error` : `flow completed`);
     return failed ? EXIT_NODE_FAILED : EXIT_OK;
@@ -301,6 +413,8 @@ async function main() {
     logger.error(null, `fatal: ${e.message}`);
     return EXIT_SETUP;
   } finally {
+    // Flush persisted resource state before disconnect.
+    try { await resourceManager.flush(); } catch { /* non-fatal */ }
     // Disconnect WITHOUT closing the browser — orchestrator owns lifecycle.
     try {
       await browser.close();

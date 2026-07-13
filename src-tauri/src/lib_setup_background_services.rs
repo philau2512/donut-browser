@@ -11,11 +11,22 @@ use tauri::AppHandle;
 /// * `app` - The Tauri app handle for accessing app resources
 /// * `startup_url` - Optional startup URL from command line arguments
 pub fn spawn_service_tasks(app: &AppHandle, _startup_url: Option<String>) {
+  crate::automation::app_handle_store::set_automation_app_handle(app.clone());
+  spawn_automation_engine_host();
   spawn_mcp_autostart(app);
   spawn_status_broadcast(app);
   spawn_api_server_startup(app);
   spawn_sync_subscription(app);
   spawn_cloud_auth_refresh(app);
+}
+
+fn spawn_automation_engine_host() {
+  tauri::async_runtime::spawn(async move {
+    match crate::automation::engine_host::start_automation_engine_host().await {
+      Ok(url) => log::info!("Automation engine host ready at {url}"),
+      Err(e) => log::warn!("Automation engine host failed to start: {e}"),
+    }
+  });
 }
 
 // Auto-start MCP server if it was previously enabled in settings.
@@ -127,6 +138,7 @@ fn spawn_status_broadcast(_app: &AppHandle) {
         .collect();
 
       for profile in profiles_to_check {
+        let had_pid = profile.process_id.is_some();
         // Check browser status and track changes
         match runner
           .check_browser_status(app_handle_status.clone(), &profile)
@@ -139,8 +151,13 @@ fn spawn_status_broadcast(_app: &AppHandle) {
               .copied()
               .unwrap_or(false);
 
-            // Only emit event if state actually changed
-            if last_state != is_running {
+            // Emit when the running state changed, or when we still had a
+            // stored PID but the browser is gone — the launch path sets the
+            // frontend to "running" immediately, and a missed transition
+            // here leaves the stop button stuck.
+            let should_emit = last_state != is_running || (!is_running && had_pid);
+
+            if should_emit {
               log::debug!(
                 "Status checker detected change for profile {}: {} -> {}",
                 profile.name,
@@ -184,6 +201,13 @@ fn spawn_status_broadcast(_app: &AppHandle) {
                     false,
                   )
                   .await;
+                // Release the cloud team lock when the browser exits naturally
+                // (window closed by the user). The explicit kill path in
+                // browser_runner.rs already releases it, but this branch did
+                // not — leaking the lock, which the 30s heartbeat then renews
+                // indefinitely (issue #474). No-op for non-sync/non-paid
+                // profiles thanks to the guards inside the helper.
+                crate::team_lock::release_team_lock_if_needed(&profile).await;
                 last_running_states.insert(profile_id.clone(), false);
               }
             } else {

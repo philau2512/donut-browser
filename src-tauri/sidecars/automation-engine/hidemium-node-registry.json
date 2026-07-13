@@ -147,6 +147,18 @@
       "donutType": "addComment",
       "status": "implemented",
       "wave": 2
+    },
+    {
+      "hidemiumSlug": "profile/open-profile",
+      "donutType": "openProfile",
+      "status": "implemented",
+      "wave": 3
+    },
+    {
+      "hidemiumSlug": "profile/close-profile",
+      "donutType": "closeProfile",
+      "status": "implemented",
+      "wave": 3
     }
   ]
 }

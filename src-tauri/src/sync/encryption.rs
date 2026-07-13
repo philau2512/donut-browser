@@ -1,6 +1,6 @@
 use aes_gcm::{
-  aead::{Aead, AeadCore, KeyInit, OsRng},
-  Aes256Gcm, Key,
+  aead::{Aead, KeyInit},
+  Aes256Gcm, Key, Nonce,
 };
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
@@ -55,7 +55,7 @@ pub fn store_e2e_password(password: &str) -> Result<(), String> {
   }
 
   let vault_password = get_vault_password();
-  let salt = SaltString::generate(&mut OsRng);
+  let salt = SaltString::encode_b64(&rand::random::<[u8; 16]>()).expect("salt encode");
   let argon2 = Argon2::default();
   let password_hash = argon2
     .hash_password(vault_password.as_bytes(), &salt)
@@ -68,7 +68,7 @@ pub fn store_e2e_password(password: &str) -> Result<(), String> {
     .map_err(|_| "Invalid key length")?;
   let key = Key::<Aes256Gcm>::from(key_bytes);
   let cipher = Aes256Gcm::new(&key);
-  let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+  let nonce = Nonce::from(rand::random::<[u8; 12]>());
 
   let ciphertext = cipher
     .encrypt(&nonce, password.as_bytes())
@@ -87,6 +87,7 @@ pub fn store_e2e_password(password: &str) -> Result<(), String> {
 
   std::fs::write(&file_path, file_data)
     .map_err(|e| format!("Failed to write e2e password file: {e}"))?;
+  crate::settings::app_dirs::restrict_to_owner(std::path::Path::new(&file_path));
 
   Ok(())
 }
@@ -229,9 +230,7 @@ pub fn derive_profile_key(user_password: &str, profile_salt: &str) -> Result<[u8
 
 /// Generate a random 16-byte salt, base64-encoded
 pub fn generate_salt() -> String {
-  let mut salt = [0u8; 16];
-  use aes_gcm::aead::rand_core::RngCore;
-  OsRng.fill_bytes(&mut salt);
+  let salt = rand::random::<[u8; 16]>();
   BASE64.encode(salt)
 }
 
@@ -239,7 +238,7 @@ pub fn generate_salt() -> String {
 pub fn encrypt_bytes(key: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>, String> {
   let aes_key = Key::<Aes256Gcm>::from(*key);
   let cipher = Aes256Gcm::new(&aes_key);
-  let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+  let nonce = Nonce::from(rand::random::<[u8; 12]>());
 
   let ciphertext = cipher
     .encrypt(&nonce, plaintext)

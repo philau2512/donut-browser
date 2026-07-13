@@ -52,6 +52,8 @@ export interface RunSettings {
   closeOnComplete: boolean;
   writeLogs: boolean;
   noOverlapping: boolean;
+  runWithoutProfile: boolean;
+  virtualProfileCount: number;
 }
 
 /** Default settings — mirror RunSettings::default() in run_state.rs. */
@@ -62,6 +64,8 @@ export const DEFAULT_RUN_SETTINGS: RunSettings = {
   closeOnComplete: true,
   writeLogs: true,
   noOverlapping: true,
+  runWithoutProfile: false,
+  virtualProfileCount: 1,
 };
 
 /** State for one run (one flow across N profiles). snake_case (serde default). */

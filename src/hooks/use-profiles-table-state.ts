@@ -266,6 +266,34 @@ export function useProfilesTableState({
     }
   }, [profiles]);
 
+  // Listen for real-time proxy check result updates emitted by the backend
+  // (triggered by check_proxy_validity, including pre-launch checks).
+  React.useEffect(() => {
+    let mounted = true;
+    let unlisten: (() => void) | undefined;
+
+    const setup = async () => {
+      try {
+        unlisten = await listen<{ proxy_id: string; result: ProxyCheckResult }>(
+          "proxy-check-changed",
+          (event) => {
+            if (!mounted) return;
+            const { proxy_id, result } = event.payload;
+            setProxyCheckResults((prev) => ({ ...prev, [proxy_id]: result }));
+          },
+        );
+      } catch (err) {
+        console.error("Failed to setup proxy-check-changed listener:", err);
+      }
+    };
+
+    void setup();
+    return () => {
+      mounted = false;
+      unlisten?.();
+    };
+  }, []);
+
   const loadAllTags = React.useCallback(async () => {
     try {
       const tags = await invoke<string[]>("get_all_tags");

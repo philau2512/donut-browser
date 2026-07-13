@@ -12,9 +12,23 @@ describe("ExpressionInput", () => {
       />,
     );
 
+    fireEvent.click(screen.getByTitle("Insert Variable"));
+
     expect(
-      screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["PROFILE_ID", "PROFILE_NAME", "EMAIL", "ZED"]);
+      screen
+        .getAllByRole("button")
+        .map((button) => button.textContent)
+        .filter(Boolean),
+    ).toEqual([
+      "PROFILE_ID",
+      "PROFILE_NAME",
+      "CDP_PORT",
+      "PROXY_IP",
+      "IP_COUNTRY",
+      "BROWSER_PID",
+      "EMAIL",
+      "ZED",
+    ]);
   });
 
   it("inserts variable expressions with safe spacing", () => {
@@ -27,6 +41,7 @@ describe("ExpressionInput", () => {
       />,
     );
 
+    fireEvent.click(screen.getByTitle("Insert Variable"));
     fireEvent.click(screen.getByRole("button", { name: /EMAIL/i }));
     expect(onChange).toHaveBeenLastCalledWith("{{EMAIL}}");
 
@@ -37,6 +52,7 @@ describe("ExpressionInput", () => {
         variables={{ EMAIL: "e" }}
       />,
     );
+    fireEvent.click(screen.getByTitle("Insert Variable"));
     fireEvent.click(screen.getByRole("button", { name: /EMAIL/i }));
     expect(onChange).toHaveBeenLastCalledWith("hello {{EMAIL}}");
 
@@ -47,6 +63,7 @@ describe("ExpressionInput", () => {
         variables={{ EMAIL: "e" }}
       />,
     );
+    fireEvent.click(screen.getByTitle("Insert Variable"));
     fireEvent.click(screen.getByRole("button", { name: /EMAIL/i }));
     expect(onChange).toHaveBeenLastCalledWith("hello {{EMAIL}}");
   });

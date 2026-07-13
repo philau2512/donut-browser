@@ -40,9 +40,12 @@ if (files.length === 0) {
       ) {
         if (relativePath.startsWith("donut-sync/")) {
           const syncFileRelative = relative(resolve(rootDir, "donut-sync"), absolutePath).replace(/\\/g, "/");
-          execSync(`npx biome check ${syncFileRelative}`, { stdio: "inherit", cwd: resolve(rootDir, "donut-sync") });
+          execSync(`node scripts/biome-run.mjs --cwd donut-sync check ${syncFileRelative}`, {
+            stdio: "inherit",
+            cwd: rootDir,
+          });
         } else {
-          execSync(`npx biome check ${relativePath}`, { stdio: "inherit", cwd: rootDir });
+          execSync(`node scripts/biome-run.mjs check ${relativePath}`, { stdio: "inherit", cwd: rootDir });
         }
       } else {
         console.log(`Unsupported file type for linting: ${relativePath}`);

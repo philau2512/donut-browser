@@ -53,6 +53,9 @@ describe("NodePalette", () => {
     const onDragStart = vi.fn();
     render(<NodePalette onDragStart={onDragStart} />);
 
+    // Click on the NAVIGATOR group card first to navigate to the sub-screen
+    fireEvent.click(screen.getByText("NAVIGATOR"));
+
     fireEvent.dragStart(screen.getByRole("button", { name: /Open URL/i }));
 
     expect(onDragStart).toHaveBeenCalledWith(

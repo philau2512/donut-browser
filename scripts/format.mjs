@@ -42,10 +42,15 @@ if (files.length === 0) {
         if (relativePath.startsWith("donut-sync/")) {
           // Biome format cho donut-sync
           const syncFileRelative = relative(resolve(rootDir, "donut-sync"), absolutePath).replace(/\\/g, "/");
-          execSync(`npx biome check --write --unsafe ${syncFileRelative}`, { stdio: "inherit", cwd: resolve(rootDir, "donut-sync") });
+          execSync(`node scripts/biome-run.mjs --cwd donut-sync check --write --unsafe ${syncFileRelative}`, {
+            stdio: "inherit",
+            cwd: rootDir,
+          });
         } else {
-          // Biome format cho frontend
-          execSync(`npx biome check --write --unsafe ${relativePath}`, { stdio: "inherit", cwd: rootDir });
+          execSync(`node scripts/biome-run.mjs check --write --unsafe ${relativePath}`, {
+            stdio: "inherit",
+            cwd: rootDir,
+          });
         }
       } else {
         console.log(`Unsupported file type for formatting: ${relativePath}`);

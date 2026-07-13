@@ -30,6 +30,7 @@ pub use mcp::{mcp_integrations, mcp_server};
 pub mod vpn;
 
 pub mod automation;
+pub mod commands;
 
 // Background task modules (extracted from lib_setup.rs for domain separation)
 pub mod lib_setup_background_cleanup;
@@ -54,7 +55,7 @@ use profile::manager::{
   list_browser_profiles, rename_profile, update_camoufox_config, update_profile_dns_blocklist,
   update_profile_launch_hook, update_profile_note, update_profile_proxy,
   update_profile_proxy_bypass_rules, update_profile_status, update_profile_tags,
-  update_profile_vpn, update_wayfern_config,
+  update_profile_vpn, update_profile_window_color, update_wayfern_config,
 };
 
 use profile::password::{
@@ -76,10 +77,11 @@ use browser::downloaded_browsers_registry::{
 use browser::downloader::{cancel_download, download_browser};
 
 use settings_manager::{
-  complete_onboarding, dismiss_window_resize_warning, get_app_settings, get_onboarding_completed,
-  get_sync_settings, get_system_info, get_system_language, get_table_sorting_settings,
-  get_window_resize_warning_dismissed, open_log_directory, read_log_files, save_app_settings,
-  save_sync_settings, save_table_sorting_settings,
+  complete_onboarding, dismiss_window_resize_warning, get_app_settings, get_feature_flags,
+  get_onboarding_completed, get_sync_settings, get_system_info, get_system_language,
+  get_table_sorting_settings, get_window_resize_warning_dismissed, open_log_directory,
+  read_log_files, save_app_settings, save_sync_settings, save_table_sorting_settings,
+  set_feature_flag,
 };
 
 use sync::{
@@ -234,16 +236,24 @@ async fn create_stored_proxy(
   name: String,
   proxy_settings: Option<crate::browser::ProxySettings>,
   is_profile_specific: Option<bool>,
+  check_before_start: Option<bool>,
 ) -> Result<crate::proxy::proxy_manager::StoredProxy, String> {
   if let Some(settings) = proxy_settings {
-    crate::proxy::proxy_manager::PROXY_MANAGER
+    let mut proxy = crate::proxy::proxy_manager::PROXY_MANAGER
       .create_stored_proxy(
         &app_handle,
         name,
         settings,
         is_profile_specific.unwrap_or(false),
       )
-      .map_err(|e| format!("Failed to create stored proxy: {e}"))
+      .map_err(|e| format!("Failed to create stored proxy: {e}"))?;
+
+    if let Some(check) = check_before_start {
+      proxy = crate::proxy::proxy_manager::PROXY_MANAGER
+        .set_check_before_start(&proxy.id, check)
+        .map_err(|e| format!("Failed to set check_before_start: {e}"))?;
+    }
+    Ok(proxy)
   } else {
     Err("proxy_settings is required".to_string())
   }
@@ -260,10 +270,19 @@ async fn update_stored_proxy(
   proxy_id: String,
   name: Option<String>,
   proxy_settings: Option<crate::browser::ProxySettings>,
+  check_before_start: Option<bool>,
 ) -> Result<crate::proxy::proxy_manager::StoredProxy, String> {
-  crate::proxy::proxy_manager::PROXY_MANAGER
+  let mut proxy = crate::proxy::proxy_manager::PROXY_MANAGER
     .update_stored_proxy(&app_handle, &proxy_id, name, proxy_settings)
-    .map_err(|e| format!("Failed to update stored proxy: {e}"))
+    .map_err(|e| format!("Failed to update stored proxy: {e}"))?;
+
+  if let Some(check) = check_before_start {
+    proxy = crate::proxy::proxy_manager::PROXY_MANAGER
+      .set_check_before_start(&proxy_id, check)
+      .map_err(|e| format!("Failed to set check_before_start: {e}"))?;
+  }
+
+  Ok(proxy)
 }
 
 #[tauri::command]

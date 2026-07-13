@@ -34,8 +34,7 @@
       "saving": "Сохраняем…",
       "saved": "Сохранено",
       "copied": "Скопировано",
-      "learnMore": "Подробнее",
-      "toggleTheme": "Переключить тему"
+      "learnMore": "Подробнее"
     },
     "status": {
       "active": "Активен",
@@ -246,11 +245,7 @@
       "cantModifyRunning": "Нельзя изменить запущенный профиль",
       "cantModifyLaunching": "Нельзя изменить профиль во время запуска",
       "cantModifyStopping": "Нельзя изменить профиль во время остановки",
-      "cantModifyUpdating": "Нельзя изменить профиль во время обновления браузера",
-      "lastOpen": "Последний запуск",
-      "os": "OS",
-      "message": "Сообщение",
-      "changeProxy": "Изменить прокси"
+      "cantModifyUpdating": "Нельзя изменить профиль во время обновления браузера"
     },
     "actions": {
       "launch": "Запустить",
@@ -295,6 +290,7 @@
       "confirmButton": "Удалить {{count}} профил(ей)"
     },
     "note": {
+      "empty": "Нет заметки",
       "placeholder": "Добавить заметку..."
     },
     "aria": {
@@ -312,17 +308,7 @@
       "copyCookies": "Копировать cookies",
       "runSelected": "Запустить выбранные",
       "stopSelected": "Остановить выбранные",
-      "proRequired": "Для массового запуска/остановки требуется план Pro",
-      "startCount": "Запустить {{count}} профилей",
-      "start": "Запустить профили",
-      "stopCount": "Остановить {{count}} профилей",
-      "stop": "Остановить профили",
-      "automation": "Автоматизация",
-      "updateMultiple": "Обновить несколько",
-      "proxy": "Прокси",
-      "exportCookies": "Экспорт файлов cookie",
-      "moreAction": "Другие действия",
-      "synchronize": "Синхронизировать действия"
+      "proRequired": "Для массового запуска/остановки требуется план Pro"
     },
     "passwordProtectedBadge": "Защищено паролем",
     "launchHook": {
@@ -345,23 +331,6 @@
       "nameDesc": "Имя (Я–А)",
       "newest": "Сначала новые",
       "oldest": "Сначала старые"
-    },
-    "status": {
-      "noStatus": "Нет статуса",
-      "setting": "Настройка статуса",
-      "addStatus": "Добавить статус",
-      "labelPlaceholder": "Метка статуса...",
-      "manageTitle": "Управление статусами"
-    },
-    "menu": {
-      "rename": "Переименовать",
-      "edit": "Редактировать настройки",
-      "copyCookies": "Копировать файлы cookie",
-      "manageCookies": "Управление файлами cookie",
-      "clone": "Клонировать профиль",
-      "assignGroup": "Назначить в группу",
-      "assignExtension": "Назначить расширение",
-      "configureCamoufox": "Настроить Camoufox"
     }
   },
   "createProfile": {
@@ -371,7 +340,6 @@
       "title": "Антидетект браузер",
       "description": "Выберите браузер с возможностями защиты от обнаружения",
       "chromium": "Wayfern",
-      "firefox": "Camoufox",
       "badge": "Антидетект браузер"
     },
     "regular": {
@@ -407,30 +375,13 @@
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "На базе Wayfern",
-    "firefoxLabel": "Firefox",
-    "firefoxSubtitle": "На базе Camoufox",
-    "camoufoxWarning": "Firefox (Camoufox) поддерживается сторонней организацией. Для промышленного использования используйте Chromium.",
     "platformUnavailable": "{{browser}} пока недоступен на вашей платформе.",
     "passwordProtect": {
       "label": "Защитить этот профиль паролем",
       "description": "Шифрует данные профиля на диске. Требуется для запуска."
     },
     "downloadingSubtitle": "Загрузка…",
-    "browsersDownloading": "Браузеры ещё загружаются. Создание профилей станет доступно после завершения загрузки.",
-    "tabs": {
-      "baseInfo": "Основная информация",
-      "location": "Геолокация",
-      "proxy": "Прокси",
-      "cookies": "Куки",
-      "hardware": "Аппаратное обеспечение",
-      "command": "Команда",
-      "bookmark": "Закладка",
-      "extension": "Расширение",
-      "requests": "Запросы",
-      "other": "Другое"
-    },
-    "quantity": "Количество",
-    "getFingerprint": "Получить новый отпечаток"
+    "browsersDownloading": "Браузеры ещё загружаются. Создание профилей станет доступно после завершения загрузки."
   },
   "deleteDialog": {
     "title": "Удалить профиль",
@@ -579,15 +530,6 @@
       "vpnsTitle": "Удалить выбранные VPN",
       "vpnsDescription": "Это действие нельзя отменить. Будет безвозвратно удалено VPN: {{count}} — {{names}}.",
       "confirmButton": "Удалить {{count}}"
-    },
-    "quickEdit": {
-      "quickEditTitle": "Быстрое редактирование прокси",
-      "formatLabel": "Формат прокси",
-      "formatPlaceholder": "type://user:pass@ip:port или ip:port",
-      "checkHostLabel": "Хост проверки прокси",
-      "checkBeforeStart": "Проверять прокси перед запуском профиля.",
-      "checkButton": "Проверить прокси",
-      "saveButton": "Изменить прокси"
     }
   },
   "groups": {
@@ -803,42 +745,6 @@
     "error": "Ошибка импорта профиля"
   },
   "config": {
-    "camoufox": {
-      "title": "Настройки Camoufox",
-      "fingerprint": {
-        "title": "Отпечаток",
-        "randomize": "Случайный при запуске",
-        "randomizeDescription": "Генерировать новый отпечаток при каждом запуске браузера.",
-        "osCpuPlaceholder": "напр., Intel Mac OS X 10.15",
-        "webglRendererPlaceholder": "напр., llvmpipe или похожее"
-      },
-      "os": {
-        "title": "Операционная система",
-        "description": "Операционная система для эмуляции при генерации отпечатка.",
-        "windows": "Windows",
-        "macos": "macOS",
-        "linux": "Linux"
-      },
-      "screen": {
-        "title": "Размер экрана",
-        "minWidth": "Мин. ширина",
-        "maxWidth": "Макс. ширина",
-        "minHeight": "Мин. высота",
-        "maxHeight": "Макс. высота"
-      },
-      "geoip": {
-        "title": "GeoIP",
-        "auto": "Автоматически (на основе прокси)",
-        "manual": "Вручную",
-        "disabled": "Выключено"
-      },
-      "blocking": {
-        "title": "Блокировка",
-        "images": "Блокировать изображения",
-        "webrtc": "Блокировать WebRTC",
-        "webgl": "Блокировать WebGL"
-      }
-    },
     "wayfern": {
       "title": "Настройки Wayfern",
       "fingerprint": {
@@ -893,7 +799,7 @@
       "sourcePlaceholder": "Выберите профиль для копирования cookies",
       "running": "(запущен)",
       "targetProfiles": "Целевые профили ({{count}})",
-      "noOtherTargets": "Других выбранных Wayfern/Camoufox профилей нет",
+      "noOtherTargets": "Других выбранных Wayfern профилей нет",
       "selectSourceFirst": "Сначала выберите исходный профиль",
       "selectionStatus": "(выбрано {{selected}} из {{total}})",
       "searchPlaceholder": "Поиск доменов или cookies...",
@@ -994,9 +900,7 @@
       "syncFailed": "Ошибка синхронизации",
       "profileSyncFailed": "Ошибка синхронизации профиля '{{name}}'",
       "cacheClearFailed": "Ошибка очистки кэша",
-      "unknown": "Произошла неизвестная ошибка",
-      "profileCrashTitle": "Профиль '{{name}}' аварийно завершил работу",
-      "profileCrashDesc": "Браузер неожиданно завершил работу: {{status}}"
+      "unknown": "Произошла неизвестная ошибка"
     },
     "loading": {
       "downloading": "Загрузка {{browser}} {{version}}",
@@ -1024,7 +928,6 @@
     "serverError": "Ошибка сервера. Попробуйте позже.",
     "unknownError": "Произошла неизвестная ошибка. Попробуйте снова.",
     "noProfilesForUrl": "Нет доступных профилей. Сначала создайте профиль, прежде чем открывать URL.",
-    "updateCamoufoxConfigFailed": "Не удалось обновить настройки camoufox: {{error}}",
     "updateWayfernConfigFailed": "Не удалось обновить настройки wayfern: {{error}}",
     "createProfileFailed": "Не удалось создать профиль: {{error}}",
     "launchBrowserFailed": "Не удалось запустить браузер: {{error}}",
@@ -1033,7 +936,7 @@
     "renameProfileFailed": "Не удалось переименовать профиль: {{error}}",
     "killBrowserFailed": "Не удалось остановить браузер: {{error}}",
     "deleteSelectedProfilesFailed": "Не удалось удалить выбранные профили: {{error}}",
-    "cookieCopyUnsupportedBrowser": "Копирование cookies работает только с профилями Wayfern и Camoufox",
+    "cookieCopyUnsupportedBrowser": "Копирование cookies работает только с профилями Wayfern",
     "updateSyncSettingsFailed": "Не удалось обновить параметры синхронизации",
     "cloneProfileFailed": "Не удалось клонировать профиль: {{error}}",
     "loadSupportedBrowsersFailed": "Не удалось загрузить поддерживаемые браузеры",
@@ -1050,7 +953,6 @@
     "setProfilePasswordFailed": "Не удалось установить пароль профиля: {{error}}"
   },
   "browser": {
-    "camoufox": "Camoufox",
     "wayfern": "Wayfern"
   },
   "fingerprint": {
@@ -1156,28 +1058,11 @@
     "refreshFingerprint": "Обновить отпечаток",
     "canvasNoiseSeedPlaceholder": "Введите строку-семя для отпечатка canvas",
     "addFontsPlaceholder": "Добавить шрифты...",
-    "enterAsJson": "Введите {{title}} в формате JSON",
-    "webrtcMode": "Режим WebRTC",
-    "webrtcModes": {
-      "forward": "Пересылка (Proxy)",
-      "forwardGoogle": "Пересылка Google",
-      "alter": "Изменить (Spoof)",
-      "real": "Реальный",
-      "disable": "Отключить"
-    },
-    "subTabs": {
-      "screen": "Экран",
-      "system": "Система (ЦП и ОЗУ)",
-      "graphics": "Графика и звук"
-    },
-    "customizeDetails": "Настройка подробных параметров оборудования",
-    "customizeDetailsDesc": "Ручная настройка сидов, рендереров и параметров JSON"
+    "enterAsJson": "Введите {{title}} в формате JSON"
   },
   "warnings": {
     "windowResizeTitle": "Пользовательские размеры окна",
     "windowResizeDescription": "Изменение размеров окна браузера может повысить вероятность обнаружения сайтами того, что информация браузера подменена.",
-    "windowResizeCamoufoxTitle": "Viewport заблокирован Camoufox",
-    "windowResizeCamoufoxDescription": "Camoufox блокирует viewport на подменённых размерах экрана для защиты от фингерпринтинга. Изменение размера окна может вызвать обрезанные или серые области. Это ожидаемое поведение.",
     "dontShowAgain": "Больше не показывать",
     "continue": "Продолжить",
     "cancel": "Отмена"
@@ -1227,7 +1112,8 @@
       "vpn": "VPN",
       "cookieCount": "Хранится Cookie",
       "localDataTransfer": "Локальный трафик",
-      "created": "Создан"
+      "created": "Создан",
+      "windowColor": "Цвет окна"
     },
     "values": {
       "none": "Нет",
@@ -1307,9 +1193,9 @@
       "cannotWhileRunning": "Остановите профиль перед сменой пароля."
     },
     "fingerprint": {
-      "notSupported": "Редактирование отпечатков доступно только для профилей Camoufox и Wayfern.",
+      "notSupported": "Редактирование отпечатков доступно только для профилей Wayfern.",
       "lockedTitle": "Просмотр и редактирование отпечатка — функция Pro",
-      "lockedDescription": "Защита от отпечатков включена во все планы. Активный платный план требуется именно для просмотра и редактирования значений отпечатка профиля."
+      "lockedDescription": "Информация о вашем устройстве защищена в каждом профиле. Для просмотра и редактирования отпечатка профиля требуется активный платный план."
     },
     "syncStatusValue": {
       "waiting": "Ожидание",
@@ -1337,9 +1223,7 @@
     "extensionGroup": "Группа расширений",
     "compatibility": {
       "label": "Совместимость",
-      "chromium": "Chromium",
-      "firefox": "Firefox",
-      "both": "Chromium и Firefox"
+      "chromium": "Chromium"
     },
     "selectedFile": "Выбранный файл",
     "namePlaceholder": "Название расширения",
@@ -1573,14 +1457,7 @@
     "noneOption": "Нет",
     "noValidProfiles": "Нет выбранных допустимых профилей.",
     "vpnGroupHeading": "VPN",
-    "failedFallback": "Не удалось назначить прокси/VPN профилям",
-    "changeProxyTitle": "Изменить прокси",
-    "bulkChangeDescription": "Обновить настройки прокси для {{count}} выбранных профилей",
-    "pleaseSelectProxy": "Пожалуйста, выберите конфигурацию прокси",
-    "pleaseInputProxy": "Пожалуйста, введите список прокси",
-    "invalidJson": "Недопустимый JSON",
-    "successClear": "Настройки прокси/VPN успешно очищены",
-    "withoutProxyWarning": "Все выбранные профили будут переведены в режим Без прокси после отправки."
+    "failedFallback": "Не удалось назначить прокси/VPN профилям"
   },
   "groupAssignment": {
     "title": "Назначить группу",
@@ -1733,14 +1610,6 @@
     "tooltipSent": "↑ Отправлено: ",
     "tooltipReceived": "↓ Получено: "
   },
-  "camoufoxDialog": {
-    "titleView": "Просмотр настроек отпечатка - {{name}} ({{browser}})",
-    "titleConfigure": "Настроить отпечаток - {{name}} ({{browser}})",
-    "invalidFingerprint": "Неверная конфигурация отпечатка",
-    "invalidFingerprintDescription": "Конфигурация отпечатка содержит недопустимый JSON. Проверьте расширенные настройки.",
-    "saveFailed": "Не удалось сохранить конфигурацию",
-    "unknownError": "Произошла неизвестная ошибка"
-  },
   "proxyCheck": {
     "unknownLocation": "Неизвестно",
     "locationToast": "Местоположение вашего прокси:",
@@ -1779,15 +1648,6 @@
     "noteHeader": "Заметка",
     "vpnsHeading": "VPN",
     "createByCountryHeading": "Создать по стране"
-  },
-  "releaseTypeSelector": {
-    "noReleaseTypes": "Нет доступных типов выпусков.",
-    "placeholder": "Выберите тип выпуска...",
-    "stable": "Стабильный",
-    "nightly": "Nightly",
-    "downloaded": "Загружено",
-    "downloadBrowser": "Загрузить браузер",
-    "downloading": "Загрузка..."
   },
   "dataTableActionBar": {
     "selected": "Выбрано: {{count}}",
@@ -1938,14 +1798,11 @@
     "proxyNotWorking": "Выбранный прокси не работает, поэтому профиль не создан.",
     "proxyPaymentRequired": "Выбранный прокси требует оплаты (402) — возможно, его подписка истекла — поэтому профиль не создан.",
     "vpnNotWorking": "Выбранный VPN не работает, поэтому профиль не создан.",
-    "camoufoxImportDeprecated": "Импорт профилей на основе Firefox (Camoufox) больше не поддерживается. Camoufox выводится из эксплуатации — используйте Wayfern.",
-    "wayfernFingerprintMissing": "У этого профиля нет отпечатка. Создайте его перед запуском Wayfern.",
-    "wayfernGeolocationRequired": "В отпечатке нет часового пояса или геолокации, а выход прокси не удалось определить.",
-    "wayfernWebrtcAlterIpUnavailable": "Режим WebRTC alter требует IP выхода прокси, но его не удалось получить.",
-    "wayfernWebrtcAlterIpInvalid": "Режим WebRTC alter получил недействительный IP выхода прокси.",
-    "wayfernNoPageTargets": "Wayfern запустился, но не было страницы для внедрения отпечатка.",
-    "wayfernFingerprintApplyFailed": "Не удалось применить отпечаток к Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "Не удалось восстановить защиту отпечатка на восстановленном браузере Wayfern: {{reason}}"
+    "camoufoxImportDeprecated": "Импорт профилей этого типа больше не поддерживается. Используйте Wayfern.",
+    "updateChecksumsUnavailable": "Не удалось проверить обновление {{version}}: файл контрольных сумм не удалось получить. Обновление не было установлено; попытка будет повторена позже.",
+    "updateChecksumMismatch": "Загруженный файл обновления {{file}} не прошёл проверку контрольной суммы и был удалён. Попробуйте ещё раз.",
+    "nameCannotBeEmpty": "Имя не может быть пустым",
+    "wayfernVersionNotAvailable": "Версия Wayfern {{requested}} недоступна для загрузки. Текущая версия — {{current}}."
   },
   "rail": {
     "profiles": "Профили",
@@ -1962,8 +1819,7 @@
     },
     "network": "Сеть",
     "integrations": "Интеграции",
-    "account": "Аккаунт",
-    "automation": "Автоматизация"
+    "account": "Аккаунт"
   },
   "pageTitle": {
     "proxies": "Сеть",
@@ -1974,8 +1830,7 @@
     "integrations": "Интеграции",
     "account": "Аккаунт",
     "import": "Импорт профиля",
-    "shortcuts": "Сочетания клавиш",
-    "automation": "Автоматизация"
+    "shortcuts": "Сочетания клавиш"
   },
   "encryption": {
     "required": {
@@ -2074,10 +1929,6 @@
     "show": "Показать Donut Browser",
     "quit": "Выход"
   },
-  "browserSupport": {
-    "endingSoonTitle": "Поддержка браузера скоро завершится",
-    "endingSoonDescription": "Поддержка следующих профилей будет прекращена 15 марта 2026 года: {{profiles}}. Перейдите на профили Wayfern."
-  },
   "onboarding": {
     "steps": {
       "createProfile": {
@@ -2159,86 +2010,15 @@
     "title": "Автоматизация браузера приостановлена",
     "description": "Доступ вашей учётной записи к Pro-функциям браузера временно ограничен — обычно из-за входа сразу на нескольких устройствах. Выйдите из аккаунта на других устройствах и перезапустите профиль, чтобы восстановить доступ."
   },
-  "camoufoxDeprecation": {
-    "title": "Поддержка Camoufox прекращается",
-    "description": "Поддержка профилей Camoufox прекращается 8 июля 2026 года. У вас есть один или несколько профилей Camoufox. Перенесите их на Wayfern до этой даты — после неё профили Camoufox могут перестать работать.",
-    "acknowledge": "Понятно"
+  "wayfernConfigDialog": {
+    "titleView": "Просмотр настроек отпечатка - {{name}} ({{browser}})",
+    "titleConfigure": "Настроить отпечаток - {{name}} ({{browser}})",
+    "invalidFingerprint": "Неверная конфигурация отпечатка",
+    "invalidFingerprintDescription": "Конфигурация отпечатка содержит недопустимый JSON. Проверьте расширенные настройки.",
+    "saveFailed": "Не удалось сохранить конфигурацию",
+    "unknownError": "Произошла неизвестная ошибка"
   },
-  "tags": {
-    "title": "Теги",
-    "assignSuccess": "Теги успешно добавлены к {{count}} профилю(ям)",
-    "failed": "Не удалось назначить теги: {{error}}",
-    "placeholder": "Выберите или создайте теги...",
-    "description_one": "Назначить теги выбранному профилю.",
-    "description_other": "Назначить теги {{count}} выбранным профилям.",
-    "selectedProfilesLabel": "Выбранные профили",
-    "assignTagsLabel": "Назначить теги",
-    "assignButton": "Добавить",
-    "deleteConfirmTitle": "Удалить тег",
-    "deleteConfirmDesc": "Вы уверены, что хотите удалить тег «{{tag}}»? Это удалит его из всех профилей и системы глобально.",
-    "deleteSuccess": "Тег «{{tag}}» успешно удален",
-    "deleteFailed": "Не удалось удалить тег: {{error}}"
-  },
-  "automation": {
-    "cleanupMode": {
-      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
-      "fullDesc": "Delete the entire profile directory",
-      "cookiesAndCache": "Cookies & Cache Only",
-      "full": "Full Profile Deletion"
-    },
-    "title": "Automation",
-    "addNode": "Add Task",
-    "securityWarning": {
-      "title": "Security Warning",
-      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
-    },
-    "afterClose": {
-      "description": "Tasks to execute after the browser closes",
-      "title": "After Closing Profile"
-    },
-    "masterSwitch": "Enable Automation",
-    "fields": {
-      "allowedCountries": "Allowed Countries",
-      "protocol": "Protocol",
-      "requestBody": "Request Body",
-      "message": "Message",
-      "timeoutSeconds": "Timeout (seconds)",
-      "label": "Label",
-      "jsonPathPort": "JSON Path for Port",
-      "apiUrl": "API URL",
-      "maxFraudScore": "Max Fraud Score",
-      "cleanupMode": "Cleanup Mode",
-      "jsonPathIp": "JSON Path for IP",
-      "chatId": "Chat ID",
-      "timeout": "Timeout (seconds)",
-      "botToken": "Bot Token",
-      "variablesAvailable": "Available variables",
-      "webhookUrl": "Webhook URL",
-      "method": "HTTP Method",
-      "labelPlaceholder": "My Task",
-      "responseFormat": "Response Format",
-      "maxAttempts": "Max Retry Attempts",
-      "command": "Command"
-    },
-    "noNodes": "No automation tasks configured yet",
-    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
-    "warnings": {
-      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
-      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
-    },
-    "beforeOpen": {
-      "description": "Tasks to execute before the browser launches",
-      "title": "Before Opening Profile"
-    },
-    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
-    "nodeTypes": {
-      "ipCheck": "IP Check",
-      "webhook": "Webhook",
-      "localCommand": "Local Command",
-      "cleanup": "Cleanup",
-      "dynamicProxy": "Dynamic Proxy",
-      "telegramAlert": "Telegram Alert"
-    },
-    "dependencyWarning": "Dependency issue"
+  "cookieCopy": {
+    "noOtherTargets": "Других выбранных Wayfern профилей нет"
   }
 }

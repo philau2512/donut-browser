@@ -141,6 +141,8 @@ pub struct StoredProxy {
   pub dynamic_proxy_url: Option<String>,
   #[serde(default)]
   pub dynamic_proxy_format: Option<String>,
+  #[serde(default)]
+  pub check_before_start: Option<bool>,
 }
 
 /// Current unix time in whole seconds. Used to stamp `updated_at` on edits.
@@ -171,6 +173,7 @@ impl StoredProxy {
       geo_isp: None,
       dynamic_proxy_url: None,
       dynamic_proxy_format: None,
+      check_before_start: Some(true),
     }
   }
 
@@ -277,6 +280,19 @@ impl ProxyManager {
     let cache_file = self.get_proxy_check_cache_file(proxy_id)?;
     let content = serde_json::to_string_pretty(result)?;
     fs::write(&cache_file, content)?;
+
+    // Emit event to update reactive UI
+    #[derive(serde::Serialize, Clone)]
+    struct ProxyCheckChangedPayload {
+      proxy_id: String,
+      result: ProxyCheckResult,
+    }
+    let payload = ProxyCheckChangedPayload {
+      proxy_id: proxy_id.to_string(),
+      result: result.clone(),
+    };
+    let _ = events::emit("proxy-check-changed", payload);
+
     Ok(())
   }
 

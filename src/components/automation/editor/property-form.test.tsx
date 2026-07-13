@@ -9,6 +9,15 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
+vi.mock("@/components/ui/tooltip", () => ({
+  TooltipProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+  Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
+  TooltipTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children: ReactNode }) => (
+    <div>{children}</div>
+  ),
+}));
+
 vi.mock("@/components/ui/checkbox", () => ({
   Checkbox: ({
     checked,
@@ -141,6 +150,56 @@ describe("PropertyForm", () => {
       target: { value: "" },
     });
 
-    expect(onParamChange).toHaveBeenCalledWith("timeout", 0);
+    expect(onParamChange).toHaveBeenCalledWith("timeout", "");
+  });
+
+  it("renders VariableSelectInput for saveToVar and setVariable name params", () => {
+    const onParamChange = vi.fn();
+    const saveToVarCatalog: AutomationNodeCatalogItem = {
+      type: "getText",
+      group: "data",
+      labelKey: "getText",
+      descriptionKey: "getText.desc",
+      documentKey: "getText.doc",
+      icon: () => null,
+      defaults: {},
+      params: [
+        {
+          key: "saveToVar",
+          kind: "string",
+          labelKey: "saveToVar.label",
+        },
+      ],
+    };
+    const saveToVarNode = {
+      id: "n2",
+      type: "automation",
+      position: { x: 0, y: 0 },
+      data: {
+        label: "getText",
+        nodeType: "getText",
+        params: { saveToVar: "" },
+      },
+    } as AutomationCanvasNode;
+
+    render(
+      <PropertyForm
+        catalog={saveToVarCatalog}
+        node={saveToVarNode}
+        variables={{ USER_VAR: "val" }}
+        onParamChange={onParamChange}
+      />,
+    );
+
+    // Verify it renders the variable input
+    const input = screen.getByRole("textbox");
+    expect(input).toBeInTheDocument();
+
+    // Click it to open Popover
+    fireEvent.click(input);
+
+    // Click on USER_VAR
+    fireEvent.click(screen.getByRole("button", { name: /USER_VAR/i }));
+    expect(onParamChange).toHaveBeenCalledWith("saveToVar", "USER_VAR");
   });
 });

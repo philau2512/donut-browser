@@ -1,19 +1,41 @@
-import { assertNavigableUrl } from "../lib/url-guard.mjs";
 import { getLocatorRoot } from "../lib/execution-target.mjs";
 import { matchFilter, resolveTabIndex } from "../lib/tab-match.mjs";
+import { assertNavigableUrl } from "../lib/url-guard.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
-/** openUrl: navigate the page to a URL */
+/** openUrl: navigate the page to a URL, with optional retry on failure */
 export async function openUrl(node, page, ctx) {
-  const { url, timeout, waitUntil } = node.params ?? {};
+  const { url, timeout, waitUntil, retryOnFail, maxRetry, retrySleep } = node.params ?? {};
   const parsed = assertNavigableUrl(url, ctx.allowedSchemes);
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
-  ctx.logger.info(node.id, `openUrl → ${parsed.href}`);
-  await page.goto(parsed.href, {
-    timeout: t,
-    waitUntil: waitUntil ?? "load",
-  });
+  const gotoOpts = { timeout: t, waitUntil: waitUntil ?? "load" };
+
+  if (!retryOnFail) {
+    ctx.logger.info(node.id, `openUrl → ${parsed.href}`);
+    await page.goto(parsed.href, gotoOpts);
+    return;
+  }
+
+  const attempts = Number.isFinite(maxRetry) && maxRetry > 0 ? maxRetry : 3;
+  const sleepMs = Number.isFinite(retrySleep) && retrySleep >= 0 ? retrySleep : 1000;
+
+  let lastError;
+  for (let i = 0; i <= attempts; i++) {
+    try {
+      ctx.logger.info(node.id, `openUrl → ${parsed.href}${i > 0 ? ` (retry ${i}/${attempts})` : ""}`);
+      await page.goto(parsed.href, gotoOpts);
+      return;
+    } catch (err) {
+      lastError = err;
+      if (i < attempts) {
+        ctx.logger.warn(node.id, `openUrl failed (attempt ${i + 1}/${attempts + 1}), retrying in ${sleepMs}ms — ${err.message}`);
+        if (sleepMs > 0) await new Promise((r) => setTimeout(r, sleepMs));
+      }
+    }
+  }
+
+  throw lastError;
 }
 
 /** scroll: scroll the page by (x,y) or to a selector */
@@ -81,6 +103,10 @@ export async function newTab(node, page, ctx) {
 /** Resolve target page for Active tab (Hidemium) filters. */
 async function pickSwitchTabPage(allPages, params) {
   const {
+    matchBy,
+    matchValue,
+    matchMode,
+    // Legacy parameters for backward compatibility
     urlPattern,
     urlFilter,
     urlMode,
@@ -88,8 +114,12 @@ async function pickSwitchTabPage(allPages, params) {
     titleMode,
   } = params ?? {};
 
-  const urlNeedle = urlFilter ?? urlPattern;
-  const urlMatchMode = urlMode ?? (urlPattern ? "contain" : "contain");
+  // If matchBy is present, use new logic. Otherwise, fall back to old logic.
+  const urlNeedle = matchBy === "url" ? matchValue : (urlFilter ?? urlPattern);
+  const urlMatchMode = matchBy === "url" ? (matchMode ?? "contain") : (urlMode ?? "contain");
+
+  const titleNeedle = matchBy === "title" ? matchValue : titleFilter;
+  const titleMatchMode = matchBy === "title" ? (matchMode ?? "contain") : (titleMode ?? "contain");
 
   let candidates = allPages;
   if (urlNeedle) {
@@ -98,16 +128,18 @@ async function pickSwitchTabPage(allPages, params) {
       if (matchFilter(p.url(), urlNeedle, urlMatchMode)) candidates.push(p);
     }
   }
-  if (titleFilter) {
+  if (titleNeedle) {
     const next = [];
     for (const p of candidates) {
       const title = await p.title();
-      if (matchFilter(title, titleFilter, titleMode ?? "contain")) next.push(p);
+      if (matchFilter(title, titleNeedle, titleMatchMode)) next.push(p);
     }
     candidates = next;
   }
 
-  const idx = resolveTabIndex(params);
+  let idx = matchBy === "index" ? parseInt(matchValue, 10) : resolveTabIndex(params);
+  if (isNaN(idx)) idx = null;
+  
   if (idx != null) {
     if (candidates.length === 0) {
       const clamped = Math.max(0, Math.min(idx, allPages.length - 1));
@@ -143,36 +175,71 @@ export async function switchTab(node, page, ctx) {
 }
 
 /** closeTab: close current tab, switch to remaining tab if any */
+/** closeTab: close current tab, select tab, or all other tabs */
 export async function closeTab(node, page, ctx) {
-  ctx.logger.info(node.id, `closeTab → ${page.url()}`);
-  await page.close();
+  const { target, tabIndex } = node.params ?? {};
+  const t = target ?? "current";
 
+  if (t === "current") {
+    ctx.logger.info(node.id, `closeTab → current (${page.url()})`);
+    await page.close();
+  } else if (t === "select") {
+    const allPages = page.context().pages();
+    const idx = Number.isFinite(tabIndex) ? tabIndex : 1;
+    // index is 1-based usually in the UI, convert to 0-based
+    const arrayIndex = Math.max(0, idx - 1);
+    if (arrayIndex < allPages.length) {
+      ctx.logger.info(node.id, `closeTab → index ${idx}`);
+      await allPages[arrayIndex].close();
+    } else {
+      ctx.logger.warn(node.id, `closeTab → index ${idx} out of bounds`);
+    }
+  } else if (t === "other") {
+    ctx.logger.info(node.id, `closeTab → other tabs`);
+    const allPages = page.context().pages();
+    for (const p of allPages) {
+      if (p !== page) {
+        await p.close();
+      }
+    }
+  }
+
+  // Update ctx.page if current was closed, or just ensure it's valid
   const remaining = page.context().pages();
   if (remaining.length > 0) {
-    ctx.page = remaining[0];
-    ctx.frame = null;
-    await remaining[0].bringToFront();
+    if (remaining.indexOf(page) === -1) {
+      ctx.page = remaining[0];
+      ctx.frame = null;
+      await remaining[0].bringToFront();
+    }
   } else {
     throw new Error("closeTab: no pages remaining in context (all tabs closed)");
   }
 }
 
 /** reloadPage: reload current page */
+/** reloadPage: reload current page */
 export async function reloadPage(node, page, ctx) {
+  const { timeout } = node.params ?? {};
+  const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   ctx.logger.info(node.id, `reloadPage → ${page.url()}`);
-  await page.reload({ waitUntil: "load" });
+  await page.reload({ timeout: t, waitUntil: "load" });
 }
 
 /** goBack: navigate back in history */
 export async function goBack(node, page, ctx) {
+  const { timeout } = node.params ?? {};
+  const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   ctx.logger.info(node.id, `goBack`);
-  await page.goBack({ waitUntil: "load" });
+  await page.goBack({ timeout: t, waitUntil: "load" });
 }
 
 /** goForward: navigate forward in history */
 export async function goForward(node, page, ctx) {
+  const { timeout } = node.params ?? {};
+  const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   ctx.logger.info(node.id, `goForward`);
-  await page.goForward({ waitUntil: "load" });
+  await page.goForward({ timeout: t, waitUntil: "load" });
 }
 
 /** switchFrame: sub (iframe) or main — sets ctx.frame for subsequent selectors */

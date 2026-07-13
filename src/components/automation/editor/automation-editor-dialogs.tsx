@@ -1,0 +1,320 @@
+"use client";
+
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { ResourceDefinition } from "@/lib/automation/resource-schema";
+import type {
+  ResourceReport,
+  ScriptReport,
+} from "@/types/automation-report-types";
+import type { CardStackSlot } from "./card-stack/flow-card-stack-adapter";
+import { NodeCommentDialog } from "./node-comment-dialog";
+import { NodePropertiesDialog } from "./node-properties-dialog";
+import { CreateResourceWizardDialog } from "./panels/create-resource-wizard-dialog";
+import { EditResourceDialog } from "./panels/edit-resource-dialog";
+import { ResourceConfigurationDialog } from "./panels/resource-configuration-dialog";
+import { ResourceReportDialog } from "./panels/resource-report-dialog";
+import { ScriptReportDialog } from "./panels/script-report-dialog";
+import type { AutomationCanvasEdge, AutomationCanvasNode } from "./serialize";
+
+interface AutomationEditorDialogsProps {
+  isPropertiesDialogOpen: boolean;
+  selectedNode: AutomationCanvasNode | null;
+  nodes: AutomationCanvasNode[];
+  edges: AutomationCanvasEdge[];
+  variables: Record<string, string>;
+  onPropertiesOpenChange: (open: boolean) => void;
+  onConfirmProperties?: () => void;
+  onCancelProperties?: () => void;
+  onParamChange: (key: string, value: string | number | boolean) => void;
+  onContinueOnErrorChange: (value: boolean) => void;
+  onSleepAfterChange: (
+    key: "sleepAfterFrom" | "sleepAfterTo",
+    value: string | number | undefined,
+  ) => void;
+  onCommentChange?: (nodeId: string, comment: string) => void;
+  onCreateVariable: (name: string) => void;
+  commentingNodeId: string | null;
+  commentingNode: AutomationCanvasNode | null;
+  onCloseComment: (comment: string) => void;
+  isSaveAsDialogOpen: boolean;
+  saveAsName: string;
+  isSaving: boolean;
+  onSaveAsOpenChange: (open: boolean) => void;
+  onSaveAsNameChange: (name: string) => void;
+  onConfirmSaveAs: () => void;
+  isResourceConfigOpen: boolean;
+  isEditResourceOpen: boolean;
+  selectedResourceIdForEdit: string | null;
+  onEditResourceOpenChange: (open: boolean) => void;
+  resources: ResourceDefinition[];
+  selectedResourceIdForConfig: string | null;
+  onResourceConfigOpenChange: (open: boolean) => void;
+  onResourcesChange: (resources: ResourceDefinition[]) => void;
+  isCreateResourceWizardOpen: boolean;
+  onCreateResourceWizardOpenChange: (open: boolean) => void;
+  isScriptReportOpen: boolean;
+  scriptReport: ScriptReport | null;
+  onScriptReportOpenChange: (open: boolean) => void;
+  isResourceReportOpen: boolean;
+  resourceReport: ResourceReport | null;
+  onResourceReportOpenChange: (open: boolean) => void;
+  labelCreationSlot: CardStackSlot | null;
+  newLabelName: string;
+  onLabelCreationSlotChange: (slot: CardStackSlot | null) => void;
+  onNewLabelNameChange: (name: string) => void;
+  onConfirmCreateLabel: () => void;
+  deletingBlockId: string | null;
+  onConfirmDeleteBlock: (deleteAll: boolean) => void;
+  onCancelDeleteBlock: () => void;
+  functions?: string[];
+}
+
+export function AutomationEditorDialogs({
+  isPropertiesDialogOpen,
+  selectedNode,
+  nodes,
+  edges,
+  variables,
+  onPropertiesOpenChange,
+  onConfirmProperties,
+  onCancelProperties,
+  onParamChange,
+  onContinueOnErrorChange,
+  onSleepAfterChange,
+  onCommentChange,
+  onCreateVariable,
+  commentingNodeId,
+  commentingNode,
+  onCloseComment,
+  isSaveAsDialogOpen,
+  saveAsName,
+  isSaving,
+  onSaveAsOpenChange,
+  onSaveAsNameChange,
+  onConfirmSaveAs,
+  isResourceConfigOpen,
+  isEditResourceOpen,
+  selectedResourceIdForEdit,
+  onEditResourceOpenChange,
+  resources,
+  selectedResourceIdForConfig,
+  onResourceConfigOpenChange,
+  onResourcesChange,
+  isCreateResourceWizardOpen,
+  onCreateResourceWizardOpenChange,
+  isScriptReportOpen,
+  scriptReport,
+  onScriptReportOpenChange,
+  isResourceReportOpen,
+  resourceReport,
+  onResourceReportOpenChange,
+  labelCreationSlot,
+  newLabelName,
+  onLabelCreationSlotChange,
+  onNewLabelNameChange,
+  onConfirmCreateLabel,
+  deletingBlockId,
+  onConfirmDeleteBlock,
+  onCancelDeleteBlock,
+  functions,
+}: AutomationEditorDialogsProps) {
+  const { t } = useTranslation();
+
+  const editingResource = useMemo(() => {
+    if (!selectedResourceIdForEdit) return null;
+    return resources.find((r) => r.id === selectedResourceIdForEdit) ?? null;
+  }, [resources, selectedResourceIdForEdit]);
+
+  return (
+    <>
+      <NodePropertiesDialog
+        isOpen={isPropertiesDialogOpen}
+        node={selectedNode}
+        nodes={nodes}
+        edges={edges}
+        variables={variables}
+        onOpenChange={onPropertiesOpenChange}
+        onConfirm={onConfirmProperties}
+        onCancel={onCancelProperties}
+        onParamChange={onParamChange}
+        onContinueOnErrorChange={onContinueOnErrorChange}
+        onSleepAfterChange={onSleepAfterChange}
+        onCommentChange={onCommentChange}
+        onCreateVariable={onCreateVariable}
+        functions={functions}
+      />
+
+      <NodeCommentDialog
+        key={commentingNodeId || "none"}
+        node={commentingNode}
+        onClose={onCloseComment}
+      />
+
+      <Dialog open={isSaveAsDialogOpen} onOpenChange={onSaveAsOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("automation.editor.saveAsTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("automation.editor.saveAsDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label
+              htmlFor="save-as-name"
+              className="mb-2 block text-xs font-semibold"
+            >
+              {t("automation.editor.flowNameLabel")}
+            </Label>
+            <Input
+              id="save-as-name"
+              value={saveAsName}
+              onChange={(event) => onSaveAsNameChange(event.target.value)}
+              placeholder={t("automation.editor.namePlaceholder")}
+              className="h-9 text-xs"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onSaveAsOpenChange(false)}
+            >
+              {t("common.buttons.cancel")}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!saveAsName.trim() || isSaving}
+              onClick={onConfirmSaveAs}
+            >
+              {t("common.buttons.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ResourceConfigurationDialog
+        open={isResourceConfigOpen}
+        resources={resources}
+        initialSelectedResourceId={selectedResourceIdForConfig}
+        onOpenChange={onResourceConfigOpenChange}
+        onResourcesChange={onResourcesChange}
+      />
+
+      <ScriptReportDialog
+        open={isScriptReportOpen}
+        onOpenChange={onScriptReportOpenChange}
+        report={scriptReport}
+      />
+
+      <CreateResourceWizardDialog
+        open={isCreateResourceWizardOpen}
+        onOpenChange={onCreateResourceWizardOpenChange}
+        onConfirm={(newRes) => onResourcesChange([...resources, newRes])}
+        existingNames={resources.map((r) => r.name)}
+      />
+
+      <ResourceReportDialog
+        open={isResourceReportOpen}
+        onOpenChange={onResourceReportOpenChange}
+        report={resourceReport}
+      />
+
+      <Dialog
+        open={Boolean(labelCreationSlot)}
+        onOpenChange={(open) => {
+          if (!open) {
+            onLabelCreationSlotChange(null);
+            onNewLabelNameChange("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Label Name</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={newLabelName}
+              onChange={(e) => onNewLabelNameChange(e.target.value)}
+              placeholder="e.g. check_interface_constructor"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onConfirmCreateLabel();
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                onLabelCreationSlotChange(null);
+                onNewLabelNameChange("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={onConfirmCreateLabel}>Ok</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(deletingBlockId)}
+        onOpenChange={(open) => {
+          if (!open) onCancelDeleteBlock();
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Block</DialogTitle>
+            <DialogDescription>
+              Do you want to delete all nodes inside the block, or dissolve the
+              block (keep the child nodes)?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:justify-start">
+            <Button
+              variant="destructive"
+              onClick={() => onConfirmDeleteBlock(true)}
+            >
+              Delete All Nodes
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => onConfirmDeleteBlock(false)}
+            >
+              Dissolve Block (Keep Nodes)
+            </Button>
+            <Button variant="ghost" onClick={onCancelDeleteBlock}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <EditResourceDialog
+        open={isEditResourceOpen}
+        resource={editingResource}
+        resources={resources}
+        onOpenChange={onEditResourceOpenChange}
+        onConfirm={(updated) => {
+          onResourcesChange(
+            resources.map((r) => (r.id === updated.id ? updated : r)),
+          );
+        }}
+      />
+    </>
+  );
+}

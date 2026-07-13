@@ -7,7 +7,7 @@ import { validateFlow } from "../lib/validate.mjs";
 
 // Per-while-loop iteration cap (independent of engine MAX_STEPS=1000 total).
 // Stored in ctx.vars under __while_state_<nodeId>.
-const MAX_WHILE_ITERATIONS = 500;
+const MAX_WHILE_ITERATIONS = 200;
 
 // Re-export condition evaluation (mirrors ifCondition in logic.mjs)
 function evaluateCondition(left, operator, right) {
@@ -205,4 +205,82 @@ export async function addLog(node, page, ctx) {
 export async function addComment(node, page, ctx) {
   // Intentionally no-op — purely visual in the flow editor.
   ctx.logger.debug(node.id, `comment: ${node.params?.comment ?? "(empty)"}`);
+}
+
+/** label: no-op anchor node used as a runtime jump target. */
+export async function label(node, page, ctx) {
+  const labelName = node.params?.labelName ?? node.id;
+  ctx.logger.info(node.id, `label → ${labelName}`);
+}
+
+/** moveToLabel: dynamic jump directive consumed by engine.mjs. */
+export async function moveToLabel(node, page, ctx) {
+  const targetLabelNodeId = node.params?.targetLabelNodeId;
+  if (typeof targetLabelNodeId !== "string" || targetLabelNodeId.trim() === "") {
+    throw new Error("moveToLabel: targetLabelNodeId is required");
+  }
+  const targetLabelName = node.params?.targetLabelName ?? targetLabelNodeId;
+  ctx.logger.info(node.id, `moveToLabel → ${targetLabelName}`);
+  return { type: "jumpToLabel", targetLabelNodeId, targetLabelName };
+}
+
+/** ignoreErrorsStart: enable ignoreErrors flag in context and reset error vars. */
+export async function ignoreErrorsStart(node, page, ctx) {
+  ctx.ignoreErrors = true;
+  if (ctx.vars) {
+    ctx.vars.WAS_ERROR = "false";
+    ctx.vars.LAST_ERROR = "";
+  }
+  ctx.logger.info(node.id, `ignoreErrorsStart → enabled error ignoring`);
+}
+
+/** ignoreErrorsEnd: disable ignoreErrors flag in context. */
+export async function ignoreErrorsEnd(node, page, ctx) {
+  ctx.ignoreErrors = false;
+  ctx.logger.info(node.id, `ignoreErrorsEnd → disabled error ignoring`);
+}
+
+/** endIf: no-op end marker for IF blocks. */
+export async function endIf(node, page, ctx) {
+  ctx.logger.debug(node.id, `endIf`);
+}
+
+/** callFunction: call a sub-function defined in the flow's functions list. */
+export async function callFunction(node, page, ctx) {
+  const { functionName } = node.params ?? {};
+  if (typeof functionName !== "string" || functionName.trim() === "") {
+    throw new Error("callFunction: functionName is required");
+  }
+
+  const functions = ctx.flow?.functions ?? [];
+  const targetFunc = functions.find((f) => f.name === functionName);
+  if (!targetFunc) {
+    throw new Error(`callFunction: function "${functionName}" not found`);
+  }
+
+  const depth = Number(ctx.vars.__func_depth ?? 0);
+  const MAX_FUNC_DEPTH = 50;
+  if (depth >= MAX_FUNC_DEPTH) {
+    throw new Error(`callFunction: maximum function call recursion depth (${MAX_FUNC_DEPTH}) reached`);
+  }
+
+  ctx.logger.info(node.id, `callFunction → calling function "${functionName}"`);
+
+  ctx.vars.__func_depth = depth + 1;
+  try {
+    const failed = await ctx.runSubFlow({
+      flow: targetFunc,
+      page,
+      vars: ctx.vars,
+      artifactsDir: ctx.artifactsDir,
+      allowedSchemes: ctx.allowedSchemes,
+    });
+    if (failed) {
+      throw new Error(`callFunction: function "${functionName}" failed`);
+    }
+  } finally {
+    ctx.vars.__func_depth = depth;
+  }
+
+  ctx.logger.info(node.id, `callFunction → "${functionName}" completed`);
 }

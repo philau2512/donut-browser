@@ -1,7 +1,7 @@
 "use client";
 
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import type * as React from "react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -22,10 +22,28 @@ function PopoverContent({
   align = "center",
   sideOffset = 4,
   collisionPadding = 8,
+  container,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+}: React.ComponentProps<typeof PopoverPrimitive.Content> & {
+  container?: HTMLElement | null;
+}) {
+  const [localContainer, setLocalContainer] =
+    React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && container === undefined) {
+      const dialog = document.querySelector('[role="dialog"]');
+      if (dialog) {
+        setLocalContainer(dialog as HTMLElement);
+      }
+    }
+  }, [container]);
+
+  const resolvedContainer =
+    container !== undefined ? container : localContainer;
+
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={resolvedContainer}>
       <PopoverPrimitive.Content
         data-slot="popover-content"
         align={align}

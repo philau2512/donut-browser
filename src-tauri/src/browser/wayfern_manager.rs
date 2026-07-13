@@ -112,6 +112,10 @@ impl WayfernManager {
       })),
       http_client: Client::builder()
         .timeout(Duration::from_secs(2))
+        // CDP is always on loopback. Disable env/system proxies so a Windows
+        // WinHTTP/IE proxy (or HTTP_PROXY) cannot intercept /json/version and
+        // return 502 Bad Gateway while the browser is actually listening.
+        .no_proxy()
         .build()
         .expect("Failed to build reqwest client for wayfern_manager"),
     }
@@ -315,6 +319,31 @@ impl WayfernManager {
     }
   }
 
+  /// True when `url` is a socks proxy on a remote (non-loopback) host — the
+  /// case where reqwest's SOCKS connector can't be trusted with the
+  /// geolocation fetch. Loopback socks URLs are the app's own donut-proxy
+  /// workers, whose single-segment replies don't trigger the connector bug.
+  fn is_remote_socks_url(url: &str) -> bool {
+    url.starts_with("socks")
+      && url::Url::parse(url)
+        .ok()
+        .and_then(|u| match u.host() {
+          Some(url::Host::Ipv4(ip)) => Some(!ip.is_loopback()),
+          Some(url::Host::Ipv6(ip)) => Some(!ip.is_loopback()),
+          // socks is a non-special scheme, so the url crate keeps even
+          // IP-literal hosts as Domain — parse them before comparing.
+          Some(url::Host::Domain(domain)) => Some(
+            domain != "localhost"
+              && domain
+                .parse::<std::net::IpAddr>()
+                .map(|ip| !ip.is_loopback())
+                .unwrap_or(true),
+          ),
+          None => None,
+        })
+        .unwrap_or(false)
+  }
+
   /// Apply timezone/geolocation fields to a fingerprint object from the proxy's
   /// exit IP (or a fixed geoip IP). Mutates `fingerprint` in place. Returns true
   /// if fresh geolocation was fetched and applied, false if geolocation is
@@ -434,7 +463,6 @@ impl WayfernManager {
       .arg(format!("--remote-debugging-port={port}"))
       .arg("--remote-debugging-address=127.0.0.1")
       .arg(format!("--user-data-dir={}", temp_profile_dir.display()))
-      .arg("--disable-gpu")
       .arg("--no-first-run")
       .arg("--no-default-browser-check")
       .arg("--disable-background-mode")
@@ -600,13 +628,59 @@ impl WayfernManager {
         let mut normalized = Self::normalize_fingerprint(fp);
 
         // Apply timezone/geolocation for the proxy this fingerprint is being
-        // generated against. Shared with the launch-time location refresh.
+        // generated against. Route through a local donut-proxy worker when the
+        // upstream is a remote SOCKS URL — reqwest's SOCKS connector can corrupt
+        // its parse buffer on multi-segment handshake replies, causing spurious
+        // geolocation failures. Loopback SOCKS URLs (our own workers) are exempt.
+        let needs_proxied_geo_fetch = !matches!(
+          config.geoip.as_ref(),
+          Some(serde_json::Value::Bool(false)) | Some(serde_json::Value::String(_))
+        );
+        let remote_socks_upstream = config
+          .proxy
+          .as_deref()
+          .filter(|url| Self::is_remote_socks_url(url));
+        let (geo_proxy, temp_worker_id) = match remote_socks_upstream {
+          Some(url) if needs_proxied_geo_fetch => {
+            match crate::proxy_runner::start_proxy_process(Some(url.to_string()), None)
+              .await
+              .map_err(|e| e.to_string())
+            {
+              Ok(worker) => {
+                match worker.local_port {
+                  Some(port) => {
+                    let local_url = format!("http://127.0.0.1:{}", port);
+                    (Some(local_url), Some(worker.id))
+                  }
+                  None => {
+                    log::warn!(
+                      "Proxy worker started but reported no local_port; using socks upstream directly"
+                    );
+                    let _ = crate::proxy_runner::stop_proxy_process(&worker.id).await;
+                    (config.proxy.clone(), None)
+                  }
+                }
+              }
+              Err(e) => {
+                log::warn!(
+                  "Could not start local proxy worker for geolocation ({e}); using the socks upstream directly"
+                );
+                (config.proxy.clone(), None)
+              }
+            }
+          }
+          _ => (config.proxy.clone(), None),
+        };
         Self::apply_geolocation(
           &mut normalized,
-          config.proxy.as_deref(),
+          geo_proxy.as_deref(),
           config.geoip.as_ref(),
         )
         .await;
+        // Clean up the temporary proxy worker if we started one.
+        if let Some(worker_id) = temp_worker_id {
+          let _ = crate::proxy_runner::stop_proxy_process(&worker_id).await;
+        }
 
         normalized
       }
@@ -859,6 +933,42 @@ impl WayfernManager {
 
     Ok(())
   }
+}
+
+/// Deterministically derive a pleasant, distinct window frame color from a
+/// profile id so concurrent profile windows are visually distinguishable even
+/// when the user has not picked a custom color. Stable per profile (same id
+/// always yields the same color). Returns "#RRGGBB".
+pub fn derive_profile_color(id: &uuid::Uuid) -> String {
+  // FNV-1a over the 16 id bytes -> hue in [0,360). The hue varies per profile
+  // while saturation/lightness are fixed to a pastel band (see below).
+  let mut h: u32 = 2166136261;
+  for &b in id.as_bytes() {
+    h = (h ^ u32::from(b)).wrapping_mul(16777619);
+  }
+  let hue = f64::from(h % 360);
+  // Pastel: high lightness + soft saturation so windows stay easy to tell apart
+  // without a garish frame.
+  let (r, g, b) = hsl_to_rgb(hue, 0.6, 0.8);
+  format!("#{r:02x}{g:02x}{b:02x}")
+}
+
+/// Convert HSL (h in [0,360), s/l in [0,1]) to 8-bit RGB.
+fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {
+  let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
+  let hp = h / 60.0;
+  let x = c * (1.0 - (hp % 2.0 - 1.0).abs());
+  let (r1, g1, b1) = match hp as i32 {
+    0 => (c, x, 0.0),
+    1 => (x, c, 0.0),
+    2 => (0.0, c, x),
+    3 => (0.0, x, c),
+    4 => (x, 0.0, c),
+    _ => (c, 0.0, x),
+  };
+  let m = l - c / 2.0;
+  let to_u8 = |v: f64| ((v + m) * 255.0).round().clamp(0.0, 255.0) as u8;
+  (to_u8(r1), to_u8(g1), to_u8(b1))
 }
 
 include!("wayfern_manager_fingerprint.rs");

@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  distDir: "dist",
+  distDir: process.env.NODE_ENV === "production" ? "dist" : ".next",
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },

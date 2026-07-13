@@ -58,6 +58,27 @@ test("interpolateParams recurses nested objects + arrays", () => {
   assert.deepEqual(out, { url: "https://x/7", list: ["7", "static"] });
 });
 
+test("interpolate resolves snake_case keys against uppercase vars", () => {
+  assert.equal(
+    interpolateString("{{proxy_ip}}", { PROXY_IP: "9.9.9.9" }),
+    "9.9.9.9",
+  );
+});
+
+test("interpolate profile flow vars (uppercase keys)", () => {
+  const vars = {
+    PROFILE_ID: "p1",
+    CDP_PORT: "9222",
+    PROXY_IP: "1.2.3.4",
+    IP_COUNTRY: "US",
+  };
+  assert.equal(
+    interpolateString("{{PROFILE_ID}} @ {{CDP_PORT}}", vars),
+    "p1 @ 9222",
+  );
+  assert.equal(interpolateString("ip={{PROXY_IP}} cc={{IP_COUNTRY}}", vars), "ip=1.2.3.4 cc=US");
+});
+
 // ---- validate (closed schema #7b) -----------------------------------------
 
 const goodFlow = {
@@ -72,6 +93,35 @@ const goodFlow = {
 
 test("validate accepts a well-formed flow", () => {
   assert.equal(validateFlow(structuredClone(goodFlow)).name, "t");
+});
+
+test("validate accepts missing label target if isPartial is true", () => {
+  const f = structuredClone(goodFlow);
+  f.isPartial = true;
+  f.nodes = [
+    {
+      id: "m1",
+      type: "moveToLabel",
+      params: { targetLabelNodeId: "missing-label-id" },
+      position: { x: 0, y: 0 },
+    },
+  ];
+  f.edges = [];
+  assert.equal(validateFlow(f).isPartial, true);
+});
+
+test("validate rejects missing label target if isPartial is false/omitted", () => {
+  const f = structuredClone(goodFlow);
+  f.nodes = [
+    {
+      id: "m1",
+      type: "moveToLabel",
+      params: { targetLabelNodeId: "missing-label-id" },
+      position: { x: 0, y: 0 },
+    },
+  ];
+  f.edges = [];
+  assert.throws(() => validateFlow(f), FlowValidationError);
 });
 
 test("validate rejects unknown node type", () => {

@@ -1,362 +1,399 @@
 "use client";
 
-import { invoke } from "@tauri-apps/api/core";
-import { useEdgesState, useNodesState } from "@xyflow/react";
-import {
-  type DragEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { useTranslation } from "react-i18next";
-import { LuSave } from "react-icons/lu";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  AUTOMATION_NODE_BY_TYPE,
-  type AutomationNodeCatalogItem,
-  type AutomationNodeType,
-} from "@/lib/automation/node-catalog";
-import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
-import { FlowCanvas } from "./flow-canvas";
-import { NodeCommentDialog } from "./node-comment-dialog";
-import { NodePalette } from "./node-palette";
-import { NodePropertiesDialog } from "./node-properties-dialog";
-import {
-  type AutomationCanvasEdge,
-  type AutomationCanvasNode,
-  createStartNode,
-  type DonutFlowV1,
-  type FlowLayoutSidecarV1,
-  fromDonutFlow,
-  toDonutFlow,
-  toLayoutSidecar,
-} from "./serialize";
-import { VariablesPanel } from "./variables-panel";
+import { useCallback, useEffect, useState } from "react";
+import { useAutomationFlowState } from "@/hooks/use-automation-flow-state";
+import type { BrowserProfile } from "@/types";
+import { AutomationEditorDialogs } from "./automation-editor-dialogs";
+import { AutomationEditorToolbar } from "./automation-editor-toolbar";
+import { AutomationEditorWorkspace } from "./automation-editor-workspace";
+
+const VIRTUAL_DEBUG_PROFILE: BrowserProfile = {
+  id: "00000000-0000-0000-0000-000000000000",
+  name: "Virtual Profile",
+  browser: "wayfern",
+  version: "latest",
+  release_type: "stable",
+  ephemeral: true,
+  sync_mode: "Disabled" as any,
+  tags: [],
+  proxy_bypass_rules: [],
+  password_protected: false,
+};
 
 interface FlowEditorPageProps {
   flowPath?: string;
+  profiles?: BrowserProfile[];
   onBack: () => void;
   onSaved?: (flowPath: string) => void;
 }
 
 export function FlowEditorPage({
   flowPath,
+  profiles,
   onBack,
   onSaved,
 }: FlowEditorPageProps) {
-  const { t } = useTranslation();
-  const [nodes, setNodes, onNodesChange] = useNodesState<AutomationCanvasNode>([
-    createStartNode(),
-  ]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<AutomationCanvasEdge>(
+  const {
+    nodes,
+    edges,
+    isVariablesPanelOpen,
+    setIsVariablesPanelOpen,
+    isPropertiesDialogOpen,
+    setIsPropertiesDialogOpen,
+    isLogPanelOpen,
+    setIsLogPanelOpen,
+    isCanvasLocked,
+    logSteps,
+    flowLogs,
+    selectedDebugProfile,
+    setSelectedDebugProfile,
+    debugRun,
+    debugNodeStatuses,
+    debugLogs,
+    debugSteps,
+    currentFlowPath,
+    selectedNodeId,
+    setSelectedNodeId,
+    commentingNodeId,
+    setCommentingNodeId,
+    flowName,
+    setFlowName,
+    variables,
+    setVariables,
+    v2Variables,
+    setV2Variables,
+    v2Resources,
+    setV2Resources,
+    isScriptReportOpen,
+    setIsScriptReportOpen,
+    isResourceReportOpen,
+    setIsResourceReportOpen,
+    isResourceConfigOpen,
+    setIsResourceConfigOpen,
+    isEditResourceOpen,
+    setIsEditResourceOpen,
+    selectedResourceIdForConfig,
+    setSelectedResourceIdForConfig,
+    selectedResourceIdForEdit,
+    setSelectedResourceIdForEdit,
+    collapsedBlockIds,
+    deletingBlockId,
+    setDeletingBlockId,
+    handleEditResource,
+    report,
+    isLoading,
+    isSaving,
+    isSaveAsDialogOpen,
+    setIsSaveAsDialogOpen,
+    saveAsName,
+    setSaveAsName,
+    draggedNodeType,
+    activeInsertSlot,
+    setActiveInsertSlot,
+    labelCreationSlot,
+    setLabelCreationSlot,
+    newLabelName,
+    setNewLabelName,
+    selectedNode,
+    commentingNode,
+    handleEditNode,
+    handleCommentNode,
+    handleSaveComment,
+    handleInsertNode,
+    handleConfirmCreateLabel,
+    handleCreateLabel,
+    handleConnectSlots,
+    handleMoveNode,
+    handlePaletteItemClick,
+    handleMoveToLabel,
+    handleConfirmDeleteBlock,
+    handleToggleCollapseBlock,
+    handleToggleErrorHandling,
+    handleDeleteNode,
+    handleDuplicateNode,
+    handleStartFromHere,
+    handleDebugRunFull,
+    handleDebugStepNext,
+    handleDebugStepCurrent,
+    handleStopDebugRun,
+    nodesWithCallbacks,
+    handleDragStart,
+    updateSelectedParam,
+    updateSelectedContinueOnError,
+    updateSelectedSleepAfter,
+    handleSave,
+    handleSaveAsClick,
+    handleConfirmSaveAs,
+    selectNodeNoFocus,
+    selectNodeAndFocus,
+    // Search
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    currentResultIndex,
+    setCurrentResultIndex,
+    // History
+    historyPast,
+    historyFuture,
+    handleUndo,
+    handleRedo,
+    // Clipboard
+    handleCopy,
+    handleCut,
+    handlePaste,
+    // Multi-select
+    isMultiSelectMode,
+    setIsMultiSelectMode,
+    selectedNodeIds,
+    setSelectedNodeIds,
+    handleSelectNode,
+    pendingAddNodeId,
+    handleConfirmProperties,
+    handleCancelProperties,
+    justAddedNodeId,
+    setJustAddedNodeId,
+    // Multi-function states
+    functions,
+    activeFunctionName,
+    switchActiveFunction,
+    addFunction,
+    renameFunction,
+    deleteFunction,
+  } = useAutomationFlowState({
+    flowPath,
+    onSaved,
+  });
+
+  const [isCreateResourceWizardOpen, setIsCreateResourceWizardOpen] =
+    useState(false);
+  const [zoom, setZoom] = useState(0.9);
+
+  const handleZoomIn = useCallback(
+    () => setZoom((z) => Math.min(1.5, z + 0.05)),
     [],
   );
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
-  const [commentingNodeId, setCommentingNodeId] = useState<string | null>(null);
-  const [flowName, setFlowName] = useState("Untitled flow");
-  const [variables, setVariables] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(Boolean(flowPath));
-  const [isSaving, setIsSaving] = useState(false);
-  const [draggedNodeType, setDraggedNodeType] = useState<string | null>(null);
-
-  const _selectedNode = useMemo(
-    () => nodes.find((node) => node.id === selectedNodeId) ?? null,
-    [nodes, selectedNodeId],
+  const handleZoomOut = useCallback(
+    () => setZoom((z) => Math.max(0.7, z - 0.05)),
+    [],
   );
-
-  const editingNode = useMemo(
-    () => nodes.find((node) => node.id === editingNodeId) ?? null,
-    [nodes, editingNodeId],
-  );
-
-  const commentingNode = useMemo(
-    () => nodes.find((node) => node.id === commentingNodeId) ?? null,
-    [nodes, commentingNodeId],
-  );
-
-  const handleEditNode = useCallback((nodeId: string) => {
-    setEditingNodeId(nodeId);
-  }, []);
-
-  const handleCommentNode = useCallback((nodeId: string) => {
-    setCommentingNodeId(nodeId);
-  }, []);
-
-  const handleSaveComment = useCallback(
-    (nodeId: string, commentText: string) => {
-      setNodes((current) =>
-        current.map((node) =>
-          node.id === nodeId
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  comment: commentText.trim() || undefined,
-                },
-              }
-            : node,
-        ),
-      );
-    },
-    [setNodes],
-  );
-
-  const handleDeleteNode = useCallback(
-    (nodeId: string) => {
-      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-      setEdges((eds) =>
-        eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
-      );
-      if (selectedNodeId === nodeId) {
-        setSelectedNodeId(null);
-      }
-      if (editingNodeId === nodeId) {
-        setEditingNodeId(null);
-      }
-      if (commentingNodeId === nodeId) {
-        setCommentingNodeId(null);
-      }
-    },
-    [selectedNodeId, editingNodeId, commentingNodeId, setEdges, setNodes],
-  );
-
-  const handleStartFromHere = useCallback(
-    (nodeId: string) => {
-      const node = nodes.find((n) => n.id === nodeId);
-      const label = node
-        ? t(
-            AUTOMATION_NODE_BY_TYPE[node.data.nodeType as AutomationNodeType]
-              ?.labelKey || "",
-          )
-        : nodeId;
-      showSuccessToast(
-        t("automation.editor.toast.startFromHere", { name: label }) ||
-          `Chạy từ node: ${label}`,
-      );
-    },
-    [nodes, t],
-  );
-
-  const nodesWithCallbacks = useMemo(() => {
-    return nodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        onEdit: handleEditNode,
-        onDelete: handleDeleteNode,
-        onStartFromHere: handleStartFromHere,
-        onComment: handleCommentNode,
-      },
-    }));
-  }, [
-    nodes,
-    handleEditNode,
-    handleDeleteNode,
-    handleStartFromHere,
-    handleCommentNode,
-  ]);
+  const handleResetZoom = useCallback(() => setZoom(1.0), []);
 
   useEffect(() => {
-    if (!flowPath) return;
-    let cancelled = false;
-
-    const load = async () => {
-      setIsLoading(true);
-      try {
-        const raw = await invoke<string>("read_automation_flow", {
-          path: flowPath,
-        });
-        const flow = JSON.parse(raw) as DonutFlowV1;
-        let layout: FlowLayoutSidecarV1 | null = null;
-        try {
-          const rawLayout = await invoke<string>(
-            "read_automation_flow_layout",
-            {
-              flowPath,
-            },
-          );
-          layout = JSON.parse(rawLayout) as FlowLayoutSidecarV1;
-        } catch {
-          layout = null;
-        }
-        if (cancelled) return;
-        const canvas = fromDonutFlow(flow, layout);
-        setFlowName(flow.name);
-        setVariables(flow.variables ?? {});
-        setNodes(canvas.nodes);
-        setEdges(canvas.edges);
-      } catch (err) {
-        showErrorToast(
-          t("automation.editor.errors.loadFailed", {
-            error: JSON.stringify(err),
-          }),
-        );
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    };
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [flowPath, setEdges, setNodes, t]);
-
-  const handleDragStart = useCallback(
-    (event: DragEvent, item: AutomationNodeCatalogItem) => {
-      event.dataTransfer.setData("application/donut-node-type", item.type);
-      event.dataTransfer.setData("text/plain", item.type);
-      event.dataTransfer.effectAllowed = "copy";
-      setDraggedNodeType(item.type);
-    },
-    [],
-  );
-
-  // NOTE: Do NOT clear draggedNodeType here — onDragEnd fires before/during onDrop on Tauri/WKWebView.
-  // The next drag will overwrite the value. Clearing causes race condition where onDrop reads null.
-
-  const updateSelectedParam = (
-    key: string,
-    value: string | number | boolean,
-  ) => {
-    if (!editingNode) return;
-    setNodes((current) =>
-      current.map((node) =>
-        node.id === editingNode.id
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                params: { ...node.data.params, [key]: value },
-              },
-            }
-          : node,
-      ),
-    );
-  };
-
-  const updateSelectedContinueOnError = (value: boolean) => {
-    if (!editingNode) return;
-    setNodes((current) =>
-      current.map((node) =>
-        node.id === editingNode.id
-          ? { ...node, data: { ...node.data, continueOnError: value } }
-          : node,
-      ),
-    );
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const flow = toDonutFlow(flowName.trim(), nodes, edges, variables);
-      const json = JSON.stringify(flow, null, 2);
-      const shouldOverwrite = Boolean(flowPath);
-      let savedPath: string;
-      try {
-        savedPath = await invoke<string>("write_automation_flow", {
-          name: flow.name,
-          json,
-          overwrite: shouldOverwrite,
-        });
-      } catch (err) {
-        if (!shouldOverwrite && String(err) === "exists") {
-          const ok = window.confirm(
-            t("automation.script.confirm.overwriteImport", { name: flow.name }),
-          );
-          if (!ok) return;
-          savedPath = await invoke<string>("write_automation_flow", {
-            name: flow.name,
-            json,
-            overwrite: true,
-          });
-        } else {
-          throw err;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "=" || e.key === "+") {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === "-") {
+          e.preventDefault();
+          handleZoomOut();
+        } else if (e.key === "0") {
+          e.preventDefault();
+          handleResetZoom();
         }
       }
-
-      await invoke("write_automation_flow_layout", {
-        flowPath: savedPath,
-        layoutJson: JSON.stringify(toLayoutSidecar(nodes), null, 2),
-      });
-      showSuccessToast(t("automation.editor.toast.saved", { name: flow.name }));
-      onSaved?.(savedPath);
-    } catch (err) {
-      showErrorToast(
-        t("automation.editor.errors.saveFailed", {
-          error: JSON.stringify(err),
-        }),
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleZoomIn, handleZoomOut, handleResetZoom]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
-      <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card p-3">
-        <Button type="button" variant="ghost" onClick={onBack}>
-          {t("common.buttons.back")}
-        </Button>
-        <div className="max-w-sm flex-1">
-          <Label htmlFor="automation-flow-name" className="sr-only">
-            {t("automation.editor.name")}
-          </Label>
-          <Input
-            id="automation-flow-name"
-            value={flowName}
-            onChange={(event) => setFlowName(event.target.value)}
-            placeholder={t("automation.editor.namePlaceholder")}
-          />
-        </div>
-        <Button
-          type="button"
-          disabled={isSaving || isLoading}
-          onClick={() => void handleSave()}
-        >
-          <LuSave className="mr-2 size-4" />
-          {isSaving ? t("automation.editor.saving") : t("common.buttons.save")}
-        </Button>
-      </div>
-
-      <div className="flex min-h-0 flex-1 gap-3">
-        <NodePalette onDragStart={handleDragStart} />
-        <FlowCanvas
-          nodes={nodesWithCallbacks}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          setNodes={setNodes}
-          setEdges={setEdges}
-          onSelectNode={setSelectedNodeId}
-          draggedNodeType={draggedNodeType}
-        />
-        <VariablesPanel variables={variables} onChange={setVariables} />
-      </div>
-
-      <NodePropertiesDialog
-        node={editingNode}
-        variables={variables}
-        onOpenChange={(open) => {
-          if (!open) setEditingNodeId(null);
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 relative">
+      <AutomationEditorToolbar
+        flowName={flowName}
+        profiles={profiles}
+        selectedDebugProfileId={selectedDebugProfile?.id}
+        isVariablesPanelOpen={isVariablesPanelOpen}
+        isLogPanelOpen={isLogPanelOpen}
+        isDebugRunning={debugRun.isRunning}
+        isLoading={isLoading}
+        isSaving={isSaving}
+        hasCurrentFlowPath={Boolean(currentFlowPath)}
+        zoom={zoom}
+        onBack={onBack}
+        onFlowNameChange={setFlowName}
+        onDebugProfileChange={(id) => {
+          if (!id) {
+            setSelectedDebugProfile(null);
+          } else if (id === "00000000-0000-0000-0000-000000000000") {
+            setSelectedDebugProfile(VIRTUAL_DEBUG_PROFILE);
+          } else {
+            const profile =
+              profiles?.find((profile) => profile.id === id) ?? null;
+            setSelectedDebugProfile(profile);
+          }
         }}
-        onParamChange={updateSelectedParam}
-        onContinueOnErrorChange={updateSelectedContinueOnError}
+        onToggleVariablesPanel={() =>
+          setIsVariablesPanelOpen((value) => !value)
+        }
+        onOpenResourceConfig={() => setIsResourceConfigOpen(true)}
+        onOpenScriptReport={() => setIsScriptReportOpen(true)}
+        onOpenResourceReport={() => setIsResourceReportOpen(true)}
+        onToggleLogPanel={() => setIsLogPanelOpen((value) => !value)}
+        onDebugRunFull={handleDebugRunFull}
+        onDebugStepNext={handleDebugStepNext}
+        onDebugStepCurrent={handleDebugStepCurrent}
+        onStopDebugRun={handleStopDebugRun}
+        onSaveAsClick={handleSaveAsClick}
+        onSave={() => void handleSave()}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onResetZoom={handleResetZoom}
       />
 
-      <NodeCommentDialog
-        key={commentingNodeId || "none"}
-        node={commentingNode}
-        onClose={(comment) => {
+      <AutomationEditorWorkspace
+        nodes={nodesWithCallbacks}
+        edges={edges}
+        selectedNodeId={selectedNodeId}
+        pendingAddNodeId={pendingAddNodeId}
+        justAddedNodeId={justAddedNodeId}
+        draggedNodeType={draggedNodeType}
+        debugNodeStatuses={debugNodeStatuses}
+        disabled={isCanvasLocked || debugRun.isRunning}
+        isVariablesPanelOpen={isVariablesPanelOpen}
+        isLogPanelOpen={isLogPanelOpen}
+        showDebugOutput={debugRun.isRunning || debugRun.logs.length > 0}
+        debugLogs={debugLogs}
+        flowLogs={flowLogs}
+        debugSteps={debugSteps}
+        logSteps={logSteps}
+        variables={variables}
+        v2Variables={v2Variables}
+        resources={v2Resources}
+        isDebugRunning={debugRun.isRunning}
+        collapsedBlockIds={collapsedBlockIds}
+        onToggleCollapseBlock={handleToggleCollapseBlock}
+        onToggleErrorHandling={handleToggleErrorHandling}
+        onPaletteDragStart={handleDragStart}
+        onSelectNode={selectNodeNoFocus}
+        onInsertNode={handleInsertNode}
+        onDeleteNode={handleDeleteNode}
+        onDuplicateNode={handleDuplicateNode}
+        onEditNode={handleEditNode}
+        onCommentNode={handleCommentNode}
+        onStartFromHereNode={handleStartFromHere}
+        onCreateLabel={handleCreateLabel}
+        onMoveToLabel={handleMoveToLabel}
+        onVariablesChange={setVariables}
+        onV2VariablesChange={setV2Variables}
+        onResourcesChange={setV2Resources}
+        onAddResource={() => setIsCreateResourceWizardOpen(true)}
+        onEditResource={handleEditResource}
+        onCloseLogPanel={() => setIsLogPanelOpen(false)}
+        onSelectLogNode={selectNodeAndFocus}
+        activeInsertSlot={activeInsertSlot}
+        onSelectSlot={setActiveInsertSlot}
+        onPaletteItemClick={handlePaletteItemClick}
+        onMoveNode={handleMoveNode}
+        onConnectSlots={handleConnectSlots}
+        // Search props
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        searchResults={searchResults}
+        currentResultIndex={currentResultIndex}
+        onCurrentResultIndexChange={setCurrentResultIndex}
+        // Zoom prop
+        zoom={zoom}
+        // Multi-select props
+        isMultiSelectMode={isMultiSelectMode}
+        onToggleMultiSelectMode={() => setIsMultiSelectMode((v) => !v)}
+        selectedNodeIds={selectedNodeIds}
+        onSelectNodeWithToggle={handleSelectNode}
+        onSelectAll={setSelectedNodeIds}
+        // History props
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={(historyPast[activeFunctionName] ?? []).length > 0}
+        canRedo={(historyFuture[activeFunctionName] ?? []).length > 0}
+        // Clipboard props
+        onCopy={handleCopy}
+        onCut={handleCut}
+        onPaste={handlePaste}
+        // Multi-function props
+        functions={functions}
+        activeFunctionName={activeFunctionName}
+        switchActiveFunction={switchActiveFunction}
+        addFunction={addFunction}
+        renameFunction={renameFunction}
+        deleteFunction={deleteFunction}
+      />
+
+      <AutomationEditorDialogs
+        isPropertiesDialogOpen={isPropertiesDialogOpen}
+        selectedNode={selectedNode}
+        nodes={nodes}
+        edges={edges}
+        variables={variables}
+        functions={functions.map((f) => f.name)}
+        onPropertiesOpenChange={(open) => {
+          setIsPropertiesDialogOpen(open);
+          if (!open) {
+            if (pendingAddNodeId) {
+              handleCancelProperties();
+            } else {
+              if (selectedNodeId !== justAddedNodeId) {
+                setSelectedNodeId(null);
+              }
+              setJustAddedNodeId(null);
+            }
+          }
+        }}
+        onConfirmProperties={handleConfirmProperties}
+        onCancelProperties={handleCancelProperties}
+        onParamChange={updateSelectedParam}
+        onContinueOnErrorChange={updateSelectedContinueOnError}
+        onSleepAfterChange={updateSelectedSleepAfter}
+        onCommentChange={handleSaveComment}
+        onCreateVariable={(name) => {
+          setVariables((prev) => {
+            if (name in prev) return prev;
+            return { ...prev, [name]: "" };
+          });
+        }}
+        commentingNodeId={commentingNodeId}
+        commentingNode={commentingNode}
+        onCloseComment={(comment) => {
           if (commentingNodeId) {
             handleSaveComment(commentingNodeId, comment);
           }
           setCommentingNodeId(null);
         }}
+        isSaveAsDialogOpen={isSaveAsDialogOpen}
+        saveAsName={saveAsName}
+        isSaving={isSaving}
+        onSaveAsOpenChange={setIsSaveAsDialogOpen}
+        onSaveAsNameChange={setSaveAsName}
+        onConfirmSaveAs={handleConfirmSaveAs}
+        isResourceConfigOpen={isResourceConfigOpen}
+        resources={v2Resources}
+        selectedResourceIdForConfig={selectedResourceIdForConfig}
+        onResourceConfigOpenChange={(open) => {
+          setIsResourceConfigOpen(open);
+          if (!open) setSelectedResourceIdForConfig(null);
+        }}
+        isEditResourceOpen={isEditResourceOpen}
+        selectedResourceIdForEdit={selectedResourceIdForEdit}
+        onEditResourceOpenChange={(open) => {
+          setIsEditResourceOpen(open);
+          if (!open) setSelectedResourceIdForEdit(null);
+        }}
+        onResourcesChange={setV2Resources}
+        isCreateResourceWizardOpen={isCreateResourceWizardOpen}
+        onCreateResourceWizardOpenChange={setIsCreateResourceWizardOpen}
+        isScriptReportOpen={isScriptReportOpen}
+        scriptReport={report.state.scriptReport}
+        onScriptReportOpenChange={setIsScriptReportOpen}
+        isResourceReportOpen={isResourceReportOpen}
+        resourceReport={report.state.resourceReport}
+        onResourceReportOpenChange={setIsResourceReportOpen}
+        labelCreationSlot={labelCreationSlot}
+        newLabelName={newLabelName}
+        onLabelCreationSlotChange={setLabelCreationSlot}
+        onNewLabelNameChange={setNewLabelName}
+        onConfirmCreateLabel={handleConfirmCreateLabel}
+        deletingBlockId={deletingBlockId}
+        onConfirmDeleteBlock={handleConfirmDeleteBlock}
+        onCancelDeleteBlock={() => setDeletingBlockId(null)}
       />
     </div>
   );

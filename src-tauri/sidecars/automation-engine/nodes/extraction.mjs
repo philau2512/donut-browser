@@ -1,7 +1,7 @@
 // Data Extraction handlers - Phase 5
 // getText, getAttributeValue, getValue, elementExists, extractionInText, random
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** getText: read text content of an element (direct text only, not nested) */
 export async function getText(node, page, ctx) {

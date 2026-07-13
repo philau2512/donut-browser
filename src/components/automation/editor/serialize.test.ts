@@ -25,7 +25,12 @@ function node(
 
 describe("automation editor serialization", () => {
   beforeEach(() => {
-    vi.stubGlobal("crypto", { randomUUID: () => "uuid-1" });
+    const originalCrypto = global.crypto;
+    vi.stubGlobal("crypto", {
+      getRandomValues: (arr: Uint8Array) => originalCrypto.getRandomValues(arr),
+      randomUUID: () => "uuid-1",
+    });
+    vi.spyOn(Math, "random").mockReturnValue(0.180212345);
   });
 
   it("creates a fixed UI-only start node", () => {
@@ -45,7 +50,7 @@ describe("automation editor serialization", () => {
     const openUrl = createAutomationNode("openUrl", { x: 50, y: 70 });
 
     expect(openUrl).toMatchObject({
-      id: "openUrl-uuid-1",
+      id: "openUrl-262191110",
       type: "automation",
       position: { x: 50, y: 70 },
       data: {
@@ -90,12 +95,14 @@ describe("automation editor serialization", () => {
           id: "n1",
           type: "openUrl",
           params: { url: "https://example.com", timeout: 0 },
+          position: { x: 10, y: 20 },
         },
         {
           id: "n2",
           type: "click",
           params: { selector: "#go", disabled: false },
           continueOnError: true,
+          position: { x: 10, y: 20 },
         },
       ],
       edges: [{ from: "n1", to: "n2", sourceHandle: "success" }],
@@ -202,5 +209,53 @@ describe("automation editor serialization", () => {
       { id: "edge-n1-n2", source: "n1", target: "n2", sourceHandle: "true" },
       { id: "edge-n1-n3", source: "n1", target: "n3", sourceHandle: "false" },
     ]);
+  });
+
+  it("serializes and deserializes multiple functions", () => {
+    const start = createStartNode();
+    const open = node("n1", "openUrl", { url: "https://example.com" });
+    const call = node("n2", "callFunction", { functionName: "Helper" });
+
+    const helperStart = createStartNode();
+    const logNode = node("h1", "log", { message: "in helper" });
+
+    const flow = toDonutFlow(
+      "multi-func-demo",
+      [open, start, call],
+      [
+        { id: "edge-start-n1", source: START_NODE_ID, target: "n1" },
+        { id: "edge-n1-n2", source: "n1", target: "n2" },
+      ],
+      {},
+      {
+        functions: [
+          {
+            name: "Main",
+            nodes: [open, start, call],
+            edges: [
+              { id: "edge-start-n1", source: START_NODE_ID, target: "n1" },
+              { id: "edge-n1-n2", source: "n1", target: "n2" },
+            ],
+          },
+          {
+            name: "Helper",
+            nodes: [logNode, helperStart],
+            edges: [
+              { id: "edge-start-h1", source: START_NODE_ID, target: "h1" },
+            ],
+          },
+        ],
+      },
+    );
+
+    expect(flow.functions).toHaveLength(2);
+    expect(flow.functions?.[0].name).toBe("Main");
+    expect(flow.functions?.[1].name).toBe("Helper");
+    expect(flow.functions?.[1].nodes[0].type).toBe("log");
+
+    const canvas = fromDonutFlow(flow);
+    expect(canvas.nodes).toHaveLength(3); // start, open, call
+    expect(canvas.functions).toHaveLength(2);
+    expect(canvas.functions?.[1].nodes).toHaveLength(2); // start, log
   });
 });

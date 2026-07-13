@@ -57,17 +57,8 @@ fn try_reserve(profile_id: &str, no_overlapping: bool) -> bool {
   // advisory map. We claim under the reservations lock and ALSO consult the GUI
   // map inside the same critical section so a GUI-running profile is refused.
   let mut reserved = RESERVATIONS.lock().unwrap();
-  if no_overlapping {
-    if reserved.contains(profile_id) {
-      return false;
-    }
-    let gui_running = ACTIVE_RUNNING_STATES
-      .lock()
-      .map(|m| m.get(profile_id).copied().unwrap_or(false))
-      .unwrap_or(false);
-    if gui_running {
-      return false;
-    }
+  if no_overlapping && reserved.contains(profile_id) {
+    return false;
   }
   reserved.insert(profile_id.to_string());
   true
@@ -101,6 +92,9 @@ pub async fn start_automation_run(
     .unwrap_or("flow")
     .to_string();
 
+  // Resolve target profiles. If running without profile, generate virtual ones.
+  let final_profiles = resolve_target_profiles(profiles, &settings, true)?;
+
   let run_id = Uuid::new_v4().to_string();
   let run_dir = crate::settings::app_dirs::automation_runs_dir().join(&run_id);
   std::fs::create_dir_all(&run_dir).map_err(|e| format!("failed to create run dir: {e}"))?;
@@ -114,7 +108,7 @@ pub async fn start_automation_run(
   {
     let mut runs = AUTOMATION_RUNNER.runs.lock().unwrap();
     let mut state = RunState::new(run_id.clone(), flow_name.clone(), settings.clone());
-    for p in &profiles {
+    for p in &final_profiles {
       state.profiles.insert(
         p.id.to_string(),
         ProfileRunState::new(p.id.to_string(), p.name.clone()),
@@ -126,7 +120,7 @@ pub async fn start_automation_run(
   let semaphore = Arc::new(Semaphore::new(settings.concurrency.max(1) as usize));
   let run_id_for_tasks = run_id.clone();
 
-  for (idx, profile) in profiles.into_iter().enumerate() {
+  for (idx, profile) in final_profiles.into_iter().enumerate() {
     let app = app_handle.clone();
     let sem = semaphore.clone();
     let rid = run_id_for_tasks.clone();
@@ -144,6 +138,125 @@ pub async fn start_automation_run(
   }
 
   Ok(run_id)
+}
+
+/// Resolve target profiles. If running without profile, generate virtual ones.
+pub fn resolve_target_profiles(
+  profiles: Vec<BrowserProfile>,
+  settings: &RunSettings,
+  create_dirs: bool,
+) -> Result<Vec<BrowserProfile>, String> {
+  let mut final_profiles = Vec::new();
+  if settings.run_without_profile {
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    #[cfg(not(test))]
+    let _ = registry.load();
+
+    let (browser, version) = if !registry.get_downloaded_versions("wayfern").is_empty() {
+      let mut versions = registry.get_downloaded_versions("wayfern");
+      crate::api::api_client::sort_versions(&mut versions);
+      ("wayfern".to_string(), versions.first().unwrap().clone())
+    } else if !registry.get_downloaded_versions("camoufox").is_empty() {
+      let mut versions = registry.get_downloaded_versions("camoufox");
+      crate::api::api_client::sort_versions(&mut versions);
+      ("camoufox".to_string(), versions.first().unwrap().clone())
+    } else {
+      return Err(
+        "No browser binary downloaded. Please download Wayfern or Camoufox first.".into(),
+      );
+    };
+
+    for i in 0..settings.virtual_profile_count.max(1) {
+      let (profile_id, name, mut wayfern_config, mut camoufox_config) =
+        if let Some(p) = profiles.get(i as usize) {
+          (
+            p.id,
+            p.name.clone(),
+            p.wayfern_config.clone(),
+            p.camoufox_config.clone(),
+          )
+        } else {
+          (
+            Uuid::new_v4(),
+            format!("Virtual-Profile-{}", i + 1),
+            None,
+            None,
+          )
+        };
+
+      if browser == "wayfern" {
+        let mut w_cfg = wayfern_config.unwrap_or_default();
+        if w_cfg.randomize_fingerprint_on_launch.is_none() {
+          w_cfg.randomize_fingerprint_on_launch = Some(true);
+        }
+        if w_cfg.geoip.is_none() {
+          w_cfg.geoip = Some(serde_json::Value::Bool(true));
+        }
+        wayfern_config = Some(w_cfg);
+        camoufox_config = None;
+      } else {
+        let mut c_cfg = camoufox_config.unwrap_or_default();
+        if c_cfg.randomize_fingerprint_on_launch.is_none() {
+          c_cfg.randomize_fingerprint_on_launch = Some(true);
+        }
+        if c_cfg.geoip.is_none() {
+          c_cfg.geoip = Some(serde_json::Value::Bool(true));
+        }
+        camoufox_config = Some(c_cfg);
+        wayfern_config = None;
+      }
+
+      let virtual_profile = BrowserProfile {
+        id: profile_id,
+        name,
+        browser: browser.clone(),
+        version: version.clone(),
+        proxy_id: None,
+        vpn_id: None,
+        launch_hook: None,
+        automation: None,
+        process_id: None,
+        last_launch: None,
+        release_type: "stable".to_string(),
+        camoufox_config,
+        wayfern_config,
+        group_id: None,
+        tags: Vec::new(),
+        note: Some("Virtual profile created dynamically".to_string()),
+        sync_mode: crate::profile::types::SyncMode::Disabled,
+        encryption_salt: None,
+        last_sync: None,
+        host_os: Some(crate::profile::types::get_host_os()),
+        ephemeral: true,
+        extension_group_id: None,
+        window_color: None,
+        proxy_bypass_rules: Vec::new(),
+        created_by_id: None,
+        created_by_email: None,
+        dns_blocklist: None,
+        password_protected: false,
+        created_at: Some(now_ms() / 1000),
+        updated_at: Some(now_ms() / 1000),
+        profile_status: None,
+      };
+
+      if create_dirs {
+        if let Err(e) =
+          crate::browser::ephemeral_dirs::create_ephemeral_dir(&profile_id.to_string())
+        {
+          return Err(format!(
+            "Failed to create virtual profile ephemeral directory: {e}"
+          ));
+        }
+      }
+
+      final_profiles.push(virtual_profile);
+    }
+  } else {
+    final_profiles = profiles;
+  }
+  Ok(final_profiles)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -182,38 +295,143 @@ async fn run_one_profile(
     return;
   }
 
+  // Read flow JSON to see if there is an openProfile (Browser Settings) node targeting this profile.
+  // If found, stage the config to LAUNCH_OVERRIDES so it is applied on the initial browser launch.
+  if let Ok(raw) = std::fs::read_to_string(&flow_path) {
+    if let Ok(flow_val) = serde_json::from_str::<serde_json::Value>(&raw) {
+      if let Some(nodes) = flow_val.get("nodes").and_then(|n| n.as_array()) {
+        for node in nodes {
+          if node.get("type").and_then(|t| t.as_str()) == Some("openProfile") {
+            let params = node.get("params").and_then(|p| p.as_object());
+            let node_profile_id = params
+              .and_then(|p| p.get("profileId"))
+              .and_then(|v| v.as_str())
+              .unwrap_or("");
+            let is_match = node_profile_id.is_empty()
+              || node_profile_id == "{{PROFILE_ID}}"
+              || node_profile_id == profile_id
+              || node_profile_id == profile.name;
+            if is_match {
+              if let Some(automation_str) = params
+                .and_then(|p| p.get("automation"))
+                .and_then(|v| v.as_str())
+              {
+                log::info!(
+                  "[AUTOMATION] Staging initial proxy/browser settings from node {} for profile {}",
+                  node.get("id").and_then(|id| id.as_str()).unwrap_or("?"),
+                  profile.name
+                );
+                if let Err(e) = crate::automation::profile_node::stage_profile_overrides(
+                  &profile_id,
+                  automation_str,
+                ) {
+                  log::error!("[AUTOMATION] Failed to stage initial profile overrides: {e}");
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   set_status(&run_id, &profile_id, RunStatus::Launching, |_| {});
 
-  // 1. Launch with a debugging port. force_new=true → fresh headed/headless
-  //    instance with the requested debug port.
-  let launched = match launch_browser_profile_impl(
-    app_handle.clone(),
-    profile.clone(),
-    None,
-    None, // let the launcher pick a free port; we read the REAL one back next
-    settings.headless,
-    true,
-  )
-  .await
+  // Check if browser is already running. If it is, we can reuse it!
+  let mut already_running = false;
+  let mut browser_pid = None;
+  if let Ok(run_status) = crate::browser::browser_runner::BrowserRunner::instance()
+    .check_browser_status(app_handle.clone(), &profile)
+    .await
   {
-    Ok(p) => p,
-    Err(e) => {
-      set_status(&run_id, &profile_id, RunStatus::Error, |s| {
-        s.error = Some(format!("launch failed: {e}"));
+    if run_status {
+      let updated_profile = crate::browser::browser_runner::BrowserRunner::instance()
+        .profile_manager
+        .list_profiles()
+        .ok()
+        .and_then(|profiles| profiles.into_iter().find(|p| p.id == profile.id))
+        .unwrap_or_else(|| profile.clone());
+      browser_pid = updated_profile.process_id;
+
+      if browser_pid.is_none() {
+        // Fallback for virtual/ephemeral profiles which are not listed in standard profiles
+        let profiles_dir = crate::settings::app_dirs::profiles_dir();
+        let profile_path =
+          crate::browser::ephemeral_dirs::get_effective_profile_path(&profile, &profiles_dir);
+        let profile_path_str = profile_path.to_string_lossy().to_string();
+        if profile.browser == "wayfern" {
+          if let Some(wayfern_process) = crate::browser::wayfern_manager::WayfernManager::instance()
+            .find_wayfern_by_profile(&profile_path_str)
+            .await
+          {
+            browser_pid = wayfern_process.processId;
+          }
+        } else if profile.browser == "camoufox" {
+          if let Ok(Some(camoufox_process)) =
+            crate::browser::camoufox_manager::CamoufoxManager::instance()
+              .find_camoufox_by_profile(&profile_path_str)
+              .await
+          {
+            browser_pid = camoufox_process.processId;
+          }
+        }
+      }
+      already_running = browser_pid.is_some();
+    }
+  }
+
+  let mut we_launched = false;
+  let _launched = if already_running {
+    log::info!(
+      "Automation: profile {} is already running, connecting directly.",
+      profile.name
+    );
+    None
+  } else {
+    // 1. Launch with a debugging port. force_new=true → fresh headed/headless
+    //    instance with the requested debug port.
+    let l = match launch_browser_profile_impl(
+      app_handle.clone(),
+      profile.clone(),
+      None,
+      None, // let the launcher pick a free port; we read the REAL one back next
+      settings.headless,
+      true,
+    )
+    .await
+    {
+      Ok(p) => p,
+      Err(e) => {
+        set_status(&run_id, &profile_id, RunStatus::Error, |s| {
+          s.error = Some(format!("launch failed: {e}"));
+          s.finished_at_ms = Some(now_ms());
+        });
+        return;
+      }
+    };
+
+    // Check cancellation right after launch
+    if is_cancelled(&run_id) {
+      kill_and_release(&profile, l.process_id).await;
+      set_status(&run_id, &profile_id, RunStatus::Stopped, |s| {
         s.finished_at_ms = Some(now_ms());
       });
       return;
     }
-  };
 
-  let browser_pid = launched.process_id;
+    browser_pid = l.process_id;
+    we_launched = true;
+    Some(l)
+  };
 
   // 1b. Resolve the REAL CDP port (red-team #1) + verify it is live.
   let port = match resolve_and_verify_port(&profile).await {
     Some(p) => p,
     None => {
       // Couldn't get a live CDP port — kill what we launched and bail.
-      kill_and_release(&profile, browser_pid).await;
+      if we_launched {
+        kill_and_release(&profile, browser_pid).await;
+      }
       set_status(&run_id, &profile_id, RunStatus::Error, |s| {
         s.error = Some("CDP port not live after launch".into());
         s.finished_at_ms = Some(now_ms());
@@ -222,17 +440,56 @@ async fn run_one_profile(
     }
   };
 
+  // Check cancellation right after port verification
+  if is_cancelled(&run_id) {
+    if we_launched {
+      kill_and_release(&profile, browser_pid).await;
+    }
+    set_status(&run_id, &profile_id, RunStatus::Stopped, |s| {
+      s.finished_at_ms = Some(now_ms());
+    });
+    return;
+  }
+
   set_status(&run_id, &profile_id, RunStatus::Running, |s| {
     s.browser_pid = browser_pid;
     s.cdp_port = Some(port);
+    s.we_launched = we_launched;
   });
 
   // 2. Spawn the sidecar engine.
-  let vars = serde_json::json!({
-    "PROFILE_ID": profile_id,
-    "PROFILE_NAME": profile.name,
-  })
-  .to_string();
+  let mut vars_map = serde_json::Map::new();
+  vars_map.insert(
+    "PROFILE_ID".into(),
+    serde_json::Value::String(profile_id.clone()),
+  );
+  vars_map.insert(
+    "PROFILE_NAME".into(),
+    serde_json::Value::String(profile.name.clone()),
+  );
+  vars_map.insert(
+    "CDP_PORT".into(),
+    serde_json::Value::String(port.to_string()),
+  );
+  if let Ok(raw) = std::fs::read_to_string(&flow_path) {
+    if let Ok(flow_val) = serde_json::from_str::<serde_json::Value>(&raw) {
+      if let Some(custom) = flow_val.get("variables").and_then(|v| v.as_object()) {
+        for (k, v) in custom {
+          if k.eq_ignore_ascii_case("PROFILE_ID") || k.eq_ignore_ascii_case("PROFILE_NAME") {
+            continue;
+          }
+          let val = match v {
+            serde_json::Value::String(s) => serde_json::Value::String(s.clone()),
+            serde_json::Value::Number(n) => serde_json::Value::String(n.to_string()),
+            serde_json::Value::Bool(b) => serde_json::Value::String(b.to_string()),
+            other => serde_json::Value::String(other.to_string()),
+          };
+          vars_map.insert(k.clone(), val);
+        }
+      }
+    }
+  }
+  let vars = serde_json::Value::Object(vars_map).to_string();
 
   let args = SidecarArgs {
     flow_path: flow_path.clone(),
@@ -344,10 +601,19 @@ async fn finalize_profile(
     ExitOutcome::Killed => RunStatus::Error,
   };
 
+  let we_launched = {
+    let runs = AUTOMATION_RUNNER.runs.lock().unwrap();
+    runs
+      .get(run_id)
+      .and_then(|r| r.profiles.get(&profile_id))
+      .map(|p| p.we_launched)
+      .unwrap_or(false)
+  };
+
   // 4/5. Close the browser if requested — by PID (red-team #4), then release the
   // team lock after the kill (red-team #2). When close_on_complete=false we still
   // release the lock so a sync-enabled profile isn't stuck locked.
-  if settings.close_on_complete {
+  if settings.close_on_complete && we_launched {
     kill_and_release(profile, browser_pid).await;
   } else {
     crate::profile::team_lock::release_team_lock_if_needed(profile).await;
@@ -403,14 +669,23 @@ async fn kill_and_release(profile: &BrowserProfile, browser_pid: Option<u32>) {
 /// Resolve the real CDP port from WayfernManager and verify /json/version.
 async fn resolve_and_verify_port(profile: &BrowserProfile) -> Option<u16> {
   let profiles_dir = crate::settings::app_dirs::profiles_dir();
-  let profile_path = profile.get_profile_data_path(&profiles_dir);
+  let profile_path =
+    crate::browser::ephemeral_dirs::get_effective_profile_path(profile, &profiles_dir);
   let profile_path_str = profile_path.to_string_lossy().to_string();
 
   // Retry: the port may not be registered the instant launch returns.
   for attempt in 0..20 {
-    let port = crate::browser::wayfern_manager::WayfernManager::instance()
-      .get_cdp_port(&profile_path_str)
-      .await;
+    let port = if profile.browser == "wayfern" {
+      crate::browser::wayfern_manager::WayfernManager::instance()
+        .get_cdp_port(&profile_path_str)
+        .await
+    } else if profile.browser == "camoufox" {
+      crate::browser::camoufox_manager::CamoufoxManager::instance()
+        .get_cdp_port(&profile_path_str)
+        .await
+    } else {
+      None
+    };
     if let Some(p) = port {
       if verify_cdp_live(p).await {
         return Some(p);
@@ -509,8 +784,10 @@ pub async fn stop_automation_run(
     if let Some(spid) = p.sidecar_pid {
       let _ = crate::automation::process_kill::kill_pid_tree(spid).await;
     }
-    if let Some(bpid) = p.browser_pid {
-      let _ = crate::automation::process_kill::kill_pid_tree(bpid).await;
+    if p.we_launched {
+      if let Some(bpid) = p.browser_pid {
+        let _ = crate::automation::process_kill::kill_pid_tree(bpid).await;
+      }
     }
     // Release team lock for this profile (red-team #2). We need a BrowserProfile;
     // reload from disk by id so is_sync_enabled is accurate. Resolve the profile in
@@ -547,4 +824,155 @@ pub async fn stop_automation_run(
   let _ = app_handle;
   maybe_mark_run_finished(&run_id);
   Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::profile::types::SyncMode;
+
+  fn make_test_profile(id: uuid::Uuid, name: &str) -> BrowserProfile {
+    BrowserProfile {
+      id,
+      name: name.to_string(),
+      browser: "wayfern".to_string(),
+      version: "125.0.0".to_string(),
+      proxy_id: None,
+      vpn_id: None,
+      launch_hook: None,
+      automation: None,
+      process_id: None,
+      last_launch: None,
+      release_type: "stable".to_string(),
+      camoufox_config: None,
+      wayfern_config: None,
+      group_id: None,
+      tags: Vec::new(),
+      note: None,
+      sync_mode: SyncMode::Disabled,
+      encryption_salt: None,
+      last_sync: None,
+      host_os: None,
+      ephemeral: false,
+      extension_group_id: None,
+      window_color: None,
+      proxy_bypass_rules: Vec::new(),
+      created_by_id: None,
+      created_by_email: None,
+      dns_blocklist: None,
+      password_protected: false,
+      created_at: None,
+      updated_at: None,
+      profile_status: None,
+    }
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_without_toggle() {
+    let p1 = make_test_profile(uuid::Uuid::new_v4(), "Profile-1");
+    let p2 = make_test_profile(uuid::Uuid::new_v4(), "Profile-2");
+    let input = vec![p1.clone(), p2.clone()];
+
+    let settings = RunSettings {
+      run_without_profile: false,
+      virtual_profile_count: 5,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(input, &settings, false).unwrap();
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0].id, p1.id);
+    assert_eq!(result[1].id, p2.id);
+    assert!(!result[0].ephemeral);
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_with_toggle_and_mock_registry() {
+    // Clear registry to avoid test pollution
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    // Simulate wayfern download in registry with a very high version
+    registry.add_browser(
+      crate::browser::downloaded_browsers_registry::DownloadedBrowserInfo {
+        browser: "wayfern".to_string(),
+        version: "999.0.0".to_string(),
+        file_path: std::path::PathBuf::from("mock_path_wayfern"),
+      },
+    );
+
+    let settings = RunSettings {
+      run_without_profile: true,
+      virtual_profile_count: 3,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(vec![], &settings, false).unwrap();
+    assert_eq!(result.len(), 3);
+
+    for (i, p) in result.iter().enumerate() {
+      assert_eq!(p.name, format!("Virtual-Profile-{}", i + 1));
+      assert_eq!(p.browser, "wayfern");
+      assert_eq!(p.version, "999.0.0");
+      assert!(p.ephemeral);
+
+      // Verification of fingerprint randomize option
+      let wayfern_cfg = p.wayfern_config.as_ref().unwrap();
+      assert_eq!(wayfern_cfg.randomize_fingerprint_on_launch, Some(true));
+      assert_eq!(wayfern_cfg.geoip, Some(serde_json::Value::Bool(true)));
+    }
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_no_browsers_error() {
+    // Clear registry completely
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    if registry.is_browser_registered("wayfern", "125.0.0") {
+      registry.remove_browser("wayfern", "125.0.0");
+    }
+    if registry.is_browser_registered("camoufox", "125.0.0") {
+      registry.remove_browser("camoufox", "125.0.0");
+    }
+
+    let settings = RunSettings {
+      run_without_profile: true,
+      virtual_profile_count: 1,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(vec![], &settings, false);
+    if result.is_err() {
+      let err = result.unwrap_err();
+      assert!(err.contains("No browser binary downloaded"));
+    }
+  }
+
+  #[test]
+  fn test_resolve_target_profiles_with_toggle_and_provided_virtual_profile() {
+    let registry =
+      crate::browser::downloaded_browsers_registry::DownloadedBrowsersRegistry::instance();
+    registry.add_browser(
+      crate::browser::downloaded_browsers_registry::DownloadedBrowserInfo {
+        browser: "wayfern".to_string(),
+        version: "999.0.0".to_string(),
+        file_path: std::path::PathBuf::from("mock_path_wayfern"),
+      },
+    );
+
+    let test_uuid = uuid::Uuid::new_v4();
+    let p1 = make_test_profile(test_uuid, "Provided-Virtual-Profile");
+    let input = vec![p1];
+
+    let settings = RunSettings {
+      run_without_profile: true,
+      virtual_profile_count: 1,
+      ..Default::default()
+    };
+
+    let result = resolve_target_profiles(input, &settings, false).unwrap();
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].id, test_uuid);
+    assert_eq!(result[0].name, "Provided-Virtual-Profile");
+    assert!(result[0].ephemeral);
+  }
 }

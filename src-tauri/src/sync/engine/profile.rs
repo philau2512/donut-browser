@@ -228,6 +228,15 @@ impl SyncEngine {
 
     // Delete local files that don't exist remotely (when remote is newer)
     for path in &diff.files_to_delete_local {
+      // The delete list comes from the remote-controlled manifest; guard against
+      // traversal/absolute paths so it can't delete files outside the profile.
+      if !is_safe_manifest_path(path) {
+        log::warn!(
+          "Skipping local delete with unsafe relative path: {:?}",
+          path
+        );
+        continue;
+      }
       let file_path = profile_dir.join(path);
       if file_path.exists() {
         let _ = fs::remove_file(&file_path);
@@ -247,10 +256,16 @@ impl SyncEngine {
       .upload_profile_metadata(&profile_id, profile, &key_prefix)
       .await?;
 
-    // If we recovered from an empty local state (downloaded everything from remote),
-    // regenerate the manifest from the actual files now on disk so we don't
-    // overwrite the remote manifest with an empty one.
-    let final_manifest = if local_manifest.files.is_empty() && !diff.files_to_download.is_empty() {
+    // If this sync changed the local profile directory (downloaded files and/or
+    // deleted local files), the manifest generated at the START of the sync is
+    // now stale. Uploading it would advertise wrong hashes/mtimes for the files
+    // we just pulled, so the peer keeps computing a non-empty diff and the two
+    // devices ping-pong re-uploads forever (issue #470). Regenerate from the
+    // actual on-disk files before uploading. When only uploads happened, the
+    // on-disk state is unchanged and the original manifest is still accurate.
+    let local_changed =
+      !diff.files_to_download.is_empty() || !diff.files_to_delete_local.is_empty();
+    let final_manifest = if local_changed {
       let mut new_cache = HashCache::load(&cache_path);
       let mut regenerated = generate_manifest(&profile_id, &profile_dir, &mut new_cache)?;
       new_cache.save(&cache_path)?;
@@ -297,6 +312,8 @@ impl SyncEngine {
       updated_profile.proxy_id = remote_meta.proxy_id;
       updated_profile.vpn_id = remote_meta.vpn_id;
       updated_profile.group_id = remote_meta.group_id;
+      updated_profile.extension_group_id = remote_meta.extension_group_id;
+      updated_profile.window_color = remote_meta.window_color;
       updated_profile.last_sync = Some(
         std::time::SystemTime::now()
           .duration_since(std::time::UNIX_EPOCH)
@@ -444,6 +461,8 @@ impl SyncEngine {
       updated.proxy_id = remote_meta.proxy_id;
       updated.vpn_id = remote_meta.vpn_id;
       updated.group_id = remote_meta.group_id;
+      updated.extension_group_id = remote_meta.extension_group_id;
+      updated.window_color = remote_meta.window_color;
       updated.last_sync = Some(
         std::time::SystemTime::now()
           .duration_since(std::time::UNIX_EPOCH)

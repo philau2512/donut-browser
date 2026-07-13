@@ -35,7 +35,9 @@
       "saved": "Đã lưu",
       "copied": "Đã sao chép",
       "learnMore": "Tìm hiểu thêm",
-      "toggleTheme": "Chuyển đổi giao diện"
+      "toggleTheme": "Chuyển đổi giao diện",
+      "run": "Chạy",
+      "saveAs": "Lưu bản sao"
     },
     "status": {
       "active": "Đang hoạt động",
@@ -250,7 +252,12 @@
       "lastOpen": "Lần mở cuối",
       "os": "OS",
       "message": "Thông báo",
-      "changeProxy": "Đổi Proxy"
+      "changeProxy": "Đổi Proxy",
+      "statusReady": "Sẵn sàng",
+      "statusRunning": "Đang chạy",
+      "statusLaunching": "Đang khởi động...",
+      "statusStopping": "Đang dừng...",
+      "errorCannotCheckProxy": "Lỗi: Không thể kiểm tra proxy"
     },
     "actions": {
       "launch": "Khởi chạy",
@@ -295,7 +302,8 @@
       "confirmButton": "Xóa {{count}} hồ sơ"
     },
     "note": {
-      "placeholder": "Thêm ghi chú..."
+      "placeholder": "Thêm ghi chú...",
+      "empty": "Không có ghi chú"
     },
     "aria": {
       "profileInfo": "Thông tin hồ sơ"
@@ -1230,7 +1238,8 @@
       "vpn": "VPN",
       "cookieCount": "Cookie đã lưu",
       "localDataTransfer": "Truyền dữ liệu cục bộ",
-      "created": "Đã tạo"
+      "created": "Đã tạo",
+      "windowColor": "Màu cửa sổ"
     },
     "values": {
       "none": "Không có",
@@ -1948,7 +1957,13 @@
     "wayfernWebrtcAlterIpInvalid": "Chế độ WebRTC alter nhận IP thoát proxy không hợp lệ.",
     "wayfernNoPageTargets": "Wayfern đã khởi động nhưng không có tab để inject vân tay.",
     "wayfernFingerprintApplyFailed": "Không thể áp dụng vân tay cho Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}"
+    "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}",
+    "proxyNotWorkingLaunch": "Proxy đã chọn không hoạt động. Không thể khởi chạy profile.",
+    "updateChecksumsUnavailable": "Không thể xác minh bản cập nhật {{version}} vì không lấy được tệp checksum. Bản cập nhật chưa được cài đặt và sẽ thử lại sau.",
+    "updateChecksumMismatch": "Tệp cập nhật {{file}} đã tải xuống không khớp checksum và đã bị xóa. Vui lòng thử lại.",
+    "nameCannotBeEmpty": "Tên không được để trống",
+    "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải. Phiên bản hiện tại là {{current}}.",
+    "wayfernFingerprintInconsistent": "Vân tay Wayfern không nhất quán: {{reason}}"
   },
   "rail": {
     "profiles": "Profile",
@@ -2240,7 +2255,8 @@
       "localCommand": "Local Command",
       "cleanup": "Cleanup",
       "dynamicProxy": "Dynamic Proxy",
-      "telegramAlert": "Telegram Alert"
+      "telegramAlert": "Telegram Alert",
+      "openProfile": "Browser Settings"
     },
     "dependencyWarning": "Dependency issue",
     "script": {
@@ -2282,17 +2298,28 @@
         "navigator": "Điều hướng",
         "mouse": "Chuột",
         "keyboard": "Bàn phím",
-        "data": "Dữ liệu"
+        "data": "Dữ liệu",
+        "interaction": "Tương tác",
+        "utility": "Tiện ích",
+        "network": "Mạng",
+        "control": "Điều khiển luồng",
+        "other": "Khác"
       },
       "start": "Bắt đầu",
       "booleanEnabled": "Bật",
       "comment": {
         "characters": "ký tự",
-        "title": "Chú thích"
+        "title": "Chú thích",
+        "placeholder": "Nhập nhận xét của bạn..."
       },
       "errors": {
-        "loadFailed": "Tải script thất bại",
-        "saveFailed": "Lưu script thất bại"
+        "loadFailed": "Tải script thất bại: {{error}}",
+        "saveFailed": "Lưu script thất bại: {{error}}",
+        "nameRequired": "Tên flow không được để trống",
+        "startFailed": "Khởi động debug thất bại: {{error}}",
+        "functionExists": "Tên hàm đã tồn tại",
+        "cannotRenameMain": "Không thể đổi tên hàm Main",
+        "cannotDeleteMain": "Không thể xóa hàm Main"
       },
       "linearHint": "Chế độ tuyến tính",
       "name": "Tên script",
@@ -2302,25 +2329,196 @@
         "continueOnErrorHint": "Bỏ qua lỗi và tiếp tục các bước tiếp theo",
         "document": "Tài liệu",
         "options": "Tùy chọn",
-        "setting": "Cài đặt"
+        "setting": "Cài đặt",
+        "selectNodeHint": "Chọn một node trên canvas để xem thuộc tính",
+        "sleepAfter": "Thời gian nghỉ (mili giây) trước khi chạy node tiếp theo.",
+        "sleepAfterFrom": "Từ (mili giây)",
+        "sleepAfterTo": "Đến (mili giây)"
       },
       "saving": "Đang lưu...",
       "toast": {
         "saved": "Đã lưu script",
-        "startFromHere": "Bắt đầu từ đây"
+        "startFromHere": "Bắt đầu từ đây",
+        "copied": "[TODO: Thêm bản dịch tiếng Việt]",
+        "pasted": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "toolbar": {
         "delete": "Xóa",
         "edit": "Chỉnh sửa",
-        "startFromHere": "Bắt đầu từ đây"
+        "startFromHere": "Bắt đầu từ đây",
+        "duplicate": "Nhân bản",
+        "runFull": "Chạy toàn bộ quy trình",
+        "runStep": "Chạy 1 bước (1 node)",
+        "runStepCurrent": "[TODO: Thêm bản dịch tiếng Việt]",
+        "runStepNext": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "variables": {
         "add": "Thêm biến",
         "autoInjected": "Tự động inject",
         "description": "Mô tả",
         "reserved": "Biến hệ thống",
-        "title": "Biến"
-      }
+        "title": "Biến",
+        "search": "Tìm kiếm biến...",
+        "system": "Biến Hệ Thống",
+        "user": "Biến Người Dùng",
+        "empty": "Chưa có biến nào",
+        "changesWarning": "⚠️ Thay đổi sẽ áp dụng ở lần chạy sau",
+        "defaultValue": "[TODO: Thêm bản dịch tiếng Việt]",
+        "edit": "[TODO: Thêm bản dịch tiếng Việt]",
+        "name": "[TODO: Thêm bản dịch tiếng Việt]",
+        "scope": "[TODO: Thêm bản dịch tiếng Việt]",
+        "unnamed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "valueType": "[TODO: Thêm bản dịch tiếng Việt]"
+      },
+      "logs": {
+        "title": "Nhật ký",
+        "timeline": "Dòng Thời Gian Thực Thi",
+        "noSteps": "Chưa có bước nào được thực thi",
+        "variablesState": "Trạng Thái Biến",
+        "noVariables": "Không có biến trong phạm vi",
+        "console": "Đầu Ra Console",
+        "consoleEmpty": "Không có đầu ra nhật ký"
+      },
+      "controls": {
+        "zoomIn": "Phóng To",
+        "zoomOut": "Thu Nhỏ",
+        "fitView": "Vừa Màn Hình",
+        "lock": "Khóa Canvas",
+        "unlock": "Mở Khóa Canvas"
+      },
+      "tabs": {
+        "properties": "Thuộc Tính",
+        "variables": "Biến",
+        "resources": "Tài Nguyên"
+      },
+      "actions": {
+        "run": "Chạy",
+        "running": "Đang chạy...",
+        "stop": "Dừng"
+      },
+      "sidebar": {
+        "collapse": "Thu gọn Sidebar",
+        "showLogs": "Hiện Nhật Ký",
+        "hideLogs": "Ẩn Nhật Ký",
+        "settings": "Cài Đặt"
+      },
+      "resources": {
+        "advanced": {
+          "filenames": "Đường dẫn tuyệt đối hoặc tương đối của tệp (.txt, .csv, .log) hoặc thư mục chứa dữ liệu tài nguyên.",
+          "readFile": "Cho phép đọc các dòng/tệp từ nguồn để làm đầu vào cho script.",
+          "writeFile": "Cho phép ghi hoặc thêm dữ liệu đầu ra ngược trở lại tệp tài nguyên này.",
+          "mix": "Trộn ngẫu nhiên các phần tử khi cấp phát thay vì sử dụng theo thứ tự tuần tự.",
+          "maxSuccess": "Số lần sử dụng thành công tối đa của mỗi phần tử trước khi cạn kiệt (0 = không giới hạn).",
+          "maxFail": "Số lần lỗi tối đa được phép của mỗi phần tử trước khi bị vô hiệu hóa (0 = không giới hạn).",
+          "maxSimultaneous": "Số luồng hoặc profile tối đa được phép sử dụng đồng thời một phần tử này (mặc định là 1).",
+          "interval": "Thời gian giãn cách (cooldown) tối thiểu tính bằng mili-giây trước khi một phần tử có thể tái sử dụng.",
+          "greedy": "Lập tức cấp phát phần tử khả dụng đầu tiên theo thứ tự gốc, bỏ qua cơ chế xáo trộn ngẫu nhiên.",
+          "reload": "Theo dõi tệp nguồn để tự động tải lại danh sách phần tử khi có thay đổi từ bên ngoài.",
+          "renew": "Tự động đặt lại toàn bộ thống kê sử dụng (lượt thành công/thất bại) của phần tử về trạng thái khả dụng mỗi 30 giây."
+        },
+        "generalSettings": "Cài Đặt Chung",
+        "saveLayout": "Lưu bố cục khi đóng",
+        "autoAlign": "Tự động căn chỉnh node",
+        "title": "Tài Nguyên Flow",
+        "empty": "Không có tài nguyên bổ sung nào được tải trong flow này.",
+        "wizard": {
+          "title": "Tạo Tài Nguyên",
+          "step1_title": "Tên.",
+          "step1_subtitle": "Chọn tên nội bộ và mô tả cho tài nguyên.",
+          "step1_name_label": "Tên.",
+          "step1_name_help": "Đây là tên tài nguyên nội bộ được sử dụng trong script.",
+          "step1_desc_en_label": "Mô tả tiếng Anh.",
+          "step1_desc_en_help": "Mô tả cho người dùng nói tiếng Anh.",
+          "step1_desc_ru_label": "Mô tả tiếng Nga.",
+          "step1_desc_ru_help": "Mô tả cho người dùng nói tiếng Nga.",
+          "step1_hint_label": "Bật gợi ý",
+          "step2_title": "Loại.",
+          "step2_subtitle": "Chọn loại tài nguyên.",
+          "step3_title": "Chế độ Đọc/Ghi.",
+          "step3_subtitle": "Cài đặt chế độ đọc/ghi.",
+          "step3_only_read": "Chỉ đọc.",
+          "step3_read_delete": "Đọc và xóa dòng sau khi sử dụng.",
+          "step3_read_delete_help": "Các dòng sẽ chỉ bị xóa khỏi file sau một thời gian hoặc sau khi khởi động lại script.",
+          "step3_only_write": "Chỉ ghi.",
+          "step3_mix": "Trộn dòng.",
+          "step4_title_string": "Thuộc tính chuỗi.",
+          "step4_subtitle_string": "Chọn giá trị mặc định và thiết lập chuỗi có thể để trống hay không?",
+          "step4_default_value": "Giá trị mặc định",
+          "step4_default_value_help": "Để trống để người dùng tự điền.",
+          "step4_not_empty": "Chuỗi không được để trống",
+          "step4_multiline": "Chuỗi phải có nhiều dòng",
+          "btn_back": "< Quay lại",
+          "btn_next": "Tiếp theo >",
+          "btn_finish": "Hoàn tất",
+          "btn_cancel": "Hủy",
+          "step4_title_select": "Cấu hình lựa chọn.",
+          "step4_subtitle_select": "Thiết lập các tùy chọn danh sách.",
+          "step4_title_generic": "Thuộc tính {{type}}",
+          "step4_subtitle_generic": "Thiết lập thuộc tính cho loại tài nguyên này.",
+          "step4_min_value": "Giá trị tối thiểu",
+          "step4_max_value": "Giá trị tối đa",
+          "step4_not_empty_number": "Số lượng không được để trống",
+          "step4_file_path": "Đường dẫn tệp",
+          "step4_directory_path": "Đường dẫn thư mục",
+          "step4_btn_choose_file": "Chọn Tệp",
+          "step4_btn_choose_folder": "Chọn Thư mục",
+          "step4_file_path_help": "Chỉ định đường dẫn tuyệt đối của tệp văn bản chứa các dòng tài nguyên.",
+          "step4_directory_path_help": "Chỉ định đường dẫn tuyệt đối của thư mục.",
+          "step4_url": "URL",
+          "step4_url_help": "Chỉ định URL chứa dữ liệu tài nguyên.",
+          "step4_select_type": "Loại:",
+          "step4_select_options": "Tùy chọn:",
+          "step4_select_placeholder": "Chọn tùy chọn mặc định...",
+          "step4_checkbox_help": "Nếu chọn hộp này, tài nguyên sẽ trả về true, ngược lại là false.",
+          "step4_connection_string": "Chuỗi kết nối",
+          "step4_db_connection_help": "Cung cấp chi tiết kết nối cơ sở dữ liệu.",
+          "step4_message": "Thông điệp",
+          "step4_info_message_help": "Văn bản này sẽ hiển thị cho người dùng khi thực thi."
+        },
+        "add": "[TODO: Thêm bản dịch tiếng Việt]"
+      },
+      "debugProfile": {
+        "placeholder": "Chọn profile...",
+        "virtual": "Hồ sơ ảo (Tạm thời)",
+        "required": "[TODO: Thêm bản dịch tiếng Việt]"
+      },
+      "debug": {
+        "running": "Đang debug...",
+        "stopped": "Đã dừng debug",
+        "completed": "Debug hoàn tất",
+        "noNodes": "Không có node nào từ điểm này",
+        "startFromHere": "Bắt đầu debug từ: {{name}}"
+      },
+      "saveAsTitle": "Lưu bản sao Flow",
+      "saveAsDescription": "Nhập tên cho bản sao flow mới.",
+      "flowNameLabel": "Tên Flow",
+      "help": {
+        "waitUntil": "Chế độ chờ trang tải:\n• load: Chờ tải xong toàn bộ (HTML, ảnh, CSS...)\n• domcontentloaded: Chờ cấu trúc HTML (DOM) sẵn sàng, không chờ ảnh/CSS\n• networkidle: Chờ mạng rảnh hoàn toàn (không còn request trong 500ms)",
+        "timeout": "Thời gian chờ tối đa (mili-giây) trước khi báo lỗi. Mặc định là 30000ms.",
+        "url": "Địa chỉ trang web (URL) cần truy cập.",
+        "selector": "CSS Selector hoặc XPath để xác định phần tử (ví dụ: button.submit, //input[@id='username']).",
+        "value": "Giá trị văn bản hoặc nội dung cần điền/chọn.",
+        "milliseconds": "Thời gian tạm dừng thực thi tính bằng mili-giây."
+      },
+      "selector": {
+        "exact": "Exact match",
+        "include": "Include (contains)",
+        "start": "Start with",
+        "end": "End with"
+      },
+      "scriptEditor": "Trình soạn kịch bản",
+      "returnToMain": "Quay lại màn hình chính",
+      "groupDescriptions": {
+        "navigator": "Điều hướng trình duyệt, tab, khung và tiện ích.",
+        "mouse": "Giả lập nhấp chuột, di chuyển và kéo thả.",
+        "keyboard": "Giả lập nhập phím và gõ văn bản.",
+        "data": "Trích xuất dữ liệu và quản lý biến.",
+        "network": "Yêu cầu HTTP và cấu hình User Agent.",
+        "control": "Vòng lặp, điều kiện và luồng logic.",
+        "utility": "Hành động phụ trợ như chờ, chụp màn hình và ghi log.",
+        "other": "Các hành động tự động hóa khác."
+      },
+      "noMatches": "[TODO: Thêm bản dịch tiếng Việt]"
     },
     "actions": {
       "run": "Chạy",
@@ -2415,6 +2613,11 @@
         "document": "Click vào phần tử khớp với selector đã chỉ định.",
         "label": "Click"
       },
+      "moveAndClick": {
+        "description": "Di chuyển chuột mượt đến phần tử rồi click",
+        "document": "Di chuyển con trỏ chuột từ vị trí hiện tại đến tâm của phần tử đích theo chuyển động mượt mà (mô phỏng người thật), sau đó thực hiện click. Vị trí chuột được lưu lại giữa các node.",
+        "label": "Di Chuột và Click"
+      },
       "clickDown": {
         "description": "Giữ nút chuột",
         "document": "Nhấn và giữ nút chuột tại vị trí đã chỉ định.",
@@ -2428,7 +2631,27 @@
       "closeTab": {
         "description": "Đóng tab hiện tại",
         "document": "Đóng tab trình duyệt đang hoạt động.",
-        "label": "Đóng Tab"
+        "label": "Đóng Tab",
+        "target": {
+          "current": "Current tab",
+          "select": "Select tab (by index)",
+          "other": "Other all tabs"
+        }
+      },
+      "closeProfile": {
+        "description": "Đóng profile trình duyệt với tùy chọn dọn dẹp",
+        "document": "Đóng profile trình duyệt và thực hiện dọn dẹp: chế độ cookies chỉ xóa dữ liệu duyệt, chế độ full xóa toàn bộ thư mục profile.",
+        "label": "Đóng Profile",
+        "params": {
+          "profileId": "Profile",
+          "profileIdHelp": "Chọn profile trình duyệt để đóng",
+          "cleanupMode": "Chế độ dọn dẹp",
+          "cleanupModeHelp": "Cookies: chỉ xóa dữ liệu duyệt. Full: xóa toàn bộ thư mục profile"
+        },
+        "cleanupMode": {
+          "cookies": "Chỉ Cookies & Cache",
+          "full": "Toàn Bộ Thư Mục"
+        }
       },
       "convertingJson": {
         "description": "Parse hoặc stringify JSON",
@@ -2600,7 +2823,23 @@
       "openUrl": {
         "description": "Điều hướng đến URL",
         "document": "Mở URL trong tab hiện tại hoặc tab mới.",
-        "label": "Mở URL"
+        "label": "Mở URL",
+        "retryOnFail": "Thử lại khi thất bại",
+        "retryOnFailHelp": "Tự động thử lại điều hướng nếu trang tải thất bại.",
+        "maxRetry": "Số lần thử lại tối đa",
+        "retrySleep": "Thời gian chờ giữa các lần thử (ms)",
+        "retrySleepHelp": "Thời gian chờ tính bằng mili-giây giữa mỗi lần thử lại."
+      },
+      "openProfile": {
+        "description": "Cấu hình proxy và cài đặt trình duyệt trước khi chạy",
+        "document": "Áp dụng cấu hình proxy, múi giờ, định vị, ngôn ngữ, WebRTC, DNS tùy chỉnh trước khi mở profile.",
+        "label": "Browser Settings",
+        "params": {
+          "profileId": "Profile Ghi đè",
+          "profileIdHelp": "Chọn profile để ghi đè, hoặc để trống để dùng profile hiện tại",
+          "automation": "Cấu hình Cài đặt",
+          "automationHelp": "JSON cấu hình ghi đè proxy và fingerprint"
+        }
       },
       "pressKey": {
         "description": "Nhấn phím",
@@ -2680,7 +2919,15 @@
       "setVariable": {
         "description": "Lưu giá trị",
         "document": "Lưu giá trị vào biến script.",
-        "label": "Đặt Biến"
+        "label": "Đặt Biến",
+        "operator": {
+          "assign": "Assign (=)",
+          "add": "Add (+)",
+          "subtract": "Subtract (-)",
+          "multiply": "Multiply (*)",
+          "divide": "Divide (/)",
+          "concat": "Concatenate"
+        }
       },
       "stopLoop": {
         "description": "Thoát vòng lặp",
@@ -2700,7 +2947,12 @@
       "switchTab": {
         "description": "Chuyển sang tab khác",
         "document": "Chuyển focus sang tab trình duyệt khác theo chỉ số.",
-        "label": "Chuyển Tab"
+        "label": "Chuyển Tab",
+        "matchBy": {
+          "url": "URL",
+          "title": "Title",
+          "index": "Tab Index"
+        }
       },
       "type": {
         "description": "Gõ văn bản",
@@ -2731,7 +2983,128 @@
         "description": "Ghi file CSV",
         "document": "Ghi dữ liệu ra file CSV.",
         "label": "Ghi CSV"
+      },
+      "label": {
+        "description": "Thiết lập nhãn trong kịch bản",
+        "document": "Thiết lập nhãn để có thể nhảy đến bằng hành động Di chuyển đến nhãn.",
+        "label": "Đặt Nhãn",
+        "params": {
+          "labelName": "Tên nhãn"
+        }
+      },
+      "moveToLabel": {
+        "description": "Nhảy đến nhãn",
+        "document": "Chuyển hướng thực thi đến nhãn được chỉ định trong kịch bản.",
+        "label": "Di chuyển đến nhãn",
+        "params": {
+          "targetLabelNodeId": "ID nhãn đích",
+          "targetLabelName": "Tên nhãn đích"
+        }
+      },
+      "ignoreErrorsStart": {
+        "label": "Bỏ qua lỗi",
+        "description": "Bắt đầu khối bỏ qua lỗi",
+        "document": "Bỏ qua các lỗi phát sinh trong khối này và tiếp tục chạy."
+      },
+      "ignoreErrorsEnd": {
+        "label": "Kết thúc bỏ qua lỗi",
+        "description": "Kết thúc khối bỏ qua lỗi",
+        "document": "Kết thúc khối bỏ qua lỗi."
+      },
+      "endIf": {
+        "label": "Kết thúc If",
+        "description": "Kết thúc khối điều kiện",
+        "document": "Kết thúc khối điều kiện If."
+      },
+      "profileSuccess": {
+        "label": "Báo cáo thành công",
+        "description": "Báo cáo kết quả chạy kịch bản thành công",
+        "document": "Báo cáo rằng lượt chạy tự động hóa đã thành công, kèm theo tin nhắn và thống kê tùy chọn.",
+        "params": {
+          "message": "Tin nhắn",
+          "messageHelp": "Nội dung tin nhắn, hỗ trợ biến số",
+          "includeResourceStats": "Bao gồm thống kê tài nguyên",
+          "includeResourceStatsHelp": "Bao gồm các số liệu thống kê như thời gian chạy và số lượng thành công",
+          "stopFlow": "Dừng kịch bản",
+          "stopFlowHelp": "Dừng thực thi ngay lập tức sau khi báo cáo thành công"
+        }
+      },
+      "profileFail": {
+        "label": "Báo cáo thất bại",
+        "description": "Báo cáo kết quả chạy kịch bản thất bại",
+        "document": "Báo cáo rằng lượt chạy tự động hóa đã thất bại, ghi nhận lý do và dữ liệu lỗi tùy chọn.",
+        "params": {
+          "message": "Tin nhắn",
+          "messageHelp": "Nội dung tin nhắn thất bại, hỗ trợ biến số",
+          "reasonCode": "Mã lý do",
+          "reasonCodeHelp": "Mã định danh lỗi (ví dụ: LOGIN_FAILED)",
+          "includeLastError": "Bao gồm lỗi cuối cùng",
+          "includeLastErrorHelp": "Đính kèm chi tiết nội dung lỗi cuối cùng",
+          "includeResourceStats": "Bao gồm thống kê tài nguyên",
+          "includeResourceStatsHelp": "Bao gồm thời gian thực thi và các thống kê tài nguyên",
+          "stopFlow": "Dừng kịch bản",
+          "stopFlowHelp": "Dừng thực thi ngay lập tức"
+        }
+      },
+      "callFunction": {
+        "description": "Thực thi một hàm con kịch bản",
+        "document": "Thực thi chuỗi kịch bản trong hàm con được chỉ định.",
+        "label": "Gọi hàm",
+        "params": {
+          "functionName": "Tên hàm"
+        }
+      }
+    },
+    "validation": {
+      "profileRequired": "Phải chọn profile",
+      "ipCheckNeedsProxy": "Kiểm tra IP yêu cầu phải cấu hình proxy động",
+      "profileNotFound": "Không tìm thấy profile: {{profileId}}"
+    },
+    "report": {
+      "resource": {
+        "activeLeases": "[TODO: Thêm bản dịch tiếng Việt]",
+        "available": "[TODO: Thêm bản dịch tiếng Việt]",
+        "cooldown": "[TODO: Thêm bản dịch tiếng Việt]",
+        "disabled": "[TODO: Thêm bản dịch tiếng Việt]",
+        "empty": "[TODO: Thêm bản dịch tiếng Việt]",
+        "exhausted": "[TODO: Thêm bản dịch tiếng Việt]",
+        "failUsage": "[TODO: Thêm bản dịch tiếng Việt]",
+        "leased": "[TODO: Thêm bản dịch tiếng Việt]",
+        "successUsage": "[TODO: Thêm bản dịch tiếng Việt]",
+        "title": "[TODO: Thêm bản dịch tiếng Việt]",
+        "total": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writes": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesFailed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesSuccess": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesTotal": "[TODO: Thêm bản dịch tiếng Việt]"
+      },
+      "script": {
+        "cancelled": "[TODO: Thêm bản dịch tiếng Việt]",
+        "duration": "[TODO: Thêm bản dịch tiếng Việt]",
+        "empty": "[TODO: Thêm bản dịch tiếng Việt]",
+        "failed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "finishedAt": "[TODO: Thêm bản dịch tiếng Việt]",
+        "messages": "[TODO: Thêm bản dịch tiếng Việt]",
+        "nodeStats": "[TODO: Thêm bản dịch tiếng Việt]",
+        "profileStats": "[TODO: Thêm bản dịch tiếng Việt]",
+        "running": "[TODO: Thêm bản dịch tiếng Việt]",
+        "skipped": "[TODO: Thêm bản dịch tiếng Việt]",
+        "startedAt": "[TODO: Thêm bản dịch tiếng Việt]",
+        "success": "[TODO: Thêm bản dịch tiếng Việt]",
+        "title": "[TODO: Thêm bản dịch tiếng Việt]",
+        "total": "[TODO: Thêm bản dịch tiếng Việt]"
       }
     }
+  },
+  "wayfernConfigDialog": {
+    "titleView": "Xem cài đặt dấu vân tay - {{name}} ({{browser}})",
+    "titleConfigure": "Cấu hình dấu vân tay - {{name}} ({{browser}})",
+    "invalidFingerprint": "Cấu hình dấu vân tay không hợp lệ",
+    "invalidFingerprintDescription": "Cấu hình dấu vân tay chứa JSON không hợp lệ. Vui lòng kiểm tra lại cài đặt nâng cao.",
+    "saveFailed": "Không thể lưu cấu hình",
+    "unknownError": "Đã xảy ra lỗi không xác định"
+  },
+  "cookieCopy": {
+    "noOtherTargets": "Không có hồ sơ Wayfern nào khác được chọn"
   }
 }

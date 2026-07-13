@@ -116,6 +116,11 @@ pub fn spawn_engine(inv: &EngineInvocation, args: &SidecarArgs) -> Result<Child,
   // Quiet the playwright-core driver's stderr debug spew so the pipe stays small
   // even though we still drain it.
   cmd.env("DEBUG", "");
+  if let Ok(host) = std::env::var("AUTOMATION_ENGINE_HOST") {
+    cmd.env("AUTOMATION_ENGINE_HOST", host);
+  }
+  cmd.env("AUTOMATION_RUN_PROFILE_ID", &args.profile_id);
+  cmd.env("AUTOMATION_RUN_CDP_PORT", args.cdp_port.to_string());
 
   #[cfg(windows)]
   {

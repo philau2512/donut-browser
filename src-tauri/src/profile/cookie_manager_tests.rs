@@ -356,7 +356,7 @@ mod tests {
   }
 
   #[test]
-  fn test_write_chrome_cookies_session_cookie_not_expired() {
+  fn test_write_chrome_cookies_session_cookie_persisted() {
     let tmp = std::env::temp_dir().join(format!("donut_cookie_test_{}.db", uuid::Uuid::new_v4()));
     create_chrome_cookies_db(&tmp);
 
@@ -376,19 +376,35 @@ mod tests {
     CookieManager::write_chrome_cookies(&tmp, &cookies).unwrap();
 
     let conn = Connection::open(&tmp).unwrap();
-    let (has_expires, is_persistent, source_scheme, source_port): (i32, i32, i32, i32) = conn
+    let (has_expires, is_persistent, expires_utc, source_scheme, source_port): (
+      i32,
+      i32,
+      i64,
+      i32,
+      i32,
+    ) = conn
       .query_row(
-        "SELECT has_expires, is_persistent, source_scheme, source_port
+        "SELECT has_expires, is_persistent, expires_utc, source_scheme, source_port
          FROM cookies WHERE name = ?1",
         params!["session"],
-        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+        |row| {
+          Ok((
+            row.get(0)?,
+            row.get(1)?,
+            row.get(2)?,
+            row.get(3)?,
+            row.get(4)?,
+          ))
+        },
       )
       .unwrap();
 
-    // Session cookie must not be persistent — otherwise Chromium treats
-    // expires_utc=0 as 1601-01-01 (immediately expired).
-    assert_eq!(has_expires, 0);
-    assert_eq!(is_persistent, 0);
+    // Imported session cookies are promoted to persistent with a far-future
+    // expiry so an imported login survives relaunch (mirrors the Firefox writer).
+    assert_eq!(has_expires, 1);
+    assert_eq!(is_persistent, 1);
+    // Must be a real future expiry, not 0 (which Chromium reads as 1601-01-01).
+    assert!(expires_utc > 0);
     // Non-secure cookie uses HTTP scheme + port 80
     assert_eq!(source_scheme, 1);
     assert_eq!(source_port, 80);

@@ -5,6 +5,10 @@ import {
   isAutomationNodeType,
 } from "@/lib/automation/node-catalog";
 import { generateNodeId } from "@/lib/automation/node-id";
+import type {
+  ResourceDefinition,
+  VariableDefinition,
+} from "@/lib/automation/resource-schema";
 
 export const START_NODE_ID = "__start__";
 
@@ -16,6 +20,9 @@ export interface DonutFlowNode {
   comment?: string;
   /** Stable per-node ID for debug/search correlation. Generated at save time. */
   nodeId?: string;
+  sleepAfterFrom?: number | string;
+  sleepAfterTo?: number | string;
+  position?: XYPosition;
 }
 
 export interface DonutFlowEdge {
@@ -24,12 +31,62 @@ export interface DonutFlowEdge {
   sourceHandle?: string;
 }
 
+export interface DonutFunction {
+  name: string;
+  nodes: DonutFlowNode[];
+  edges: DonutFlowEdge[];
+}
+
 export interface DonutFlowV1 {
   version: 1;
   name: string;
   variables: Record<string, string>;
   nodes: DonutFlowNode[];
   edges: DonutFlowEdge[];
+  functions?: DonutFunction[];
+  isPartial?: boolean;
+}
+
+export interface ToDonutFlowOptions {
+  schemaVersion?: 1 | 2;
+  v2Variables?: VariableDefinition[];
+  resources?: ResourceDefinition[];
+  functions?: CanvasFunctionState[];
+}
+
+export interface FromDonutFlowResult {
+  nodes: AutomationCanvasNode[];
+  edges: AutomationCanvasEdge[];
+  variables: Record<string, string>;
+  v2Variables: VariableDefinition[];
+  resources: ResourceDefinition[];
+  schemaVersion: 1 | 2;
+  functions?: CanvasFunctionState[];
+}
+
+/**
+ * Schema v2 flow — structured variables and resources.
+ * Engine still uses version=1 for node execution during transition;
+ * schemaVersion=2 is the frontend-layer marker.
+ */
+export interface DonutFlowV2 {
+  schemaVersion: 2;
+  version: 1;
+  name: string;
+  variables: VariableDefinition[];
+  resources: ResourceDefinition[];
+  nodes: DonutFlowNode[];
+  edges: DonutFlowEdge[];
+  functions?: DonutFunction[];
+  isPartial?: boolean;
+}
+
+/** Union type accepted by the editor — either v1 (legacy) or v2 (new schema). */
+export type DonutFlow = DonutFlowV1 | DonutFlowV2;
+
+/** Type guard: check if a flow is schema v2. */
+export function isDonutFlowV2(flow: DonutFlow): flow is DonutFlowV2 {
+  return (flow as DonutFlowV2).schemaVersion === 2;
 }
 
 export interface AutomationNodeData extends Record<string, unknown> {
@@ -38,10 +95,19 @@ export interface AutomationNodeData extends Record<string, unknown> {
   params: Record<string, string | number | boolean>;
   continueOnError?: boolean;
   comment?: string;
+  sleepAfterFrom?: number | string;
+  sleepAfterTo?: number | string;
 }
 
 export type AutomationCanvasNode = Node<AutomationNodeData, "automation">;
 export type AutomationCanvasEdge = Edge;
+
+/** Canvas-layer representation of a named function (before serialization). */
+export type CanvasFunctionState = {
+  name: string;
+  nodes: AutomationCanvasNode[];
+  edges: AutomationCanvasEdge[];
+};
 
 export interface FlowLayoutSidecarV1 {
   version: 1;
@@ -86,12 +152,10 @@ export function createAutomationNode(
   };
 }
 
-export function toDonutFlow(
-  name: string,
+function serializeNodesAndEdges(
   nodes: AutomationCanvasNode[],
   edges: AutomationCanvasEdge[],
-  variables: Record<string, string> = {},
-): DonutFlowV1 {
+) {
   const realNodes = nodes.filter(
     (node) => node.id !== START_NODE_ID && node.data.nodeType !== "start",
   );
@@ -111,90 +175,198 @@ export function toDonutFlow(
     return 0;
   });
 
-  return {
+  const serializedNodes = sortedNodes.map((node) => {
+    const nodeType = node.data.nodeType;
+    if (!isAutomationNodeType(nodeType)) {
+      throw new Error(`Unknown automation node type: ${String(nodeType)}`);
+    }
+    const out: DonutFlowNode = {
+      id: node.id,
+      type: nodeType,
+      params: pruneEmptyParams(node.data.params),
+      nodeId:
+        typeof node.data.nodeId === "string" ? node.data.nodeId : undefined,
+      position: node.position,
+    };
+    if (node.data.continueOnError === true) out.continueOnError = true;
+    if (node.data.comment) out.comment = node.data.comment;
+    if (node.data.sleepAfterFrom !== undefined)
+      out.sleepAfterFrom = node.data.sleepAfterFrom;
+    if (node.data.sleepAfterTo !== undefined)
+      out.sleepAfterTo = node.data.sleepAfterTo;
+    return out;
+  });
+
+  const serializedEdges = edges
+    .filter(
+      (edge) =>
+        edge.source !== START_NODE_ID &&
+        realNodeIds.has(edge.source) &&
+        realNodeIds.has(edge.target),
+    )
+    .map((edge) => ({
+      from: edge.source,
+      to: edge.target,
+      sourceHandle: edge.sourceHandle ?? "success",
+    }));
+
+  return { nodes: serializedNodes, edges: serializedEdges };
+}
+
+export function toDonutFlow(
+  name: string,
+  nodes: AutomationCanvasNode[],
+  edges: AutomationCanvasEdge[],
+  variables: Record<string, string> = {},
+  options: ToDonutFlowOptions = {},
+): DonutFlow {
+  const { nodes: serializedNodes, edges: serializedEdges } =
+    serializeNodesAndEdges(nodes, edges);
+
+  const baseFlow: DonutFlowV1 = {
     version: 1,
     name,
     variables,
-    nodes: sortedNodes.map((node) => {
-      const nodeType = node.data.nodeType;
-      if (!isAutomationNodeType(nodeType)) {
-        throw new Error(`Unknown automation node type: ${String(nodeType)}`);
-      }
-      const out: DonutFlowNode = {
-        id: node.id,
-        type: nodeType,
-        params: pruneEmptyParams(node.data.params),
-        nodeId:
-          typeof node.data.nodeId === "string" ? node.data.nodeId : undefined,
+    nodes: serializedNodes,
+    edges: serializedEdges,
+  };
+
+  if (options.functions && options.functions.length > 0) {
+    baseFlow.functions = options.functions.map((func) => {
+      const { nodes: fNodes, edges: fEdges } = serializeNodesAndEdges(
+        func.nodes,
+        func.edges,
+      );
+      return {
+        name: func.name,
+        nodes: fNodes,
+        edges: fEdges,
       };
-      if (node.data.continueOnError === true) out.continueOnError = true;
-      if (node.data.comment) out.comment = node.data.comment;
-      return out;
-    }),
-    edges: edges
-      .filter(
-        (edge) =>
-          edge.source !== START_NODE_ID &&
-          realNodeIds.has(edge.source) &&
-          realNodeIds.has(edge.target),
-      )
-      .map((edge) => ({
-        from: edge.source,
-        to: edge.target,
-        sourceHandle: edge.sourceHandle ?? "success",
-      })),
+    });
+  }
+
+  const shouldWriteV2 =
+    options.schemaVersion === 2 ||
+    Boolean(options.resources?.length) ||
+    Boolean(options.v2Variables?.length);
+
+  if (!shouldWriteV2) return baseFlow;
+
+  return {
+    ...baseFlow,
+    schemaVersion: 2,
+    variables: options.v2Variables ?? recordToVariableDefinitions(variables),
+    resources: options.resources ?? [],
   };
 }
 
 export function fromDonutFlow(
-  flow: DonutFlowV1,
+  flow: DonutFlow,
   layout?: FlowLayoutSidecarV1 | null,
-): { nodes: AutomationCanvasNode[]; edges: AutomationCanvasEdge[] } {
-  const nodes: AutomationCanvasNode[] = [createStartNode()];
+): FromDonutFlowResult {
   const positions = layout?.positions ?? {};
 
-  flow.nodes.forEach((node, index) => {
-    if (!isAutomationNodeType(node.type)) return;
+  const deserializeNodesAndEdges = (
+    fnNodes: DonutFlowNode[],
+    fnEdges: DonutFlowEdge[],
+  ) => {
+    const nodes: AutomationCanvasNode[] = [createStartNode()];
+    fnNodes.forEach((node, index) => {
+      if (!isAutomationNodeType(node.type)) return;
 
-    // Auto-generate nodeId on load if missing (transparent migration for old flows)
-    const nodeId = node.nodeId ?? generateNodeId();
+      const nodeId = node.nodeId ?? generateNodeId();
 
-    nodes.push({
-      id: node.id,
-      type: "automation",
-      position: positions[node.id] ?? { x: 360, y: 120 + index * 120 },
-      data: {
-        label: node.type,
-        nodeType: node.type,
-        params: { ...(node.params ?? {}) },
-        continueOnError: node.continueOnError,
-        comment: node.comment,
-        nodeId,
-      },
+      nodes.push({
+        id: node.id,
+        type: "automation",
+        position: node.position ??
+          positions[node.id] ?? { x: 360, y: 120 + index * 120 },
+        data: {
+          label: node.type,
+          nodeType: node.type,
+          params: { ...(node.params ?? {}) },
+          continueOnError: node.continueOnError,
+          comment: node.comment,
+          nodeId,
+          sleepAfterFrom: node.sleepAfterFrom,
+          sleepAfterTo: node.sleepAfterTo,
+        },
+      });
     });
-  });
 
-  const incoming = new Set(flow.edges.map((edge) => edge.to));
-  const firstRoot = flow.nodes.find((node) => !incoming.has(node.id));
-  const edges: AutomationCanvasEdge[] = [];
-  if (firstRoot) {
-    edges.push({
-      id: `edge-${START_NODE_ID}-${firstRoot.id}`,
-      source: START_NODE_ID,
-      target: firstRoot.id,
-      sourceHandle: "success",
-    });
+    const incoming = new Set(fnEdges.map((edge) => edge.to));
+    const firstRoot = fnNodes.find((node) => !incoming.has(node.id));
+    const edges: AutomationCanvasEdge[] = [];
+    if (firstRoot) {
+      edges.push({
+        id: `edge-${START_NODE_ID}-${firstRoot.id}`,
+        source: START_NODE_ID,
+        target: firstRoot.id,
+        sourceHandle: "success",
+      });
+    }
+    for (const edge of fnEdges) {
+      edges.push({
+        id: `edge-${edge.from}-${edge.to}`,
+        source: edge.from,
+        target: edge.to,
+        sourceHandle: edge.sourceHandle ?? "success",
+      });
+    }
+
+    return { nodes, edges };
+  };
+
+  const { nodes: mainNodes, edges: mainEdges } = deserializeNodesAndEdges(
+    flow.nodes,
+    flow.edges,
+  );
+
+  const deserializedFunctions = flow.functions?.map((f) => {
+    const { nodes: fNodes, edges: fEdges } = deserializeNodesAndEdges(
+      f.nodes,
+      f.edges,
+    );
+    return {
+      name: f.name,
+      nodes: fNodes,
+      edges: fEdges,
+    };
+  }) ?? [
+    {
+      name: "Main",
+      nodes: mainNodes,
+      edges: mainEdges,
+    },
+  ];
+
+  const mainFunc =
+    deserializedFunctions.find((f) => f.name === "Main") ||
+    deserializedFunctions[0];
+  const activeNodes = mainFunc?.nodes ?? mainNodes;
+  const activeEdges = mainFunc?.edges ?? mainEdges;
+
+  if (isDonutFlowV2(flow)) {
+    return {
+      nodes: activeNodes,
+      edges: activeEdges,
+      variables: variableDefinitionsToRecord(flow.variables ?? []),
+      v2Variables: flow.variables ?? [],
+      resources: flow.resources ?? [],
+      schemaVersion: 2,
+      functions: deserializedFunctions,
+    };
   }
-  for (const edge of flow.edges) {
-    edges.push({
-      id: `edge-${edge.from}-${edge.to}`,
-      source: edge.from,
-      target: edge.to,
-      sourceHandle: edge.sourceHandle ?? "success",
-    });
-  }
 
-  return { nodes, edges };
+  return {
+    nodes: activeNodes,
+    edges: activeEdges,
+    variables: flow.variables ?? {},
+    v2Variables: recordToVariableDefinitions(flow.variables ?? {}),
+    resources: [],
+    schemaVersion: 1,
+    functions: deserializedFunctions,
+  };
 }
 
 export function toLayoutSidecar(
@@ -216,5 +388,25 @@ function pruneEmptyParams(
 ): Record<string, string | number | boolean> {
   return Object.fromEntries(
     Object.entries(params).filter(([, value]) => value !== "" && value != null),
+  );
+}
+
+function recordToVariableDefinitions(
+  variables: Record<string, string>,
+): VariableDefinition[] {
+  return Object.entries(variables).map(([name, defaultValue]) => ({
+    id: `var-${name.replace(/[^a-zA-Z0-9_-]/g, "-")}`,
+    name,
+    scope: "flow",
+    valueType: "string",
+    defaultValue,
+  }));
+}
+
+function variableDefinitionsToRecord(
+  variables: VariableDefinition[],
+): Record<string, string> {
+  return Object.fromEntries(
+    variables.map((variable) => [variable.name, variable.defaultValue ?? ""]),
   );
 }

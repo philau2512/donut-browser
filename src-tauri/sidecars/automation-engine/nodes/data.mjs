@@ -4,7 +4,7 @@ import { parse as parseCsv } from "csv-parse/sync";
 import { stringify as stringifyCsv } from "csv-stringify/sync";
 import { assertNavigableUrl } from "../lib/url-guard.mjs";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+
 
 /** screenshot: capture a page image */
 export async function screenshot(node, page, ctx) {
@@ -19,7 +19,7 @@ export async function screenshot(node, page, ctx) {
 }
 
 /** log: output message to console logs */
-export async function log(node, page, ctx) {
+export async function log(node, _page, ctx) {
   const { message, level, color } = node.params ?? {};
   const msg = message ?? "";
   const lvl = level ?? "info";
@@ -44,18 +44,40 @@ export async function delay(node, page, ctx) {
 }
 
 /** setVariable: store a variable in ctx.vars */
-export async function setVariable(node, page, ctx) {
-  const { name, value } = node.params ?? {};
+export async function setVariable(node, _page, ctx) {
+  const { name, value, operator } = node.params ?? {};
   if (typeof name !== "string" || name.trim() === "") {
     throw new Error("setVariable: name is required");
   }
 
-  ctx.logger.info(node.id, `setVariable → ${name} = "${value}"`);
-  ctx.vars[name] = value;
+  const op = operator || "=";
+  
+  if (op === "=") {
+    ctx.logger.info(node.id, `setVariable → ${name} = "${value}"`);
+    ctx.vars[name] = value;
+  } else if (op === "concat") {
+    const current = String(ctx.vars[name] ?? "");
+    const appended = current + String(value ?? "");
+    ctx.logger.info(node.id, `setVariable → ${name} concat "${value}"`);
+    ctx.vars[name] = appended;
+  } else {
+    const current = Number(ctx.vars[name]) || 0;
+    const operand = Number(value) || 0;
+    let result = 0;
+    switch (op) {
+      case "+": result = current + operand; break;
+      case "-": result = current - operand; break;
+      case "*": result = current * operand; break;
+      case "/": result = operand !== 0 ? current / operand : 0; break;
+      default: result = operand; break;
+    }
+    ctx.logger.info(node.id, `setVariable → ${name} ${op} ${operand} = ${result}`);
+    ctx.vars[name] = String(result);
+  }
 }
 
 /** readCsv: read CSV file and parse to JSON array */
-export async function readCsv(node, page, ctx) {
+export async function readCsv(node, _page, ctx) {
   const { path, saveToVar } = node.params ?? {};
   if (typeof path !== "string" || path.trim() === "") {
     throw new Error("readCsv: path is required");
@@ -80,7 +102,7 @@ export async function readCsv(node, page, ctx) {
 }
 
 /** writeCsv: write data (JSON array) to CSV file */
-export async function writeCsv(node, page, ctx) {
+export async function writeCsv(node, _page, ctx) {
   const { path, data } = node.params ?? {};
   if (typeof path !== "string" || path.trim() === "") {
     throw new Error("writeCsv: path is required");
@@ -113,7 +135,7 @@ export async function writeCsv(node, page, ctx) {
 }
 
 /** downloadFile: download a file from URL to disk */
-export async function downloadFile(node, page, ctx) {
+export async function downloadFile(node, _page, ctx) {
   const { url, savePath, timeout } = node.params ?? {};
   if (typeof url !== "string" || url.trim() === "") {
     throw new Error("downloadFile: url is required");

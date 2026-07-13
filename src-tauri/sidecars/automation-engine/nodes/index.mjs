@@ -1,13 +1,15 @@
 import { openUrl, newTab, switchTab, closeTab, reloadPage, goBack, goForward, switchFrame, wait, scroll } from "./navigator.mjs";
-import { click, hover, dragAndDrop, clickDown, clickUp, type } from "./interaction.mjs";
+import { click, hover, dragAndDrop, clickDown, clickUp, type, moveAndClick } from "./interaction.mjs";
 import { typeText, sendTextToSelector, pressKey, clearInput } from "./keyboard.mjs";
 import { getCookies, setCookies, clearCookies } from "./cookie.mjs";
 import { ifCondition, loopFor, loopElements, evalJs } from "./logic.mjs";
 import { setVariable, readCsv, writeCsv, downloadFile, screenshot, log, delay } from "./data.mjs";
 import { getText, getAttributeValue, getValue, elementExists, extractionInText, random } from "./extraction.mjs";
 import { http, setUserAgent, getUrl, convertingJson, imageSearch } from "./network.mjs";
-import { whileLoop, stopLoop, runOtherScript, addLog, addComment } from "./control-flow.mjs";
+import { whileLoop, stopLoop, runOtherScript, addLog, addComment, label, moveToLabel, ignoreErrorsStart, ignoreErrorsEnd, endIf, callFunction } from "./control-flow.mjs";
 import { switchExtensionPopup } from "./extension.mjs";
+import { openProfile, closeProfile } from "./profile-flow.mjs";
+import { profileSuccess, profileFail } from "./result.mjs";
 
 export const handlers = {
   // Navigator
@@ -24,6 +26,7 @@ export const handlers = {
 
   // Interaction
   click,
+  moveAndClick,
   hover,
   dragAndDrop,
   clickDown,
@@ -77,9 +80,22 @@ export const handlers = {
   runOtherScript,
   addLog,
   addComment,
+  label,
+  moveToLabel,
+  ignoreErrorsStart,
+  ignoreErrorsEnd,
+  endIf,
+  callFunction,
 
   // Extension (spike)
   switchExtensionPopup,
+
+  openProfile,
+  closeProfile,
+
+  // Profile Result Nodes (resource allocation plan)
+  profileSuccess,
+  profileFail,
 };
 
 export const NODE_TYPES = Object.keys(handlers);

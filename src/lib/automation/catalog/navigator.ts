@@ -23,6 +23,18 @@ const MATCH_MODE_OPTIONS: ParamOption[] = [
 
 const FRAME_MODE_OPTIONS: ParamOption[] = [{ value: "sub" }, { value: "main" }];
 
+const TAB_MATCH_BY_OPTIONS: ParamOption[] = [
+  { value: "url", labelKey: "automation.nodes.switchTab.matchBy.url" },
+  { value: "title", labelKey: "automation.nodes.switchTab.matchBy.title" },
+  { value: "index", labelKey: "automation.nodes.switchTab.matchBy.index" },
+];
+
+const CLOSE_TAB_TARGET_OPTIONS: ParamOption[] = [
+  { value: "current", labelKey: "automation.nodes.closeTab.target.current" },
+  { value: "select", labelKey: "automation.nodes.closeTab.target.select" },
+  { value: "other", labelKey: "automation.nodes.closeTab.target.other" },
+];
+
 export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
   {
     type: "openUrl",
@@ -39,15 +51,43 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "https://example.com",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
       {
         key: "waitUntil",
         kind: "enum",
         placeholder: "domcontentloaded",
         options: WAIT_UNTIL_OPTIONS,
       },
+      {
+        key: "retryOnFail",
+        kind: "boolean",
+        labelKey: "automation.nodes.openUrl.retryOnFail",
+        helpKey: "automation.nodes.openUrl.retryOnFailHelp",
+      },
+      {
+        key: "maxRetry",
+        kind: "number",
+        placeholder: "3",
+        labelKey: "automation.nodes.openUrl.maxRetry",
+        showIf: { key: "retryOnFail", value: true },
+      },
+      {
+        key: "retrySleep",
+        kind: "number",
+        placeholder: "1000",
+        labelKey: "automation.nodes.openUrl.retrySleep",
+        helpKey: "automation.nodes.openUrl.retrySleepHelp",
+        showIf: { key: "retryOnFail", value: true },
+      },
     ],
-    defaults: { url: "https://example.com" },
+    defaults: {
+      url: "https://example.com",
+      timeout: 60000,
+      waitUntil: "domcontentloaded",
+      retryOnFail: false,
+      maxRetry: 3,
+      retrySleep: 1000,
+    },
   },
   {
     type: "newTab",
@@ -64,9 +104,9 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
         placeholder: "https://example.com",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { url: "" },
+    defaults: { url: "", timeout: 60000 },
   },
   {
     type: "switchTab",
@@ -77,53 +117,26 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
     icon: LuLayers,
     params: [
       {
-        key: "tabIndex",
-        kind: "number",
-        required: false,
-        placeholder: "1",
-        helpKey: "automation.nodes.switchTab.tabIndexHelp",
+        key: "matchBy",
+        kind: "enum",
+        placeholder: "url",
+        options: TAB_MATCH_BY_OPTIONS,
       },
       {
-        key: "urlFilter",
+        key: "matchValue",
         kind: "string",
         required: false,
         placeholder: "facebook",
         supportsExpression: true,
       },
       {
-        key: "urlMode",
+        key: "matchMode",
         kind: "enum",
         placeholder: "contain",
         options: MATCH_MODE_OPTIONS,
-      },
-      {
-        key: "titleFilter",
-        kind: "string",
-        required: false,
-        placeholder: "Facebook",
-        supportsExpression: true,
-      },
-      {
-        key: "titleMode",
-        kind: "enum",
-        placeholder: "contain",
-        options: MATCH_MODE_OPTIONS,
-      },
-      {
-        key: "index",
-        kind: "number",
-        required: false,
-        placeholder: "0",
-      },
-      {
-        key: "urlPattern",
-        kind: "string",
-        required: false,
-        placeholder: "google.com",
-        supportsExpression: true,
       },
     ],
-    defaults: { tabIndex: 1, urlMode: "contain", titleMode: "contain" },
+    defaults: { matchBy: "url", matchMode: "contain", matchValue: "" },
   },
   {
     type: "closeTab",
@@ -132,8 +145,21 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
     descriptionKey: "automation.nodes.closeTab.description",
     documentKey: "automation.nodes.closeTab.document",
     icon: LuX,
-    params: [],
-    defaults: {},
+    params: [
+      {
+        key: "target",
+        kind: "enum",
+        placeholder: "current",
+        options: CLOSE_TAB_TARGET_OPTIONS,
+      },
+      {
+        key: "tabIndex",
+        kind: "number",
+        required: false,
+        placeholder: "1",
+      },
+    ],
+    defaults: { target: "current", tabIndex: 1 },
   },
   {
     type: "reloadPage",
@@ -142,8 +168,8 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
     descriptionKey: "automation.nodes.reloadPage.description",
     documentKey: "automation.nodes.reloadPage.document",
     icon: LuRefreshCw,
-    params: [],
-    defaults: {},
+    params: [{ key: "timeout", kind: "number", placeholder: "60000" }],
+    defaults: { timeout: 60000 },
   },
   {
     type: "goBack",
@@ -152,8 +178,8 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
     descriptionKey: "automation.nodes.goBack.description",
     documentKey: "automation.nodes.goBack.document",
     icon: LuArrowLeft,
-    params: [],
-    defaults: {},
+    params: [{ key: "timeout", kind: "number", placeholder: "60000" }],
+    defaults: { timeout: 60000 },
   },
   {
     type: "goForward",
@@ -181,13 +207,13 @@ export const NAVIGATOR_CATALOG: AutomationNodeCatalogItem[] = [
       },
       {
         key: "selector",
-        kind: "string",
+        kind: "selector",
         required: false,
         placeholder: "#iframe-id",
         supportsExpression: true,
       },
-      { key: "timeout", kind: "number", placeholder: "30000" },
+      { key: "timeout", kind: "number", placeholder: "60000" },
     ],
-    defaults: { mode: "sub", selector: "#iframe-id" },
+    defaults: { mode: "sub", selector: "#iframe-id", timeout: 60000 },
   },
 ];

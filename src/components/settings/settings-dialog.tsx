@@ -35,6 +35,7 @@ import { RippleButton } from "../ui/ripple";
 import { AdvancedSettings } from "./sub-components/advanced-settings";
 import { EncryptionSettings } from "./sub-components/encryption-settings";
 import { PermissionSettings } from "./sub-components/permission-settings";
+import { StorageSettings } from "./sub-components/storage-settings";
 // Import sub-components
 import { ThemeSettings } from "./sub-components/theme-settings";
 
@@ -694,6 +695,9 @@ export function SettingsDialog({
               isVerifyingE2e={isVerifyingE2e}
               setIsVerifyingE2e={setIsVerifyingE2e}
             />
+
+            {/* Storage Location Section */}
+            <StorageSettings />
 
             {/* Commercial License Section */}
             <div className="space-y-4">

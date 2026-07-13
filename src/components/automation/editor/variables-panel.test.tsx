@@ -10,35 +10,37 @@ describe("VariablesPanel", () => {
   it("shows reserved variables as read-only auto-injected values", () => {
     render(<VariablesPanel variables={{}} onChange={vi.fn()} />);
 
-    expect(screen.getByDisplayValue("PROFILE_ID")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("PROFILE_NAME")).toBeInTheDocument();
-    expect(
-      screen.getAllByDisplayValue("automation.editor.variables.autoInjected"),
-    ).toHaveLength(2);
+    expect(screen.getByText("PROFILE_ID")).toBeInTheDocument();
+    expect(screen.getByText("PROFILE_NAME")).toBeInTheDocument();
+    expect(screen.getAllByText("Auto-injected")).toHaveLength(6);
   });
 
   it("adds a trimmed variable and clears draft inputs", () => {
     const onChange = vi.fn();
     render(<VariablesPanel variables={{}} onChange={onChange} />);
 
-    fireEvent.change(screen.getByPlaceholderText("EMAIL"), {
+    fireEvent.click(screen.getByTitle("Add variable"));
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. EMAIL"), {
       target: { value: " EMAIL " },
     });
     fireEvent.change(screen.getByPlaceholderText("value"), {
       target: { value: "user@example.com" },
     });
-    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
 
     expect(onChange).toHaveBeenCalledWith({ EMAIL: "user@example.com" });
-    expect(screen.getByPlaceholderText("EMAIL")).toHaveValue("");
-    expect(screen.getByPlaceholderText("value")).toHaveValue("");
+    expect(screen.queryByPlaceholderText("e.g. EMAIL")).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("value")).not.toBeInTheDocument();
   });
 
   it("blocks reserved and duplicate variable keys", () => {
     const onChange = vi.fn();
     render(<VariablesPanel variables={{ EMAIL: "old" }} onChange={onChange} />);
 
-    fireEvent.change(screen.getByPlaceholderText("EMAIL"), {
+    fireEvent.click(screen.getByTitle("Add variable"));
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. EMAIL"), {
       target: { value: " profile_id " },
     });
     expect(
@@ -49,7 +51,7 @@ describe("VariablesPanel", () => {
     fireEvent.click(addBtn);
     expect(onChange).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByPlaceholderText("EMAIL"), {
+    fireEvent.change(screen.getByPlaceholderText("e.g. EMAIL"), {
       target: { value: "EMAIL" },
     });
     const addBtn2 = screen.getAllByRole("button").at(-1);
