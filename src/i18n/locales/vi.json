@@ -2256,7 +2256,8 @@
       "cleanup": "Cleanup",
       "dynamicProxy": "Dynamic Proxy",
       "telegramAlert": "Telegram Alert",
-      "openProfile": "Browser Settings"
+      "openProfile": "Browser Settings",
+      "closeProfile": "Đóng hồ sơ"
     },
     "dependencyWarning": "Dependency issue",
     "script": {
