@@ -450,6 +450,33 @@ export function ProfilesDataTable({
   const sortedRows = table.getRowModel().rows;
   useScrollFade(scrollParentRef);
 
+  // A running browser keeps the name it launched with, so close any inline
+  // rename that was open when the profile entered a runtime transition.
+  React.useEffect(() => {
+    if (!profileToRename) return;
+
+    const profileId = profileToRename.id;
+    const isRuntimeLocked =
+      (browserState.isClient && runningProfiles.has(profileId)) ||
+      launchingProfiles.has(profileId) ||
+      stoppingProfiles.has(profileId);
+
+    if (isRuntimeLocked) {
+      setProfileToRename(null);
+      setNewProfileName("");
+      setRenameError(null);
+    }
+  }, [
+    profileToRename,
+    runningProfiles,
+    launchingProfiles,
+    stoppingProfiles,
+    browserState.isClient,
+    setProfileToRename,
+    setNewProfileName,
+    setRenameError,
+  ]);
+
   React.useEffect(() => {
     const el = scrollParentRef.current;
     if (!el) return;

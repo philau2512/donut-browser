@@ -315,7 +315,15 @@ export function getProfileTableColumns(
         const profile = row.original as BrowserProfile;
         const rawName: string = row.getValue("name");
         const name = getBrowserDisplayName(rawName);
-        const isEditing = meta.profileToRename?.id === profile.id;
+        const isRuntimeLocked =
+          (meta.isClient && meta.runningProfiles.has(profile.id)) ||
+          meta.launchingProfiles.has(profile.id) ||
+          meta.stoppingProfiles.has(profile.id);
+        const isCrossOsBlocked = isCrossOsProfile(profile);
+        const isEditing =
+          meta.profileToRename?.id === profile.id &&
+          !isRuntimeLocked &&
+          !isCrossOsBlocked;
 
         if (isEditing) {
           return (
@@ -359,22 +367,43 @@ export function getProfileTableColumns(
           );
         }
 
-        return (
-          <div className="flex w-full min-w-0 items-center overflow-hidden py-0.5">
-            <button
-              type="button"
-              className={cn(
-                "h-6 max-w-[240px] truncate rounded border-none bg-transparent px-2 py-1 text-left grow min-w-0",
-                "cursor-pointer hover:bg-accent/50 text-sm font-medium",
-              )}
-              onClick={() => {
+        const nameControl = isRuntimeLocked ? (
+          <div className="h-6 max-w-[240px] grow min-w-0 cursor-text truncate rounded px-2 py-1 text-left text-sm font-medium select-text">
+            <OverflowTooltipText text={name} className="text-left" />
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={cn(
+              "h-6 max-w-[240px] truncate rounded border-none bg-transparent px-2 py-1 text-left grow min-w-0",
+              "text-sm font-medium",
+              isCrossOsBlocked
+                ? "cursor-not-allowed opacity-60"
+                : "cursor-pointer hover:bg-accent/50",
+            )}
+            onClick={() => {
+              if (isCrossOsBlocked) return;
+              meta.setProfileToRename(profile);
+              meta.setNewProfileName(profile.name);
+              meta.setRenameError(null);
+            }}
+            onKeyDown={(e) => {
+              if (isCrossOsBlocked) return;
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
                 meta.setProfileToRename(profile);
                 meta.setNewProfileName(profile.name);
                 meta.setRenameError(null);
-              }}
-            >
-              <OverflowTooltipText text={name} className="text-left" />
-            </button>
+              }
+            }}
+          >
+            <OverflowTooltipText text={name} className="text-left" />
+          </button>
+        );
+
+        return (
+          <div className="flex w-full min-w-0 items-center overflow-hidden py-0.5">
+            {nameControl}
           </div>
         );
       },
@@ -499,13 +528,8 @@ export function getProfileTableColumns(
       cell: ({ row, table }) => {
         const meta = table.options.meta as TableMeta;
         const profile = row.original;
-        const isCrossOs = isCrossOsProfile(profile);
-        const isCrossOsBlocked = isCrossOs;
-        const isRunning = meta.isClient && meta.runningProfiles.has(profile.id);
-        const isLaunching = meta.launchingProfiles.has(profile.id);
-        const isStopping = meta.stoppingProfiles.has(profile.id);
-        const isDisabled =
-          isRunning || isLaunching || isStopping || isCrossOsBlocked;
+        // Upstream: tags remain editable while browser is running; only block cross-OS.
+        const isDisabled = isCrossOsProfile(profile);
 
         return (
           <div className="flex justify-center">
@@ -529,13 +553,8 @@ export function getProfileTableColumns(
       cell: ({ row, table }) => {
         const meta = table.options.meta as TableMeta;
         const profile = row.original;
-        const isCrossOs = isCrossOsProfile(profile);
-        const isCrossOsBlocked = isCrossOs;
-        const isRunning = meta.isClient && meta.runningProfiles.has(profile.id);
-        const isLaunching = meta.launchingProfiles.has(profile.id);
-        const isStopping = meta.stoppingProfiles.has(profile.id);
-        const isDisabled =
-          isRunning || isLaunching || isStopping || isCrossOsBlocked;
+        // Upstream: notes remain editable while browser is running; only block cross-OS.
+        const isDisabled = isCrossOsProfile(profile);
 
         return (
           <div className="flex justify-center">
