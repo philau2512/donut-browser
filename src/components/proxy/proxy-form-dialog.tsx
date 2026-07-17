@@ -3,6 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 import { toast } from "sonner";
 import { LoadingButton } from "@/components/shared";
 import {
@@ -137,9 +138,11 @@ export function ProxyFormDialog({
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<ProxyFormData>(DEFAULT_FORM);
+  const [showPassword, setShowPassword] = useState(false);
 
   const resetForm = useCallback(() => {
     setForm(DEFAULT_FORM);
+    setShowPassword(false);
   }, []);
 
   useEffect(() => {
@@ -356,16 +359,36 @@ export function ProxyFormDialog({
               <Label htmlFor="proxy-password">
                 {t("proxies.form.password")}
               </Label>
-              <Input
-                id="proxy-password"
-                type="password"
-                value={form.password}
-                onChange={(e) => {
-                  setForm({ ...form, password: e.target.value });
-                }}
-                placeholder={t("proxies.form.passwordPlaceholder")}
-                disabled={isSubmitting}
-              />
+              <div className="relative">
+                <Input
+                  id="proxy-password"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={(e) => {
+                    setForm({ ...form, password: e.target.value });
+                  }}
+                  placeholder={t("proxies.form.passwordPlaceholder")}
+                  disabled={isSubmitting}
+                  className="pr-9"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  disabled={isSubmitting}
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                  aria-label={
+                    showPassword
+                      ? t("common.aria.hidePassword")
+                      : t("common.aria.showPassword")
+                  }
+                >
+                  {showPassword ? (
+                    <LuEyeOff className="size-4" />
+                  ) : (
+                    <LuEye className="size-4" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

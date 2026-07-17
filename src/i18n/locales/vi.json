@@ -85,7 +85,9 @@
       "copy": "Sao chép vào clipboard",
       "copied": "Đã sao chép",
       "showToken": "Hiện token",
-      "hideToken": "Ẩn token"
+      "hideToken": "Ẩn token",
+      "showPassword": "Hiện mật khẩu",
+      "hidePassword": "Ẩn mật khẩu"
     },
     "keys": {
       "escape": "Escape"
@@ -204,10 +206,11 @@
     "keepDecryptedProfilesInRamDescription": "Giữ bản sao đã giải mã trong RAM của hồ sơ được bảo vệ bằng mật khẩu giữa các lần khởi chạy để khởi động nhanh hơn. Bản sao trên ổ đĩa vẫn được mã hóa."
   },
   "header": {
-    "searchPlaceholder": "Tìm kiếm hồ sơ...",
+    "searchPlaceholder": "Tìm theo tên",
     "clearSearch": "Xóa tìm kiếm",
     "moreActions": "Thêm thao tác",
     "createProfile": "Tạo hồ sơ mới",
+    "filterProfile": "Lọc hồ sơ",
     "menu": {
       "settings": "Cài đặt",
       "proxies": "Proxy & VPN",
@@ -252,13 +255,23 @@
       "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật",
       "lastOpen": "Lần mở cuối",
       "os": "OS",
+      "folder": "Thư mục",
       "message": "Thông báo",
       "changeProxy": "Đổi Proxy",
       "statusReady": "Sẵn sàng",
       "statusRunning": "Đang chạy",
       "statusLaunching": "Đang khởi động...",
       "statusStopping": "Đang dừng...",
-      "errorCannotCheckProxy": "Lỗi: Không thể kiểm tra proxy"
+      "errorCannotCheckProxy": "Lỗi: Không thể kiểm tra proxy",
+      "columnsMenu": "Hiện cột"
+    },
+    "pagination": {
+      "total": "Profiles:{{count}}",
+      "perPage": "/trang",
+      "prev": "Trang trước",
+      "next": "Trang sau",
+      "goTo": "Đến",
+      "page": "Trang"
     },
     "actions": {
       "launch": "Khởi chạy",
@@ -334,6 +347,25 @@
       "exportCookies": "Xuất cookie",
       "moreAction": "Hành động khác",
       "synchronize": "Đồng bộ thao tác"
+    },
+    "filter": {
+      "title": "Lọc hồ sơ",
+      "uuid": "Uuid",
+      "uuidPlaceholder": "uuid1\nuuid2",
+      "name": "Tên",
+      "namePlaceholder": "name1\nname2",
+      "runningOnly": "Hồ sơ đang chạy",
+      "folder": "Thư mục",
+      "tag": "Tag",
+      "selectPlaceholder": "Chọn",
+      "noFolders": "Chưa có thư mục",
+      "noTags": "Chưa có tag",
+      "status": "Trạng thái",
+      "statusAll": "Tất cả",
+      "createdDate": "Ngày tạo",
+      "startDate": "Từ ngày",
+      "endDate": "Đến ngày",
+      "apply": "Lọc"
     },
     "passwordProtectedBadge": "Được bảo vệ bằng mật khẩu",
     "launchHook": {
@@ -1644,7 +1676,7 @@
     "withoutProxyWarning": "Tất cả các hồ sơ được chọn sẽ chuyển sang chế độ Không proxy sau khi xác nhận."
   },
   "groupAssignment": {
-    "title": "Gán nhóm",
+    "title": "Thêm hồ sơ vào thư mục",
     "description_one": "Gán nhóm cho {{count}} profile đã chọn.",
     "description_other": "Gán nhóm cho {{count}} profile đã chọn.",
     "selectLabel": "Nhóm",
@@ -1656,7 +1688,21 @@
     "selectedProfilesLabel": "Profile đã chọn:",
     "assignGroupLabel": "Gán vào nhóm:",
     "noValidProfiles": "Chưa chọn profile hợp lệ nào.",
-    "failedFallback": "Gán nhóm cho profile thất bại"
+    "failedFallback": "Gán nhóm cho profile thất bại",
+    "addNewFolder": "Thêm thư mục mới",
+    "folderNamePlaceholder": "Tên thư mục",
+    "create": "Tạo",
+    "colNo": "STT",
+    "colName": "Tên",
+    "colProfiles": "Hồ sơ",
+    "colAction": "Thao tác",
+    "add": "Thêm",
+    "empty": "Chưa có thư mục. Tạo một thư mục ở trên.",
+    "profileCount": "{{count}} hồ sơ",
+    "profileCount_one": "{{count}} hồ sơ",
+    "profileCount_other": "{{count}} hồ sơ",
+    "prevPage": "Trang trước",
+    "nextPage": "Trang sau"
   },
   "profileSelector": {
     "title": "Chọn profile",

@@ -82,7 +82,9 @@
       "copy": "クリップボードにコピー",
       "copied": "コピーしました",
       "showToken": "トークンを表示",
-      "hideToken": "トークンを非表示"
+      "hideToken": "トークンを非表示",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     },
     "keys": {
       "escape": "Esc"
@@ -205,6 +207,7 @@
     "clearSearch": "検索をクリア",
     "moreActions": "その他のアクション",
     "createProfile": "新しいプロファイルを作成",
+    "filterProfile": "Filter profile",
     "menu": {
       "settings": "設定",
       "proxies": "プロキシ & VPN",
@@ -247,6 +250,14 @@
       "cantModifyLaunching": "起動中はプロファイルを変更できません",
       "cantModifyStopping": "停止中はプロファイルを変更できません",
       "cantModifyUpdating": "ブラウザの更新中はプロファイルを変更できません"
+    },
+    "pagination": {
+      "total": "Profiles:{{count}}",
+      "perPage": "/page",
+      "prev": "Previous page",
+      "next": "Next page",
+      "goTo": "Go to",
+      "page": "Page"
     },
     "actions": {
       "launch": "起動",
@@ -312,6 +323,25 @@
       "runSelected": "選択を実行",
       "stopSelected": "選択を停止",
       "proRequired": "一括実行・停止には Pro プランが必要です"
+    },
+    "filter": {
+      "title": "Filter profile",
+      "uuid": "Uuid",
+      "uuidPlaceholder": "uuid1\nuuid2",
+      "name": "Name",
+      "namePlaceholder": "name1\nname2",
+      "runningOnly": "Profile is running",
+      "folder": "Folder",
+      "tag": "Tag",
+      "selectPlaceholder": "Select",
+      "noFolders": "No folders available",
+      "noTags": "No tags available",
+      "status": "Status",
+      "statusAll": "All",
+      "createdDate": "Created date",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "apply": "Filter"
     },
     "passwordProtectedBadge": "パスワード保護",
     "launchHook": {
@@ -1506,7 +1536,7 @@
     "failedFallback": "プロファイルへのプロキシ/VPN の割り当てに失敗しました"
   },
   "groupAssignment": {
-    "title": "グループを割り当てる",
+    "title": "Add profile to folder",
     "description_one": "{{count}} 件の選択されたプロファイルにグループを割り当てます。",
     "description_other": "{{count}} 件の選択されたプロファイルにグループを割り当てます。",
     "selectLabel": "グループ",
@@ -1518,7 +1548,20 @@
     "selectedProfilesLabel": "選択したプロファイル:",
     "assignGroupLabel": "グループに割り当てる:",
     "noValidProfiles": "有効なプロファイルが選択されていません。",
-    "failedFallback": "プロファイルへのグループの割り当てに失敗しました"
+    "failedFallback": "プロファイルへのグループの割り当てに失敗しました",
+    "addNewFolder": "Add new folder",
+    "folderNamePlaceholder": "Folder name",
+    "create": "Create",
+    "colNo": "No",
+    "colName": "Name",
+    "colProfiles": "Profiles",
+    "colAction": "Action",
+    "add": "Add",
+    "empty": "No folders yet. Create one above.",
+    "profileCount_one": "{{count}} profile",
+    "profileCount_other": "{{count}} profiles",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
   },
   "profileSelector": {
     "title": "プロファイルを選択",

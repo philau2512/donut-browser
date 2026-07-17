@@ -82,7 +82,9 @@
       "copy": "Скопировать в буфер обмена",
       "copied": "Скопировано",
       "showToken": "Показать токен",
-      "hideToken": "Скрыть токен"
+      "hideToken": "Скрыть токен",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     },
     "keys": {
       "escape": "Esc"
@@ -205,6 +207,7 @@
     "clearSearch": "Очистить поиск",
     "moreActions": "Дополнительные действия",
     "createProfile": "Создать новый профиль",
+    "filterProfile": "Filter profile",
     "menu": {
       "settings": "Настройки",
       "proxies": "Прокси и VPN",
@@ -247,6 +250,14 @@
       "cantModifyLaunching": "Нельзя изменить профиль во время запуска",
       "cantModifyStopping": "Нельзя изменить профиль во время остановки",
       "cantModifyUpdating": "Нельзя изменить профиль во время обновления браузера"
+    },
+    "pagination": {
+      "total": "Profiles:{{count}}",
+      "perPage": "/page",
+      "prev": "Previous page",
+      "next": "Next page",
+      "goTo": "Go to",
+      "page": "Page"
     },
     "actions": {
       "launch": "Запустить",
@@ -312,6 +323,25 @@
       "runSelected": "Запустить выбранные",
       "stopSelected": "Остановить выбранные",
       "proRequired": "Для массового запуска/остановки требуется план Pro"
+    },
+    "filter": {
+      "title": "Filter profile",
+      "uuid": "Uuid",
+      "uuidPlaceholder": "uuid1\nuuid2",
+      "name": "Name",
+      "namePlaceholder": "name1\nname2",
+      "runningOnly": "Profile is running",
+      "folder": "Folder",
+      "tag": "Tag",
+      "selectPlaceholder": "Select",
+      "noFolders": "No folders available",
+      "noTags": "No tags available",
+      "status": "Status",
+      "statusAll": "All",
+      "createdDate": "Created date",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "apply": "Filter"
     },
     "passwordProtectedBadge": "Защищено паролем",
     "launchHook": {
@@ -1506,7 +1536,7 @@
     "failedFallback": "Не удалось назначить прокси/VPN профилям"
   },
   "groupAssignment": {
-    "title": "Назначить группу",
+    "title": "Add profile to folder",
     "description_one": "Назначить группу для {{count}} выбранного профиля.",
     "description_other": "Назначить группу для {{count}} выбранных профилей.",
     "selectLabel": "Группа",
@@ -1518,7 +1548,20 @@
     "selectedProfilesLabel": "Выбранные профили:",
     "assignGroupLabel": "Назначить группу:",
     "noValidProfiles": "Нет выбранных допустимых профилей.",
-    "failedFallback": "Не удалось назначить группу профилям"
+    "failedFallback": "Не удалось назначить группу профилям",
+    "addNewFolder": "Add new folder",
+    "folderNamePlaceholder": "Folder name",
+    "create": "Create",
+    "colNo": "No",
+    "colName": "Name",
+    "colProfiles": "Profiles",
+    "colAction": "Action",
+    "add": "Add",
+    "empty": "No folders yet. Create one above.",
+    "profileCount_one": "{{count}} profile",
+    "profileCount_other": "{{count}} profiles",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
   },
   "profileSelector": {
     "title": "Выбрать профиль",

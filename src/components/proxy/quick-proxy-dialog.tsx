@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 import { toast } from "sonner";
 import { LoadingButton } from "@/components/shared";
 import { AnimatedSwitch } from "@/components/ui/animated-switch";
@@ -153,6 +154,7 @@ export function QuickProxyDialog({
   const [port, setPort] = useState<number>(8080);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
   const [checkHost, setCheckHost] = useState<string>("donut-engine");
   const [checkBeforeStart, setCheckBeforeStart] = useState<boolean>(true);
 
@@ -169,6 +171,7 @@ export function QuickProxyDialog({
   useEffect(() => {
     if (isOpen) {
       setFormatProxy("");
+      setShowPassword(false);
       if (associatedProxy) {
         setProxyType(associatedProxy.proxy_settings.proxy_type);
         setHost(associatedProxy.proxy_settings.host);
@@ -479,13 +482,32 @@ export function QuickProxyDialog({
               >
                 {t("proxies.form.password")}
               </Label>
-              <Input
-                id="quick-proxy-pass"
-                type="password"
-                placeholder="Optional"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="quick-proxy-pass"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Optional"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-9"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  aria-label={
+                    showPassword
+                      ? t("common.aria.hidePassword")
+                      : t("common.aria.showPassword")
+                  }
+                >
+                  {showPassword ? (
+                    <LuEyeOff className="size-4" />
+                  ) : (
+                    <LuEye className="size-4" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 

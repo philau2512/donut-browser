@@ -82,7 +82,9 @@
       "copy": "Copiar al portapapeles",
       "copied": "Copiado",
       "showToken": "Mostrar token",
-      "hideToken": "Ocultar token"
+      "hideToken": "Ocultar token",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     },
     "keys": {
       "escape": "Escape"
@@ -205,6 +207,7 @@
     "clearSearch": "Limpiar búsqueda",
     "moreActions": "Más acciones",
     "createProfile": "Crear un nuevo perfil",
+    "filterProfile": "Filter profile",
     "menu": {
       "settings": "Configuración",
       "proxies": "Proxies y VPNs",
@@ -247,6 +250,14 @@
       "cantModifyLaunching": "No se puede modificar el perfil mientras se inicia",
       "cantModifyStopping": "No se puede modificar el perfil mientras se detiene",
       "cantModifyUpdating": "No se puede modificar el perfil mientras se actualiza el navegador"
+    },
+    "pagination": {
+      "total": "Profiles:{{count}}",
+      "perPage": "/page",
+      "prev": "Previous page",
+      "next": "Next page",
+      "goTo": "Go to",
+      "page": "Page"
     },
     "actions": {
       "launch": "Iniciar",
@@ -312,6 +323,25 @@
       "runSelected": "Ejecutar seleccionados",
       "stopSelected": "Detener seleccionados",
       "proRequired": "Se requiere el plan Pro para ejecución/parada masiva"
+    },
+    "filter": {
+      "title": "Filter profile",
+      "uuid": "Uuid",
+      "uuidPlaceholder": "uuid1\nuuid2",
+      "name": "Name",
+      "namePlaceholder": "name1\nname2",
+      "runningOnly": "Profile is running",
+      "folder": "Folder",
+      "tag": "Tag",
+      "selectPlaceholder": "Select",
+      "noFolders": "No folders available",
+      "noTags": "No tags available",
+      "status": "Status",
+      "statusAll": "All",
+      "createdDate": "Created date",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "apply": "Filter"
     },
     "passwordProtectedBadge": "Protegido por Contraseña",
     "launchHook": {
@@ -1506,7 +1536,7 @@
     "failedFallback": "Error al asignar proxy/VPN a los perfiles"
   },
   "groupAssignment": {
-    "title": "Asignar grupo",
+    "title": "Add profile to folder",
     "description_one": "Asigna un grupo a {{count}} perfil seleccionado.",
     "description_other": "Asigna un grupo a {{count}} perfiles seleccionados.",
     "selectLabel": "Grupo",
@@ -1518,7 +1548,20 @@
     "selectedProfilesLabel": "Perfiles seleccionados:",
     "assignGroupLabel": "Asignar a grupo:",
     "noValidProfiles": "No hay perfiles válidos seleccionados.",
-    "failedFallback": "Error al asignar grupo a los perfiles"
+    "failedFallback": "Error al asignar grupo a los perfiles",
+    "addNewFolder": "Add new folder",
+    "folderNamePlaceholder": "Folder name",
+    "create": "Create",
+    "colNo": "No",
+    "colName": "Name",
+    "colProfiles": "Profiles",
+    "colAction": "Action",
+    "add": "Add",
+    "empty": "No folders yet. Create one above.",
+    "profileCount_one": "{{count}} profile",
+    "profileCount_other": "{{count}} profiles",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
   },
   "profileSelector": {
     "title": "Seleccionar perfil",

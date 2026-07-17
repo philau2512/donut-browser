@@ -3,7 +3,9 @@
 import {
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
+  type PaginationState,
   type RowData,
   useReactTable,
   type VisibilityState,
@@ -25,17 +27,56 @@ import { useProfilesTableState } from "@/hooks/use-profiles-table-state";
 import { useScrollFade } from "@/hooks/use-scroll-fade";
 import { getOSDisplayName, isCrossOsProfile } from "@/lib/browser-utils";
 import { cn } from "@/lib/utils";
-import type { BrowserProfile, SyncSessionInfo } from "@/types";
+import type { BrowserProfile, GroupWithCount, SyncSessionInfo } from "@/types";
 import { ProfileBulkActionsBar } from "./sub-components/profile-bulk-actions-bar";
 import {
   getProfileTableColumns,
   type TableMeta,
 } from "./sub-components/profile-table-columns";
 import { ProfileTableDialogs } from "./sub-components/profile-table-dialogs";
+import { ProfileTablePagination } from "./sub-components/profile-table-pagination";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
     flexWidth?: boolean;
+  }
+}
+
+const COLUMN_VISIBILITY_STORAGE_KEY = "donut.profileTable.columnVisibility";
+const PAGE_SIZE_STORAGE_KEY = "donut.profileTable.pageSize";
+
+const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
+  created_at: false,
+  folder: true,
+  os: true,
+  proxy: true,
+  tags: true,
+  note: true,
+  last_open: true,
+  status: true,
+  message: true,
+};
+
+function loadColumnVisibility(): VisibilityState {
+  if (typeof window === "undefined") return DEFAULT_COLUMN_VISIBILITY;
+  try {
+    const raw = window.localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY);
+    if (!raw) return DEFAULT_COLUMN_VISIBILITY;
+    const parsed = JSON.parse(raw) as VisibilityState;
+    return { ...DEFAULT_COLUMN_VISIBILITY, ...parsed, created_at: false };
+  } catch {
+    return DEFAULT_COLUMN_VISIBILITY;
+  }
+}
+
+function loadPageSize(): number {
+  if (typeof window === "undefined") return 10;
+  try {
+    const raw = window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY);
+    const n = raw ? Number(raw) : 10;
+    return [10, 20, 50, 100, 200, 500].includes(n) ? n : 10;
+  } catch {
+    return 10;
   }
 }
 
@@ -54,6 +95,7 @@ interface ProfilesDataTableProps {
   onDeleteSelectedProfiles: (profileIds: string[]) => Promise<void>;
   onAssignProfilesToGroup: (profileIds: string[]) => void;
   selectedGroupId: string | null;
+  groups?: GroupWithCount[];
   selectedProfiles: string[];
   onSelectedProfilesChange: Dispatch<SetStateAction<string[]>>;
   onBulkDelete?: () => void;
@@ -100,6 +142,7 @@ export function ProfilesDataTable({
   runningProfiles,
   isUpdating,
   onAssignProfilesToGroup,
+  groups = [],
   selectedProfiles,
   onSelectedProfilesChange,
   onBulkDelete,
@@ -318,6 +361,8 @@ export function ProfilesDataTable({
         (() => {
           /* empty */
         }),
+
+      folderNames: Object.fromEntries(groups.map((g) => [g.id, g.name])),
     }),
     [
       t,
@@ -396,13 +441,51 @@ export function ProfilesDataTable({
       setAllTags,
       canCreateLocationProxy,
       onAssignTags,
+      groups,
     ],
   );
 
   const columns = React.useMemo(() => getProfileTableColumns(t), [t]);
 
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({ created_at: false });
+    React.useState<VisibilityState>(() => loadColumnVisibility());
+
+  const [pagination, setPagination] = React.useState<PaginationState>(() => ({
+    pageIndex: 0,
+    pageSize: loadPageSize(),
+  }));
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        COLUMN_VISIBILITY_STORAGE_KEY,
+        JSON.stringify({ ...columnVisibility, created_at: false }),
+      );
+    } catch {
+      // ignore quota / private mode
+    }
+  }, [columnVisibility]);
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        PAGE_SIZE_STORAGE_KEY,
+        String(pagination.pageSize),
+      );
+    } catch {
+      // ignore
+    }
+  }, [pagination.pageSize]);
+
+  // Reset to first page when the filtered list changes size/identity.
+  const profileIdsKey = profiles.map((p) => p.id).join(",");
+  React.useEffect(() => {
+    // Depend on list identity (not just length) so reorder/filter swaps also reset.
+    void profileIdsKey;
+    setPagination((prev) =>
+      prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 },
+    );
+  }, [profileIdsKey]);
 
   const [containerWidth, setContainerWidth] = React.useState(0);
 
@@ -413,10 +496,12 @@ export function ProfilesDataTable({
       sorting,
       rowSelection,
       columnVisibility,
+      pagination,
     },
     onSortingChange: handleSortingChange,
     onRowSelectionChange: handleRowSelectionChange,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
     enableRowSelection: (row) => {
       const profile = row.original;
       const isRunning =
@@ -427,6 +512,8 @@ export function ProfilesDataTable({
     },
     getSortedRowModel: getSortedRowModel(),
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    autoResetPageIndex: false,
     getRowId: (row) => row.id,
     meta: tableMeta,
   });
@@ -435,8 +522,10 @@ export function ProfilesDataTable({
   const columnWidth = React.useCallback(
     (id: string, sizePx: number) => {
       const proportions: Record<string, { pct: number; floor: number }> = {
+        folder: { pct: 0.1, floor: 90 },
         tags: { pct: 0.12, floor: 100 },
         note: { pct: 0.1, floor: 80 },
+        message: { pct: 0.14, floor: 120 },
         proxy: { pct: 0.13, floor: 110 },
         ext: { pct: 0.11, floor: 95 },
         dns: { pct: 0.11, floor: 95 },
@@ -483,18 +572,6 @@ export function ProfilesDataTable({
     const update = () => {
       const w = el.clientWidth;
       setContainerWidth(Math.round(w / 8) * 8);
-      setColumnVisibility((prev) => {
-        const next: VisibilityState = {
-          created_at: false,
-          dns: w >= 768,
-          ext: w >= 672,
-          note: w >= 576,
-          tags: w >= 512,
-        };
-        return Object.keys(next).every((k) => prev[k] === next[k])
-          ? prev
-          : next;
-      });
     };
     update();
     const ro = new ResizeObserver(update);
@@ -510,6 +587,8 @@ export function ProfilesDataTable({
     count: sortedRows.length,
     getScrollElement: () => scrollParentRef.current,
     estimateSize: () => ROW_HEIGHT,
+    // Message column can wrap — measure real row height after layout.
+    measureElement: (element) => element.getBoundingClientRect().height,
     overscan: 8,
   });
 
@@ -631,9 +710,11 @@ export function ProfilesDataTable({
                     return (
                       <TableRow
                         key={row.id}
+                        data-index={virtualRow.index}
+                        ref={rowVirtualizer.measureElement}
                         data-state={row.getIsSelected() && "selected"}
                         title={crossOsTitle}
-                        style={{ height: `${ROW_HEIGHT}px` }}
+                        style={{ minHeight: `${ROW_HEIGHT}px` }}
                         className={cn(
                           "overflow-visible border-0! hover:bg-accent/50",
                           rowIsCrossOs && "opacity-60",
@@ -642,7 +723,11 @@ export function ProfilesDataTable({
                         {row.getVisibleCells().map((cell) => (
                           <TableCell
                             key={cell.id}
-                            className="overflow-visible py-0"
+                            className={cn(
+                              "overflow-visible py-1.5 align-middle",
+                              cell.column.id === "message" &&
+                                "!whitespace-normal break-words",
+                            )}
                             style={{
                               width: cell.column.columnDef.meta?.flexWidth
                                 ? undefined
@@ -671,6 +756,19 @@ export function ProfilesDataTable({
             </TableBody>
           </Table>
         </div>
+
+        <ProfileTablePagination
+          totalProfiles={profiles.length}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          pageCount={table.getPageCount()}
+          onPageIndexChange={(pageIndex) =>
+            setPagination((prev) => ({ ...prev, pageIndex }))
+          }
+          onPageSizeChange={(pageSize) =>
+            setPagination({ pageIndex: 0, pageSize })
+          }
+        />
       </div>
       <ProfileTableDialogs
         profiles={profiles}

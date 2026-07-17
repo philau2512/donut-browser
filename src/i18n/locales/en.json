@@ -85,7 +85,9 @@
       "copy": "Copy to clipboard",
       "copied": "Copied",
       "showToken": "Show token",
-      "hideToken": "Hide token"
+      "hideToken": "Hide token",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     },
     "keys": {
       "escape": "Escape"
@@ -204,10 +206,11 @@
     "keepDecryptedProfilesInRamDescription": "Preserve the decrypted in-RAM copy of password-protected profiles between launches for faster startup. The on-disk copy stays encrypted regardless."
   },
   "header": {
-    "searchPlaceholder": "Search profiles...",
+    "searchPlaceholder": "Search by name",
     "clearSearch": "Clear search",
     "moreActions": "More actions",
     "createProfile": "Create a new profile",
+    "filterProfile": "Filter profile",
     "menu": {
       "settings": "Settings",
       "proxies": "Proxies & VPNs",
@@ -252,13 +255,23 @@
       "cantModifyUpdating": "Can't modify profile while browser is updating",
       "lastOpen": "Last Open",
       "os": "OS",
+      "folder": "Folder",
       "message": "Message",
       "changeProxy": "Change Proxy",
       "statusReady": "Ready",
       "statusRunning": "Running",
       "statusLaunching": "Launching...",
       "statusStopping": "Stopping...",
-      "errorCannotCheckProxy": "Error: Cannot check proxy"
+      "errorCannotCheckProxy": "Error: Cannot check proxy",
+      "columnsMenu": "Show columns"
+    },
+    "pagination": {
+      "total": "Profiles:{{count}}",
+      "perPage": "/page",
+      "prev": "Previous page",
+      "next": "Next page",
+      "goTo": "Go to",
+      "page": "Page"
     },
     "actions": {
       "launch": "Launch",
@@ -334,6 +347,25 @@
       "exportCookies": "Export cookies",
       "moreAction": "More action",
       "synchronize": "Synchronize Actions"
+    },
+    "filter": {
+      "title": "Filter profile",
+      "uuid": "Uuid",
+      "uuidPlaceholder": "uuid1\nuuid2",
+      "name": "Name",
+      "namePlaceholder": "name1\nname2",
+      "runningOnly": "Profile is running",
+      "folder": "Folder",
+      "tag": "Tag",
+      "selectPlaceholder": "Select",
+      "noFolders": "No folders available",
+      "noTags": "No tags available",
+      "status": "Status",
+      "statusAll": "All",
+      "createdDate": "Created date",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "apply": "Filter"
     },
     "passwordProtectedBadge": "Password Protected",
     "launchHook": {
@@ -1644,7 +1676,7 @@
     "withoutProxyWarning": "All selected profiles will be switched to No Proxy mode after submit."
   },
   "groupAssignment": {
-    "title": "Assign Group",
+    "title": "Add profile to folder",
     "description_one": "Assign a group to {{count}} selected profile.",
     "description_other": "Assign a group to {{count}} selected profiles.",
     "selectLabel": "Group",
@@ -1656,7 +1688,21 @@
     "selectedProfilesLabel": "Selected Profiles:",
     "assignGroupLabel": "Assign to Group:",
     "noValidProfiles": "No valid profiles selected.",
-    "failedFallback": "Failed to assign group to profiles"
+    "failedFallback": "Failed to assign group to profiles",
+    "addNewFolder": "Add new folder",
+    "folderNamePlaceholder": "Folder name",
+    "create": "Create",
+    "colNo": "No",
+    "colName": "Name",
+    "colProfiles": "Profiles",
+    "colAction": "Action",
+    "add": "Add",
+    "empty": "No folders yet. Create one above.",
+    "profileCount": "{{count}} profile",
+    "profileCount_one": "{{count}} profile",
+    "profileCount_other": "{{count}} profiles",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
   },
   "profileSelector": {
     "title": "Select Profile",

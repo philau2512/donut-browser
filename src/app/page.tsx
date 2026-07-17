@@ -11,6 +11,7 @@ import { ExtensionManagementDialog } from "@/components/extension";
 import { GroupManagementDialog } from "@/components/group";
 // Home
 import { HomeHeader, ProfilesDataTable } from "@/components/home";
+import { ProfileFilterDialog } from "@/components/home/sub-components/profile-filter-dialog";
 import type { AppPage } from "@/components/navigation";
 // Navigation
 import { RailNav } from "@/components/navigation";
@@ -49,6 +50,12 @@ import {
   ONBOARDING_TOUR_FINISHED_EVENT,
   setOnboardingActive,
 } from "@/lib/onboarding-signal";
+import {
+  applyProfileFilter,
+  countActiveProfileFilters,
+  EMPTY_PROFILE_FILTER,
+  type ProfileFilterCriteria,
+} from "@/lib/profile-filter";
 import {
   matchesGroupDigit,
   matchesShortcut,
@@ -238,6 +245,9 @@ export default function Home() {
     useState<string[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("__all__");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [profileFilter, setProfileFilter] =
+    useState<ProfileFilterCriteria>(EMPTY_PROFILE_FILTER);
+  const [profileFilterDialogOpen, setProfileFilterDialogOpen] = useState(false);
   const [pendingUrls, setPendingUrls] = useState<PendingUrl[]>([]);
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
   const [currentPermissionType, setCurrentPermissionType] =
@@ -599,8 +609,15 @@ export default function Home() {
       });
     }
 
+    filtered = applyProfileFilter(filtered, profileFilter, runningProfiles);
+
     return filtered;
-  }, [profiles, selectedGroupId, searchQuery]);
+  }, [profiles, selectedGroupId, searchQuery, profileFilter, runningProfiles]);
+
+  const activeFilterCount = useMemo(
+    () => countActiveProfileFilters(profileFilter),
+    [profileFilter],
+  );
 
   const _isLoading = profilesLoading || groupsLoading || proxiesLoading;
 
@@ -625,6 +642,15 @@ export default function Home() {
         onGroupSelect={handleSelectGroup}
         pageTitle={subPageTitle}
         onRefresh={handleRefreshProfiles}
+        onOpenFilter={() => setProfileFilterDialogOpen(true)}
+        activeFilterCount={activeFilterCount}
+      />
+      <ProfileFilterDialog
+        open={profileFilterDialogOpen}
+        onOpenChange={setProfileFilterDialogOpen}
+        value={profileFilter}
+        onApply={setProfileFilter}
+        folders={groupsData}
       />
       <div className="flex min-h-0 flex-1">
         <RailNav
@@ -657,6 +683,7 @@ export default function Home() {
                 onDeleteSelectedProfiles={handleDeleteSelectedProfiles}
                 onAssignProfilesToGroup={handleAssignProfilesToGroup}
                 selectedGroupId={selectedGroupId}
+                groups={groupsData}
                 selectedProfiles={selectedProfiles}
                 onSelectedProfilesChange={setSelectedProfiles}
                 onBulkDelete={handleBulkDelete}

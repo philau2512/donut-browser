@@ -7,6 +7,7 @@ import { GoPlus } from "react-icons/go";
 import {
   LuChevronLeft,
   LuChevronRight,
+  LuFilter,
   LuMoon,
   LuRefreshCw,
   LuSearch,
@@ -60,6 +61,8 @@ interface Props {
   onGroupSelect: (groupId: string) => void;
   pageTitle?: string;
   onRefresh?: () => void;
+  onOpenFilter?: () => void;
+  activeFilterCount?: number;
 }
 
 const HomeHeader = ({
@@ -72,6 +75,8 @@ const HomeHeader = ({
   onGroupSelect,
   pageTitle,
   onRefresh,
+  onOpenFilter,
+  activeFilterCount = 0,
 }: Props) => {
   const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
@@ -366,51 +371,73 @@ const HomeHeader = ({
       {!showProfileToolbar && <div className="flex-1" />}
 
       {showProfileToolbar && (
-        <div className="relative shrink-0">
-          <Input
-            type="text"
-            placeholder={t("header.searchPlaceholder")}
-            value={searchQuery}
-            onChange={(e) => {
-              onSearchQueryChange(e.target.value);
-            }}
-            className="h-7 w-36 pr-7 pl-8 text-xs min-[860px]:w-52"
-          />
-          <LuSearch className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 transform text-muted-foreground" />
-          {searchQuery ? (
-            <button
-              type="button"
-              onClick={() => {
-                onSearchQueryChange("");
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder={t("header.searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => {
+                onSearchQueryChange(e.target.value);
               }}
-              className="absolute top-1/2 right-1.5 -translate-y-1/2 transform rounded-sm p-0.5 transition-colors hover:bg-accent"
-              aria-label={t("header.clearSearch")}
-            >
-              <LuX className="size-3.5 text-muted-foreground hover:text-foreground" />
-            </button>
-          ) : null}
-        </div>
-      )}
-
-      {showProfileToolbar && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="shrink-0">
-              <Button
-                size="sm"
-                data-onborda="create-profile"
+              className="h-8 w-40 rounded-full border-border/80 bg-muted/40 pr-7 pl-8 text-xs min-[860px]:w-56"
+            />
+            <LuSearch className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 transform text-muted-foreground" />
+            {searchQuery ? (
+              <button
+                type="button"
                 onClick={() => {
-                  onCreateProfileDialogOpen(true);
+                  onSearchQueryChange("");
                 }}
-                className="flex h-7 items-center gap-1.5 px-2.5 text-xs"
+                className="absolute top-1/2 right-1.5 -translate-y-1/2 transform rounded-sm p-0.5 transition-colors hover:bg-accent"
+                aria-label={t("header.clearSearch")}
               >
-                <GoPlus className="size-3.5" />
-                {t("header.newProfile")}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>{t("header.createProfile")}</TooltipContent>
-        </Tooltip>
+                <LuX className="size-3.5 text-muted-foreground hover:text-foreground" />
+              </button>
+            ) : null}
+          </div>
+
+          {onOpenFilter && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={onOpenFilter}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold text-white shadow-none",
+                activeFilterCount > 0
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-blue-600/90 hover:bg-blue-700",
+              )}
+            >
+              <LuFilter className="size-3.5" />
+              {t("header.filterProfile")}
+              {activeFilterCount > 0 ? (
+                <span className="ml-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] leading-none tabular-nums">
+                  {activeFilterCount}
+                </span>
+              ) : null}
+            </Button>
+          )}
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="shrink-0">
+                <Button
+                  size="sm"
+                  data-onborda="create-profile"
+                  onClick={() => {
+                    onCreateProfileDialogOpen(true);
+                  }}
+                  className="flex h-8 items-center gap-1.5 px-2.5 text-xs font-semibold"
+                >
+                  <GoPlus className="size-3.5" />
+                  {t("header.newProfile")}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{t("header.createProfile")}</TooltipContent>
+          </Tooltip>
+        </div>
       )}
 
       {onRefresh && (

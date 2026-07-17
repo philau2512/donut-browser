@@ -82,7 +82,9 @@
       "copy": "클립보드에 복사",
       "copied": "복사됨",
       "showToken": "토큰 표시",
-      "hideToken": "토큰 숨기기"
+      "hideToken": "토큰 숨기기",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     },
     "keys": {
       "escape": "Escape"
@@ -205,6 +207,7 @@
     "clearSearch": "검색 지우기",
     "moreActions": "더 많은 작업",
     "createProfile": "새 프로필 생성",
+    "filterProfile": "Filter profile",
     "menu": {
       "settings": "설정",
       "proxies": "프록시 및 VPN",
@@ -247,6 +250,14 @@
       "cantModifyLaunching": "실행하는 동안 프로필을 수정할 수 없습니다",
       "cantModifyStopping": "중지하는 동안 프로필을 수정할 수 없습니다",
       "cantModifyUpdating": "브라우저 업데이트 중에는 프로필을 수정할 수 없습니다"
+    },
+    "pagination": {
+      "total": "Profiles:{{count}}",
+      "perPage": "/page",
+      "prev": "Previous page",
+      "next": "Next page",
+      "goTo": "Go to",
+      "page": "Page"
     },
     "actions": {
       "launch": "실행",
@@ -312,6 +323,25 @@
       "runSelected": "선택 실행",
       "stopSelected": "선택 중지",
       "proRequired": "대량 실행/중지하려면 Pro 플랜이 필요합니다"
+    },
+    "filter": {
+      "title": "Filter profile",
+      "uuid": "Uuid",
+      "uuidPlaceholder": "uuid1\nuuid2",
+      "name": "Name",
+      "namePlaceholder": "name1\nname2",
+      "runningOnly": "Profile is running",
+      "folder": "Folder",
+      "tag": "Tag",
+      "selectPlaceholder": "Select",
+      "noFolders": "No folders available",
+      "noTags": "No tags available",
+      "status": "Status",
+      "statusAll": "All",
+      "createdDate": "Created date",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "apply": "Filter"
     },
     "passwordProtectedBadge": "비밀번호 보호됨",
     "launchHook": {
@@ -1506,7 +1536,7 @@
     "failedFallback": "프로필에 프록시/VPN 할당 실패"
   },
   "groupAssignment": {
-    "title": "그룹 할당",
+    "title": "Add profile to folder",
     "description_one": "선택한 {{count}}개 프로필에 그룹을 할당합니다.",
     "description_other": "선택한 {{count}}개 프로필에 그룹을 할당합니다.",
     "selectLabel": "그룹",
@@ -1518,7 +1548,20 @@
     "selectedProfilesLabel": "선택된 프로필:",
     "assignGroupLabel": "그룹에 할당:",
     "noValidProfiles": "유효한 프로필이 선택되지 않았습니다.",
-    "failedFallback": "프로필에 그룹 할당 실패"
+    "failedFallback": "프로필에 그룹 할당 실패",
+    "addNewFolder": "Add new folder",
+    "folderNamePlaceholder": "Folder name",
+    "create": "Create",
+    "colNo": "No",
+    "colName": "Name",
+    "colProfiles": "Profiles",
+    "colAction": "Action",
+    "add": "Add",
+    "empty": "No folders yet. Create one above.",
+    "profileCount_one": "{{count}} profile",
+    "profileCount_other": "{{count}} profiles",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
   },
   "profileSelector": {
     "title": "프로필 선택",
