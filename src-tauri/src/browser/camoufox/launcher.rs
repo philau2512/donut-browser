@@ -68,6 +68,9 @@ pub struct LaunchOptions {
 
 /// Camoufox launcher stub (playwright-based launching removed).
 pub struct CamoufoxLauncher {
+  // Retained for API parity with the pre-stub launcher; not used until
+  // playwright-based launch is reintroduced.
+  #[allow(dead_code)]
   executable_path: PathBuf,
 }
 
@@ -81,6 +84,7 @@ impl CamoufoxLauncher {
     Ok(Self { executable_path })
   }
 
+  #[allow(dead_code)] // stub helper for future playwright reintroduction
   fn build_config(&self, options: &LaunchOptions) -> Result<CamoufoxLaunchConfig, LauncherError> {
     let mut builder = CamoufoxConfigBuilder::new();
     if let Some(ref os) = options.os {

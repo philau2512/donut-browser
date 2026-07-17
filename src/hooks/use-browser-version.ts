@@ -39,6 +39,7 @@ export function useBrowserVersion() {
 
         const filtered: any = {};
         if (rawReleaseTypes.stable) filtered.stable = rawReleaseTypes.stable;
+        if (rawReleaseTypes.nightly) filtered.nightly = rawReleaseTypes.nightly;
         setReleaseTypesMap((prev) => ({ ...prev, [browser]: filtered }));
       } catch (error) {
         console.error(`Failed to load release types for ${browser}:`, error);
@@ -73,23 +74,49 @@ export function useBrowserVersion() {
       if (releaseTypes.stable) {
         return { version: releaseTypes.stable, releaseType: "stable" as const };
       }
+      if (releaseTypes.nightly) {
+        return {
+          version: releaseTypes.nightly,
+          releaseType: "nightly" as const,
+        };
+      }
       return null;
     },
     [releaseTypesMap],
   );
 
+  /** All downloaded versions for a browser (newest-first when possible). */
+  const getDownloadedVersions = useCallback(
+    (browserType?: string): string[] => {
+      const key = browserType ?? "wayfern";
+      return downloadedVersionsMap[key] ?? [];
+    },
+    [downloadedVersionsMap],
+  );
+
+  /**
+   * Resolve which version can be used to create a profile.
+   * Prefer explicit selection if provided and downloaded; else latest downloaded / best available.
+   */
   const getCreatableVersion = useCallback(
-    (browserType?: string) => {
+    (browserType?: string, preferredVersion?: string | null) => {
+      const key = browserType ?? "wayfern";
+      const browserDownloaded = downloadedVersionsMap[key] ?? [];
+
+      if (preferredVersion && browserDownloaded.includes(preferredVersion)) {
+        return {
+          version: preferredVersion,
+          releaseType: "stable" as const,
+        };
+      }
+
       const bestVersion = getBestAvailableVersion(browserType);
       if (bestVersion && isVersionDownloaded(bestVersion.version)) {
         return bestVersion;
       }
-      const browserDownloaded =
-        downloadedVersionsMap[browserType ?? "wayfern"] ?? [];
       if (browserDownloaded.length > 0) {
-        const fallbackVersion = browserDownloaded[0];
         return {
-          version: fallbackVersion,
+          version: browserDownloaded[0],
           releaseType: "stable" as const,
         };
       }
@@ -108,9 +135,11 @@ export function useBrowserVersion() {
   return {
     isLoadingReleaseTypes,
     getCreatableVersion,
+    getDownloadedVersions,
     isBrowserCurrentlyDownloading,
     loadReleaseTypes,
     downloadBrowser,
     getBestAvailableVersion,
+    downloadedVersionsMap,
   };
 }

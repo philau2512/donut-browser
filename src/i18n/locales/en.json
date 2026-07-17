@@ -68,7 +68,8 @@
       "required": "Required",
       "unknownProfile": "Unknown",
       "mode": "Mode",
-      "never": "Never"
+      "never": "Never",
+      "folder": "Folder"
     },
     "time": {
       "days": "days",
@@ -299,7 +300,9 @@
     "bulkDelete": {
       "title": "Delete Selected Profiles",
       "description": "This action cannot be undone. This will permanently delete {{count}} profile(s) and all associated data.",
-      "confirmButton": "Delete {{count}} Profile(s)"
+      "confirmButton": "Delete {{count}} Profile(s)",
+      "success": "Deleted {{count}} profile(s)",
+      "failed": "Failed to delete {{count}} profile(s)"
     },
     "note": {
       "placeholder": "Add a note...",
@@ -411,7 +414,12 @@
       "latestNeedsDownload": "Latest version ({{version}}) needs to be downloaded",
       "latestAvailable": "Latest version ({{version}}) is available",
       "latestDownloading": "Downloading version ({{version}})...",
-      "upgradeAvailable": "A newer version ({{version}}) of {{browser}} is available."
+      "upgradeAvailable": "A newer version ({{version}}) of {{browser}} is available.",
+      "noneDownloaded": "No version downloaded",
+      "noneDownloadedNamed": "No {{browser}} browser version downloaded. Please download it first.",
+      "selectPlaceholder": "Select version",
+      "wayfernHint": "Version of the Wayfern (Chromium anti-detect) binary installed on this machine. There is no separate Core version.",
+      "camoufoxHint": "Version of the Camoufox (Firefox anti-detect) binary installed on this machine."
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "Powered by Wayfern",
@@ -438,7 +446,38 @@
       "other": "Other"
     },
     "quantity": "Quantity",
-    "getFingerprint": "Get new fingerprint"
+    "getFingerprint": "Get new fingerprint",
+    "subtitle": "Configure your browser anti-detect parameters, location and proxies",
+    "howToCreate": "How to create a profile",
+    "browserEngine": "Browser Engine",
+    "browserVersion": "Browser Version",
+    "downloadBrowser": "Download {{browser}}",
+    "fingerprintRequired": "Could not build a complete fingerprint. Please try again.",
+    "createdBatch": "Created {{count}} profiles",
+    "createdSingle": "Profile created successfully",
+    "cookieImportFailed": "Profile created, but cookie import failed for {{name}}",
+    "status": {
+      "none": "No status",
+      "afterCreateHint": "Status can be set from the profile list after creation."
+    },
+    "language": {
+      "fixedLabel": "Use fixed browser language",
+      "fixedHint": "When off, language follows proxy/IP location. When on, force navigator.language.",
+      "selectLabel": "Browser language",
+      "customLabel": "Custom locale (BCP 47)",
+      "autoPlaceholder": "Auto from location",
+      "autoFromLocation": "Auto from location"
+    },
+    "location": {
+      "autoLocationHint": "Automatically fetch location coordinates and timezone based on IP address",
+      "coordinatesTitle": "Geolocation Coordinates",
+      "timezoneTitle": "Timezone Settings"
+    },
+    "hardware": {
+      "screenPreset": "Screen Size Preset",
+      "screenAuto": "Auto (from fingerprint)",
+      "screenHint": "Selecting a preset locks resolution so regenerate/create will keep it."
+    }
   },
   "deleteDialog": {
     "title": "Delete Profile",
@@ -595,7 +634,10 @@
       "checkHostLabel": "Check proxy host",
       "checkBeforeStart": "Check proxy before start profile.",
       "checkButton": "Check Proxy",
-      "saveButton": "Edit Proxy"
+      "saveButton": "Edit Proxy",
+      "noProxyButton": "Don't use proxy",
+      "clearSuccess": "Proxy removed from profile",
+      "clearFailed": "Failed to remove proxy: {{error}}"
     }
   },
   "groups": {
@@ -1105,7 +1147,14 @@
     "availableHeight": "Available Height",
     "colorDepth": "Color Depth",
     "pixelDepth": "Pixel Depth",
-    "devicePixelRatio": "Device Pixel Ratio",
+    "devicePixelRatio": "Device Pixel Ratio (DPR)",
+    "displayScaleTitle": "Display scale (Screen & DPR)",
+    "displayScaleHint": "On 2K/4K laptops, set DPR to match Windows display scale (e.g. 1.25 or 1.5). DPR 1.0 makes browser UI and page layout look tiny.",
+    "useHostDisplay": "Use this PC's display",
+    "screenSizePreset": "Screen size preset",
+    "screenSizePresetPlaceholder": "Select resolution",
+    "dprPlaceholder": "Select DPR",
+    "dprHint": "Matches Windows Scale (Settings → Display → Scale). 100%=1.0, 125%=1.25, 150%=1.5.",
     "windowProperties": "Window Properties",
     "outerWidth": "Outer Width",
     "outerHeight": "Outer Height",

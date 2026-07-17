@@ -1,7 +1,7 @@
 use crate::browser::browser_runner::BrowserRunner;
 use crate::browser::wayfern_launch_args::{
-  build_wayfern_launch_args, resolve_webrtc_mode, WayfernLaunchArgsOptions,
-  WAYFERN_DISABLE_FEATURES,
+  build_wayfern_launch_args, ensure_https_first_mode_prefs, resolve_webrtc_mode,
+  WayfernLaunchArgsOptions, WAYFERN_DISABLE_FEATURES,
 };
 use crate::profile::BrowserProfile;
 use reqwest::Client;
@@ -165,10 +165,9 @@ impl WayfernManager {
   /// Derive the on-screen window size Chromium should open at, from the stored
   /// fingerprint. `Wayfern.setFingerprint` only spoofs what the page *reports*
   /// for `windowOuterWidth`/`screenWidth`/etc.; it does not move or resize the
-  /// real top-level window. Without `--window-size` the OS window keeps
-  /// Chromium's default, so the visible window contradicts the reported
-  /// dimensions — a detectable mismatch. We pass `--window-size` so the actual
-  /// window matches the fingerprint.
+  /// real top-level window. We pass `--window-size` as restore bounds and
+  /// `--start-maximized` so large/high-DPI hosts open full-size like normal
+  /// Chrome while spoofed metrics stay on the fingerprint.
   ///
   /// Keys are the camelCase fields Wayfern uses in its fingerprint
   /// (`windowOuterWidth`, `screenAvailWidth`, …) — NOT the dotted
@@ -646,21 +645,19 @@ impl WayfernManager {
               .await
               .map_err(|e| e.to_string())
             {
-              Ok(worker) => {
-                match worker.local_port {
-                  Some(port) => {
-                    let local_url = format!("http://127.0.0.1:{}", port);
-                    (Some(local_url), Some(worker.id))
-                  }
-                  None => {
-                    log::warn!(
+              Ok(worker) => match worker.local_port {
+                Some(port) => {
+                  let local_url = format!("http://127.0.0.1:{}", port);
+                  (Some(local_url), Some(worker.id))
+                }
+                None => {
+                  log::warn!(
                       "Proxy worker started but reported no local_port; using socks upstream directly"
                     );
-                    let _ = crate::proxy_runner::stop_proxy_process(&worker.id).await;
-                    (config.proxy.clone(), None)
-                  }
+                  let _ = crate::proxy_runner::stop_proxy_process(&worker.id).await;
+                  (config.proxy.clone(), None)
                 }
-              }
+              },
               Err(e) => {
                 log::warn!(
                   "Could not start local proxy worker for geolocation ({e}); using the socks upstream directly"
@@ -671,12 +668,7 @@ impl WayfernManager {
           }
           _ => (config.proxy.clone(), None),
         };
-        Self::apply_geolocation(
-          &mut normalized,
-          geo_proxy.as_deref(),
-          config.geoip.as_ref(),
-        )
-        .await;
+        Self::apply_geolocation(&mut normalized, geo_proxy.as_deref(), config.geoip.as_ref()).await;
         // Clean up the temporary proxy worker if we started one.
         if let Some(worker_id) = temp_worker_id {
           let _ = crate::proxy_runner::stop_proxy_process(&worker_id).await;

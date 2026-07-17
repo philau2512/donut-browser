@@ -65,7 +65,8 @@
       "required": "必須",
       "unknownProfile": "不明",
       "mode": "モード",
-      "never": "一度もありません"
+      "never": "一度もありません",
+      "folder": "フォルダ"
     },
     "time": {
       "days": "日",
@@ -287,7 +288,9 @@
     "bulkDelete": {
       "title": "選択したプロファイルを削除",
       "description": "この操作は取り消せません。{{count}} 個のプロファイルと関連するすべてのデータが永久に削除されます。",
-      "confirmButton": "{{count}} 個のプロファイルを削除"
+      "confirmButton": "{{count}} 個のプロファイルを削除",
+      "success": "{{count}} 個のプロファイルを削除しました",
+      "failed": "{{count}} 個のプロファイルの削除に失敗しました"
     },
     "note": {
       "empty": "メモなし",
@@ -371,7 +374,12 @@
       "latestNeedsDownload": "最新バージョン ({{version}}) をダウンロードする必要があります",
       "latestAvailable": "最新バージョン ({{version}}) は利用可能です",
       "latestDownloading": "バージョン ({{version}}) をダウンロード中...",
-      "upgradeAvailable": "{{browser}} の新しいバージョン（{{version}}）が利用可能です。"
+      "upgradeAvailable": "{{browser}} の新しいバージョン（{{version}}）が利用可能です。",
+      "noneDownloaded": "No version downloaded",
+      "noneDownloadedNamed": "No {{browser}} browser version downloaded. Please download it first.",
+      "selectPlaceholder": "Select version",
+      "wayfernHint": "Version of the Wayfern (Chromium anti-detect) binary installed on this machine. There is no separate Core version.",
+      "camoufoxHint": "Version of the Camoufox (Firefox anti-detect) binary installed on this machine."
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "Wayfern搭載",
@@ -381,7 +389,38 @@
       "description": "ディスク上のプロファイルデータを暗号化します。起動に必要です。"
     },
     "downloadingSubtitle": "ダウンロード中…",
-    "browsersDownloading": "ブラウザをダウンロード中です。ダウンロードが完了するとプロファイルを作成できます。"
+    "browsersDownloading": "ブラウザをダウンロード中です。ダウンロードが完了するとプロファイルを作成できます。",
+    "subtitle": "Configure your browser anti-detect parameters, location and proxies",
+    "howToCreate": "How to create a profile",
+    "browserEngine": "Browser Engine",
+    "browserVersion": "Browser Version",
+    "downloadBrowser": "Download {{browser}}",
+    "fingerprintRequired": "Could not build a complete fingerprint. Please try again.",
+    "createdBatch": "Created {{count}} profiles",
+    "createdSingle": "Profile created successfully",
+    "cookieImportFailed": "Profile created, but cookie import failed for {{name}}",
+    "status": {
+      "none": "No status",
+      "afterCreateHint": "Status can be set from the profile list after creation."
+    },
+    "language": {
+      "fixedLabel": "Use fixed browser language",
+      "fixedHint": "When off, language follows proxy/IP location. When on, force navigator.language.",
+      "selectLabel": "Browser language",
+      "customLabel": "Custom locale (BCP 47)",
+      "autoPlaceholder": "Auto from location",
+      "autoFromLocation": "Auto from location"
+    },
+    "location": {
+      "autoLocationHint": "Automatically fetch location coordinates and timezone based on IP address",
+      "coordinatesTitle": "Geolocation Coordinates",
+      "timezoneTitle": "Timezone Settings"
+    },
+    "hardware": {
+      "screenPreset": "Screen Size Preset",
+      "screenAuto": "Auto (from fingerprint)",
+      "screenHint": "Selecting a preset locks resolution so regenerate/create will keep it."
+    }
   },
   "deleteDialog": {
     "title": "プロファイルを削除",
@@ -1058,7 +1097,14 @@
     "refreshFingerprint": "フィンガープリントを更新",
     "canvasNoiseSeedPlaceholder": "キャンバスフィンガープリント用のシード文字列を入力",
     "addFontsPlaceholder": "フォントを追加...",
-    "enterAsJson": "{{title}} を JSON で入力"
+    "enterAsJson": "{{title}} を JSON で入力",
+    "displayScaleTitle": "Display scale (Screen & DPR)",
+    "displayScaleHint": "On 2K/4K laptops, set DPR to match Windows display scale (e.g. 1.25 or 1.5). DPR 1.0 makes browser UI and page layout look tiny.",
+    "useHostDisplay": "Use this PC's display",
+    "screenSizePreset": "Screen size preset",
+    "screenSizePresetPlaceholder": "Select resolution",
+    "dprPlaceholder": "Select DPR",
+    "dprHint": "Matches Windows Scale (Settings → Display → Scale). 100%=1.0, 125%=1.25, 150%=1.5."
   },
   "warnings": {
     "windowResizeTitle": "カスタムウィンドウサイズ",

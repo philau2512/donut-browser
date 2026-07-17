@@ -3,7 +3,6 @@
 
 use crate::browser::camoufox::data;
 use crate::updater::geoip_downloader::GeoIPDownloader;
-use directories::BaseDirs;
 use maxminddb::{geoip2, Reader};
 use quick_xml::events::Event;
 use quick_xml::Reader as XmlReader;
@@ -70,13 +69,28 @@ impl Geolocation {
   /// Return key-value pairs suitable for a Camoufox fingerprint config.
   pub fn as_config(&self) -> Vec<(String, serde_json::Value)> {
     let mut pairs = vec![
-      ("geolocation:latitude".to_string(), serde_json::json!(self.latitude)),
-      ("geolocation:longitude".to_string(), serde_json::json!(self.longitude)),
-      ("timezone".to_string(), serde_json::Value::String(self.timezone.clone())),
+      (
+        "geolocation:latitude".to_string(),
+        serde_json::json!(self.latitude),
+      ),
+      (
+        "geolocation:longitude".to_string(),
+        serde_json::json!(self.longitude),
+      ),
+      (
+        "timezone".to_string(),
+        serde_json::Value::String(self.timezone.clone()),
+      ),
     ];
-    pairs.push(("locale:language".to_string(), serde_json::Value::String(self.locale.language.clone())));
+    pairs.push((
+      "locale:language".to_string(),
+      serde_json::Value::String(self.locale.language.clone()),
+    ));
     if let Some(ref region) = self.locale.region {
-      pairs.push(("locale:region".to_string(), serde_json::Value::String(region.clone())));
+      pairs.push((
+        "locale:region".to_string(),
+        serde_json::Value::String(region.clone()),
+      ));
     }
     pairs
   }

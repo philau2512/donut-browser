@@ -149,9 +149,8 @@ pub async fn get_api_server_status() -> Result<Option<u16>, String> {
 }
 
 /// Serialize a browser config (camoufox/wayfern) to JSON for an API response.
-/// Viewing a profile's fingerprint is available to every API caller; only
-/// editing it (via `update_profile`) and launching/killing profiles
-/// programmatically require an active paid plan.
+/// Same-host fingerprint view/edit is free. Cross-OS OS spoofing and
+/// programmatic launch/kill still require an active paid plan.
 fn config_to_api_value<T: serde::Serialize>(config: Option<&T>) -> Option<serde_json::Value> {
   serde_json::to_value(config?).ok()
 }

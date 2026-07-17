@@ -90,17 +90,16 @@ async fn update_profile(
   }
 
   if let Some(camoufox_config) = request.camoufox_config {
-    // Editing a profile's fingerprint config is part of the cross-OS fingerprint
-    // capability (GUI, API, MCP). Viewing it is free; mutating it is not.
-    if !crate::api::cloud_auth::CLOUD_AUTH
-      .can_use_cross_os_fingerprints()
-      .await
-    {
-      return Err(StatusCode::PAYMENT_REQUIRED);
-    }
+    // Same-host fingerprint edits are free. Cross-OS OS spoofing remains paid.
     let config: Result<CamoufoxConfig, _> = serde_json::from_value(camoufox_config);
     match config {
       Ok(config) => {
+        if !crate::api::cloud_auth::CLOUD_AUTH
+          .is_fingerprint_os_allowed(config.os.as_deref())
+          .await
+        {
+          return Err(StatusCode::PAYMENT_REQUIRED);
+        }
         if profile_manager
           .update_camoufox_config(state.app_handle.clone(), &id, config)
           .await

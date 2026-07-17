@@ -1,1 +1,1 @@
-export { WayfernConfigForm as SharedFingerprintConfigForm } from "@/components/wayfern-config-form";
+export { WayfernConfigForm as SharedFingerprintConfigForm } from "@/components/profile/camoufox/wayfern-config-form";

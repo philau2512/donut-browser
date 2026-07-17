@@ -65,7 +65,8 @@
       "required": "필수",
       "unknownProfile": "알 수 없음",
       "mode": "모드",
-      "never": "안 함"
+      "never": "안 함",
+      "folder": "폴더"
     },
     "time": {
       "days": "일",
@@ -287,7 +288,9 @@
     "bulkDelete": {
       "title": "선택한 프로필 삭제",
       "description": "이 작업은 취소할 수 없습니다. {{count}}개의 프로필과 관련된 모든 데이터가 영구적으로 삭제됩니다.",
-      "confirmButton": "{{count}}개 프로필 삭제"
+      "confirmButton": "{{count}}개 프로필 삭제",
+      "success": "{{count}}개 프로필을 삭제했습니다",
+      "failed": "{{count}}개 프로필 삭제에 실패했습니다"
     },
     "note": {
       "empty": "메모 없음",
@@ -371,7 +374,12 @@
       "latestNeedsDownload": "최신 버전 ({{version}})을 다운로드해야 합니다",
       "latestAvailable": "최신 버전 ({{version}})을 사용할 수 있습니다",
       "latestDownloading": "버전 ({{version}})을 다운로드하는 중...",
-      "upgradeAvailable": "{{browser}}의 최신 버전({{version}})을 사용할 수 있습니다."
+      "upgradeAvailable": "{{browser}}의 최신 버전({{version}})을 사용할 수 있습니다.",
+      "noneDownloaded": "No version downloaded",
+      "noneDownloadedNamed": "No {{browser}} browser version downloaded. Please download it first.",
+      "selectPlaceholder": "Select version",
+      "wayfernHint": "Version of the Wayfern (Chromium anti-detect) binary installed on this machine. There is no separate Core version.",
+      "camoufoxHint": "Version of the Camoufox (Firefox anti-detect) binary installed on this machine."
     },
     "chromiumLabel": "크로미움",
     "chromiumSubtitle": "Wayfern 기반",
@@ -381,7 +389,38 @@
       "description": "디스크에 저장된 프로필 데이터를 암호화합니다. 실행하려면 필요합니다."
     },
     "downloadingSubtitle": "다운로드 중…",
-    "browsersDownloading": "브라우저를 아직 다운로드하는 중입니다. 다운로드가 완료되면 프로필을 만들 수 있습니다."
+    "browsersDownloading": "브라우저를 아직 다운로드하는 중입니다. 다운로드가 완료되면 프로필을 만들 수 있습니다.",
+    "subtitle": "Configure your browser anti-detect parameters, location and proxies",
+    "howToCreate": "How to create a profile",
+    "browserEngine": "Browser Engine",
+    "browserVersion": "Browser Version",
+    "downloadBrowser": "Download {{browser}}",
+    "fingerprintRequired": "Could not build a complete fingerprint. Please try again.",
+    "createdBatch": "Created {{count}} profiles",
+    "createdSingle": "Profile created successfully",
+    "cookieImportFailed": "Profile created, but cookie import failed for {{name}}",
+    "status": {
+      "none": "No status",
+      "afterCreateHint": "Status can be set from the profile list after creation."
+    },
+    "language": {
+      "fixedLabel": "Use fixed browser language",
+      "fixedHint": "When off, language follows proxy/IP location. When on, force navigator.language.",
+      "selectLabel": "Browser language",
+      "customLabel": "Custom locale (BCP 47)",
+      "autoPlaceholder": "Auto from location",
+      "autoFromLocation": "Auto from location"
+    },
+    "location": {
+      "autoLocationHint": "Automatically fetch location coordinates and timezone based on IP address",
+      "coordinatesTitle": "Geolocation Coordinates",
+      "timezoneTitle": "Timezone Settings"
+    },
+    "hardware": {
+      "screenPreset": "Screen Size Preset",
+      "screenAuto": "Auto (from fingerprint)",
+      "screenHint": "Selecting a preset locks resolution so regenerate/create will keep it."
+    }
   },
   "deleteDialog": {
     "title": "프로필 삭제",
@@ -1058,7 +1097,14 @@
     "refreshFingerprint": "핑거프린트 새로 고침",
     "canvasNoiseSeedPlaceholder": "캔버스 핑거프린트의 시드 문자열 입력",
     "addFontsPlaceholder": "글꼴 추가...",
-    "enterAsJson": "{{title}}을(를) JSON으로 입력"
+    "enterAsJson": "{{title}}을(를) JSON으로 입력",
+    "displayScaleTitle": "Display scale (Screen & DPR)",
+    "displayScaleHint": "On 2K/4K laptops, set DPR to match Windows display scale (e.g. 1.25 or 1.5). DPR 1.0 makes browser UI and page layout look tiny.",
+    "useHostDisplay": "Use this PC's display",
+    "screenSizePreset": "Screen size preset",
+    "screenSizePresetPlaceholder": "Select resolution",
+    "dprPlaceholder": "Select DPR",
+    "dprHint": "Matches Windows Scale (Settings → Display → Scale). 100%=1.0, 125%=1.25, 150%=1.5."
   },
   "warnings": {
     "windowResizeTitle": "사용자 지정 창 크기",

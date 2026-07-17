@@ -158,6 +158,7 @@ export function QuickProxyDialog({
 
   const [isChecking, setIsChecking] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const [checkResult, setCheckResult] = useState<ProxyCheckResult | null>(null);
   const [hasBeenChecked, setHasBeenChecked] = useState(false);
 
@@ -255,6 +256,31 @@ export function QuickProxyDialog({
       );
     } finally {
       setIsChecking(false);
+    }
+  };
+
+  const handleClearProxy = async () => {
+    if (!profile?.proxy_id) return;
+
+    setIsClearing(true);
+    try {
+      // Unassign only — keep the stored proxy for reuse elsewhere.
+      await invoke("update_profile_proxy", {
+        profileId: profile.id,
+        proxyId: null,
+      });
+      toast.success(t("proxies.quickEdit.clearSuccess"));
+      await emit("profile-updated");
+      onClose();
+    } catch (error) {
+      console.error("Failed to clear proxy:", error);
+      toast.error(
+        t("proxies.quickEdit.clearFailed", {
+          error: translateBackendError(t, error),
+        }),
+      );
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -646,24 +672,39 @@ export function QuickProxyDialog({
           )}
         </div>
 
-        <DialogFooter className="border-t border-border pt-3 gap-2">
-          <LoadingButton
-            variant="outline"
-            isLoading={isChecking}
-            onClick={handleCheck}
-            disabled={isSaving || !isFormValid}
-            className="flex-1"
-          >
-            {t("proxies.quickEdit.checkButton")}
-          </LoadingButton>
-          <LoadingButton
-            isLoading={isSaving}
-            onClick={handleSave}
-            disabled={isChecking || !isFormValid}
-            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {t("proxies.quickEdit.saveButton")}
-          </LoadingButton>
+        <DialogFooter className="flex-col gap-2 border-t border-border pt-3 sm:flex-col sm:space-x-0">
+          {profile?.proxy_id && (
+            <LoadingButton
+              variant="outline"
+              isLoading={isClearing}
+              onClick={() => {
+                void handleClearProxy();
+              }}
+              disabled={isChecking || isSaving || isClearing}
+              className="w-full text-muted-foreground hover:text-foreground"
+            >
+              {t("proxies.quickEdit.noProxyButton")}
+            </LoadingButton>
+          )}
+          <div className="flex w-full gap-2">
+            <LoadingButton
+              variant="outline"
+              isLoading={isChecking}
+              onClick={handleCheck}
+              disabled={isSaving || isClearing || !isFormValid}
+              className="flex-1"
+            >
+              {t("proxies.quickEdit.checkButton")}
+            </LoadingButton>
+            <LoadingButton
+              isLoading={isSaving}
+              onClick={handleSave}
+              disabled={isChecking || isClearing || !isFormValid}
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {t("proxies.quickEdit.saveButton")}
+            </LoadingButton>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

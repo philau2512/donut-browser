@@ -28,7 +28,22 @@ impl StorageSettings {
     let content = std::fs::read_to_string(&settings_path)
       .map_err(|e| format!("Failed to read storage settings: {e}"))?;
 
-    serde_json::from_str(&content).map_err(|e| format!("Failed to parse storage settings: {e}"))
+    let mut settings: Self = serde_json::from_str(&content)
+      .map_err(|e| format!("Failed to parse storage settings: {e}"))?;
+
+    // Check if the custom path exists and is a directory.
+    // If it doesn't exist or is not a directory, fallback to None (default data directory).
+    if let Some(ref path) = settings.custom_path {
+      if !path.exists() || !path.is_dir() {
+        log::warn!(
+          "Custom storage path '{}' does not exist or is not a directory. Falling back to default data directory.",
+          path.display()
+        );
+        settings.custom_path = None;
+      }
+    }
+
+    Ok(settings)
   }
 
   /// Save storage settings to disk (settings_dir/storage.json)

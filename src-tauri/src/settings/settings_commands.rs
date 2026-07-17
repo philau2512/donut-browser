@@ -467,12 +467,12 @@ mod tests {
     let default_sorting = TableSortingSettings::default();
 
     assert_eq!(
-      default_sorting.column, "name",
-      "Default sort column should be name"
+      default_sorting.column, "created_at",
+      "Default sort column should be created_at"
     );
     assert_eq!(
-      default_sorting.direction, "asc",
-      "Default sort direction should be asc"
+      default_sorting.direction, "desc",
+      "Default sort direction should be desc (newest first)"
     );
   }
 
@@ -547,8 +547,14 @@ mod tests {
     );
 
     let sorting = result.unwrap();
-    assert_eq!(sorting.column, "name", "Should return default sorting");
-    assert_eq!(sorting.direction, "asc", "Should return default direction");
+    assert_eq!(
+      sorting.column, "created_at",
+      "Should return default sorting"
+    );
+    assert_eq!(
+      sorting.direction, "desc",
+      "Should return default direction"
+    );
   }
 
   #[test]

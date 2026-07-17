@@ -242,8 +242,8 @@ export function ProfileInfoDialog({
       onClick: () => {
         handleAction(() => onConfigureCamoufox?.(profile));
       },
-      disabled: isDisabled || !crossOsUnlocked,
-      proBadge: !crossOsUnlocked,
+      // Same-host fingerprint view/edit is free; cross-OS stays gated in form/BE.
+      disabled: isDisabled,
       runningBadge: isRunning,
       hidden: !isCamoufoxOrWayfern || !onConfigureCamoufox,
     },
@@ -394,6 +394,7 @@ export function ProfileInfoDialog({
           ProfileIcon={ProfileIcon}
           isRunning={isRunning}
           isDisabled={isDisabled}
+          crossOsUnlocked={crossOsUnlocked}
           networkLabel={networkLabel}
           groupName={groupName}
           extensionGroupName={extensionGroupName}

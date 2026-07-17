@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LoadingButton } from "@/components/shared/loading-button";
 import { SharedFingerprintConfigForm } from "@/components/shared-fingerprint-config-form";
 import {
   Dialog,
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { BrowserProfile, WayfernConfig, WayfernOS } from "@/types";
-import { LoadingButton } from "./loading-button";
 import { RippleButton } from "./ui/ripple";
 
 const getCurrentOS = (): WayfernOS => {
@@ -136,7 +136,7 @@ export function WayfernConfigDialog({
               forceAdvanced={true}
               readOnly={isRunning}
               crossOsUnlocked={crossOsUnlocked}
-              limitedMode={!crossOsUnlocked}
+              limitedMode={false}
               profileVersion={profile.version}
               profileBrowser="wayfern"
             />

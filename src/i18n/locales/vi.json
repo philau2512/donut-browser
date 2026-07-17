@@ -68,7 +68,8 @@
       "required": "Bắt buộc",
       "unknownProfile": "Không xác định",
       "mode": "Chế độ",
-      "never": "Không bao giờ"
+      "never": "Không bao giờ",
+      "folder": "Thư mục"
     },
     "time": {
       "days": "ngày",
@@ -299,7 +300,9 @@
     "bulkDelete": {
       "title": "Xóa các hồ sơ đã chọn",
       "description": "Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn {{count}} hồ sơ và tất cả dữ liệu liên quan.",
-      "confirmButton": "Xóa {{count}} hồ sơ"
+      "confirmButton": "Xóa {{count}} hồ sơ",
+      "success": "Đã xóa {{count}} hồ sơ",
+      "failed": "Xóa {{count}} hồ sơ thất bại"
     },
     "note": {
       "placeholder": "Thêm ghi chú...",
@@ -411,7 +414,12 @@
       "latestNeedsDownload": "Phiên bản mới nhất ({{version}}) cần được tải xuống",
       "latestAvailable": "Phiên bản mới nhất ({{version}}) đã sẵn sàng",
       "latestDownloading": "Đang tải xuống phiên bản ({{version}})...",
-      "upgradeAvailable": "Đã có phiên bản mới hơn ({{version}}) của {{browser}}."
+      "upgradeAvailable": "Đã có phiên bản mới hơn ({{version}}) của {{browser}}.",
+      "noneDownloaded": "Chưa tải phiên bản nào",
+      "noneDownloadedNamed": "Chưa tải phiên bản {{browser}}. Vui lòng tải xuống trước.",
+      "selectPlaceholder": "Chọn phiên bản",
+      "wayfernHint": "Phiên bản binary Wayfern (Chromium anti-detect) đã cài trên máy. Không có Core version riêng.",
+      "camoufoxHint": "Phiên bản binary Camoufox (Firefox anti-detect) đã cài trên máy."
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "Dựa trên Wayfern",
@@ -438,7 +446,38 @@
       "other": "Khác"
     },
     "quantity": "Số lượng",
-    "getFingerprint": "Lấy vân tay mới"
+    "getFingerprint": "Lấy vân tay mới",
+    "subtitle": "Cấu hình tham số anti-detect, vị trí và proxy cho trình duyệt",
+    "howToCreate": "Cách tạo hồ sơ",
+    "browserEngine": "Engine trình duyệt",
+    "browserVersion": "Phiên bản trình duyệt",
+    "downloadBrowser": "Tải {{browser}}",
+    "fingerprintRequired": "Không tạo được fingerprint đầy đủ. Vui lòng thử lại.",
+    "createdBatch": "Đã tạo {{count}} hồ sơ",
+    "createdSingle": "Tạo hồ sơ thành công",
+    "cookieImportFailed": "Đã tạo hồ sơ nhưng import cookie thất bại cho {{name}}",
+    "status": {
+      "none": "Không có trạng thái",
+      "afterCreateHint": "Có thể gán trạng thái từ danh sách hồ sơ sau khi tạo."
+    },
+    "language": {
+      "fixedLabel": "Cố định ngôn ngữ trình duyệt",
+      "fixedHint": "Tắt: ngôn ngữ theo vị trí proxy/IP. Bật: ép navigator.language.",
+      "selectLabel": "Ngôn ngữ trình duyệt",
+      "customLabel": "Locale tùy chỉnh (BCP 47)",
+      "autoPlaceholder": "Tự động theo vị trí",
+      "autoFromLocation": "Tự động theo vị trí"
+    },
+    "location": {
+      "autoLocationHint": "Tự động lấy tọa độ và múi giờ theo địa chỉ IP",
+      "coordinatesTitle": "Tọa độ địa lý",
+      "timezoneTitle": "Cài đặt múi giờ"
+    },
+    "hardware": {
+      "screenPreset": "Preset độ phân giải",
+      "screenAuto": "Tự động (theo fingerprint)",
+      "screenHint": "Chọn preset sẽ khóa độ phân giải; regenerate/create sẽ giữ nguyên."
+    }
   },
   "deleteDialog": {
     "title": "Xóa hồ sơ",
@@ -595,7 +634,10 @@
       "checkHostLabel": "Host kiểm tra proxy",
       "checkBeforeStart": "Kiểm tra proxy trước khi khởi chạy profile.",
       "checkButton": "Kiểm tra Proxy",
-      "saveButton": "Lưu Proxy"
+      "saveButton": "Lưu Proxy",
+      "noProxyButton": "Không dùng proxy",
+      "clearSuccess": "Đã gỡ proxy khỏi profile",
+      "clearFailed": "Gỡ proxy thất bại: {{error}}"
     }
   },
   "groups": {
@@ -1105,7 +1147,14 @@
     "availableHeight": "Chiều cao khả dụng",
     "colorDepth": "Độ sâu màu",
     "pixelDepth": "Độ sâu pixel",
-    "devicePixelRatio": "Tỷ lệ pixel thiết bị",
+    "devicePixelRatio": "Tỷ lệ pixel thiết bị (DPR)",
+    "displayScaleTitle": "Tỷ lệ hiển thị (Màn hình & DPR)",
+    "displayScaleHint": "Trên laptop 2K/4K, đặt DPR theo Scale Windows (vd 1.25 hoặc 1.5). DPR 1.0 khiến UI trình duyệt và layout trang trông rất nhỏ.",
+    "useHostDisplay": "Dùng màn hình máy này",
+    "screenSizePreset": "Preset độ phân giải",
+    "screenSizePresetPlaceholder": "Chọn độ phân giải",
+    "dprPlaceholder": "Chọn DPR",
+    "dprHint": "Khớp Scale Windows (Cài đặt → Hệ thống → Màn hình → Tỷ lệ). 100%=1.0, 125%=1.25, 150%=1.5.",
     "windowProperties": "Thuộc tính cửa sổ",
     "outerWidth": "Chiều rộng ngoài",
     "outerHeight": "Chiều cao ngoài",

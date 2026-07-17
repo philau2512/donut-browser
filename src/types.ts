@@ -7,7 +7,7 @@ export interface ProxySettings {
 }
 
 export interface TableSortingSettings {
-  column: string; // "name", "note", "status"
+  column: string; // "name", "created_at", "note", "status"
   direction: string; // "asc" or "desc"
 }
 

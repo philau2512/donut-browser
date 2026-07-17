@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,28 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { WayfernConfig, WayfernFingerprintConfig } from "@/types";
 
+const SCREEN_PRESETS = [
+  { label: "1920 × 1080 (1080p)", width: 1920, height: 1080 },
+  { label: "2560 × 1440 (2K)", width: 2560, height: 1440 },
+  { label: "2560 × 1600", width: 2560, height: 1600 },
+  { label: "2880 × 1800", width: 2880, height: 1800 },
+  { label: "3840 × 2160 (4K)", width: 3840, height: 2160 },
+  { label: "1366 × 768", width: 1366, height: 768 },
+  { label: "1440 × 900", width: 1440, height: 900 },
+  { label: "1536 × 864", width: 1536, height: 864 },
+  { label: "1280 × 720 (720p)", width: 1280, height: 720 },
+];
+
+const DPR_PRESETS = [
+  { value: "1", label: "1.0 (100%)" },
+  { value: "1.25", label: "1.25 (125%)" },
+  { value: "1.5", label: "1.5 (150%)" },
+  { value: "1.75", label: "1.75 (175%)" },
+  { value: "2", label: "2.0 (200% / Retina)" },
+  { value: "2.5", label: "2.5" },
+  { value: "3", label: "3.0" },
+];
+
 interface WayfernFingerprintFieldsProps {
   config: WayfernConfig;
   onConfigChange: (key: keyof WayfernConfig, value: unknown) => void;
@@ -20,6 +43,9 @@ interface WayfernFingerprintFieldsProps {
   updateFingerprintConfig: (
     key: keyof WayfernFingerprintConfig,
     value: unknown,
+  ) => void;
+  updateFingerprintConfigs?: (
+    updates: Partial<WayfernFingerprintConfig>,
   ) => void;
   readOnly: boolean;
   t: (key: string, options?: Record<string, unknown>) => string;
@@ -30,6 +56,7 @@ export function WayfernFingerprintFields({
   onConfigChange,
   fingerprintConfig,
   updateFingerprintConfig,
+  updateFingerprintConfigs,
   readOnly,
   t,
 }: WayfernFingerprintFieldsProps) {
@@ -38,8 +65,172 @@ export function WayfernFingerprintFields({
     onConfigChange("block_webrtc", val === "disable");
   };
 
+  const applyUpdates = (updates: Partial<WayfernFingerprintConfig>) => {
+    if (updateFingerprintConfigs) {
+      updateFingerprintConfigs(updates);
+      return;
+    }
+    for (const [key, value] of Object.entries(updates)) {
+      updateFingerprintConfig(key as keyof WayfernFingerprintConfig, value);
+    }
+  };
+
+  const matchedPreset = SCREEN_PRESETS.find(
+    (r) =>
+      r.width === fingerprintConfig.screenWidth &&
+      r.height === fingerprintConfig.screenHeight,
+  );
+  const screenPresetVal = matchedPreset
+    ? `${matchedPreset.width}x${matchedPreset.height}`
+    : fingerprintConfig.screenWidth
+      ? "custom"
+      : "none";
+
+  const dprValue =
+    fingerprintConfig.devicePixelRatio != null
+      ? String(fingerprintConfig.devicePixelRatio)
+      : "";
+  const dprIsPreset = DPR_PRESETS.some((p) => p.value === dprValue);
+  const dprSelectVal = dprValue ? (dprIsPreset ? dprValue : "custom") : "none";
+
+  const applyScreenPreset = (val: string) => {
+    if (val === "none" || val === "custom") return;
+    const [wStr, hStr] = val.split("x");
+    const w = parseInt(wStr, 10);
+    const h = parseInt(hStr, 10);
+    if (!Number.isFinite(w) || !Number.isFinite(h)) return;
+    applyUpdates({
+      screenWidth: w,
+      screenHeight: h,
+      screenAvailWidth: w,
+      screenAvailHeight: h - 40,
+      windowOuterWidth: w,
+      windowOuterHeight: h,
+      windowInnerWidth: w,
+      windowInnerHeight: h - 40,
+    });
+  };
+
+  const applyHostDisplay = () => {
+    if (typeof window === "undefined" || !window.screen) return;
+    const w = window.screen.width;
+    const h = window.screen.height;
+    const availW = window.screen.availWidth || w;
+    const availH = window.screen.availHeight || h;
+    const dpr =
+      typeof window.devicePixelRatio === "number" && window.devicePixelRatio > 0
+        ? window.devicePixelRatio
+        : 1;
+    applyUpdates({
+      screenWidth: w,
+      screenHeight: h,
+      screenAvailWidth: availW,
+      screenAvailHeight: availH,
+      windowOuterWidth: Math.min(w, availW),
+      windowOuterHeight: Math.min(h, availH),
+      windowInnerWidth: Math.min(w, availW),
+      windowInnerHeight: Math.max(600, Math.min(h, availH) - 80),
+      devicePixelRatio: Math.round(dpr * 100) / 100,
+    });
+  };
+
   return (
     <>
+      {/* Quick Display / DPR — top of form so Edit Profile users find it fast */}
+      <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="space-y-0.5">
+            <Label className="text-sm font-semibold">
+              {t("fingerprint.displayScaleTitle")}
+            </Label>
+            <p className="text-xs text-muted-foreground max-w-prose">
+              {t("fingerprint.displayScaleHint")}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs shrink-0"
+            disabled={readOnly}
+            onClick={applyHostDisplay}
+          >
+            {t("fingerprint.useHostDisplay")}
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="screen-preset-quick">
+              {t("fingerprint.screenSizePreset")}
+            </Label>
+            <Select
+              value={screenPresetVal}
+              onValueChange={applyScreenPreset}
+              disabled={readOnly}
+            >
+              <SelectTrigger id="screen-preset-quick" className="h-9">
+                <SelectValue
+                  placeholder={t("fingerprint.screenSizePresetPlaceholder")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none" disabled>
+                  {t("fingerprint.screenSizePresetPlaceholder")}
+                </SelectItem>
+                {SCREEN_PRESETS.map((r) => (
+                  <SelectItem key={r.label} value={`${r.width}x${r.height}`}>
+                    {r.label}
+                  </SelectItem>
+                ))}
+                {screenPresetVal === "custom" && (
+                  <SelectItem value="custom">
+                    {t("common.labels.custom")} ({fingerprintConfig.screenWidth}
+                    ×{fingerprintConfig.screenHeight})
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dpr-quick">
+              {t("fingerprint.devicePixelRatio")}
+            </Label>
+            <Select
+              value={dprSelectVal}
+              onValueChange={(val) => {
+                if (val === "none" || val === "custom") return;
+                updateFingerprintConfig("devicePixelRatio", parseFloat(val));
+              }}
+              disabled={readOnly}
+            >
+              <SelectTrigger id="dpr-quick" className="h-9">
+                <SelectValue placeholder={t("fingerprint.dprPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none" disabled>
+                  {t("fingerprint.dprPlaceholder")}
+                </SelectItem>
+                {DPR_PRESETS.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+                {dprSelectVal === "custom" && (
+                  <SelectItem value="custom">
+                    {t("common.labels.custom")} ({dprValue})
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">
+              {t("fingerprint.dprHint")}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* WebRTC Configuration */}
       <div className="space-y-3">
         <Label>{t("fingerprint.webrtcMode")}</Label>
@@ -263,10 +454,39 @@ export function WayfernFingerprintFields({
             <Label htmlFor="device-pixel-ratio">
               {t("fingerprint.devicePixelRatio")}
             </Label>
+            <Select
+              value={dprSelectVal}
+              onValueChange={(val) => {
+                if (val === "none" || val === "custom") return;
+                updateFingerprintConfig("devicePixelRatio", parseFloat(val));
+              }}
+              disabled={readOnly}
+            >
+              <SelectTrigger id="device-pixel-ratio">
+                <SelectValue placeholder={t("fingerprint.dprPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none" disabled>
+                  {t("fingerprint.dprPlaceholder")}
+                </SelectItem>
+                {DPR_PRESETS.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+                {dprSelectVal === "custom" && (
+                  <SelectItem value="custom">
+                    {t("common.labels.custom")} ({dprValue})
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            {/* Allow fine-tuning non-preset values */}
             <Input
-              id="device-pixel-ratio"
               type="number"
-              step="0.1"
+              step="0.05"
+              min={0.5}
+              max={4}
               value={fingerprintConfig.devicePixelRatio ?? ""}
               onChange={(e) => {
                 updateFingerprintConfig(
@@ -275,8 +495,9 @@ export function WayfernFingerprintFields({
                 );
               }}
               placeholder={t("common.placeholders.example", {
-                value: "1.0",
+                value: "1.5",
               })}
+              disabled={readOnly}
             />
           </div>
           <div className="space-y-2">

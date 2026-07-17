@@ -26,6 +26,10 @@ const mcpOnlyCommands = [
   "validate_automation_flow",
   "open_profile_with_automation",
   "close_profile_with_cleanup",
+  // Runtime feature flags — MCP/API only; no frontend UI yet
+  // (see src-tauri/src/settings/feature_flags.rs)
+  "get_feature_flags",
+  "set_feature_flag",
 ];
 
 const verbose = process.argv.includes('--verbose') || process.argv.includes('-v');

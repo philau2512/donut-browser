@@ -249,13 +249,7 @@ impl McpServer {
     &self,
     arguments: &serde_json::Value,
   ) -> Result<serde_json::Value, McpError> {
-    if !CLOUD_AUTH.can_use_cross_os_fingerprints().await {
-      return Err(McpError {
-        code: -32000,
-        message: "Fingerprint editing requires a plan that includes it".to_string(),
-      });
-    }
-
+    // Same-host fingerprint edits are free. Cross-OS is checked below via OS.
     let profile_id = arguments
       .get("profile_id")
       .and_then(|v| v.as_str())

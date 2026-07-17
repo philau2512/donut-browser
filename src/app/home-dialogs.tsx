@@ -137,7 +137,6 @@ interface HomeDialogsProps {
     React.SetStateAction<BrowserProfile | null>
   >;
   windowResizeWarningOpen: boolean;
-  windowResizeWarningBrowserType: string | undefined;
   quickProxyEditProfile: BrowserProfile | null;
   setQuickProxyEditProfile: React.Dispatch<
     React.SetStateAction<BrowserProfile | null>
@@ -265,7 +264,6 @@ export function HomeDialogs({
   syncLeaderProfile,
   setSyncLeaderProfile,
   windowResizeWarningOpen,
-  windowResizeWarningBrowserType,
   quickProxyEditProfile,
   setQuickProxyEditProfile,
   selectedGroupId,
@@ -582,7 +580,6 @@ export function HomeDialogs({
 
       <WindowResizeWarningDialog
         isOpen={windowResizeWarningOpen}
-        browserType={windowResizeWarningBrowserType}
         onResult={handleWindowResizeWarningResult}
       />
 

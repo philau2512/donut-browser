@@ -301,7 +301,6 @@ export default function Home() {
     setPasswordDialogProfile,
     passwordDialogMode,
     windowResizeWarningOpen,
-    windowResizeWarningBrowserType,
     camoufoxConfigDialogOpen,
     setCamoufoxConfigDialogOpen,
     currentProfileForCamoufoxConfig,
@@ -856,7 +855,6 @@ export default function Home() {
         syncLeaderProfile={syncLeaderProfile}
         setSyncLeaderProfile={setSyncLeaderProfile}
         windowResizeWarningOpen={windowResizeWarningOpen}
-        windowResizeWarningBrowserType={windowResizeWarningBrowserType}
         quickProxyEditProfile={quickProxyEditProfile}
         setQuickProxyEditProfile={setQuickProxyEditProfile}
         selectedGroupId={selectedGroupId}

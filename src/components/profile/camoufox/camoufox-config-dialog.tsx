@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -173,7 +173,7 @@ export function CamoufoxConfigDialog({
                 forceAdvanced={true}
                 readOnly={isRunning}
                 crossOsUnlocked={crossOsUnlocked}
-                limitedMode={!crossOsUnlocked}
+                limitedMode={false}
                 profileVersion={profile.version}
                 profileBrowser="wayfern"
               />
@@ -185,7 +185,7 @@ export function CamoufoxConfigDialog({
                 readOnly={isRunning}
                 browserType="camoufox"
                 crossOsUnlocked={crossOsUnlocked}
-                limitedMode={!crossOsUnlocked}
+                limitedMode={false}
                 profileVersion={profile.version}
                 profileBrowser="camoufox"
               />

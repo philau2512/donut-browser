@@ -135,18 +135,20 @@ export function HardwareTab({
       r.width === fingerprintConfig.screenWidth &&
       r.height === fingerprintConfig.screenHeight,
   );
+  // Do NOT fake-default to 1920x1080 when unset — that made UI look locked while BE still randomized
   const selectedPresetVal = matchedPreset
     ? `${matchedPreset.width}x${matchedPreset.height}`
     : fingerprintConfig.screenWidth
       ? "custom"
-      : "1920x1080";
+      : "auto";
 
   const handlePresetChange = (val: string) => {
-    if (val === "custom") return;
+    if (val === "auto" || val === "custom") return;
     const [wStr, hStr] = val.split("x");
     const w = parseInt(wStr, 10);
     const h = parseInt(hStr, 10);
 
+    // Writes real screen fields into fingerprint overrides (survives regenerate)
     updateFingerprintConfigs({
       screenWidth: w,
       screenHeight: h,
@@ -323,24 +325,40 @@ export function HardwareTab({
         <TabsContent value="screen" className="space-y-6 outline-none">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="screen-preset">Screen Size Preset</Label>
+              <Label htmlFor="screen-preset">
+                {t("createProfile.hardware.screenPreset")}
+              </Label>
               <Select
                 disabled={isEditingDisabled}
                 value={selectedPresetVal}
                 onValueChange={handlePresetChange}
               >
                 <SelectTrigger id="screen-preset" className="h-9">
-                  <SelectValue />
+                  <SelectValue
+                    placeholder={t("createProfile.hardware.screenAuto")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="auto">
+                    {t("createProfile.hardware.screenAuto")}
+                  </SelectItem>
                   {SCREEN_RESOLUTIONS.map((r) => (
                     <SelectItem key={r.label} value={`${r.width}x${r.height}`}>
                       {r.label}
                     </SelectItem>
                   ))}
-                  <SelectItem value="custom">Custom...</SelectItem>
+                  {selectedPresetVal === "custom" && (
+                    <SelectItem value="custom">
+                      {t("common.labels.custom")} (
+                      {fingerprintConfig.screenWidth}x
+                      {fingerprintConfig.screenHeight})
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
+              <p className="text-[11px] text-muted-foreground">
+                {t("createProfile.hardware.screenHint")}
+              </p>
             </div>
 
             <div className="space-y-2">

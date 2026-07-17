@@ -65,7 +65,8 @@
       "required": "Requerido",
       "unknownProfile": "Desconocido",
       "mode": "Modo",
-      "never": "Nunca"
+      "never": "Nunca",
+      "folder": "Carpeta"
     },
     "time": {
       "days": "días",
@@ -287,7 +288,9 @@
     "bulkDelete": {
       "title": "Eliminar perfiles seleccionados",
       "description": "Esta acción no se puede deshacer. Eliminará permanentemente {{count}} perfil(es) y todos los datos asociados.",
-      "confirmButton": "Eliminar {{count}} perfil(es)"
+      "confirmButton": "Eliminar {{count}} perfil(es)",
+      "success": "Se eliminaron {{count}} perfil(es)",
+      "failed": "Error al eliminar {{count}} perfil(es)"
     },
     "note": {
       "empty": "Sin nota",
@@ -371,7 +374,12 @@
       "latestNeedsDownload": "La última versión ({{version}}) necesita ser descargada",
       "latestAvailable": "La última versión ({{version}}) está disponible",
       "latestDownloading": "Descargando versión ({{version}})...",
-      "upgradeAvailable": "Hay una versión más reciente ({{version}}) de {{browser}} disponible."
+      "upgradeAvailable": "Hay una versión más reciente ({{version}}) de {{browser}} disponible.",
+      "noneDownloaded": "No version downloaded",
+      "noneDownloadedNamed": "No {{browser}} browser version downloaded. Please download it first.",
+      "selectPlaceholder": "Select version",
+      "wayfernHint": "Version of the Wayfern (Chromium anti-detect) binary installed on this machine. There is no separate Core version.",
+      "camoufoxHint": "Version of the Camoufox (Firefox anti-detect) binary installed on this machine."
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "Impulsado por Wayfern",
@@ -381,7 +389,38 @@
       "description": "Cifra los datos del perfil en disco. Necesario para abrirlo."
     },
     "downloadingSubtitle": "Descargando…",
-    "browsersDownloading": "Los navegadores aún se están descargando. La creación de perfiles estará disponible cuando termine una descarga."
+    "browsersDownloading": "Los navegadores aún se están descargando. La creación de perfiles estará disponible cuando termine una descarga.",
+    "subtitle": "Configure your browser anti-detect parameters, location and proxies",
+    "howToCreate": "How to create a profile",
+    "browserEngine": "Browser Engine",
+    "browserVersion": "Browser Version",
+    "downloadBrowser": "Download {{browser}}",
+    "fingerprintRequired": "Could not build a complete fingerprint. Please try again.",
+    "createdBatch": "Created {{count}} profiles",
+    "createdSingle": "Profile created successfully",
+    "cookieImportFailed": "Profile created, but cookie import failed for {{name}}",
+    "status": {
+      "none": "No status",
+      "afterCreateHint": "Status can be set from the profile list after creation."
+    },
+    "language": {
+      "fixedLabel": "Use fixed browser language",
+      "fixedHint": "When off, language follows proxy/IP location. When on, force navigator.language.",
+      "selectLabel": "Browser language",
+      "customLabel": "Custom locale (BCP 47)",
+      "autoPlaceholder": "Auto from location",
+      "autoFromLocation": "Auto from location"
+    },
+    "location": {
+      "autoLocationHint": "Automatically fetch location coordinates and timezone based on IP address",
+      "coordinatesTitle": "Geolocation Coordinates",
+      "timezoneTitle": "Timezone Settings"
+    },
+    "hardware": {
+      "screenPreset": "Screen Size Preset",
+      "screenAuto": "Auto (from fingerprint)",
+      "screenHint": "Selecting a preset locks resolution so regenerate/create will keep it."
+    }
   },
   "deleteDialog": {
     "title": "Eliminar Perfil",
@@ -1058,7 +1097,14 @@
     "refreshFingerprint": "Actualizar Huella Digital",
     "canvasNoiseSeedPlaceholder": "Introduce una semilla para la huella digital del canvas",
     "addFontsPlaceholder": "Agregar fuentes...",
-    "enterAsJson": "Ingresa {{title}} como JSON"
+    "enterAsJson": "Ingresa {{title}} como JSON",
+    "displayScaleTitle": "Display scale (Screen & DPR)",
+    "displayScaleHint": "On 2K/4K laptops, set DPR to match Windows display scale (e.g. 1.25 or 1.5). DPR 1.0 makes browser UI and page layout look tiny.",
+    "useHostDisplay": "Use this PC's display",
+    "screenSizePreset": "Screen size preset",
+    "screenSizePresetPlaceholder": "Select resolution",
+    "dprPlaceholder": "Select DPR",
+    "dprHint": "Matches Windows Scale (Settings → Display → Scale). 100%=1.0, 125%=1.25, 150%=1.5."
   },
   "warnings": {
     "windowResizeTitle": "Dimensiones de ventana personalizadas",

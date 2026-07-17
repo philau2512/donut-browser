@@ -242,6 +242,17 @@ export function getProfileTableColumns(
       enableHiding: false,
       size: 28,
     },
+    // Sort-only: newest/oldest menu targets this id. Hidden via columnVisibility
+    // in ProfilesDataTable so no Created column is shown in the grid.
+    {
+      id: "created_at",
+      accessorFn: (row) => row.created_at ?? 0,
+      enableSorting: true,
+      enableHiding: true,
+      sortingFn: "basic",
+      header: () => null,
+      cell: () => null,
+    },
     {
       accessorKey: "name",
       meta: { flexWidth: true },

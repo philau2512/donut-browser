@@ -2,6 +2,11 @@ packages:
   - nodecar
   - donut-sync
 
+# Windows: isolated linker junctions can fail with "untrusted mount point"
+# (UNKNOWN open on package.json). Hoisted + copy keeps packages readable.
+nodeLinker: hoisted
+packageImportMethod: copy
+
 onlyBuiltDependencies:
   - '@biomejs/biome'
   - '@nestjs/core'

@@ -10,8 +10,9 @@ pub struct TableSortingSettings {
 impl Default for TableSortingSettings {
   fn default() -> Self {
     Self {
-      column: "name".to_string(),
-      direction: "asc".to_string(),
+      // Newest profiles first (hidden sort-only column on the profiles table).
+      column: "created_at".to_string(),
+      direction: "desc".to_string(),
     }
   }
 }

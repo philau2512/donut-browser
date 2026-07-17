@@ -65,7 +65,8 @@
       "required": "必填",
       "unknownProfile": "未知",
       "mode": "模式",
-      "never": "从不"
+      "never": "从不",
+      "folder": "文件夹"
     },
     "time": {
       "days": "天",
@@ -287,7 +288,9 @@
     "bulkDelete": {
       "title": "删除所选配置文件",
       "description": "此操作无法撤销。这将永久删除 {{count}} 个配置文件及其关联的所有数据。",
-      "confirmButton": "删除 {{count}} 个配置文件"
+      "confirmButton": "删除 {{count}} 个配置文件",
+      "success": "已删除 {{count}} 个配置文件",
+      "failed": "删除 {{count}} 个配置文件失败"
     },
     "note": {
       "empty": "无备注",
@@ -371,7 +374,12 @@
       "latestNeedsDownload": "最新版本 ({{version}}) 需要下载",
       "latestAvailable": "最新版本 ({{version}}) 可用",
       "latestDownloading": "正在下载版本 ({{version}})...",
-      "upgradeAvailable": "{{browser}} 有新版本（{{version}}）可用。"
+      "upgradeAvailable": "{{browser}} 有新版本（{{version}}）可用。",
+      "noneDownloaded": "No version downloaded",
+      "noneDownloadedNamed": "No {{browser}} browser version downloaded. Please download it first.",
+      "selectPlaceholder": "Select version",
+      "wayfernHint": "Version of the Wayfern (Chromium anti-detect) binary installed on this machine. There is no separate Core version.",
+      "camoufoxHint": "Version of the Camoufox (Firefox anti-detect) binary installed on this machine."
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "由 Wayfern 驱动",
@@ -381,7 +389,38 @@
       "description": "加密磁盘上的配置文件数据。启动时需要密码。"
     },
     "downloadingSubtitle": "正在下载…",
-    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。"
+    "browsersDownloading": "浏览器仍在下载中。下载完成后即可创建配置文件。",
+    "subtitle": "Configure your browser anti-detect parameters, location and proxies",
+    "howToCreate": "How to create a profile",
+    "browserEngine": "Browser Engine",
+    "browserVersion": "Browser Version",
+    "downloadBrowser": "Download {{browser}}",
+    "fingerprintRequired": "Could not build a complete fingerprint. Please try again.",
+    "createdBatch": "Created {{count}} profiles",
+    "createdSingle": "Profile created successfully",
+    "cookieImportFailed": "Profile created, but cookie import failed for {{name}}",
+    "status": {
+      "none": "No status",
+      "afterCreateHint": "Status can be set from the profile list after creation."
+    },
+    "language": {
+      "fixedLabel": "Use fixed browser language",
+      "fixedHint": "When off, language follows proxy/IP location. When on, force navigator.language.",
+      "selectLabel": "Browser language",
+      "customLabel": "Custom locale (BCP 47)",
+      "autoPlaceholder": "Auto from location",
+      "autoFromLocation": "Auto from location"
+    },
+    "location": {
+      "autoLocationHint": "Automatically fetch location coordinates and timezone based on IP address",
+      "coordinatesTitle": "Geolocation Coordinates",
+      "timezoneTitle": "Timezone Settings"
+    },
+    "hardware": {
+      "screenPreset": "Screen Size Preset",
+      "screenAuto": "Auto (from fingerprint)",
+      "screenHint": "Selecting a preset locks resolution so regenerate/create will keep it."
+    }
   },
   "deleteDialog": {
     "title": "删除配置文件",
@@ -1058,7 +1097,14 @@
     "refreshFingerprint": "刷新指纹",
     "canvasNoiseSeedPlaceholder": "输入用于 canvas 指纹的种子字符串",
     "addFontsPlaceholder": "添加字体...",
-    "enterAsJson": "以 JSON 格式输入 {{title}}"
+    "enterAsJson": "以 JSON 格式输入 {{title}}",
+    "displayScaleTitle": "Display scale (Screen & DPR)",
+    "displayScaleHint": "On 2K/4K laptops, set DPR to match Windows display scale (e.g. 1.25 or 1.5). DPR 1.0 makes browser UI and page layout look tiny.",
+    "useHostDisplay": "Use this PC's display",
+    "screenSizePreset": "Screen size preset",
+    "screenSizePresetPlaceholder": "Select resolution",
+    "dprPlaceholder": "Select DPR",
+    "dprHint": "Matches Windows Scale (Settings → Display → Scale). 100%=1.0, 125%=1.25, 150%=1.5."
   },
   "warnings": {
     "windowResizeTitle": "自定义窗口尺寸",

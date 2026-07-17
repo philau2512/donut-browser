@@ -258,14 +258,7 @@ pub async fn update_camoufox_config(
   profile_id: String,
   config: CamoufoxConfig,
 ) -> Result<(), String> {
-  if config.fingerprint.is_some()
-    && !crate::api::cloud_auth::CLOUD_AUTH
-      .can_use_cross_os_fingerprints()
-      .await
-  {
-    return Err(serde_json::json!({ "code": "FINGERPRINT_REQUIRES_PRO" }).to_string());
-  }
-
+  // Same-host fingerprint view/edit is free. Only cross-OS OS spoofing is paid.
   if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(config.os.as_deref())
     .await
@@ -286,14 +279,7 @@ pub async fn update_wayfern_config(
   profile_id: String,
   config: WayfernConfig,
 ) -> Result<(), String> {
-  if config.fingerprint.is_some()
-    && !crate::api::cloud_auth::CLOUD_AUTH
-      .can_use_cross_os_fingerprints()
-      .await
-  {
-    return Err(serde_json::json!({ "code": "FINGERPRINT_REQUIRES_PRO" }).to_string());
-  }
-
+  // Same-host fingerprint view/edit is free. Only cross-OS OS spoofing is paid.
   if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(config.os.as_deref())
     .await

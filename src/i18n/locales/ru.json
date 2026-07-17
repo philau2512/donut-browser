@@ -65,7 +65,8 @@
       "required": "Обязательно",
       "unknownProfile": "Неизвестный",
       "mode": "Режим",
-      "never": "Никогда"
+      "never": "Никогда",
+      "folder": "Папка"
     },
     "time": {
       "days": "дней",
@@ -287,7 +288,9 @@
     "bulkDelete": {
       "title": "Удалить выбранные профили",
       "description": "Это действие нельзя отменить. Будет навсегда удалено {{count}} профил(ей) и все связанные данные.",
-      "confirmButton": "Удалить {{count}} профил(ей)"
+      "confirmButton": "Удалить {{count}} профил(ей)",
+      "success": "Удалено профилей: {{count}}",
+      "failed": "Не удалось удалить {{count}} профил(ей)"
     },
     "note": {
       "empty": "Нет заметки",
@@ -371,7 +374,12 @@
       "latestNeedsDownload": "Последнюю версию ({{version}}) необходимо скачать",
       "latestAvailable": "Последняя версия ({{version}}) доступна",
       "latestDownloading": "Загрузка версии ({{version}})...",
-      "upgradeAvailable": "Доступна новая версия ({{version}}) {{browser}}."
+      "upgradeAvailable": "Доступна новая версия ({{version}}) {{browser}}.",
+      "noneDownloaded": "No version downloaded",
+      "noneDownloadedNamed": "No {{browser}} browser version downloaded. Please download it first.",
+      "selectPlaceholder": "Select version",
+      "wayfernHint": "Version of the Wayfern (Chromium anti-detect) binary installed on this machine. There is no separate Core version.",
+      "camoufoxHint": "Version of the Camoufox (Firefox anti-detect) binary installed on this machine."
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "На базе Wayfern",
@@ -381,7 +389,38 @@
       "description": "Шифрует данные профиля на диске. Требуется для запуска."
     },
     "downloadingSubtitle": "Загрузка…",
-    "browsersDownloading": "Браузеры ещё загружаются. Создание профилей станет доступно после завершения загрузки."
+    "browsersDownloading": "Браузеры ещё загружаются. Создание профилей станет доступно после завершения загрузки.",
+    "subtitle": "Configure your browser anti-detect parameters, location and proxies",
+    "howToCreate": "How to create a profile",
+    "browserEngine": "Browser Engine",
+    "browserVersion": "Browser Version",
+    "downloadBrowser": "Download {{browser}}",
+    "fingerprintRequired": "Could not build a complete fingerprint. Please try again.",
+    "createdBatch": "Created {{count}} profiles",
+    "createdSingle": "Profile created successfully",
+    "cookieImportFailed": "Profile created, but cookie import failed for {{name}}",
+    "status": {
+      "none": "No status",
+      "afterCreateHint": "Status can be set from the profile list after creation."
+    },
+    "language": {
+      "fixedLabel": "Use fixed browser language",
+      "fixedHint": "When off, language follows proxy/IP location. When on, force navigator.language.",
+      "selectLabel": "Browser language",
+      "customLabel": "Custom locale (BCP 47)",
+      "autoPlaceholder": "Auto from location",
+      "autoFromLocation": "Auto from location"
+    },
+    "location": {
+      "autoLocationHint": "Automatically fetch location coordinates and timezone based on IP address",
+      "coordinatesTitle": "Geolocation Coordinates",
+      "timezoneTitle": "Timezone Settings"
+    },
+    "hardware": {
+      "screenPreset": "Screen Size Preset",
+      "screenAuto": "Auto (from fingerprint)",
+      "screenHint": "Selecting a preset locks resolution so regenerate/create will keep it."
+    }
   },
   "deleteDialog": {
     "title": "Удалить профиль",
@@ -1058,7 +1097,14 @@
     "refreshFingerprint": "Обновить отпечаток",
     "canvasNoiseSeedPlaceholder": "Введите строку-семя для отпечатка canvas",
     "addFontsPlaceholder": "Добавить шрифты...",
-    "enterAsJson": "Введите {{title}} в формате JSON"
+    "enterAsJson": "Введите {{title}} в формате JSON",
+    "displayScaleTitle": "Display scale (Screen & DPR)",
+    "displayScaleHint": "On 2K/4K laptops, set DPR to match Windows display scale (e.g. 1.25 or 1.5). DPR 1.0 makes browser UI and page layout look tiny.",
+    "useHostDisplay": "Use this PC's display",
+    "screenSizePreset": "Screen size preset",
+    "screenSizePresetPlaceholder": "Select resolution",
+    "dprPlaceholder": "Select DPR",
+    "dprHint": "Matches Windows Scale (Settings → Display → Scale). 100%=1.0, 125%=1.25, 150%=1.5."
   },
   "warnings": {
     "windowResizeTitle": "Пользовательские размеры окна",
