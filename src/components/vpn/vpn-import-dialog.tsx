@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
@@ -74,6 +74,9 @@ const detectVpnType = (
   }
   return { isVpn: false, type: null, endpoint: null };
 };
+
+/** Pure helper exported for unit smoke (VN-04). */
+export { detectVpnType };
 
 export function VpnImportDialog({ isOpen, onClose }: VpnImportDialogProps) {
   const { t } = useTranslation();
