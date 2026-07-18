@@ -119,7 +119,7 @@ export function ProfileInfoDialog({
     }
     void (async () => {
       try {
-        const groups = await invoke<ProfileGroup[]>("get_groups");
+        const groups = await invoke<ProfileGroup[]>("get_profile_groups");
         const group = groups.find((g) => g.id === profile.group_id);
         setGroupName(group?.name ?? null);
       } catch {

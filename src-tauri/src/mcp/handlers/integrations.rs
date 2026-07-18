@@ -94,6 +94,8 @@ impl McpServer {
       "create_profile" => self.handle_create_profile(arguments).await,
       "update_profile" => self.handle_update_profile(arguments).await,
       "delete_profile" => self.handle_delete_profile(arguments).await,
+      "detect_browser_profiles" => self.handle_detect_browser_profiles(arguments).await,
+      "import_browser_profiles" => self.handle_import_browser_profiles(arguments).await,
       "list_tags" => self.handle_list_tags().await,
       "list_proxies" => self.handle_list_proxies().await,
       "get_profile_status" => self.handle_get_profile_status(arguments).await,

@@ -155,6 +155,48 @@ fn config_to_api_value<T: serde::Serialize>(config: Option<&T>) -> Option<serde_
   serde_json::to_value(config?).ok()
 }
 
+/// Map shared manager errors to HTTP status codes. Structured `{"code": ...}`
+/// strings classify exactly; plain-text messages match known phrases only.
+fn manager_error_response(err: impl std::fmt::Display) -> (StatusCode, String) {
+  let msg = err.to_string();
+
+  if let Ok(value) = serde_json::from_str::<serde_json::Value>(&msg) {
+    if let Some(code) = value.get("code").and_then(|c| c.as_str()) {
+      let status = if code.ends_with("_NOT_FOUND") {
+        StatusCode::NOT_FOUND
+      } else if code == "INTERNAL_ERROR" {
+        StatusCode::INTERNAL_SERVER_ERROR
+      } else if code.ends_with("_REQUIRES_PRO") || code.ends_with("_PAYMENT_REQUIRED") {
+        StatusCode::PAYMENT_REQUIRED
+      } else {
+        StatusCode::BAD_REQUEST
+      };
+      return (status, msg);
+    }
+  }
+
+  let lower = msg.to_lowercase();
+  let status = if lower.contains("not found") {
+    StatusCode::NOT_FOUND
+  } else if lower.contains("already exists")
+    || lower.contains("cannot set both")
+    || lower.contains("cannot edit")
+    || lower.contains("cannot delete")
+    || lower.contains("cannot open url")
+    || lower.contains("invalid browser")
+    || lower.contains("invalid profile id")
+    || lower.contains("unsupported browser")
+    || lower.contains("not supported on your platform")
+    || lower.contains("is not downloaded")
+    || lower.contains("terms and conditions")
+  {
+    StatusCode::BAD_REQUEST
+  } else {
+    StatusCode::INTERNAL_SERVER_ERROR
+  };
+  (status, msg)
+}
+
 // API Handlers - Profiles
 #[utoipa::path(
   get,
@@ -191,6 +233,7 @@ async fn get_profiles() -> Result<Json<ApiProfilesResponse>, StatusCode> {
           is_running: profile.process_id.is_some(), // Simple check based on process_id
           proxy_bypass_rules: profile.proxy_bypass_rules.clone(),
           vpn_id: profile.vpn_id.clone(),
+          clear_on_close: profile.clear_on_close,
         })
         .collect();
 
@@ -245,6 +288,7 @@ async fn get_profile(
             is_running: profile.process_id.is_some(), // Simple check based on process_id
             proxy_bypass_rules: profile.proxy_bypass_rules.clone(),
             vpn_id: profile.vpn_id.clone(),
+            clear_on_close: profile.clear_on_close,
           },
         }))
       } else {
@@ -419,6 +463,7 @@ async fn create_profile(
           is_running: false,
           proxy_bypass_rules: profile.proxy_bypass_rules,
           vpn_id: profile.vpn_id,
+          clear_on_close: profile.clear_on_close,
         },
       }))
     }

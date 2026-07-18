@@ -6,7 +6,7 @@ use crate::profile::manager::ProfileManager;
 use crate::profile::tag_manager::TAG_MANAGER;
 use crate::proxy::proxy_manager::PROXY_MANAGER;
 use axum::{
-  extract::{Path, State},
+  extract::{Path, Query, State},
   http::{HeaderMap, StatusCode},
   middleware::{self, Next},
   response::{Json, Response},
@@ -41,6 +41,8 @@ pub struct ApiProfile {
   pub is_running: bool,
   pub proxy_bypass_rules: Vec<String>,
   pub vpn_id: Option<String>,
+  /// Wipe browsing data (keeping extensions and bookmarks) when the browser exits.
+  pub clear_on_close: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -105,6 +107,36 @@ pub struct UpdateProfileRequest {
   pub proxy_bypass_rules: Option<Vec<String>>,
   /// One of "Disabled", "Regular", "Encrypted".
   pub sync_mode: Option<String>,
+  /// Wipe browsing data (keeping extensions and bookmarks) when the browser
+  /// exits. Rejected (400) for ephemeral or password-protected profiles.
+  pub clear_on_close: Option<bool>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+struct DetectedProfilesResponse {
+  profiles: Vec<crate::profile::profile_importer::DetectedProfile>,
+  total: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct DetectImportQuery {
+  /// Optional folder to scan instead of the default browser locations.
+  folder: Option<String>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+struct ImportProfilesRequest {
+  /// Profiles to import. Each item is isolated — one failure doesn't stop the rest.
+  items: Vec<crate::profile::profile_importer::ImportProfileItem>,
+  /// Optional group to assign every imported profile to.
+  group_id: Option<String>,
+  /// How to handle an already-taken profile name: "skip" or "rename"
+  /// (auto-suffix). Defaults to "rename".
+  duplicate_strategy: Option<crate::profile::profile_importer::DuplicateStrategy>,
+  /// Wayfern fingerprint/config applied to every imported profile. Omit to
+  /// have fresh fingerprints generated automatically.
+  #[schema(value_type = Option<Object>)]
+  wayfern_config: Option<serde_json::Value>,
 }
 
 #[derive(Clone)]
@@ -301,6 +333,8 @@ struct BatchStopResponse {
     create_profile,
     update_profile,
     delete_profile,
+    detect_import_profiles,
+    import_profiles_api,
     run_profile,
     open_url_in_profile,
     kill_profile,
@@ -358,6 +392,13 @@ struct BatchStopResponse {
     ImportCookiesRequest,
     ImportCookiesResponse,
     ProxySettings,
+    DetectedProfilesResponse,
+    ImportProfilesRequest,
+    crate::profile::profile_importer::DetectedProfile,
+    crate::profile::profile_importer::ImportProfileItem,
+    crate::profile::profile_importer::DuplicateStrategy,
+    crate::profile::profile_importer::ProfileImportItemResult,
+    crate::profile::profile_importer::ProfileImportBatchResult,
   )),
   tags(
     (name = "profiles", description = "Profile management endpoints"),
@@ -450,6 +491,8 @@ impl ApiServer {
     let (v1_routes, _) = OpenApiRouter::new()
       .routes(routes!(get_profiles, create_profile))
       .routes(routes!(get_profile, update_profile, delete_profile))
+      .routes(routes!(detect_import_profiles))
+      .routes(routes!(import_profiles_api))
       .routes(routes!(run_profile))
       .routes(routes!(open_url_in_profile))
       .routes(routes!(kill_profile))

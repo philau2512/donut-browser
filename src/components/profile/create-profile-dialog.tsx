@@ -32,7 +32,6 @@ import { useVpnEvents } from "@/hooks/use-vpn-events";
 import { useWayfernConfig } from "@/hooks/use-wayfern-config";
 import { cn } from "@/lib/utils";
 import type {
-  BrowserProfile,
   CamoufoxConfig,
   ProfileAutomation,
   WayfernConfig,
@@ -317,9 +316,9 @@ export function CreateProfileDialog({
             finalWayfernConfig,
             bestVersion.version,
           );
-          if (regenerated) {
+          if (regenerated && finalWayfernConfig) {
             profileWayfernConfig = {
-              ...finalWayfernConfig!,
+              ...finalWayfernConfig,
               fingerprint: regenerated,
             };
           }

@@ -33,6 +33,7 @@ mod tests2 {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
 
     // Save
@@ -355,6 +356,7 @@ mod tests2 {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
     save_proxy_config(&config).unwrap();
 

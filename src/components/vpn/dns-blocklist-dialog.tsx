@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuRefreshCw } from "react-icons/lu";
 import { toast } from "sonner";
+import { LoadingButton } from "@/components/shared";
 import { AnimatedSwitch } from "@/components/ui/animated-switch";
 import {
   AnimatedTabs,
@@ -29,7 +30,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { translateBackendError } from "@/lib/backend-errors";
 import { dnsBlocklistLabelKey } from "@/lib/dns-blocklist-levels";
-import { LoadingButton } from "./loading-button";
 
 interface BlocklistCacheStatus {
   level: string;

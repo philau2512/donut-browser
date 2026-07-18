@@ -40,14 +40,26 @@ mod tests {
   }
 
   #[test]
-  fn create_profile_browser_validation_matches_supported_engines() {
-    // The handler rejects anything that isn't a launchable engine; this is the
-    // same predicate it uses, kept in lockstep with MCP's create_profile.
-    let is_valid = |b: &str| b == "wayfern" || b == "camoufox";
-    assert!(is_valid("wayfern"));
-    assert!(is_valid("camoufox"));
-    assert!(!is_valid("chromium"));
-    assert!(!is_valid("firefox"));
-    assert!(!is_valid(""));
+  fn update_profile_request_accepts_clear_on_close() {
+    let json = r#"{"name": "p", "clear_on_close": true}"#;
+    let parsed: UpdateProfileRequest =
+      serde_json::from_str(json).expect("clear_on_close must deserialize");
+    assert_eq!(parsed.clear_on_close, Some(true));
+  }
+
+  #[test]
+  fn import_profiles_request_deserializes_batch_items() {
+    let json = r#"{
+      "items": [{"source_path": "C:/profiles/Default", "new_profile_name": "Imported"}],
+      "duplicate_strategy": "rename"
+    }"#;
+    let parsed: ImportProfilesRequest =
+      serde_json::from_str(json).expect("import batch body must deserialize");
+    assert_eq!(parsed.items.len(), 1);
+    assert_eq!(parsed.items[0].new_profile_name, "Imported");
+    assert_eq!(
+      parsed.duplicate_strategy,
+      Some(crate::profile::profile_importer::DuplicateStrategy::Rename)
+    );
   }
 }

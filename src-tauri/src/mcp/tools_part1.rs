@@ -173,6 +173,10 @@ impl McpServer {
               "type": "array",
               "items": { "type": "string" },
               "description": "Proxy bypass rules (replaces existing rules)"
+            },
+            "clear_on_close": {
+              "type": "boolean",
+              "description": "Wipe browsing data (keeping extensions and bookmarks) when the browser exits. Not available for ephemeral or password-protected profiles."
             }
           },
           "required": ["profile_id"]
@@ -190,6 +194,64 @@ impl McpServer {
             }
           },
           "required": ["profile_id"]
+        }),
+      },
+      McpTool {
+        name: "detect_browser_profiles".to_string(),
+        description: "Detect importable Chromium-family browser profiles (Chrome, Chromium, Brave) on this machine, or scan a custom folder for profile directories".to_string(),
+        input_schema: serde_json::json!({
+          "type": "object",
+          "properties": {
+            "folder": {
+              "type": "string",
+              "description": "Optional folder to scan instead of the default browser locations. Accepts a single profile dir, a Chromium user-data dir, or a folder holding one profile dir per child."
+            }
+          }
+        }),
+      },
+      McpTool {
+        name: "import_browser_profiles".to_string(),
+        description: "Bulk-import browser profiles from on-disk profile folders (e.g. paths returned by detect_browser_profiles). Each imported profile becomes a Wayfern profile; items are isolated so one failure doesn't stop the rest".to_string(),
+        input_schema: serde_json::json!({
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source_path": {
+                    "type": "string",
+                    "description": "Path to the source profile directory"
+                  },
+                  "new_profile_name": {
+                    "type": "string",
+                    "description": "Name for the imported profile"
+                  },
+                  "proxy_id": {
+                    "type": "string",
+                    "description": "Optional proxy UUID to assign to this profile"
+                  },
+                  "vpn_id": {
+                    "type": "string",
+                    "description": "Optional VPN UUID to assign to this profile"
+                  }
+                },
+                "required": ["source_path", "new_profile_name"]
+              },
+              "description": "Profiles to import"
+            },
+            "group_id": {
+              "type": "string",
+              "description": "Optional group UUID assigned to every imported profile"
+            },
+            "duplicate_strategy": {
+              "type": "string",
+              "enum": ["skip", "rename"],
+              "description": "How to handle an already-taken profile name (default: rename with a numeric suffix)"
+            }
+          },
+          "required": ["items"]
         }),
       },
       McpTool {

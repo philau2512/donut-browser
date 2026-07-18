@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { FadingScrollArea } from "@/components/ui/fading-scroll-area";
 import { Input } from "@/components/ui/input";
+import { RippleButton } from "@/components/ui/ripple";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -49,7 +50,6 @@ import {
 import { translateBackendError } from "@/lib/backend-errors";
 import type { FilteredTrafficStats } from "@/types";
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog";
-import { RippleButton } from "./ui/ripple";
 
 type TimePeriod =
   | "1m"

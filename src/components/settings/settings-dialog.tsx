@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { DnsBlocklistDialog } from "@/components/vpn";
 import { useCloudAuth } from "@/hooks/use-cloud-auth";
 import { useCommercialTrial } from "@/hooks/use-commercial-trial";
@@ -663,7 +664,7 @@ export function SettingsDialog({
                 <Switch
                   aria-label={t("settings.privacy.consistencyWarning")}
                   checked={consistencyWarningEnabled}
-                  onCheckedChange={(v) => {
+                  onCheckedChange={(v: boolean) => {
                     setConsistencyWarningEnabled(v === true);
                     try {
                       if (v === true) {

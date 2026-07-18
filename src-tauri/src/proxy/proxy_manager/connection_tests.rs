@@ -688,6 +688,7 @@ mod tests {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
     let dead_config = ProxyConfig {
       id: dead_id.clone(),
@@ -701,6 +702,7 @@ mod tests {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
 
     save_proxy_config(&live_config).unwrap();
