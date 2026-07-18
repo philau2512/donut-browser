@@ -9,7 +9,7 @@ vi.mock("react-i18next", () => ({
 describe("OpenProfileForm", () => {
   const onChange = vi.fn();
 
-  it("shows profile required validation when profileId empty", () => {
+  it("allows empty profileId (override is optional) and shows help", () => {
     render(
       <OpenProfileForm
         value={{ profileId: "", automation: "" }}
@@ -18,11 +18,14 @@ describe("OpenProfileForm", () => {
       />,
     );
     expect(
-      screen.getByText(/automation.validation.profileRequired/),
+      screen.getByPlaceholderText("{{PROFILE_ID}} or profile name"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("automation.nodes.openProfile.params.profileIdHelp"),
     ).toBeInTheDocument();
   });
 
-  it("renders automation accordion sections", () => {
+  it("renders browser settings accordion sections", () => {
     render(
       <OpenProfileForm
         value={{ profileId: "p1", automation: "" }}
@@ -38,10 +41,13 @@ describe("OpenProfileForm", () => {
         ]}
       />,
     );
-    expect(screen.getByText("Dynamic Proxy")).toBeInTheDocument();
-    expect(screen.getByText("IP Check")).toBeInTheDocument();
-    expect(screen.getByText(/Webhooks/)).toBeInTheDocument();
-    expect(screen.getByText("Telegram Alert")).toBeInTheDocument();
+    expect(screen.getByText("Browser Settings Override")).toBeInTheDocument();
+    expect(screen.getByText("Proxy settings")).toBeInTheDocument();
+    expect(screen.getByText("Security settings")).toBeInTheDocument();
+    expect(screen.getByText("WebRTC settings")).toBeInTheDocument();
+    expect(screen.getByText("Custom DNS")).toBeInTheDocument();
+    expect(screen.getByText("IP detection")).toBeInTheDocument();
+    expect(screen.getByText("IP information")).toBeInTheDocument();
   });
 
   it("merges variable timeline warnings into badge", () => {
