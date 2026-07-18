@@ -1,5 +1,6 @@
 "use client";
 
+import { MotionConfig } from "motion/react";
 import { useEffect } from "react";
 import { OnboardingProvider } from "@/components/onboarding";
 import { Toaster } from "@/components/ui/sonner";
@@ -17,11 +18,17 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider>
       <CustomThemeProvider>
-        <WindowDragArea />
-        <TooltipProvider>
-          <OnboardingProvider>{children}</OnboardingProvider>
-        </TooltipProvider>
-        <Toaster />
+        {/* reducedMotion="user" makes every motion/react animation honor the
+            OS prefers-reduced-motion setting: transforms are skipped, opacity
+            cross-fades are kept. The CSS-side media query in globals.css only
+            covers CSS transitions — this covers the JS-driven ones. */}
+        <MotionConfig reducedMotion="user">
+          <WindowDragArea />
+          <TooltipProvider>
+            <OnboardingProvider>{children}</OnboardingProvider>
+          </TooltipProvider>
+          <Toaster />
+        </MotionConfig>
       </CustomThemeProvider>
     </I18nProvider>
   );

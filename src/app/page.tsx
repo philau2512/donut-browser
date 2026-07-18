@@ -110,6 +110,24 @@ export default function Home() {
   }, [startOnborda, profiles.length]);
 
   useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent).detail as {
+        profile: BrowserProfile;
+        result: import("@/components/consistency-warning-dialog").ConsistencyResult;
+      } | null;
+      if (detail?.profile && detail?.result) {
+        setConsistencyWarning({
+          profile: detail.profile,
+          result: detail.result,
+        });
+      }
+    };
+    window.addEventListener("profile-consistency-warning", handler);
+    return () =>
+      window.removeEventListener("profile-consistency-warning", handler);
+  }, []);
+
+  useEffect(() => {
     const handler = () => setThankYouOpen(true);
     window.addEventListener(ONBOARDING_TOUR_FINISHED_EVENT, handler);
     return () =>
@@ -256,6 +274,11 @@ export default function Home() {
   const [deviceCodeDialogOpen, setDeviceCodeDialogOpen] = useState(false);
   const [syncAllDialogOpen, setSyncAllDialogOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
+  const [consistencyWarning, setConsistencyWarning] = useState<{
+    profile: BrowserProfile;
+    result: import("@/components/consistency-warning-dialog").ConsistencyResult;
+  } | null>(null);
   const [profileInfoDialog, setProfileInfoDialog] =
     useState<BrowserProfile | null>(null);
   const [quickProxyEditProfile, setQuickProxyEditProfile] =
@@ -826,6 +849,10 @@ export default function Home() {
         setCreateProfileDialogOpen={setCreateProfileDialogOpen}
         commandPaletteOpen={commandPaletteOpen}
         setCommandPaletteOpen={setCommandPaletteOpen}
+        aboutDialogOpen={aboutDialogOpen}
+        setAboutDialogOpen={setAboutDialogOpen}
+        consistencyWarning={consistencyWarning}
+        setConsistencyWarning={setConsistencyWarning}
         pendingUrls={pendingUrls}
         setPendingUrls={setPendingUrls}
         permissionDialogOpen={permissionDialogOpen}

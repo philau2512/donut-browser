@@ -234,9 +234,9 @@ export function UnifiedToast(props: ToastProps) {
               <div className="flex items-center justify-between">
                 <p className="min-w-0 flex-1 text-xs text-muted-foreground">
                   {progress.percentage.toFixed(1)}%
-                  {progress.speed && ` • ${progress.speed} MB/s`}
+                  {progress.speed && ` ΓÇó ${progress.speed} MB/s`}
                   {progress.eta &&
-                    ` • ${t("toasts.progress.remaining", { time: progress.eta })}`}
+                    ` ΓÇó ${t("toasts.progress.remaining", { time: progress.eta })}`}
                 </p>
               </div>
               <ProgressBar percentage={progress.percentage} />

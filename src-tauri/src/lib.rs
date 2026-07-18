@@ -24,6 +24,7 @@ pub mod proxy;
 pub mod settings;
 pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic_stats};
 pub mod events;
+pub mod fingerprint_consistency;
 pub mod mcp;
 pub mod sync;
 pub use mcp::{mcp_integrations, mcp_server};
@@ -52,10 +53,10 @@ use browser::browser_runner::{
 
 use profile::manager::{
   check_browser_status, clone_profile, create_browser_profile_new, delete_profile,
-  list_browser_profiles, rename_profile, update_camoufox_config, update_profile_dns_blocklist,
-  update_profile_launch_hook, update_profile_note, update_profile_proxy,
-  update_profile_proxy_bypass_rules, update_profile_status, update_profile_tags,
-  update_profile_vpn, update_profile_window_color, update_wayfern_config,
+  list_browser_profiles, rename_profile, update_camoufox_config, update_profile_clear_on_close,
+  update_profile_dns_blocklist, update_profile_launch_hook, update_profile_note,
+  update_profile_proxy, update_profile_proxy_bypass_rules, update_profile_status,
+  update_profile_tags, update_profile_vpn, update_profile_window_color, update_wayfern_config,
 };
 
 use profile::password::{
@@ -110,7 +111,10 @@ use updater::app_auto_updater::{
   restart_application,
 };
 
-use profile::profile_importer::{detect_existing_profiles, import_browser_profile};
+use profile::profile_importer::{
+  cleanup_profile_import_scratch, detect_existing_profiles, import_browser_profiles,
+  scan_folder_for_profiles, scan_profile_archive,
+};
 
 use browser::extension_manager::{
   add_extension, add_extension_to_group, assign_extension_group_to_profile, create_extension_group,
@@ -204,7 +208,7 @@ impl<R: Runtime> WindowExt for WebviewWindow<R> {
   }
 }
 
-// Called internally for deep-link / startup URL handling — not invoked from the
+// Called internally for deep-link / startup URL handling ΓÇö not invoked from the
 // frontend, so it is intentionally not a `#[tauri::command]`.
 async fn handle_url_open(app: tauri::AppHandle, url: String) -> Result<(), String> {
   log::info!("handle_url_open called with URL: {url}");

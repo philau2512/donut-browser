@@ -57,7 +57,7 @@ impl ProxyManager {
   }
 
   // Build proxy URL string from ProxySettings
-  fn build_proxy_url(proxy_settings: &ProxySettings) -> String {
+  pub(crate) fn build_proxy_url(proxy_settings: &ProxySettings) -> String {
     let mut url = format!("{}://", proxy_settings.proxy_type);
 
     let username_opt = proxy_settings.username.as_deref().filter(|u| !u.is_empty());

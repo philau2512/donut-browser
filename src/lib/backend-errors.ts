@@ -47,6 +47,19 @@ export type BackendErrorCode =
   | "WAYFERN_FINGERPRINT_INCONSISTENT"
   | "UPDATE_CHECKSUMS_UNAVAILABLE"
   | "UPDATE_CHECKSUM_MISMATCH"
+  | "PROFILE_NAME_EXISTS"
+  | "IMPORT_SOURCE_NOT_FOUND"
+  | "IMPORT_NO_ITEMS"
+  | "BROWSER_NOT_DOWNLOADED"
+  | "ARCHIVE_EXTRACTION_FAILED"
+  | "UNSUPPORTED_ARCHIVE_FORMAT"
+  | "CLEAR_ON_CLOSE_UNAVAILABLE"
+  | "PROXY_AND_VPN_MUTUALLY_EXCLUSIVE"
+  | "FINGERPRINT_MATCH_FAILED"
+  | "INVALID_DNS_RULES_JSON"
+  | "UNSUPPORTED_DNS_RULES_FORMAT"
+  | "DNS_RULES_SAVE_FAILED"
+  | "DNS_RULES_EXPORT_FAILED"
   | "INTERNAL_ERROR";
 
 export interface BackendError {
@@ -190,6 +203,40 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.updateChecksumMismatch", {
         file: parsed.params?.file ?? "",
       });
+    case "PROFILE_NAME_EXISTS":
+      return t("backendErrors.profileNameExists", {
+        name: parsed.params?.name ?? "",
+      });
+    case "IMPORT_SOURCE_NOT_FOUND":
+      return t("backendErrors.importSourceNotFound");
+    case "IMPORT_NO_ITEMS":
+      return t("backendErrors.importNoItems");
+    case "BROWSER_NOT_DOWNLOADED":
+      return t("backendErrors.browserNotDownloaded", {
+        browser: parsed.params?.browser ?? "",
+      });
+    case "ARCHIVE_EXTRACTION_FAILED":
+      return t("backendErrors.archiveExtractionFailed", {
+        detail: parsed.params?.detail ?? "",
+      });
+    case "UNSUPPORTED_ARCHIVE_FORMAT":
+      return t("backendErrors.unsupportedArchiveFormat");
+    case "PROXY_AND_VPN_MUTUALLY_EXCLUSIVE":
+      return t("backendErrors.proxyAndVpnMutuallyExclusive");
+    case "FINGERPRINT_MATCH_FAILED":
+      return t("backendErrors.fingerprintMatchFailed");
+    case "INVALID_DNS_RULES_JSON":
+      return t("backendErrors.invalidDnsRulesJson");
+    case "UNSUPPORTED_DNS_RULES_FORMAT":
+      return t("backendErrors.unsupportedDnsRulesFormat", {
+        format: parsed.params?.format ?? "",
+      });
+    case "DNS_RULES_SAVE_FAILED":
+      return t("backendErrors.dnsRulesSaveFailed");
+    case "DNS_RULES_EXPORT_FAILED":
+      return t("backendErrors.dnsRulesExportFailed");
+    case "CLEAR_ON_CLOSE_UNAVAILABLE":
+      return t("backendErrors.clearOnCloseUnavailable");
     case "INTERNAL_ERROR":
       return t("backendErrors.internal", {
         detail: parsed.params?.detail ?? "",

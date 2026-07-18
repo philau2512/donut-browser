@@ -107,6 +107,7 @@ async fn generate_sample_fingerprint(
     created_by_email: None,
     dns_blocklist: None,
     password_protected: false,
+    clear_on_close: false,
     created_at: None,
     updated_at: None,
     profile_status: None,

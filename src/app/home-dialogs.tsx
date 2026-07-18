@@ -2,6 +2,11 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { AboutDialog } from "@/components/about-dialog";
+import {
+  type ConsistencyResult,
+  ConsistencyWarningDialog,
+} from "@/components/consistency-warning-dialog";
 import { CookieCopyDialog, CookieManagementDialog } from "@/components/cookie";
 import {
   ExtensionGroupAssignmentDialog,
@@ -73,6 +78,18 @@ interface HomeDialogsProps {
   setCreateProfileDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  aboutDialogOpen: boolean;
+  setAboutDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  consistencyWarning: {
+    profile: BrowserProfile;
+    result: ConsistencyResult;
+  } | null;
+  setConsistencyWarning: React.Dispatch<
+    React.SetStateAction<{
+      profile: BrowserProfile;
+      result: ConsistencyResult;
+    } | null>
+  >;
   pendingUrls: PendingUrl[];
   setPendingUrls: React.Dispatch<React.SetStateAction<PendingUrl[]>>;
   permissionDialogOpen: boolean;
@@ -212,6 +229,10 @@ export function HomeDialogs({
   setCreateProfileDialogOpen,
   commandPaletteOpen,
   setCommandPaletteOpen,
+  aboutDialogOpen,
+  setAboutDialogOpen,
+  consistencyWarning,
+  setConsistencyWarning,
   pendingUrls,
   setPendingUrls,
   permissionDialogOpen,
@@ -336,6 +357,29 @@ export function HomeDialogs({
           handleRailNavigate("profiles");
           setProfileInfoDialog(profile);
         }}
+        onCreateProfile={() => {
+          setCreateProfileDialogOpen(true);
+        }}
+        onOpenAbout={() => {
+          setAboutDialogOpen(true);
+        }}
+      />
+
+      <AboutDialog
+        isOpen={aboutDialogOpen}
+        onClose={() => {
+          setAboutDialogOpen(false);
+        }}
+      />
+
+      <ConsistencyWarningDialog
+        isOpen={consistencyWarning !== null}
+        onClose={() => {
+          setConsistencyWarning(null);
+        }}
+        profileName={consistencyWarning?.profile.name ?? ""}
+        profileId={consistencyWarning?.profile.id ?? ""}
+        result={consistencyWarning?.result ?? null}
       />
 
       {pendingUrls.map((pendingUrl) => (

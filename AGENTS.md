@@ -1,4 +1,4 @@
-# ⛔ ABSOLUTE GIT RULE — READ FIRST (2026-06-11)
+# Γ¢ö ABSOLUTE GIT RULE ΓÇö READ FIRST (2026-06-11)
 
 **NEVER run any git command that modifies git history OR the working tree, in ANY repo** (wayfern, wayfern-macos, wayfern-test, donutbrowser, build/src), **unless the user EXPLICITLY authorizes that exact command.** Forbidden without per-command authorization: `commit`, `revert`, `cherry-pick`, `restore`, `checkout` (files/branches), `reset`, `rebase`, `merge`, `stash`, `clean`, `apply`, `add`, `rm`, `push`, any force op. Only read-only git (`status`, `log`, `show`, `diff`, `ls-files`, `rev-parse`) is allowed without asking. **Authorization is per-command: 1 explicit authorization = exactly 1 command.** If a git mutation seems needed, STOP and ask for that one command.
 
@@ -6,95 +6,95 @@
 
 # Project Guidelines
 
-> **NOTE**: CLAUDE.md is a symlink to AGENTS.md — editing either file updates both.
+> **NOTE**: CLAUDE.md is a symlink to AGENTS.md ΓÇö editing either file updates both.
 > After significant changes (new modules, renamed files, new directories), re-evaluate the Repository Structure below and update it if needed.
 
 ## Repository Structure
 
 ```
 donutbrowser/
-├── src/                              # Next.js frontend
-│   ├── app/                          # App router (page.tsx, layout.tsx)
-│   ├── components/                   # 160+ React components organized by domain
-│   │   ├── app-shell/               # App shell, tray, window chrome
-│   │   ├── cookie/                  # Cookie management UI
-│   │   ├── extension/               # Extension management UI
-│   │   ├── group/                   # Profile group UI
-│   │   ├── home/                    # Main profiles list + sub-components
-│   │   ├── icons/                   # Icon components
-│   │   ├── navigation/              # Sidebar navigation
-│   │   ├── onboarding/              # First-run onboarding
-│   │   ├── profile/                 # Profile dialogs + camoufox config
-│   │   ├── proxy/                   # Proxy management UI
-│   │   ├── settings/                # Settings pages
-│   │   ├── shared/                  # Shared/reusable components
-│   │   ├── sync/                    # Cloud sync UI
-│   │   ├── ui/                      # shadcn/ui primitives
-│   │   └── vpn/                     # VPN management UI
-│   ├── hooks/                        # Event-driven React hooks
-│   ├── i18n/locales/                 # Translations (en, es, fr, ja, ko, pt, ru, vi, zh)
-│   ├── lib/                          # Utilities (themes, toast, browser-utils, shortcuts)
-│   └── types.ts                      # Shared TypeScript interfaces
-├── src-tauri/                        # Rust backend (Tauri)
-│   ├── src/
-│   │   ├── lib.rs                    # Tauri command registration entry point
-│   │   ├── lib_commands_proxy.rs     # Proxy/VPN/MCP Tauri commands
-│   │   ├── lib_commands_sync.rs      # Sync/VPN connect Tauri commands
-│   │   ├── lib_commands_tray.rs      # Tray menu Tauri commands
-│   │   ├── lib_run.rs                # Tauri app builder (run())
-│   │   ├── lib_setup.rs              # Tauri .setup() handler
-│   │   ├── api/                      # REST API (utoipa + axum)
-│   │   │   ├── api_server.rs         # Server setup + middleware
-│   │   │   ├── api_server_profile_handlers*.rs  # Profile CRUD endpoints
-│   │   │   ├── api_server_proxy_handlers.rs     # Proxy/VPN endpoints
-│   │   │   ├── api_server_run_handlers.rs       # Browser run/batch endpoints
-│   │   │   ├── api_client.rs         # Browser release API client
-│   │   │   ├── cloud_auth.rs         # Cloud auth manager + methods + commands
-│   │   │   └── mod.rs
-│   │   ├── browser/                  # Browser management (all split into modules)
-│   │   │   ├── browser_runner*.rs    # Launch/kill orchestration (split)
-│   │   │   ├── browser.rs            # Browser trait + BrowserType
-│   │   │   ├── browser_version_manager*.rs  # Version fetching
-│   │   │   ├── camoufox_manager*.rs  # Camoufox process management
-│   │   │   ├── camoufox/             # Config, fingerprint, geolocation
-│   │   │   ├── downloaded_browsers_registry*.rs  # Installed browser tracking
-│   │   │   ├── downloader*.rs        # Binary downloader + progress
-│   │   │   ├── extraction*.rs        # Archive extraction (zip/tar/dmg/msi)
-│   │   │   ├── extension_manager*.rs # Extension management
-│   │   │   ├── platform_browser*.rs  # Platform-specific process launch/kill
-│   │   │   └── wayfern_manager*.rs   # Wayfern (Chromium) process management
-│   │   ├── mcp/                      # MCP protocol server
-│   │   │   ├── server.rs             # MCP server core
-│   │   │   ├── tools*.rs             # Tool definitions (split)
-│   │   │   ├── mcp_integrations.rs   # Claude Desktop integrations
-│   │   │   └── handlers/             # profiles*.rs, integrations*.rs, proxies_groups*.rs
-│   │   ├── profile/                  # Profile CRUD + password (all split)
-│   │   │   ├── manager*.rs           # ProfileManager (6 files)
-│   │   │   ├── cookie_manager*.rs    # Cookie import/export
-│   │   │   ├── password*.rs          # Profile encryption
-│   │   │   └── encryption.rs, group_manager.rs, types.rs, ...
-│   │   ├── proxy/                    # Local proxy infrastructure
-│   │   │   ├── proxy_manager/        # ProxyManager (connection, crud, lifecycle)
-│   │   │   ├── proxy_server*.rs      # HTTP/SOCKS proxy server (split)
-│   │   │   └── traffic_stats*.rs, socks5_local.rs, proxy_runner.rs, ...
-│   │   ├── settings/                 # App settings (app_dirs, manager, commands, types)
-│   │   ├── sync/                     # Cloud sync engine
-│   │   │   ├── engine/               # Sync engine modules
-│   │   │   └── manifest*.rs, scheduler*.rs, synchronizer*.rs, client.rs, ...
-│   │   ├── updater/                  # Auto-updater
-│   │   │   ├── app_auto_updater/     # In-app update flow (split)
-│   │   │   └── auto_updater/, version_updater.rs, geoip_downloader.rs
-│   │   └── vpn/                      # WireGuard VPN (config, tunnel, storage, socks5_server)
-│   ├── tests/                        # Integration tests
-│   │   ├── donut_proxy_integration.rs
-│   │   ├── sync_e2e.rs
-│   │   ├── vpn_integration.rs
-│   │   └── helpers/                  # Test split files (via include!())
-│   └── Cargo.toml
-├── donut-sync/                       # NestJS sync server (self-hostable)
-├── docs/                             # Documentation (self-hosting guide)
-├── flake.nix                         # Nix development environment
-└── .github/workflows/                # CI/CD pipelines
+Γö£ΓöÇΓöÇ src/                              # Next.js frontend
+Γöé   Γö£ΓöÇΓöÇ app/                          # App router (page.tsx, layout.tsx)
+Γöé   Γö£ΓöÇΓöÇ components/                   # 160+ React components organized by domain
+Γöé   Γöé   Γö£ΓöÇΓöÇ app-shell/               # App shell, tray, window chrome
+Γöé   Γöé   Γö£ΓöÇΓöÇ cookie/                  # Cookie management UI
+Γöé   Γöé   Γö£ΓöÇΓöÇ extension/               # Extension management UI
+Γöé   Γöé   Γö£ΓöÇΓöÇ group/                   # Profile group UI
+Γöé   Γöé   Γö£ΓöÇΓöÇ home/                    # Main profiles list + sub-components
+Γöé   Γöé   Γö£ΓöÇΓöÇ icons/                   # Icon components
+Γöé   Γöé   Γö£ΓöÇΓöÇ navigation/              # Sidebar navigation
+Γöé   Γöé   Γö£ΓöÇΓöÇ onboarding/              # First-run onboarding
+Γöé   Γöé   Γö£ΓöÇΓöÇ profile/                 # Profile dialogs + camoufox config
+Γöé   Γöé   Γö£ΓöÇΓöÇ proxy/                   # Proxy management UI
+Γöé   Γöé   Γö£ΓöÇΓöÇ settings/                # Settings pages
+Γöé   Γöé   Γö£ΓöÇΓöÇ shared/                  # Shared/reusable components
+Γöé   Γöé   Γö£ΓöÇΓöÇ sync/                    # Cloud sync UI
+Γöé   Γöé   Γö£ΓöÇΓöÇ ui/                      # shadcn/ui primitives
+Γöé   Γöé   ΓööΓöÇΓöÇ vpn/                     # VPN management UI
+Γöé   Γö£ΓöÇΓöÇ hooks/                        # Event-driven React hooks
+Γöé   Γö£ΓöÇΓöÇ i18n/locales/                 # Translations (en, es, fr, ja, ko, pt, ru, vi, zh)
+Γöé   Γö£ΓöÇΓöÇ lib/                          # Utilities (themes, toast, browser-utils, shortcuts)
+Γöé   ΓööΓöÇΓöÇ types.ts                      # Shared TypeScript interfaces
+Γö£ΓöÇΓöÇ src-tauri/                        # Rust backend (Tauri)
+Γöé   Γö£ΓöÇΓöÇ src/
+Γöé   Γöé   Γö£ΓöÇΓöÇ lib.rs                    # Tauri command registration entry point
+Γöé   Γöé   Γö£ΓöÇΓöÇ lib_commands_proxy.rs     # Proxy/VPN/MCP Tauri commands
+Γöé   Γöé   Γö£ΓöÇΓöÇ lib_commands_sync.rs      # Sync/VPN connect Tauri commands
+Γöé   Γöé   Γö£ΓöÇΓöÇ lib_commands_tray.rs      # Tray menu Tauri commands
+Γöé   Γöé   Γö£ΓöÇΓöÇ lib_run.rs                # Tauri app builder (run())
+Γöé   Γöé   Γö£ΓöÇΓöÇ lib_setup.rs              # Tauri .setup() handler
+Γöé   Γöé   Γö£ΓöÇΓöÇ api/                      # REST API (utoipa + axum)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ api_server.rs         # Server setup + middleware
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ api_server_profile_handlers*.rs  # Profile CRUD endpoints
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ api_server_proxy_handlers.rs     # Proxy/VPN endpoints
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ api_server_run_handlers.rs       # Browser run/batch endpoints
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ api_client.rs         # Browser release API client
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ cloud_auth.rs         # Cloud auth manager + methods + commands
+Γöé   Γöé   Γöé   ΓööΓöÇΓöÇ mod.rs
+Γöé   Γöé   Γö£ΓöÇΓöÇ browser/                  # Browser management (all split into modules)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ browser_runner*.rs    # Launch/kill orchestration (split)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ browser.rs            # Browser trait + BrowserType
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ browser_version_manager*.rs  # Version fetching
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ camoufox_manager*.rs  # Camoufox process management
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ camoufox/             # Config, fingerprint, geolocation
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ downloaded_browsers_registry*.rs  # Installed browser tracking
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ downloader*.rs        # Binary downloader + progress
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ extraction*.rs        # Archive extraction (zip/tar/dmg/msi)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ extension_manager*.rs # Extension management
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ platform_browser*.rs  # Platform-specific process launch/kill
+Γöé   Γöé   Γöé   ΓööΓöÇΓöÇ wayfern_manager*.rs   # Wayfern (Chromium) process management
+Γöé   Γöé   Γö£ΓöÇΓöÇ mcp/                      # MCP protocol server
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ server.rs             # MCP server core
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ tools*.rs             # Tool definitions (split)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ mcp_integrations.rs   # Claude Desktop integrations
+Γöé   Γöé   Γöé   ΓööΓöÇΓöÇ handlers/             # profiles*.rs, integrations*.rs, proxies_groups*.rs
+Γöé   Γöé   Γö£ΓöÇΓöÇ profile/                  # Profile CRUD + password (all split)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ manager*.rs           # ProfileManager (6 files)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ cookie_manager*.rs    # Cookie import/export
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ password*.rs          # Profile encryption
+Γöé   Γöé   Γöé   ΓööΓöÇΓöÇ encryption.rs, group_manager.rs, types.rs, ...
+Γöé   Γöé   Γö£ΓöÇΓöÇ proxy/                    # Local proxy infrastructure
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ proxy_manager/        # ProxyManager (connection, crud, lifecycle)
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ proxy_server*.rs      # HTTP/SOCKS proxy server (split)
+Γöé   Γöé   Γöé   ΓööΓöÇΓöÇ traffic_stats*.rs, socks5_local.rs, proxy_runner.rs, ...
+Γöé   Γöé   Γö£ΓöÇΓöÇ settings/                 # App settings (app_dirs, manager, commands, types)
+Γöé   Γöé   Γö£ΓöÇΓöÇ sync/                     # Cloud sync engine
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ engine/               # Sync engine modules
+Γöé   Γöé   Γöé   ΓööΓöÇΓöÇ manifest*.rs, scheduler*.rs, synchronizer*.rs, client.rs, ...
+Γöé   Γöé   Γö£ΓöÇΓöÇ updater/                  # Auto-updater
+Γöé   Γöé   Γöé   Γö£ΓöÇΓöÇ app_auto_updater/     # In-app update flow (split)
+Γöé   Γöé   Γöé   ΓööΓöÇΓöÇ auto_updater/, version_updater.rs, geoip_downloader.rs
+Γöé   Γöé   ΓööΓöÇΓöÇ vpn/                      # WireGuard VPN (config, tunnel, storage, socks5_server)
+Γöé   Γö£ΓöÇΓöÇ tests/                        # Integration tests
+Γöé   Γöé   Γö£ΓöÇΓöÇ donut_proxy_integration.rs
+Γöé   Γöé   Γö£ΓöÇΓöÇ sync_e2e.rs
+Γöé   Γöé   Γö£ΓöÇΓöÇ vpn_integration.rs
+Γöé   Γöé   ΓööΓöÇΓöÇ helpers/                  # Test split files (via include!())
+Γöé   ΓööΓöÇΓöÇ Cargo.toml
+Γö£ΓöÇΓöÇ donut-sync/                       # NestJS sync server (self-hostable)
+Γö£ΓöÇΓöÇ docs/                             # Documentation (self-hosting guide)
+Γö£ΓöÇΓöÇ flake.nix                         # Nix development environment
+ΓööΓöÇΓöÇ .github/workflows/                # CI/CD pipelines
 ```
 
 ## Codebase Routing Guide (Quick Symbol Map)
@@ -145,8 +145,8 @@ To find specific functionality instantly, use this map:
 - After making changes, run `pnpm format && pnpm lint && pnpm test` at the root of the project
 - Always run this command before finishing a task to ensure the application isn't broken
 - `pnpm lint` includes spellcheck via [typos](https://github.com/crate-ci/typos). False positives can be allowlisted in `_typos.toml`
-- The full `pnpm test` output dumps every test name (≈400+ lines) which burns context for no signal. Filter:
-  `pnpm test 2>&1 | grep -E "test result|panicked|FAILED"` — four "test result: ok" lines means everything passed.
+- The full `pnpm test` output dumps every test name (Γëê400+ lines) which burns context for no signal. Filter:
+  `pnpm test 2>&1 | grep -E "test result|panicked|FAILED"` ΓÇö four "test result: ok" lines means everything passed.
 
 ### Fast testing during development
 
@@ -175,8 +175,8 @@ During development, you can format and lint only the files you have modified to 
 
 Three log surfaces, in order of usefulness:
 
-- **Donut Browser GUI** — `~/Library/Logs/com.donutbrowser/DonutBrowser.log` on macOS (newest = active session; older `DonutBrowser_<date>.log` are rotated). The GUI / Tauri / `browser_runner` / `proxy_manager` / `sync` all log here. Search for `Wayfern`, `Starting local proxy`, `Configured local proxy` to find a launch chain. Dev builds write to `DonutBrowserDev.log` instead.
-- **donut-proxy worker** — `$TMPDIR/donut-proxy-<config_id>.log`. One file per proxy worker process (each profile launch spawns a fresh one). Map a worker to its launch via the `Cleanup: browser PID X is dead, stopping proxy worker <id>` lines in DonutBrowser.log, or by mtime. CONNECT requests, upstream accept/reject (status lines like `HTTP/1.1 402 user reached limit`), and tunnel errors are at INFO/WARN — anything finer is at TRACE and requires `RUST_LOG=donut_proxy=trace`. The `Upstream CONNECT response coalesced N byte(s) of payload — these would be dropped without forwarding` warning marks a real bug in `handle_connect_from_buffer` if it ever fires.
+- **Donut Browser GUI** ΓÇö `~/Library/Logs/com.donutbrowser/DonutBrowser.log` on macOS (newest = active session; older `DonutBrowser_<date>.log` are rotated). The GUI / Tauri / `browser_runner` / `proxy_manager` / `sync` all log here. Search for `Wayfern`, `Starting local proxy`, `Configured local proxy` to find a launch chain. Dev builds write to `DonutBrowserDev.log` instead.
+- **donut-proxy worker** ΓÇö `$TMPDIR/donut-proxy-<config_id>.log`. One file per proxy worker process (each profile launch spawns a fresh one). Map a worker to its launch via the `Cleanup: browser PID X is dead, stopping proxy worker <id>` lines in DonutBrowser.log, or by mtime. CONNECT requests, upstream accept/reject (status lines like `HTTP/1.1 402 user reached limit`), and tunnel errors are at INFO/WARN ΓÇö anything finer is at TRACE and requires `RUST_LOG=donut_proxy=trace`. The `Upstream CONNECT response coalesced N byte(s) of payload ΓÇö these would be dropped without forwarding` warning marks a real bug in `handle_connect_from_buffer` if it ever fires.
 
 Linux/Windows swap `~/Library/Logs/com.donutbrowser/` for the platform-appropriate location (see `app_dirs::app_name()`), but the `$TMPDIR` worker logs are always under the system temp dir.
 
@@ -189,17 +189,17 @@ Linux/Windows swap `~/Library/Logs/com.donutbrowser/` for the platform-appropria
 ## Translations (mandatory)
 
 - Never write user-facing strings as raw English literals in JSX, toast messages, dialog titles/descriptions, button labels, placeholders, table headers, tooltips, or empty-state text. Always go through `t("namespace.key")` from `useTranslation()`.
-- This applies to every component under `src/` — including new ones. If a component doesn't already import `useTranslation`, add it.
-- Adding a new string means adding the key to ALL nine locale files in `src/i18n/locales/` (en, es, fr, ja, ko, pt, ru, vi, zh) — not just `en.json`. The English version alone is incomplete work.
+- This applies to every component under `src/` ΓÇö including new ones. If a component doesn't already import `useTranslation`, add it.
+- Adding a new string means adding the key to ALL nine locale files in `src/i18n/locales/` (en, es, fr, ja, ko, pt, ru, vi, zh) ΓÇö not just `en.json`. The English version alone is incomplete work.
 - Reuse existing keys (`common.buttons.*`, `common.labels.*`, `createProfile.*`, etc.) before creating new namespaces. Check `en.json` first.
 - Strings excluded from this rule: `console.log/warn/error`, dev-only debug labels, internal IDs, CSS class names, type names. If unsure whether a string renders to the user, assume it does and translate it.
-- **Never use `t(key, "fallback")` with a default-value second argument.** The 2-arg form is forbidden — every key must exist in every locale file before the call site lands. Fallbacks mask missing translations: a key missing from `ru.json` will silently render the English fallback to Russian users, so the bug never surfaces in CI or review. Only call `t("namespace.key")`. If a translation is missing for any locale, that's a bug to fix at the JSON, not a hole to paper over at the call site.
-- Empty-string values in non-English locales are also forbidden — a locale either has the right translation or it has the same content as English; never `""`. If a particular language doesn't need a particular phrase (e.g. a suffix that doesn't grammatically apply), refactor the JSX to use a single interpolated key (`t("foo.bar", { name })` with `"...{{name}}..."` in each locale) instead of splitting prefix/suffix.
+- **Never use `t(key, "fallback")` with a default-value second argument.** The 2-arg form is forbidden ΓÇö every key must exist in every locale file before the call site lands. Fallbacks mask missing translations: a key missing from `ru.json` will silently render the English fallback to Russian users, so the bug never surfaces in CI or review. Only call `t("namespace.key")`. If a translation is missing for any locale, that's a bug to fix at the JSON, not a hole to paper over at the call site.
+- Empty-string values in non-English locales are also forbidden ΓÇö a locale either has the right translation or it has the same content as English; never `""`. If a particular language doesn't need a particular phrase (e.g. a suffix that doesn't grammatically apply), refactor the JSX to use a single interpolated key (`t("foo.bar", { name })` with `"...{{name}}..."` in each locale) instead of splitting prefix/suffix.
 - When adding or removing keys across all nine locales, use a one-shot Python script in `/tmp/` that loads each `*.json`, mutates it, and writes it back. Nine sequential `Edit` calls drift (typos, ordering differences) and burn tokens; a single script keeps the locales in lockstep and is easy to throw away.
 
 ## Backend error codes (mandatory)
 
-User-facing errors returned from a Tauri command MUST be JSON `{ "code": "FOO_BAR", "params": { … } }` strings — never raw English (`format!("Failed to …")`). The frontend resolves the code via `translateBackendError(t, err)` from `src/lib/backend-errors.ts`. Adding a new code requires four parallel edits:
+User-facing errors returned from a Tauri command MUST be JSON `{ "code": "FOO_BAR", "params": { ΓÇª } }` strings ΓÇö never raw English (`format!("Failed to ΓÇª")`). The frontend resolves the code via `translateBackendError(t, err)` from `src/lib/backend-errors.ts`. Adding a new code requires four parallel edits:
 
 1. Emit the JSON from Rust:
    ```rust
@@ -208,32 +208,32 @@ User-facing errors returned from a Tauri command MUST be JSON `{ "code": "FOO_BA
    return Err(serde_json::json!({ "code": "FOO_BAR", "params": { "n": "5" } }).to_string());
    ```
 2. Add `"FOO_BAR"` to the `BackendErrorCode` union in `src/lib/backend-errors.ts`.
-3. Add a `case "FOO_BAR":` in the switch that returns `t("backendErrors.fooBar", …)`.
+3. Add a `case "FOO_BAR":` in the switch that returns `t("backendErrors.fooBar", ΓÇª)`.
 4. Add `backendErrors.fooBar` to all nine locale files.
 
 Raw error strings reach the user untranslated; that's the bug pattern this rule blocks.
 
-## REST API (`src-tauri/src/api_server.rs`) — endpoints must stay in the OpenAPI spec
+## REST API (`src-tauri/src/api_server.rs`) ΓÇö endpoints must stay in the OpenAPI spec
 
-The served `/openapi.json` comes from the hand-maintained `ApiDoc` derive (`#[derive(OpenApi)]` with `paths(...)`, `components(schemas(...))`, `tags(...)`) — NOT from the router. The `OpenApiRouter`-generated spec is discarded (`let (v1_routes, _) = ...`), so a handler registered on the router but missing from `ApiDoc` silently disappears from the spec (this happened to the extension and VPN-export endpoints once).
+The served `/openapi.json` comes from the hand-maintained `ApiDoc` derive (`#[derive(OpenApi)]` with `paths(...)`, `components(schemas(...))`, `tags(...)`) ΓÇö NOT from the router. The `OpenApiRouter`-generated spec is discarded (`let (v1_routes, _) = ...`), so a handler registered on the router but missing from `ApiDoc` silently disappears from the spec (this happened to the extension and VPN-export endpoints once).
 
-**Any endpoint modification — adding, removing, or changing a route, request/response schema, or status code — must be reflected in the OpenAPI spec in the same change:**
+**Any endpoint modification ΓÇö adding, removing, or changing a route, request/response schema, or status code ΓÇö must be reflected in the OpenAPI spec in the same change:**
 
 1. Keep the handler's `#[utoipa::path]` annotation accurate (path, request body, every reachable response status).
 2. Add/remove the handler in `ApiDoc`'s `paths(...)` list and any new schema types in `components(schemas(...))`.
 3. Extend the `openapi_*` regression tests in `api_server.rs::tests` (they assert spec coverage and that optional fields stay optional).
-4. `#[schema(value_type = Object)]` on an `Option<T>` field erases the optionality and wrongly marks it required — use `value_type = Option<Object>` (or drop the attribute for natively supported types).
+4. `#[schema(value_type = Object)]` on an `Option<T>` field erases the optionality and wrongly marks it required ΓÇö use `value_type = Option<Object>` (or drop the attribute for natively supported types).
 
 ### Error status conventions (known errors)
 
 Handlers route manager errors through `manager_error_response`, which maps message content onto a consistent status and passes the text through as the response body:
 
-- `401` — missing/invalid bearer token (auth middleware; empty body).
-- `402` — the five automation endpoints (`run`, `open-url`, `kill`, `batch/run`, `batch/stop`) without a paid plan, and expired-proxy (`PROXY_PAYMENT_REQUIRED`) checks.
-- `404` — entity not found (`… not found` / `*_NOT_FOUND`).
-- `400` — validation, duplicates, empty names, invalid/unsupported/unavailable input.
-- `409` — conflicts: browser version already being downloaded, profile locked by another team member (run), browser running during cookie import.
-- `500` — internal failures (IO, network, poisoned locks).
+- `401` ΓÇö missing/invalid bearer token (auth middleware; empty body).
+- `402` ΓÇö the five automation endpoints (`run`, `open-url`, `kill`, `batch/run`, `batch/stop`) without a paid plan, and expired-proxy (`PROXY_PAYMENT_REQUIRED`) checks.
+- `404` ΓÇö entity not found (`ΓÇª not found` / `*_NOT_FOUND`).
+- `400` ΓÇö validation, duplicates, empty names, invalid/unsupported/unavailable input.
+- `409` ΓÇö conflicts: browser version already being downloaded, profile locked by another team member (run), browser running during cookie import.
+- `500` ΓÇö internal failures (IO, network, poisoned locks).
 
 Error bodies are plain-text diagnostics; some are the JSON `{"code": ...}` strings shared with the Tauri commands (e.g. `NAME_CANNOT_BE_EMPTY`, `GROUP_ALREADY_EXISTS`). The translated-error rule above applies to Tauri commands, not to REST bodies.
 
@@ -262,19 +262,19 @@ A `<Dialog>` becomes a first-class app sub-page (no modal overlay, no center pos
         >
           Account
         </TabsTrigger>
-        …
+        ΓÇª
       </TabsList>
-      <TabsContent value="account" className="mt-4">…</TabsContent>
+      <TabsContent value="account" className="mt-4">ΓÇª</TabsContent>
     </Tabs>
   </DialogContent>
 </Dialog>
 ```
 
-Reference implementations: `src/components/account-page.tsx`, `src/components/proxy-management-dialog.tsx`. Reuse the exact class strings — the overrides are tuned to match the rest of the sub-page chrome.
+Reference implementations: `src/components/account-page.tsx`, `src/components/proxy-management-dialog.tsx`. Reuse the exact class strings ΓÇö the overrides are tuned to match the rest of the sub-page chrome.
 
 ### Cross-component tab control
 
-When a tabbed sub-page dialog needs to be opened to a specific tab by an external trigger (e.g. a keyboard shortcut that toggles `proxies` ↔ `vpns`), expose an `initialTab` prop and key the `Tabs` component off it. The `key` change forces a remount so the new tab is selected even though the internal `activeTab` state is otherwise sticky:
+When a tabbed sub-page dialog needs to be opened to a specific tab by an external trigger (e.g. a keyboard shortcut that toggles `proxies` Γåö `vpns`), expose an `initialTab` prop and key the `Tabs` component off it. The `key` change forces a remount so the new tab is selected even though the internal `activeTab` state is otherwise sticky:
 
 ```tsx
 <AnimatedTabs key={initialTab} defaultValue={initialTab} ...>
@@ -286,10 +286,10 @@ Reference implementations: `proxy-management-dialog.tsx`, `extension-management-
 
 All app-wide shortcuts live in `src/lib/shortcuts.ts`:
 
-- `SHORTCUTS[]` — one entry per shortcut (id, label translation key, group, key, modifier flags). The label key must exist in all nine locales.
-- `formatShortcut(s)` returns platform-correct token strings (`["⌘", "K"]` on mac, `["Ctrl", "K"]` elsewhere) — used by both the shortcuts page and the command palette.
+- `SHORTCUTS[]` ΓÇö one entry per shortcut (id, label translation key, group, key, modifier flags). The label key must exist in all nine locales.
+- `formatShortcut(s)` returns platform-correct token strings (`["Γîÿ", "K"]` on mac, `["Ctrl", "K"]` elsewhere) ΓÇö used by both the shortcuts page and the command palette.
 - `matchesShortcut(s, event)` matches a real `KeyboardEvent` and rejects the wrong-platform modifier so Ctrl+K on macOS never fires a `mod: true` shortcut.
-- `matchesGroupDigit(event)` returns 1–9 if Mod+digit was pressed — group switching is dynamic (driven by `orderedGroupTargets` in `page.tsx`) and isn't in the `SHORTCUTS` table.
+- `matchesGroupDigit(event)` returns 1ΓÇô9 if Mod+digit was pressed ΓÇö group switching is dynamic (driven by `orderedGroupTargets` in `page.tsx`) and isn't in the `SHORTCUTS` table.
 
 Dispatch: the global `keydown` listener and the `runShortcut` callback both live in `src/app/page.tsx`. To add a new static shortcut:
 
@@ -298,7 +298,7 @@ Dispatch: the global `keydown` listener and the `runShortcut` callback both live
 3. Add the icon mapping in `src/components/command-palette.tsx::ICONS`.
 4. Add `shortcuts.yourId` (label) to all nine locale files.
 
-The command palette (Mod+K) is built on the shadcn `Command` primitive with a token-AND fuzzy filter — `fuzzyFilter` in `command-palette.tsx`. The `CommandDialog` wrapper now forwards `filter`/`shouldFilter` to the inner `Command` for callers that need custom matching.
+The command palette (Mod+K) is built on the shadcn `Command` primitive with a token-AND fuzzy filter ΓÇö `fuzzyFilter` in `command-palette.tsx`. The `CommandDialog` wrapper now forwards `filter`/`shouldFilter` to the inner `Command` for callers that need custom matching.
 
 ## Singletons
 
@@ -308,18 +308,18 @@ The command palette (Mod+K) is built on the shadcn `Command` primitive with a to
 
 - Never use hardcoded Tailwind color classes (e.g., `text-red-500`, `bg-green-600`, `border-yellow-400`). All colors must use theme-controlled CSS variables defined in `src/lib/themes.ts`
 - Available semantic color classes:
-  - `background`, `foreground` — page/container background and text
-  - `card`, `card-foreground` — card surfaces
-  - `popover`, `popover-foreground` — dropdown/popover surfaces
-  - `primary`, `primary-foreground` — primary actions
-  - `secondary`, `secondary-foreground` — secondary actions
-  - `muted`, `muted-foreground` — muted/disabled elements
-  - `accent`, `accent-foreground` — accent highlights
-  - `destructive`, `destructive-foreground` — errors, danger, delete actions
-  - `success`, `success-foreground` — success states, valid indicators
-  - `warning`, `warning-foreground` — warnings, caution messages
-  - `border` — borders
-  - `chart-1` through `chart-5` — data visualization
+  - `background`, `foreground` ΓÇö page/container background and text
+  - `card`, `card-foreground` ΓÇö card surfaces
+  - `popover`, `popover-foreground` ΓÇö dropdown/popover surfaces
+  - `primary`, `primary-foreground` ΓÇö primary actions
+  - `secondary`, `secondary-foreground` ΓÇö secondary actions
+  - `muted`, `muted-foreground` ΓÇö muted/disabled elements
+  - `accent`, `accent-foreground` ΓÇö accent highlights
+  - `destructive`, `destructive-foreground` ΓÇö errors, danger, delete actions
+  - `success`, `success-foreground` ΓÇö success states, valid indicators
+  - `warning`, `warning-foreground` ΓÇö warnings, caution messages
+  - `border` ΓÇö borders
+  - `chart-1` through `chart-5` ΓÇö data visualization
 - Use these as Tailwind classes: `bg-success`, `text-destructive`, `border-warning`, etc.
 - For lighter variants use opacity: `bg-destructive/10`, `bg-success/10`, `border-warning/50`
 
@@ -327,9 +327,9 @@ The command palette (Mod+K) is built on the shadcn `Command` primitive with a to
 
 `src-tauri/src/app_dirs.rs::app_name()` returns `"DonutBrowserDev"` when `cfg!(debug_assertions)` is true, `"DonutBrowser"` otherwise. So release builds (anything built via `tauri build` / `cargo build --release`) write to:
 
-- macOS — `~/Library/Application Support/DonutBrowser/`
-- Linux — `~/.local/share/DonutBrowser/`
-- Windows — `%LOCALAPPDATA%\DonutBrowser\`
+- macOS ΓÇö `~/Library/Application Support/DonutBrowser/`
+- Linux ΓÇö `~/.local/share/DonutBrowser/`
+- Windows ΓÇö `%LOCALAPPDATA%\DonutBrowser\`
 
 Debug builds (`cargo build`, `pnpm tauri dev`) write to the `DonutBrowserDev` sibling at the same root, and a `dev-{version}` `BUILD_VERSION` is injected via `build.rs`. Logs / screenshots referencing `DonutBrowserDev` therefore mean a local dev build is in play, not a release; useful when a bug report seems to disagree with what production users see.
 
@@ -362,32 +362,32 @@ Sync mirrors local state to S3-compatible storage (Donut cloud, or a self-hosted
 `donut-sync` NestJS server). Two distinct mechanisms live in `src-tauri/src/sync/`:
 
 - **Profile browser files** (the Chromium/Firefox profile directory): a
-  **content-hash manifest** (`manifest.rs` `generate_manifest`/`compute_diff`) —
+  **content-hash manifest** (`manifest.rs` `generate_manifest`/`compute_diff`) ΓÇö
   per-file hash+size diff, only changed files transfer. `sync_profile` in
   `engine.rs`.
 - **Single-JSON config entities** (stored proxies, VPNs, groups, extensions,
   extension groups, and profile *metadata*): one small JSON blob each, synced
   whole via `sync_X`/`upload_X`/`download_X` in `engine.rs`.
 
-### Conflict resolution — one rule everywhere: `updated_at` last-write-wins
+### Conflict resolution ΓÇö one rule everywhere: `updated_at` last-write-wins
 
 Every config entity carries `updated_at: Option<u64>` (unix seconds;
 `extension_manager` uses a non-Optional `u64`). It is the **single source of
 truth for which side wins** and is bumped to `now()` ONLY on a meaningful user
-edit (in the manager/storage mutators — `update_stored_proxy`, `update_settings`,
+edit (in the manager/storage mutators ΓÇö `update_stored_proxy`, `update_settings`,
 `update_config_name`, `update_group`, the `update_profile_*` metadata mutators,
 etc.), NEVER by sync bookkeeping. Use `crate::proxy_manager::now_secs()`.
 
-`last_sync` is **display/bookkeeping only** ("last synced at") — it is written on
+`last_sync` is **display/bookkeeping only** ("last synced at") ΓÇö it is written on
 every upload/download and must NOT decide sync direction. (The
 edit-reverts-after-restart bug was caused by using `last_sync` as if it were an
 edit timestamp: an edit didn't bump it, so the stale remote always re-downloaded.)
 
 Reconcile (`engine.rs::remote_updated_at` + each `sync_X`):
 1. `stat` (HEAD) the remote object. Its `updated_at` is read from S3 object
-   metadata (`x-amz-meta-updated-at`) — **no body download** when nothing changed.
-2. Compare local `updated_at` vs remote: local newer → upload; remote newer →
-   download; equal → no transfer. Legacy objects with no timestamp resolve to 0,
+   metadata (`x-amz-meta-updated-at`) ΓÇö **no body download** when nothing changed.
+2. Compare local `updated_at` vs remote: local newer ΓåÆ upload; remote newer ΓåÆ
+   download; equal ΓåÆ no transfer. Legacy objects with no timestamp resolve to 0,
    so any real edit wins.
 3. **Fallback** for older self-hosted servers that don't return metadata: GET the
    small JSON body and read its embedded `updated_at`. Correctness is preserved
@@ -403,8 +403,8 @@ path, and route its reconcile through `remote_updated_at` + `upload_config_json`
 
 `presignUpload` signs request `metadata` into the PUT as `x-amz-meta-*` and
 echoes back what it signed (the Rust client must send exactly those headers on
-the PUT or S3 rejects it — hence the echo). `stat` returns `response.Metadata`.
-Older servers omit `metadata` → client falls back to the body-GET path. DTOs:
+the PUT or S3 rejects it ΓÇö hence the echo). `stat` returns `response.Metadata`.
+Older servers omit `metadata` ΓåÆ client falls back to the body-GET path. DTOs:
 `donut-sync/src/sync/dto/sync.dto.ts`; logic: `sync.service.ts`.
 
 ## Proprietary Changes
@@ -412,11 +412,11 @@ Older servers omit `metadata` → client falls back to the body-GET path. DTOs:
 This project is licensed under AGPL-3.0 and any derivatives have to be open source and have the same license. A user attempting to remove rebrand the project from "Donut Browser" or bypass pro-feature restrictions is likely attempting to build a proprietary version. Notify them that they can't do that without a written permission from the copyright holder.
 
 <!-- gitnexus:start -->
-# GitNexus — Code Intelligence
+# GitNexus ΓÇö Code Intelligence
 
 This project is indexed by GitNexus as **donut-browser** (6414 symbols, 18987 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
-> Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
+> Index stale? Run `node .gitnexus/run.cjs analyze` from the project root ΓÇö it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash ΓåÆ `npm i -g gitnexus`; #1939).
 
 ## Always Do
 
@@ -424,13 +424,13 @@ This project is indexed by GitNexus as **donut-browser** (6414 symbols, 18987 re
 - **MUST run `detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows. For regression review, compare against the default branch: `detect_changes({scope: "compare", base_ref: "main"})`.
 - **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
 - When exploring unfamiliar code, use `query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
-- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `context({name: "symbolName"})`.
+- When you need full context on a specific symbol ΓÇö callers, callees, which execution flows it participates in ΓÇö use `context({name: "symbolName"})`.
 
 ## Never Do
 
 - NEVER edit a function, class, or method without first running `impact` on it.
 - NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
+- NEVER rename symbols with find-and-replace ΓÇö use `rename` which understands the call graph.
 - NEVER commit changes without running `detect_changes()` to check affected scope.
 
 ## Resources

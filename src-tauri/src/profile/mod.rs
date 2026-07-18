@@ -1,3 +1,4 @@
+pub mod clear_on_close;
 pub mod cookie_manager;
 pub mod dns_blocklist;
 pub mod encryption;

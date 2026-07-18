@@ -456,6 +456,7 @@ impl ProfileManager {
       created_by_email: None,
       dns_blocklist: source.dns_blocklist,
       password_protected: false,
+      clear_on_close: source.clear_on_close,
       created_at: Some(
         std::time::SystemTime::now()
           .duration_since(std::time::UNIX_EPOCH)

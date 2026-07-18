@@ -105,6 +105,9 @@ impl BrowserRunner {
   // Ephemeral cleanup
   if profile.ephemeral {
     crate::browser::ephemeral_dirs::remove_ephemeral_dir(profile_id);
+  } else if profile.clear_on_close {
+    // Await so a queued sync sees the cleared dir, not the pre-clear snapshot.
+    crate::profile::clear_on_close::clear_profile_browsing_data(&profile).await;
   }
 
   let mut profile_updated = false;

@@ -3,7 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { LuKey } from "react-icons/lu";
+import { LuEraser, LuKey } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { translateBackendError } from "@/lib/backend-errors";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,31 @@ export function SecuritySectionInline({
   const [isVerifyOpen, setIsVerifyOpen] = React.useState(false);
   const [verifyPassword, setVerifyPassword] = React.useState("");
   const [isVerifying, setIsVerifying] = React.useState(false);
+  const [clearOnClose, setClearOnClose] = React.useState(
+    profile.clear_on_close === true,
+  );
+  const [clearOnCloseSaving, setClearOnCloseSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    setClearOnClose(profile.clear_on_close === true);
+  }, [profile.clear_on_close]);
+
+  const toggleClearOnClose = async (next: boolean) => {
+    if (profile.ephemeral || profile.password_protected) return;
+    setClearOnClose(next);
+    setClearOnCloseSaving(true);
+    try {
+      await invoke("update_profile_clear_on_close", {
+        profileId: profile.id,
+        clearOnClose: next,
+      });
+    } catch (e) {
+      setClearOnClose(!next);
+      showErrorToast(translateBackendError(tFn, e));
+    } finally {
+      setClearOnCloseSaving(false);
+    }
+  };
 
   const onVerify = async () => {
     setIsVerifying(true);
@@ -143,6 +169,32 @@ export function SecuritySectionInline({
           ? t("profileInfo.security.protected")
           : t("profileInfo.security.unprotected")}
       </p>
+
+      {!profile.ephemeral && !profile.password_protected && (
+        <div className="flex items-center gap-3 rounded-md border border-border bg-muted/40 px-3 py-2">
+          <LuEraser className="size-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium">
+              {t("profileInfo.clearOnClose.title", {
+                defaultValue: "Clear browsing data on close",
+              })}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {t("profileInfo.clearOnClose.description", {
+                defaultValue:
+                  "Wipe cookies, history, and caches when the browser exits. Extensions and bookmarks are kept.",
+              })}
+            </div>
+          </div>
+          <Switch
+            checked={clearOnClose}
+            disabled={isRunning || clearOnCloseSaving}
+            onCheckedChange={(v) => {
+              void toggleClearOnClose(v === true);
+            }}
+          />
+        </div>
+      )}
 
       {profile.password_protected && (
         <div className="flex gap-1.5">

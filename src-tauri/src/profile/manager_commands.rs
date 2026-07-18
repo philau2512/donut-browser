@@ -308,6 +308,18 @@ pub fn delete_profile(app_handle: tauri::AppHandle, profile_id: String) -> Resul
     .map_err(|e| format!("Failed to delete profile: {e}"))
 }
 
+
+#[tauri::command]
+pub fn update_profile_clear_on_close(
+  app_handle: tauri::AppHandle,
+  profile_id: String,
+  clear_on_close: bool,
+) -> Result<BrowserProfile, String> {
+  ProfileManager::instance()
+    .update_profile_clear_on_close(&app_handle, &profile_id, clear_on_close)
+    .map_err(|e| e.to_string())
+}
+
 lazy_static::lazy_static! {
   static ref PROFILE_MANAGER: ProfileManager = ProfileManager::new();
 }

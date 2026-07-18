@@ -236,6 +236,7 @@ pub fn resolve_target_profiles(
         created_by_email: None,
         dns_blocklist: None,
         password_protected: false,
+        clear_on_close: false,
         created_at: Some(now_ms() / 1000),
         updated_at: Some(now_ms() / 1000),
         profile_status: None,
