@@ -235,6 +235,12 @@ impl BrowserRunner {
   let profiles_dir = self.profile_manager.get_profiles_dir();
   let profile_data_path =
     crate::browser::ephemeral_dirs::get_effective_profile_path(&updated_profile, &profiles_dir);
+  // Materialize data dir on first open (Quick Create lazy profiles only
+  // wrote metadata.json until now).
+  std::fs::create_dir_all(&profile_data_path)
+    .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> {
+      format!("Failed to create profile data dir: {e}").into()
+    })?;
   let profile_path_str = profile_data_path.to_string_lossy().to_string();
 
   // Install extensions if an extension group is assigned

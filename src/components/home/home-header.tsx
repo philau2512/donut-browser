@@ -13,6 +13,7 @@ import {
   LuSearch,
   LuSun,
   LuX,
+  LuZap,
 } from "react-icons/lu";
 import { useTheme } from "@/components/app-shell";
 import { getCurrentOS } from "@/lib/browser-utils";
@@ -53,6 +54,7 @@ const ALL_FILTER_ID = "__all__";
 
 interface Props {
   onCreateProfileDialogOpen: (open: boolean) => void;
+  onQuickCreateDialogOpen?: (open: boolean) => void;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   groups: GroupWithCount[];
@@ -67,6 +69,7 @@ interface Props {
 
 const HomeHeader = ({
   onCreateProfileDialogOpen,
+  onQuickCreateDialogOpen,
   searchQuery,
   onSearchQueryChange,
   groups,
@@ -437,6 +440,26 @@ const HomeHeader = ({
             </TooltipTrigger>
             <TooltipContent>{t("header.createProfile")}</TooltipContent>
           </Tooltip>
+
+          {onQuickCreateDialogOpen && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="shrink-0">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      onQuickCreateDialogOpen(true);
+                    }}
+                    className="flex h-8 items-center gap-1.5 bg-blue-600 px-2.5 text-xs font-semibold text-white shadow-none hover:bg-blue-700"
+                  >
+                    <LuZap className="size-3.5" />
+                    {t("header.quickCreate")}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t("header.quickCreateTooltip")}</TooltipContent>
+            </Tooltip>
+          )}
         </div>
       )}
 

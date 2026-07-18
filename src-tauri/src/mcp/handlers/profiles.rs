@@ -460,6 +460,7 @@ impl McpServer {
         false,
         None,
         launch_hook,
+        false,
       )
       .await
       .map_err(|e| McpError {

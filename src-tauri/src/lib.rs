@@ -95,6 +95,10 @@ use sync::{
 };
 
 use profile::profile_status_manager::{get_profile_statuses, save_profile_statuses};
+use profile::quick_create_template_manager::{
+  delete_quick_create_template, list_quick_create_templates, quick_create_profiles,
+  save_quick_create_template,
+};
 use profile::tag_manager::{delete_tag, get_all_tags};
 
 use browser::default_browser::{is_default_browser, set_as_default_browser};

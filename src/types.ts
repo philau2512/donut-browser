@@ -251,6 +251,35 @@ export interface ProfileImportProgress {
   status: "importing" | "imported" | "skipped" | "failed";
 }
 
+/** Saved Quick Create template (browser defaults for bulk lazy create). */
+export interface QuickCreateTemplate {
+  id: string;
+  name: string;
+  browser: string;
+  version: string;
+  release_type: string;
+  proxy_id?: string;
+  vpn_id?: string;
+  camoufox_config?: CamoufoxConfig;
+  wayfern_config?: WayfernConfig;
+  extension_group_id?: string;
+  dns_blocklist?: string;
+  launch_hook?: string;
+  tags: string[];
+  profile_status?: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface QuickCreateProgress {
+  total: number;
+  completed: number;
+  index: number;
+  name: string;
+  status: "creating" | "created" | "failed" | "done";
+  error?: string;
+}
+
 export interface BrowserReleaseTypes {
   stable?: string;
   nightly?: string;

@@ -421,6 +421,7 @@ async fn create_profile(
       false,
       None,
       request.launch_hook.clone(),
+      false,
     )
     .await
   {

@@ -20,6 +20,7 @@ import {
   ProfilePasswordDialog,
   ProfileSelectorDialog,
   ProfileSyncDialog,
+  QuickCreateDialog,
   TagsAssignmentDialog,
 } from "@/components/profile";
 import {
@@ -76,6 +77,8 @@ interface HomeDialogsProps {
   // Dialog open states
   createProfileDialogOpen: boolean;
   setCreateProfileDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  quickCreateDialogOpen: boolean;
+  setQuickCreateDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: React.Dispatch<React.SetStateAction<boolean>>;
   aboutDialogOpen: boolean;
@@ -227,6 +230,8 @@ export function HomeDialogs({
   vpnConfigs,
   createProfileDialogOpen,
   setCreateProfileDialogOpen,
+  quickCreateDialogOpen,
+  setQuickCreateDialogOpen,
   commandPaletteOpen,
   setCommandPaletteOpen,
   aboutDialogOpen,
@@ -332,6 +337,15 @@ export function HomeDialogs({
           setCreateProfileDialogOpen(false);
         }}
         onCreateProfile={handleCreateProfile}
+        selectedGroupId={selectedGroupId}
+        crossOsUnlocked={crossOsUnlocked}
+      />
+
+      <QuickCreateDialog
+        isOpen={quickCreateDialogOpen}
+        onClose={() => {
+          setQuickCreateDialogOpen(false);
+        }}
         selectedGroupId={selectedGroupId}
         crossOsUnlocked={crossOsUnlocked}
       />

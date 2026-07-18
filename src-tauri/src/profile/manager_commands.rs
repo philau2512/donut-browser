@@ -31,6 +31,7 @@ pub async fn create_browser_profile_with_group(
       ephemeral,
       dns_blocklist,
       launch_hook,
+      false,
     )
     .await
     .map_err(|e| format!("Failed to create profile: {e}"))

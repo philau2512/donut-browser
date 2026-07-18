@@ -229,6 +229,7 @@ export default function Home() {
     "api" | "mcp"
   >("api");
   const [createProfileDialogOpen, setCreateProfileDialogOpen] = useState(false);
+  const [quickCreateDialogOpen, setQuickCreateDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [integrationsDialogOpen, setIntegrationsDialogOpen] = useState(false);
   const [importProfileDialogOpen, setImportProfileDialogOpen] = useState(false);
@@ -657,6 +658,7 @@ export default function Home() {
       <CamoufoxDeprecationDialog profiles={profiles} />
       <HomeHeader
         onCreateProfileDialogOpen={setCreateProfileDialogOpen}
+        onQuickCreateDialogOpen={setQuickCreateDialogOpen}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
         groups={groupsData}
@@ -847,6 +849,8 @@ export default function Home() {
         selectedProfiles={selectedProfiles}
         createProfileDialogOpen={createProfileDialogOpen}
         setCreateProfileDialogOpen={setCreateProfileDialogOpen}
+        quickCreateDialogOpen={quickCreateDialogOpen}
+        setQuickCreateDialogOpen={setQuickCreateDialogOpen}
         commandPaletteOpen={commandPaletteOpen}
         setCommandPaletteOpen={setCommandPaletteOpen}
         aboutDialogOpen={aboutDialogOpen}
