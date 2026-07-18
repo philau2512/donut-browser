@@ -105,3 +105,59 @@ pub fn delete_tag(app_handle: tauri::AppHandle, tag: String) -> Result<(), Strin
 lazy_static::lazy_static! {
   pub static ref TAG_MANAGER: std::sync::Mutex<TagManager> = std::sync::Mutex::new(TagManager::new());
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::profile::types::BrowserProfile;
+  use tempfile::TempDir;
+
+  fn profile_with_tags(tags: &[&str]) -> BrowserProfile {
+    BrowserProfile {
+      id: uuid::Uuid::new_v4(),
+      name: "t".into(),
+      browser: "wayfern".into(),
+      version: "1".into(),
+      tags: tags.iter().map(|s| (*s).to_string()).collect(),
+      ..Default::default()
+    }
+  }
+
+  #[test]
+  #[serial_test::serial]
+  fn smoke_empty_tags_then_rebuild_from_profiles() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = TagManager::new();
+
+    assert!(mgr.get_all_tags().unwrap().is_empty());
+
+    let profiles = vec![
+      profile_with_tags(&["alpha", "beta"]),
+      profile_with_tags(&["beta", "gamma"]),
+    ];
+    let all = mgr.rebuild_from_profiles(&profiles).unwrap();
+    assert_eq!(all, vec!["alpha", "beta", "gamma"]);
+
+    // Preserve global tags not on profiles
+    let _ = mgr.rebuild_from_profiles(&[profile_with_tags(&["delta"])]);
+    let after = mgr.get_all_tags().unwrap();
+    assert!(after.contains(&"alpha".to_string()));
+    assert!(after.contains(&"delta".to_string()));
+  }
+
+  #[test]
+  #[serial_test::serial]
+  fn smoke_delete_tag() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = TagManager::new();
+    mgr
+      .rebuild_from_profiles(&[profile_with_tags(&["keep", "drop"])])
+      .unwrap();
+    mgr.delete_tag("drop").unwrap();
+    let tags = mgr.get_all_tags().unwrap();
+    assert!(tags.contains(&"keep".to_string()));
+    assert!(!tags.contains(&"drop".to_string()));
+  }
+}

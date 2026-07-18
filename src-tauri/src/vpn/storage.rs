@@ -553,4 +553,34 @@ mod tests {
     let result = storage.load_config("nonexistent");
     assert!(result.is_err());
   }
+
+  /// VN-01 smoke: save/list/delete WireGuard config store (encrypted at rest).
+  #[test]
+  fn smoke_vpn_config_store_crud() {
+    let (storage, _temp) = create_test_storage();
+    let config = VpnConfig {
+      id: "smoke-vpn".into(),
+      name: "Smoke WG".into(),
+      vpn_type: VpnType::WireGuard,
+      config_data: "[Interface]\nPrivateKey = abc\n[Peer]\nPublicKey = def".into(),
+      created_at: 1,
+      last_used: None,
+      sync_enabled: false,
+      last_sync: None,
+      updated_at: Some(1),
+    };
+    storage.save_config(&config).unwrap();
+    let loaded = storage.load_config("smoke-vpn").unwrap();
+    assert_eq!(loaded.name, "Smoke WG");
+    assert!(!loaded.config_data.is_empty());
+
+    let listed = storage.list_configs().unwrap();
+    assert!(listed.iter().any(|c| c.id == "smoke-vpn"));
+    // Listing redacts secrets
+    let list_item = listed.iter().find(|c| c.id == "smoke-vpn").unwrap();
+    assert!(list_item.config_data.is_empty());
+
+    storage.delete_config("smoke-vpn").unwrap();
+    assert!(storage.load_config("smoke-vpn").is_err());
+  }
 }
