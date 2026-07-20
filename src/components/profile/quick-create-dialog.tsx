@@ -50,6 +50,8 @@ import type {
   WayfernOS,
 } from "@/types";
 
+import { QuickCreateTemplateEditor } from "./quick-create-template-editor";
+
 const NONE = QUICK_CREATE_NONE;
 const MAX_QTY = QUICK_CREATE_MAX_QTY;
 
@@ -312,14 +314,6 @@ export function QuickCreateDialog({
     ? quickCreateProgressPercent(progress.completed, progress.total)
     : 0;
 
-  const osOptions: WayfernOS[] = [
-    "windows",
-    "macos",
-    "linux",
-    "android",
-    "ios",
-  ];
-
   return (
     <>
       <Dialog
@@ -328,7 +322,7 @@ export function QuickCreateDialog({
           if (!open && !isCreating) onClose();
         }}
       >
-        <DialogContent className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-hidden p-0">
+        <DialogContent className="flex h-[88vh] w-[94vw] max-w-6xl flex-col gap-0 overflow-hidden p-0">
           <div className="border-b px-6 py-4">
             <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
               <LuZap className="size-5 text-blue-500" />
@@ -530,9 +524,8 @@ export function QuickCreateDialog({
                     </div>
                   )}
 
-                  {/* Editor */}
-                  <div className="space-y-3 rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
+                  <div className="rounded-lg border p-4">
+                    <div className="mb-4 flex items-center justify-between">
                       <Label className="text-sm font-semibold">
                         {editingId
                           ? t("quickCreate.editTemplate")
@@ -554,215 +547,37 @@ export function QuickCreateDialog({
                         </Button>
                       )}
                     </div>
-
-                    <div className="space-y-2">
-                      <Label>{t("quickCreate.templateName")}</Label>
-                      <Input
-                        value={draft.name}
-                        onChange={(e) =>
-                          setDraft((d) => ({ ...d, name: e.target.value }))
-                        }
-                        placeholder={t("quickCreate.templateNamePlaceholder")}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label>{t("quickCreate.browser")}</Label>
-                        <Select
-                          value={draft.browser}
-                          onValueChange={(v) =>
-                            setDraft((d) => ({
-                              ...d,
-                              browser: v as "wayfern" | "camoufox",
-                            }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="wayfern">Wayfern</SelectItem>
-                            <SelectItem value="camoufox">Camoufox</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>{t("quickCreate.version")}</Label>
-                        <Select
-                          value={draft.version || undefined}
-                          onValueChange={(v) =>
-                            setDraft((d) => ({ ...d, version: v }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={t("quickCreate.selectVersion")}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {versions.map((v) => (
-                              <SelectItem key={v} value={v}>
-                                {v}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>{t("quickCreate.fingerprintOs")}</Label>
-                      <Select
-                        value={draft.os}
-                        onValueChange={(v) =>
-                          setDraft((d) => ({ ...d, os: v as WayfernOS }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {osOptions.map((os) => (
-                            <SelectItem
-                              key={os}
-                              value={os}
-                              disabled={!crossOsUnlocked && os !== hostOs}
-                            >
-                              {os}
-                              {!crossOsUnlocked && os !== hostOs
-                                ? " (Pro)"
-                                : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>{t("quickCreate.proxy")}</Label>
-                      <Select
-                        value={draft.proxySelection}
-                        onValueChange={(v) =>
-                          setDraft((d) => ({ ...d, proxySelection: v }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("quickCreate.noProxy")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={NONE}>
-                            {t("quickCreate.noProxy")}
-                          </SelectItem>
-                          {storedProxies.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              {p.name}
-                            </SelectItem>
-                          ))}
-                          {vpnConfigs.map((v) => (
-                            <SelectItem key={v.id} value={`vpn-${v.id}`}>
-                              VPN · {v.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>{t("quickCreate.extensionGroup")}</Label>
-                      <Select
-                        value={draft.extension_group_id}
-                        onValueChange={(v) =>
-                          setDraft((d) => ({ ...d, extension_group_id: v }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={t("quickCreate.noExtensionGroup")}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={NONE}>
-                            {t("quickCreate.noExtensionGroup")}
-                          </SelectItem>
-                          {extensionGroups.map((g) => (
-                            <SelectItem key={g.id} value={g.id}>
-                              {g.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>{t("quickCreate.status")}</Label>
-                      <Select
-                        value={draft.profile_status}
-                        onValueChange={(v) =>
-                          setDraft((d) => ({ ...d, profile_status: v }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={t("quickCreate.noStatus")}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={NONE}>
-                            {t("quickCreate.noStatus")}
-                          </SelectItem>
-                          {statuses.map((s) => (
-                            <SelectItem key={s.label} value={s.label}>
-                              {s.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>{t("quickCreate.tags")}</Label>
-                      <Input
-                        value={draft.tags}
-                        onChange={(e) =>
-                          setDraft((d) => ({ ...d, tags: e.target.value }))
-                        }
-                        placeholder={t("quickCreate.tagsPlaceholder")}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>{t("quickCreate.launchHook")}</Label>
-                      <Input
-                        value={draft.launch_hook}
-                        onChange={(e) =>
-                          setDraft((d) => ({
-                            ...d,
-                            launch_hook: e.target.value,
-                          }))
-                        }
-                        placeholder="https://..."
-                      />
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-1">
-                      <Button
-                        onClick={() => void handleSaveTemplate()}
-                        disabled={isSaving}
-                      >
-                        {isSaving && (
-                          <LuLoaderCircle className="mr-1.5 size-3.5 animate-spin" />
-                        )}
-                        {editingId
-                          ? t("common.buttons.save")
-                          : t("quickCreate.saveTemplate")}
-                      </Button>
-                    </div>
+                    <QuickCreateTemplateEditor
+                      draft={draft}
+                      onDraftChange={setDraft}
+                      versions={versions}
+                      storedProxies={storedProxies}
+                      vpnConfigs={vpnConfigs}
+                      extensionGroups={extensionGroups}
+                      statuses={statuses}
+                      hostOs={hostOs}
+                      crossOsUnlocked={crossOsUnlocked}
+                      isSaving={isSaving}
+                    />
                   </div>
                 </TabsContent>
               </div>
             </ScrollArea>
+            {tab === "templates" && (
+              <div className="flex shrink-0 justify-end border-t bg-background px-6 py-4">
+                <Button
+                  onClick={() => void handleSaveTemplate()}
+                  disabled={isSaving}
+                >
+                  {isSaving && (
+                    <LuLoaderCircle className="mr-1.5 size-3.5 animate-spin" />
+                  )}
+                  {editingId
+                    ? t("common.buttons.save")
+                    : t("quickCreate.saveTemplate")}
+                </Button>
+              </div>
+            )}
           </Tabs>
         </DialogContent>
       </Dialog>

@@ -3,7 +3,12 @@
  * Kept free of React so unit tests can cover serialization without UI.
  */
 
-import type { QuickCreateTemplate, WayfernConfig, WayfernOS } from "@/types";
+import type {
+  QuickCreateTemplate,
+  WayfernConfig,
+  WayfernFingerprintConfig,
+  WayfernOS,
+} from "@/types";
 
 export const QUICK_CREATE_NONE = "__none__";
 export const QUICK_CREATE_MAX_QTY = 100;
@@ -22,6 +27,9 @@ export type QuickCreateTemplateDraft = {
   launch_hook: string;
   tags: string;
   profile_status: string;
+  fingerprint_overrides: WayfernFingerprintConfig;
+  auto_location: boolean;
+  ephemeral: boolean;
 };
 
 export function emptyQuickCreateDraft(os: WayfernOS): QuickCreateTemplateDraft {
@@ -38,6 +46,9 @@ export function emptyQuickCreateDraft(os: WayfernOS): QuickCreateTemplateDraft {
     launch_hook: "",
     tags: "",
     profile_status: QUICK_CREATE_NONE,
+    fingerprint_overrides: {},
+    auto_location: true,
+    ephemeral: false,
   };
 }
 
@@ -66,6 +77,9 @@ export function draftFromTemplate(
     launch_hook: t.launch_hook ?? "",
     tags: (t.tags ?? []).join(", "),
     profile_status: t.profile_status ?? QUICK_CREATE_NONE,
+    fingerprint_overrides: t.fingerprint_overrides ?? {},
+    auto_location: t.wayfern_config?.geoip !== false,
+    ephemeral: t.ephemeral ?? false,
   };
 }
 
@@ -88,7 +102,7 @@ export function draftToTemplate(
     d.browser === "wayfern"
       ? {
           os: d.os,
-          geoip: true,
+          geoip: d.auto_location,
         }
       : undefined;
 
@@ -96,7 +110,7 @@ export function draftToTemplate(
     d.browser === "camoufox"
       ? {
           os: d.os as "windows" | "macos" | "linux",
-          geoip: true,
+          geoip: d.auto_location,
         }
       : undefined;
 
@@ -119,6 +133,8 @@ export function draftToTemplate(
     tags,
     profile_status:
       d.profile_status !== QUICK_CREATE_NONE ? d.profile_status : undefined,
+    fingerprint_overrides: d.fingerprint_overrides,
+    ephemeral: d.ephemeral,
     created_at: 0,
     updated_at: 0,
   };

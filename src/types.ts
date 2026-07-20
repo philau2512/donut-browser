@@ -267,6 +267,14 @@ export interface QuickCreateTemplate {
   launch_hook?: string;
   tags: string[];
   profile_status?: string;
+  /**
+   * Fields intentionally preserved when Quick Create generates a fresh
+   * fingerprint for each profile. The generated sample provides uniqueness;
+   * these values carry the template's location and hardware decisions.
+   */
+  fingerprint_overrides?: WayfernFingerprintConfig;
+  /** Keep profile data in memory after Quick Create. */
+  ephemeral?: boolean;
   created_at: number;
   updated_at: number;
 }

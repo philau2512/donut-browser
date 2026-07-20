@@ -108,6 +108,36 @@ describe("quick-create helpers", () => {
       expect(tpl.wayfern_config).toBeUndefined();
     });
 
+    it("preserves reusable fingerprint overrides without storing a fingerprint", () => {
+      const draft = {
+        ...emptyQuickCreateDraft("windows"),
+        name: "Hardware preset",
+        version: "2",
+        auto_location: false,
+        ephemeral: true,
+        fingerprint_overrides: {
+          screenWidth: 1440,
+          screenHeight: 900,
+          hardwareConcurrency: 8,
+          language: "vi-VN",
+        },
+      };
+
+      const template = draftToTemplate(draft);
+      expect(template.fingerprint_overrides).toEqual(
+        draft.fingerprint_overrides,
+      );
+      expect(template.ephemeral).toBe(true);
+      expect(template.wayfern_config).toEqual({ os: "windows", geoip: false });
+
+      const restored = draftFromTemplate(template, "linux");
+      expect(restored.auto_location).toBe(false);
+      expect(restored.ephemeral).toBe(true);
+      expect(restored.fingerprint_overrides).toEqual(
+        draft.fingerprint_overrides,
+      );
+    });
+
     it("falls back OS when template has none", () => {
       const tpl = sampleTemplate({
         wayfern_config: undefined,

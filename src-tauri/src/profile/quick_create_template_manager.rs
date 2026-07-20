@@ -476,6 +476,10 @@ pub struct QuickCreateTemplate {
   #[serde(default)]
   pub profile_status: Option<String>,
   #[serde(default)]
+  pub fingerprint_overrides: serde_json::Value,
+  #[serde(default)]
+  pub ephemeral: bool,
+  #[serde(default)]
   pub created_at: u64,
   #[serde(default)]
   pub updated_at: u64,
@@ -671,6 +675,50 @@ fn config_for_create(
   (camoufox, wayfern)
 }
 
+fn apply_template_fingerprint_overrides(
+  profile: &mut BrowserProfile,
+  overrides: &serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+  let Some(template_overrides) = overrides.as_object() else {
+    return Ok(());
+  };
+
+  let fingerprint = match profile.browser.as_str() {
+    "wayfern" => profile
+      .wayfern_config
+      .as_mut()
+      .and_then(|config| config.fingerprint.as_mut()),
+    "camoufox" => profile
+      .camoufox_config
+      .as_mut()
+      .and_then(|config| config.fingerprint.as_mut()),
+    _ => None,
+  };
+
+  let Some(fingerprint) = fingerprint else {
+    return Ok(());
+  };
+  let mut generated: serde_json::Value = serde_json::from_str(fingerprint)?;
+  let target_value = if generated.get("fingerprint").is_some() {
+    generated
+      .get_mut("fingerprint")
+      .expect("checked fingerprint wrapper")
+  } else {
+    &mut generated
+  };
+  let target = target_value
+    .as_object_mut()
+    .ok_or("Generated fingerprint must be a JSON object")?;
+
+  for (key, value) in template_overrides {
+    if !value.is_null() {
+      target.insert(key.clone(), value.clone());
+    }
+  }
+  *fingerprint = serde_json::to_string(&generated)?;
+  Ok(())
+}
+
 lazy_static::lazy_static! {
   pub static ref QUICK_CREATE_TEMPLATE_MANAGER: std::sync::Mutex<QuickCreateTemplateManager> =
     std::sync::Mutex::new(QuickCreateTemplateManager::new());
@@ -782,7 +830,7 @@ pub async fn quick_create_profiles(
         camoufox_config,
         wayfern_config,
         group_id.clone(),
-        false, // not ephemeral
+        template.ephemeral,
         template.dns_blocklist.clone(),
         template.launch_hook.clone(),
         true, // skip_data_dir — lazy materialize on first open
@@ -790,6 +838,17 @@ pub async fn quick_create_profiles(
       .await
     {
       Ok(mut profile) => {
+        if let Err(error) =
+          apply_template_fingerprint_overrides(&mut profile, &template.fingerprint_overrides)
+        {
+          return Err(format!(
+            "Failed to apply template fingerprint overrides: {error}"
+          ));
+        }
+        profile_manager
+          .save_profile(&profile)
+          .map_err(|error| format!("Failed to persist template fingerprint overrides: {error}"))?;
+
         // Tags
         if !template.tags.is_empty() {
           if let Ok(updated) = profile_manager.update_profile_tags(
@@ -895,6 +954,8 @@ mod tests {
       launch_hook: None,
       tags: vec!["bulk".into()],
       profile_status: Some("New".into()),
+      fingerprint_overrides: serde_json::json!({}),
+      ephemeral: false,
       created_at: 0,
       updated_at: 0,
     }
@@ -1023,6 +1084,45 @@ mod tests {
     assert!(tpl.wayfern_config.as_ref().unwrap().fingerprint.is_none());
     assert!(tpl.camoufox_config.as_ref().unwrap().fingerprint.is_none());
     assert!(tpl.camoufox_config.as_ref().unwrap().proxy.is_none());
+  }
+
+  #[test]
+  fn template_fingerprint_overrides_merge_onto_generated_fingerprint() {
+    let mut profile = BrowserProfile {
+      browser: "wayfern".into(),
+      wayfern_config: Some(WayfernConfig {
+        fingerprint: Some(
+          serde_json::json!({
+            "userAgent": "generated",
+            "screenWidth": 1920,
+          })
+          .to_string(),
+        ),
+        ..Default::default()
+      }),
+      ..Default::default()
+    };
+
+    apply_template_fingerprint_overrides(
+      &mut profile,
+      &serde_json::json!({
+        "screenWidth": 1440,
+        "hardwareConcurrency": 8,
+      }),
+    )
+    .unwrap();
+
+    let fingerprint: serde_json::Value = serde_json::from_str(
+      profile
+        .wayfern_config
+        .as_ref()
+        .and_then(|config| config.fingerprint.as_deref())
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(fingerprint["userAgent"], "generated");
+    assert_eq!(fingerprint["screenWidth"], 1440);
+    assert_eq!(fingerprint["hardwareConcurrency"], 8);
   }
 
   #[test]
