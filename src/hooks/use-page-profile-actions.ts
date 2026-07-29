@@ -151,14 +151,10 @@ export function usePageProfileActions({
         // Non-blocking: never fail launch if the check itself errors.
         if (profile.proxy_id) {
           try {
-            const {
-              isConsistencyWarningEnabled,
-              isConsistencyWarningSuppressed,
-            } = await import("@/components/consistency-warning-dialog");
-            if (
-              isConsistencyWarningEnabled() &&
-              !isConsistencyWarningSuppressed(profile.id)
-            ) {
+            const { isConsistencyWarningSuppressed } = await import(
+              "@/components/consistency-warning-dialog"
+            );
+            if (!isConsistencyWarningSuppressed(profile.id)) {
               const res = await invoke<{
                 checked: boolean;
                 consistent: boolean;

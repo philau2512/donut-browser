@@ -18,17 +18,10 @@ pub(crate) fn backend_error(code: &str) -> String {
   serde_json::json!({ "code": code }).to_string()
 }
 
-pub(crate) fn backend_error_with_detail(code: &str, detail: impl std::fmt::Display) -> String {
-  serde_json::json!({ "code": code, "params": { "detail": detail.to_string() } }).to_string()
-}
-
-pub(crate) fn wrap_backend_error(error: impl std::fmt::Display, context: &str) -> String {
-  let message = error.to_string();
-  if message.starts_with('{') {
-    message
-  } else {
-    backend_error_with_detail("INTERNAL_ERROR", format!("{context}: {message}"))
-  }
+#[cfg(feature = "e2e")]
+pub(crate) fn e2e_automation_enabled() -> bool {
+  std::env::var("TAURI_AUTOMATION")
+    .is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
 }
 
 pub mod api;

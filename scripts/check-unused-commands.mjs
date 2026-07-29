@@ -18,6 +18,11 @@ const mcpOnlyCommands = [
   "cloud_get_wayfern_token",
   "cloud_refresh_wayfern_token",
   "lock_profile",
+  // Public cloud-location API retained for external clients. The current
+  // application UI only uses country-level cloud proxy selection.
+  "cloud_get_regions",
+  "cloud_get_cities",
+  "cloud_get_isps",
   // Storage custom configuration and state commands used by API/MCP
   "get_custom_storage_path",
   "is_custom_storage_active",

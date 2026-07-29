@@ -1,4 +1,3 @@
-export { LocationProxyDialog } from "./location-proxy-dialog";
 export { ProxyAssignmentDialog } from "./proxy-assignment-dialog";
 export { ProxyCheckButton } from "./proxy-check-button";
 export { ProxyExportDialog } from "./proxy-export-dialog";
