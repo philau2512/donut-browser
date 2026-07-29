@@ -1,8 +1,7 @@
-# Γ¢ö ABSOLUTE GIT RULE ΓÇö READ FIRST (2026-06-11)
-
-**NEVER run any git command that modifies git history OR the working tree, in ANY repo** (wayfern, wayfern-macos, wayfern-test, donutbrowser, build/src), **unless the user EXPLICITLY authorizes that exact command.** Forbidden without per-command authorization: `commit`, `revert`, `cherry-pick`, `restore`, `checkout` (files/branches), `reset`, `rebase`, `merge`, `stash`, `clean`, `apply`, `add`, `rm`, `push`, any force op. Only read-only git (`status`, `log`, `show`, `diff`, `ls-files`, `rev-parse`) is allowed without asking. **Authorization is per-command: 1 explicit authorization = exactly 1 command.** If a git mutation seems needed, STOP and ask for that one command.
-
----
+Git mutations such as branch, merge, add, and commit are allowed when needed
+for the user-requested task. Never run destructive commands such as
+git reset --hard, git clean -fd, git restore ., git checkout -- ., force push,
+or delete branches without explicit user approval. Never push unless requested.
 
 # Project Guidelines
 
