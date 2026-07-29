@@ -1,8 +1,3 @@
-Git mutations such as branch, merge, add, and commit are allowed when needed
-for the user-requested task. Never run destructive commands such as
-git reset --hard, git clean -fd, git restore ., git checkout -- ., force push,
-or delete branches without explicit user approval. Never push unless requested.
-
 # Project Guidelines
 
 > **NOTE**: CLAUDE.md is a symlink to AGENTS.md ΓÇö editing either file updates both.
