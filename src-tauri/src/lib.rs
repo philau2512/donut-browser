@@ -14,6 +14,23 @@ static PENDING_URLS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 // to the confirmation dialog.
 static QUIT_CONFIRMED: AtomicBool = AtomicBool::new(false);
 
+pub(crate) fn backend_error(code: &str) -> String {
+  serde_json::json!({ "code": code }).to_string()
+}
+
+pub(crate) fn backend_error_with_detail(code: &str, detail: impl std::fmt::Display) -> String {
+  serde_json::json!({ "code": code, "params": { "detail": detail.to_string() } }).to_string()
+}
+
+pub(crate) fn wrap_backend_error(error: impl std::fmt::Display, context: &str) -> String {
+  let message = error.to_string();
+  if message.starts_with('{') {
+    message
+  } else {
+    backend_error_with_detail("INTERNAL_ERROR", format!("{context}: {message}"))
+  }
+}
+
 pub mod api;
 pub use api::{api_client, api_server, cloud_auth};
 pub mod updater;
@@ -23,6 +40,7 @@ pub mod profile;
 pub mod proxy;
 pub mod settings;
 pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic_stats};
+mod automation_rate_limiter;
 pub mod events;
 pub mod fingerprint_consistency;
 pub mod mcp;

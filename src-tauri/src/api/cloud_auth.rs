@@ -51,24 +51,45 @@ pub struct Entitlements {
 
 /// Local fallback mirror of the backend plan -> capability matrix, used only when
 /// the server hasn't sent an entitlements object (older cached state / backend).
-///
-/// NOTE: All entitlements are currently unlocked for all users regardless of
-/// plan. This bypasses the original paywall logic.
 fn derive_entitlements(
-  _plan: &str,
-  _plan_period: Option<&str>,
-  _subscription_status: &str,
+  plan: &str,
+  plan_period: Option<&str>,
+  subscription_status: &str,
   profile_limit: i64,
 ) -> Entitlements {
-  // All features unlocked for all users
+  let active =
+    plan != "free" && (subscription_status == "active" || plan_period == Some("lifetime"));
+
+  if !active {
+    return Entitlements {
+      active: false,
+      browser_automation: false,
+      cross_os_fingerprints: false,
+      cloud_backup: false,
+      team_collaboration: false,
+      profile_limit: 0,
+      requests_per_hour: 0,
+    };
+  }
+
+  let (browser_automation, cross_os_fingerprints, cloud_backup, team_collaboration) = match plan {
+    "starter" => (false, true, true, false),
+    "team" | "enterprise" => (true, true, true, true),
+    _ => (true, true, true, false),
+  };
+
   Entitlements {
-    active: true,
-    browser_automation: true,
-    cross_os_fingerprints: true,
-    cloud_backup: true,
-    team_collaboration: true,
+    active,
+    browser_automation,
+    cross_os_fingerprints,
+    cloud_backup,
+    team_collaboration,
     profile_limit,
-    requests_per_hour: DEFAULT_REQUESTS_PER_HOUR,
+    requests_per_hour: if browser_automation {
+      DEFAULT_REQUESTS_PER_HOUR
+    } else {
+      0
+    },
   }
 }
 
@@ -115,18 +136,16 @@ pub struct CloudUser {
 
 impl CloudUser {
   /// Authoritative entitlements: the server-sent set when present, else derived
-  /// locally from the plan fields (keeps older cached state / backends working).
-  ///
-  /// NOTE: Currently bypasses server-sent entitlements to unlock all features
-  /// for all users. Passes profile_limit through for informational purposes.
+  /// locally from the plan fields for older cached state or backend payloads.
   pub fn entitlements(&self) -> Entitlements {
-    // Bypass server-sent entitlements; always derive locally (all unlocked)
-    derive_entitlements(
-      &self.plan,
-      self.plan_period.as_deref(),
-      &self.subscription_status,
-      self.profile_limit,
-    )
+    self.entitlements.clone().unwrap_or_else(|| {
+      derive_entitlements(
+        &self.plan,
+        self.plan_period.as_deref(),
+        &self.subscription_status,
+        self.profile_limit,
+      )
+    })
   }
 }
 

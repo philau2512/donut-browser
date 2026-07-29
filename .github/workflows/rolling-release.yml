@@ -44,7 +44,6 @@ jobs:
     if: github.repository == 'zhom/donutbrowser'
     name: Lint JavaScript/TypeScript
     uses: ./.github/workflows/lint-js.yml
-    secrets: inherit
     permissions:
       contents: read
 
@@ -52,7 +51,6 @@ jobs:
     if: github.repository == 'zhom/donutbrowser'
     name: Lint Rust
     uses: ./.github/workflows/lint-rs.yml
-    secrets: inherit
     permissions:
       contents: read
 
@@ -60,7 +58,6 @@ jobs:
     if: github.repository == 'zhom/donutbrowser'
     name: CodeQL
     uses: ./.github/workflows/codeql.yml
-    secrets: inherit
     permissions:
       security-events: write
       contents: read
@@ -71,7 +68,6 @@ jobs:
     if: github.repository == 'zhom/donutbrowser'
     name: Spell Check
     uses: ./.github/workflows/spellcheck.yml
-    secrets: inherit
     permissions:
       contents: read
 
@@ -112,7 +108,7 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 #v6.0.9
@@ -164,9 +160,25 @@ jobs:
           echo "Checking from src-tauri perspective:"
           ls -la src-tauri/../dist || echo "Warning: dist not accessible from src-tauri"
 
+      - name: Generate nightly timestamp
+        id: timestamp
+        shell: bash
+        run: |
+          # Committer date, not wall clock: every job in this run (including
+          # update-nightly-release, which runs much later) must derive the
+          # exact same tag, or a run straddling midnight UTC splits the
+          # release from its checksums.
+          TIMESTAMP=$(git show -s --format=%cs HEAD)
+          COMMIT_HASH=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "timestamp=${TIMESTAMP}-${COMMIT_HASH}" >> $GITHUB_OUTPUT
+          echo "Generated timestamp: ${TIMESTAMP}-${COMMIT_HASH}"
+
       - name: Build sidecar binaries
         shell: bash
         working-directory: ./src-tauri
+        env:
+          BUILD_TAG: "nightly-${{ steps.timestamp.outputs.timestamp }}"
+          GITHUB_REF_NAME: "nightly-${{ steps.timestamp.outputs.timestamp }}"
         run: |
           cargo build --bin donut-proxy --target ${{ matrix.target }} --release
 
@@ -214,19 +226,6 @@ jobs:
 
           rm -f $CERT_PATH $KEY_PATH $PEM_PATH $P12_PATH
 
-      - name: Generate nightly timestamp
-        id: timestamp
-        shell: bash
-        run: |
-          # Committer date, not wall clock: every job in this run (including
-          # update-nightly-release, which runs much later) must derive the
-          # exact same tag, or a run straddling midnight UTC splits the
-          # release from its checksums.
-          TIMESTAMP=$(git show -s --format=%cs HEAD)
-          COMMIT_HASH=$(echo "${GITHUB_SHA}" | cut -c1-7)
-          echo "timestamp=${TIMESTAMP}-${COMMIT_HASH}" >> $GITHUB_OUTPUT
-          echo "Generated timestamp: ${TIMESTAMP}-${COMMIT_HASH}"
-
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f #v1.0.0
         env:
@@ -238,6 +237,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          TARGET: ${{ matrix.target }}
           # tauri-action's inner `pnpm tauri build` re-runs beforeBuildCommand
           # which rebuilds dist/ in a subprocess. The env var must be here too.
           NEXT_PUBLIC_TURNSTILE: ${{ secrets.NEXT_PUBLIC_TURNSTILE }}
@@ -296,7 +296,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
       - name: Generate nightly tag
         id: tag
@@ -416,7 +416,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Cloudflare Pages deployment
-        run: curl -fsSL -X POST "${{ secrets.CLOUDFLARE_WEB_DEPLOYMENT_HOOK }}"
+        env:
+          DEPLOYMENT_HOOK: ${{ secrets.CLOUDFLARE_WEB_DEPLOYMENT_HOOK }}
+        run: curl -fsSL -X POST "$DEPLOYMENT_HOOK"
 
   notify-discord:
     if: github.repository == 'zhom/donutbrowser'

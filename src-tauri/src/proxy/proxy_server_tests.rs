@@ -2,6 +2,7 @@
 mod tests {
   use crate::proxy::proxy_runner::{start_proxy_process, stop_proxy_process};
   use crate::proxy::proxy_storage::{generate_proxy_id, list_proxy_configs};
+  use serial_test::serial;
   use std::time::Duration;
   use tokio::time::sleep;
 
@@ -35,6 +36,7 @@ mod tests {
   }
 
   #[tokio::test]
+  #[serial]
   async fn test_proxy_process_lifecycle() {
     // Start a direct proxy
     let config = start_proxy_process(None, Some(0)).await.unwrap();
@@ -56,6 +58,7 @@ mod tests {
   }
 
   #[tokio::test]
+  #[serial]
   async fn test_proxy_with_upstream_http() {
     // Start a proxy with HTTP upstream (using a non-existent proxy for testing)
     let upstream_url = "http://127.0.0.1:9999";
@@ -73,6 +76,7 @@ mod tests {
   }
 
   #[tokio::test]
+  #[serial]
   async fn test_proxy_with_upstream_socks5() {
     // Start a proxy with SOCKS5 upstream
     let upstream_url = "socks5://127.0.0.1:1080";
@@ -90,6 +94,7 @@ mod tests {
   }
 
   #[tokio::test]
+  #[serial]
   async fn test_proxy_port_assignment() {
     // Start multiple proxies and verify they get different ports
     let config1 = start_proxy_process(None, None).await.unwrap();
@@ -105,6 +110,7 @@ mod tests {
   }
 
   #[tokio::test]
+  #[serial]
   async fn test_proxy_list() {
     // Start a few proxies
     let config1 = start_proxy_process(None, None).await.unwrap();

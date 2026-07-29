@@ -151,6 +151,26 @@ impl CloudAuthManager {
       .unwrap_or(0)
   }
 
+  /// Identity and positive per-hour cap for the shared REST/MCP automation
+  /// limiter. No active automation entitlement means no limiter entry; the
+  /// capability gates still reject paid operations independently.
+  pub async fn automation_rate_limit(&self) -> Option<(String, u64)> {
+    #[cfg(feature = "e2e")]
+    if crate::e2e_automation_enabled() {
+      if let Ok(limit) = std::env::var("DONUT_E2E_REQUESTS_PER_HOUR") {
+        if let Ok(limit) = limit.parse::<u64>() {
+          if limit > 0 {
+            return Some(("e2e-automation".to_string(), limit));
+          }
+        }
+      }
+    }
+
+    let state = self.get_user().await?;
+    let limit = state.user.entitlements().requests_per_hour;
+    (limit > 0).then_some((state.user.id, limit as u64))
+  }
+
   pub async fn is_fingerprint_os_allowed(&self, fingerprint_os: Option<&str>) -> bool {
     let host_os = crate::profile::types::get_host_os();
     match fingerprint_os {

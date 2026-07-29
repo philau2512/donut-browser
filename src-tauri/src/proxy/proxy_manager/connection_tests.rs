@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
   use super::*;
+  use serial_test::serial;
   use std::env;
   use std::path::PathBuf;
   use std::time::Duration;
@@ -160,6 +161,7 @@ mod tests {
 
   // Integration test that actually builds and uses donut-proxy binary
   #[tokio::test]
+  #[serial]
   async fn test_proxy_integration_with_real_proxy() -> Result<(), Box<dyn std::error::Error>> {
     // This test requires donut-proxy binary to be available
     // Skip if we can't find the binary or if proxy startup fails

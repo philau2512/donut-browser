@@ -3,6 +3,69 @@ use std::fs;
 use std::process::Command;
 
 impl AppAutoUpdater {
+  #[cfg(any(target_os = "windows", test))]
+  async fn prepare_windows_installer(
+    &self,
+  ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let profiles = match crate::profile::manager::ProfileManager::instance().list_profiles() {
+      Ok(profiles) => profiles,
+      Err(error) => {
+        log::error!("Failed to inspect running profiles before app update: {error}");
+        return Err(crate::backend_error("UPDATE_PREPARATION_FAILED").into());
+      }
+    };
+
+    if profiles.into_iter().any(|profile| {
+      profile
+        .process_id
+        .is_some_and(|pid| pid != 0 && crate::proxy::proxy_storage::is_process_running(pid))
+    }) {
+      return Err(crate::backend_error("UPDATE_PROFILES_RUNNING").into());
+    }
+
+    let proxy_configs = crate::proxy::proxy_storage::list_proxy_configs();
+    let vpn_configs = crate::vpn::vpn_worker_storage::list_vpn_worker_configs();
+    let mut worker_pids: Vec<u32> = proxy_configs
+      .iter()
+      .filter_map(|config| config.pid)
+      .chain(vpn_configs.iter().filter_map(|config| config.pid))
+      .collect();
+    worker_pids.sort_unstable();
+    worker_pids.dedup();
+
+    let proxy_ids = proxy_configs
+      .into_iter()
+      .map(|config| config.id)
+      .collect::<Vec<_>>();
+    let vpn_ids = vpn_configs
+      .into_iter()
+      .map(|config| config.id)
+      .collect::<Vec<_>>();
+    for id in proxy_ids {
+      if let Err(error) = crate::proxy::proxy_runner::stop_proxy_process(&id).await {
+        log::warn!("Failed to stop a proxy worker before app update: {error}");
+      }
+    }
+    for id in vpn_ids {
+      if let Err(error) = crate::vpn::vpn_worker_runner::stop_vpn_worker(&id).await {
+        log::warn!("Failed to stop a VPN worker before app update: {error}");
+      }
+    }
+
+    for _ in 0..20 {
+      if worker_pids
+        .iter()
+        .all(|pid| !crate::proxy::proxy_storage::is_process_running(*pid))
+      {
+        return Ok(());
+      }
+      tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+    }
+
+    log::error!("App update aborted because network workers are still running: {worker_pids:?}");
+    Err(crate::backend_error("UPDATE_PREPARATION_FAILED").into())
+  }
+
   pub(crate) async fn restart_application(
     &self,
   ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -70,6 +133,11 @@ rm "{}"
       let pending = PENDING_INSTALLER_PATH.lock().unwrap().take();
 
       if let Some(installer_path) = pending {
+        if let Err(error) = self.prepare_windows_installer().await {
+          *PENDING_INSTALLER_PATH.lock().unwrap() = Some(installer_path);
+          return Err(error);
+        }
+
         // Use ShellExecuteW to run the installer directly — no batch script,
         // no cmd.exe console window. The NSIS/MSI installer handles killing the
         // old process and restarting the app natively (via /UPDATE and
