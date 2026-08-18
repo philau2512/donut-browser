@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useWindowDecorations } from "@/hooks/use-window-decorations";
 import { getCurrentOS, type OperatingSystem } from "@/lib/platform";
 import type { WindowControl } from "@/lib/window-decorations";
-import { WindowResizeHandles } from "./window-resize-handles";
+import { WindowResizeHandles } from "../window-resize-handles";
 
 export function WindowDragArea() {
   const { t } = useTranslation();

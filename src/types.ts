@@ -100,6 +100,9 @@ export interface Entitlements {
   crossOsFingerprints: boolean;
   cloudBackup: boolean;
   teamCollaboration: boolean;
+  cookieBot: boolean;
+  remoteInteractive: boolean;
+  remoteBrowserHours: number;
   profileLimit: number;
   requestsPerHour: number;
 }
@@ -223,12 +226,67 @@ export interface ImportProfileItem {
   vpn_id?: string | null;
 }
 
+export interface ConsistencyResult {
+  consistent: boolean;
+  checked: boolean;
+  exit_ip: string | null;
+  exit_country_code: string | null;
+  exit_timezone: string | null;
+  fingerprint_timezone: string | null;
+  fingerprint_language: string | null;
+  mismatches: string[];
+}
+
+export type VpnExtensionConfidence = "confirmed" | "likely" | "capability";
+export type ExtensionScanState =
+  | "scanned"
+  | "partial"
+  | "encrypted"
+  | "ephemeral"
+  | "missing";
+
+export interface DetectedVpnExtension {
+  key: string;
+  name: string;
+  version: string | null;
+  source: string;
+  confidence: VpnExtensionConfidence;
+  proxy_control: boolean;
+  signals: string[];
+}
+
+export interface PreLaunchChecks {
+  vpn_extensions: DetectedVpnExtension[];
+  scan_state: ExtensionScanState;
+  consistency: ConsistencyResult;
+  exit_probe_pending: boolean;
+  exit_measurement_unreliable: boolean;
+  consent_token: string | null;
+}
+
+export type ProfileImportWarning = string;
+
+export interface ProfileImportReport {
+  cookies_migrated: number;
+  cookies_unrecoverable: number;
+  passwords_migrated: number;
+  passwords_unrecoverable: number;
+  payment_methods_migrated: number;
+  payment_methods_unrecoverable: number;
+  extensions_migrated: number;
+  history_entries: number;
+  bookmarks: number;
+  local_storage_origins: number;
+  bytes_copied: number;
+  warnings: ProfileImportWarning[];
+}
 export interface ProfileImportItemResult {
   name: string;
   source_path: string;
   status: "imported" | "skipped" | "failed";
   profile_id: string | null;
   error: string | null;
+  report?: ProfileImportReport | null;
 }
 
 export interface ProfileImportBatchResult {
@@ -790,6 +848,7 @@ export interface ParsedProxyLine {
   port: number;
   username?: string;
   password?: string;
+  vless_uri?: string;
   original_line: string;
 }
 
