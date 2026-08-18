@@ -63,6 +63,7 @@ export type BackendErrorCode =
   | "UNSUPPORTED_DNS_RULES_FORMAT"
   | "DNS_RULES_SAVE_FAILED"
   | "DNS_RULES_EXPORT_FAILED"
+  | "COOKIE_BOT_SCHEDULE_CONFLICT"
   | "INTERNAL_ERROR";
 
 export interface BackendError {

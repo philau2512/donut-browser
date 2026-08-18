@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StepTransition } from "@/components/ui/step-transition";
 import { getCurrentOS } from "@/lib/browser-utils";
+import { resolveAmbiguousProxyLine } from "@/lib/proxy-string";
 import type {
   ParsedProxyLine,
   ProxyImportResult,
@@ -265,31 +266,12 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
   );
 
   const handleResolveAmbiguous = useCallback(() => {
-    // Convert ambiguous proxies to parsed based on selected format
-    const resolved: ParsedProxyLine[] = ambiguousProxies
-      .filter((p) => p.selectedFormat)
-      .map((p) => {
-        const parts = p.line.split(":");
-        if (p.selectedFormat === "host:port:username:password") {
-          return {
-            proxy_type: "http",
-            host: parts[0],
-            port: Number.parseInt(parts[1], 10),
-            username: parts[2],
-            password: parts[3],
-            original_line: p.line,
-          };
-        }
-        // username:password:host:port
-        return {
-          proxy_type: "http",
-          host: parts[2],
-          port: Number.parseInt(parts[3], 10),
-          username: parts[0],
-          password: parts[1],
-          original_line: p.line,
-        };
-      });
+    const resolved = ambiguousProxies.flatMap((p) => {
+      const parsed = p.selectedFormat
+        ? resolveAmbiguousProxyLine(p.line, p.selectedFormat)
+        : null;
+      return parsed ? [parsed] : [];
+    });
 
     setParsedProxies((prev) => [...prev, ...resolved]);
     setStep("preview");
@@ -420,7 +402,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
                         key={`${proxy.original_line}-${i}`}
                         className="rounded bg-muted/30 p-2 font-mono text-xs break-all"
                       >
-                        <span className="text-primary">
+                        <span className="text-primary-text">
                           {proxy.proxy_type}://
                         </span>
                         {proxy.username && (
@@ -487,7 +469,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
                   <span className="text-sm">
                     {t("proxies.importDialog.imported")}
                   </span>
-                  <span className="text-sm font-medium text-success">
+                  <span className="text-sm font-medium text-success-text">
                     {importResult.imported_count}
                   </span>
                 </div>
@@ -496,7 +478,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
                     <span className="text-sm">
                       {t("proxies.importDialog.skippedDuplicates")}
                     </span>
-                    <span className="text-sm font-medium text-warning">
+                    <span className="text-sm font-medium text-warning-text">
                       {importResult.skipped_count}
                     </span>
                   </div>
@@ -506,7 +488,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
                     <span className="text-sm">
                       {t("proxies.importDialog.errors")}
                     </span>
-                    <span className="text-sm font-medium text-destructive">
+                    <span className="text-sm font-medium text-destructive-text">
                       {importResult.errors.length}
                     </span>
                   </div>
@@ -521,7 +503,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
                       {importResult.errors.map((error, i) => (
                         <div
                           key={`error-${i}`}
-                          className="text-xs text-destructive"
+                          className="text-xs text-destructive-text"
                         >
                           {error}
                         </div>

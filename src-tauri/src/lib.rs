@@ -18,6 +18,14 @@ pub(crate) fn backend_error(code: &str) -> String {
   serde_json::json!({ "code": code }).to_string()
 }
 
+pub(crate) fn vless_config_error(error: &crate::xray::XrayError) -> String {
+  serde_json::json!({
+    "code": "VLESS_CONFIG_INVALID",
+    "params": { "reason": error.reason_code(), "detail": error.to_string() }
+  })
+  .to_string()
+}
+
 #[cfg(feature = "e2e")]
 pub(crate) fn e2e_automation_enabled() -> bool {
   std::env::var("TAURI_AUTOMATION")
@@ -36,10 +44,14 @@ pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic
 mod automation_rate_limiter;
 pub mod events;
 pub mod fingerprint_consistency;
+pub mod fs_secure;
 pub mod mcp;
 pub mod sync;
 pub use mcp::{mcp_integrations, mcp_server};
 pub mod vpn;
+pub mod xray;
+pub mod xray_worker_runner;
+pub mod xray_worker_storage;
 
 pub mod automation;
 pub mod commands;

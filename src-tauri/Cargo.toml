@@ -1,6 +1,6 @@
 [package]
 name = "donutbrowser"
-version = "0.28.2"
+version = "0.29.5"
 description = "Simple Yet Powerful Anti-Detect Browser"
 authors = ["zhom@github"]
 edition = "2021"
@@ -117,8 +117,18 @@ sys-locale = "0.3"
 [target.'cfg(unix)'.dependencies]
 nix = { version = "0.31", features = ["signal", "process"] }
 
+# Reading the desktop's titlebar button layout for the in-app window controls.
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "0.18"
+# Reading the source browser's "<Brand> Safe Storage" secret during profile
+# import, so its cookies and passwords can be re-encrypted for Wayfern.
+secret-service = { version = "5", default-features = false, features = ["rt-tokio-crypto-rust"] }
+
 [target.'cfg(target_os = "macos")'.dependencies]
 core-foundation = "0.10"
+# Reading the source browser's "<Brand> Safe Storage" Keychain item during
+# profile import, so its cookies and passwords can be re-encrypted for Wayfern.
+security-framework = "3"
 objc2 = "0.6.4"
 objc2-app-kit = { version = "0.3.2", features = ["NSWindow", "NSApplication", "NSRunningApplication"] }
 
@@ -135,6 +145,9 @@ windows = { version = "0.62", features = [
   "Win32_Storage_FileSystem",
   "Win32_System_Registry",
   "Win32_UI_Shell",
+  # CryptUnprotectData, for unwrapping the source browser's os_crypt key from
+  # `Local State` during profile import.
+  "Win32_Security_Cryptography",
 ] }
 
 [dev-dependencies]
@@ -190,9 +203,3 @@ default = ["custom-protocol"]
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
 e2e = []
-
-# wayland-scanner 0.31.10 still pins vulnerable quick-xml 0.39. Upstream fixed
-# RUSTSEC-2026-0194 and RUSTSEC-2026-0195, but has not published the fix yet.
-# Remove this patch after the next wayland-scanner release is in the lockfile.
-[patch.crates-io]
-wayland-scanner = { git = "https://github.com/Smithay/wayland-rs", rev = "d07c4f91f28b42e5a485823ffd9d8d5a210b1053" }
