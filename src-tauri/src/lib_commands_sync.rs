@@ -125,10 +125,16 @@ async fn generate_sample_fingerprint(
     let config: crate::browser::wayfern_manager::WayfernConfig =
       serde_json::from_str(&config_json).map_err(|e| format!("Failed to parse config: {e}"))?;
     let manager = crate::browser::wayfern_manager::WayfernManager::instance();
-    manager
+    let generated = manager
       .generate_fingerprint_config(&app_handle, &temp_profile, &config)
       .await
-      .map_err(|e| format!("Failed to generate fingerprint: {e}"))
+      .map_err(|e| format!("Failed to generate fingerprint: {e}"))?;
+    serde_json::to_string(&serde_json::json!({
+      "fingerprint": generated.fingerprint,
+      "identity_id": generated.identity_id,
+      "identity_baseline": generated.identity_baseline,
+    }))
+    .map_err(|e| format!("Failed to serialize fingerprint: {e}"))
   } else {
     Err(format!(
       "Unsupported browser for fingerprint generation: {browser}"

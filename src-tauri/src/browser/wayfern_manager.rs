@@ -51,6 +51,28 @@ pub struct WayfernConfig {
   /// location can be refreshed instead of showing stale data.
   #[serde(default)]
   pub geo_proxy_signature: Option<String>,
+  /// Stable identity handle returned by Wayfern's identity API.
+  #[serde(default)]
+  pub identity_id: Option<String>,
+  /// Device view captured before geolocation and user edits.
+  #[serde(default)]
+  pub identity_baseline: Option<String>,
+}
+
+/// Result of generating a Wayfern device, including identity persistence data.
+#[derive(Debug, Clone)]
+pub struct GeneratedFingerprint {
+  pub fingerprint: String,
+  pub identity_id: Option<String>,
+  pub identity_baseline: Option<String>,
+  pub geolocation_applied: bool,
+}
+
+const IDENTITY_API_MIN_VERSION: &str = "151";
+
+pub fn supports_identity_api(version: &str) -> bool {
+  crate::api::api_client::compare_versions(version, IDENTITY_API_MIN_VERSION)
+    != std::cmp::Ordering::Less
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -318,31 +340,6 @@ impl WayfernManager {
     }
   }
 
-  /// True when `url` is a socks proxy on a remote (non-loopback) host — the
-  /// case where reqwest's SOCKS connector can't be trusted with the
-  /// geolocation fetch. Loopback socks URLs are the app's own donut-proxy
-  /// workers, whose single-segment replies don't trigger the connector bug.
-  fn is_remote_socks_url(url: &str) -> bool {
-    url.starts_with("socks")
-      && url::Url::parse(url)
-        .ok()
-        .and_then(|u| match u.host() {
-          Some(url::Host::Ipv4(ip)) => Some(!ip.is_loopback()),
-          Some(url::Host::Ipv6(ip)) => Some(!ip.is_loopback()),
-          // socks is a non-special scheme, so the url crate keeps even
-          // IP-literal hosts as Domain — parse them before comparing.
-          Some(url::Host::Domain(domain)) => Some(
-            domain != "localhost"
-              && domain
-                .parse::<std::net::IpAddr>()
-                .map(|ip| !ip.is_loopback())
-                .unwrap_or(true),
-          ),
-          None => None,
-        })
-        .unwrap_or(false)
-  }
-
   /// Apply timezone/geolocation fields to a fingerprint object from the proxy's
   /// exit IP (or a fixed geoip IP). Mutates `fingerprint` in place. Returns true
   /// if fresh geolocation was fetched and applied, false if geolocation is
@@ -444,7 +441,7 @@ impl WayfernManager {
     _app_handle: &AppHandle,
     profile: &BrowserProfile,
     config: &WayfernConfig,
-  ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+  ) -> Result<GeneratedFingerprint, Box<dyn std::error::Error + Send + Sync>> {
     let executable_path = BrowserRunner::instance()
       .get_browser_executable_path(profile)
       .map_err(|e| format!("Failed to get Wayfern executable path: {e}"))?;
@@ -567,131 +564,82 @@ impl WayfernManager {
 
     let requested_os = config.os.as_deref().unwrap_or(host_os);
 
-    // If requested OS is different from host OS, it's cross-OS fingerprinting.
-    // Try to fetch wayfern token if we have a paid subscription but no cached token yet.
-    let mut wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
-    if wayfern_token.is_none()
-      && requested_os != host_os
-      && crate::api::cloud_auth::CLOUD_AUTH
-        .has_active_paid_subscription()
-        .await
-    {
-      log::info!("Wayfern token missing for cross-OS fingerprinting, requesting one...");
-      if let Err(e) = crate::api::cloud_auth::CLOUD_AUTH
-        .request_wayfern_token()
-        .await
-      {
-        log::warn!("Failed to request wayfern token: {e}");
-      } else {
-        wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
-      }
-    }
-
-    // Determine the final OS to use. If no token is available and requested OS is cross-OS,
-    // fallback to host OS to avoid CDP error "Cross-OS fingerprinting requires a paid plan".
-    let os = if wayfern_token.is_none() && requested_os != host_os {
-      log::warn!("No Wayfern token available for cross-OS fingerprinting. Falling back from '{requested_os}' to host OS '{host_os}' to avoid CDP error.");
-      host_os
-    } else {
-      requested_os
-    };
-
-    // Include wayfern token if available (enables cross-OS fingerprinting for paid users)
-    let mut refresh_params = json!({ "operatingSystem": os });
+    // Identity-backed generation is available from Wayfern 151 onward. A token
+    // is attached when available so cross-OS requests remain authorized.
+    let wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
+    let mut generate_params = json!({ "operatingSystem": requested_os });
     if let Some(ref token) = wayfern_token {
-      refresh_params
+      generate_params
         .as_object_mut()
         .unwrap()
         .insert("wayfernToken".to_string(), json!(token));
     }
-
-    let refresh_result = self
-      .send_cdp_command(&ws_url, "Wayfern.refreshFingerprint", refresh_params)
-      .await;
-
-    if let Err(e) = refresh_result {
-      cleanup().await;
-      return Err(format!("Failed to refresh fingerprint: {e}").into());
-    }
-
-    let get_result = self
-      .send_cdp_command(&ws_url, "Wayfern.getFingerprint", json!({}))
-      .await;
-
-    let mut fingerprint = match get_result {
-      Ok(result) => {
-        // Wayfern.getFingerprint returns { fingerprint: {...} }
-        // We need to extract just the fingerprint object
-        let fp = result.get("fingerprint").cloned().unwrap_or(result);
-        // Normalize the fingerprint: convert JSON string fields to proper types
-        let mut normalized = Self::normalize_fingerprint(fp);
-
-        // Apply timezone/geolocation for the proxy this fingerprint is being
-        // generated against. Route through a local donut-proxy worker when the
-        // upstream is a remote SOCKS URL — reqwest's SOCKS connector can corrupt
-        // its parse buffer on multi-segment handshake replies, causing spurious
-        // geolocation failures. Loopback SOCKS URLs (our own workers) are exempt.
-        let needs_proxied_geo_fetch = !matches!(
-          config.geoip.as_ref(),
-          Some(serde_json::Value::Bool(false)) | Some(serde_json::Value::String(_))
-        );
-        let remote_socks_upstream = config
-          .proxy
-          .as_deref()
-          .filter(|url| Self::is_remote_socks_url(url));
-        let (geo_proxy, temp_worker_id) = match remote_socks_upstream {
-          Some(url) if needs_proxied_geo_fetch => {
-            match crate::proxy_runner::start_proxy_process(Some(url.to_string()), None)
-              .await
-              .map_err(|e| e.to_string())
-            {
-              Ok(worker) => match worker.local_port {
-                Some(port) => {
-                  let local_url = format!("http://127.0.0.1:{}", port);
-                  (Some(local_url), Some(worker.id))
-                }
-                None => {
-                  log::warn!(
-                      "Proxy worker started but reported no local_port; using socks upstream directly"
-                    );
-                  let _ = crate::proxy_runner::stop_proxy_process(&worker.id).await;
-                  (config.proxy.clone(), None)
-                }
-              },
-              Err(e) => {
-                log::warn!(
-                  "Could not start local proxy worker for geolocation ({e}); using the socks upstream directly"
-                );
-                (config.proxy.clone(), None)
-              }
-            }
-          }
-          _ => (config.proxy.clone(), None),
-        };
-        Self::apply_geolocation(&mut normalized, geo_proxy.as_deref(), config.geoip.as_ref()).await;
-        // Clean up the temporary proxy worker if we started one.
-        if let Some(worker_id) = temp_worker_id {
-          let _ = crate::proxy_runner::stop_proxy_process(&worker_id).await;
+    let use_identity_api = supports_identity_api(&profile.version);
+    let generate_result = if use_identity_api {
+      self
+        .send_cdp_command(&ws_url, "Wayfern.createIdentity", generate_params)
+        .await
+    } else {
+      match self
+        .send_cdp_command(&ws_url, "Wayfern.refreshFingerprint", generate_params)
+        .await
+      {
+        Ok(_) => {
+          self
+            .send_cdp_command(&ws_url, "Wayfern.getFingerprint", json!({}))
+            .await
         }
+        Err(e) => Err(e),
+      }
+    };
 
-        normalized
+    let (mut fingerprint, identity_id, identity_baseline) = match generate_result {
+      Ok(result) => {
+        let identity_id = result
+          .get("identityId")
+          .and_then(|v| v.as_str())
+          .map(str::to_string);
+        let fp = result
+          .get("identity")
+          .or_else(|| result.get("fingerprint"))
+          .cloned()
+          .unwrap_or(result);
+        let normalized = Self::normalize_fingerprint(fp);
+        let baseline = if use_identity_api {
+          serde_json::to_string(&normalized).ok()
+        } else {
+          None
+        };
+        if use_identity_api && identity_id.is_none() {
+          cleanup().await;
+          return Err("Wayfern.createIdentity returned no identityId".into());
+        }
+        (normalized, identity_id, baseline)
       }
       Err(e) => {
         cleanup().await;
-        return Err(format!("Failed to get fingerprint: {e}").into());
+        return Err(format!("Failed to generate fingerprint: {e}").into());
       }
     };
+
+    // Apply timezone/geolocation using the configured route.
+    let geolocation_applied = Self::apply_geolocation(
+      &mut fingerprint,
+      config.proxy.as_deref(),
+      config.geoip.as_ref(),
+    )
+    .await;
 
     // Post-process: Clamp screen resolution to OS-appropriate integer values
     // This fixes pixelscan "inconsistent fingerprint" detection where Wayfern
     // generates Mac Retina fractional pixels (e.g., 2560.5) for Windows profiles
-    if let Err(e) = Self::clamp_screen_resolution(&mut fingerprint, os) {
+    if let Err(e) = Self::clamp_screen_resolution(&mut fingerprint, requested_os) {
       cleanup().await;
       return Err(format!("Failed to clamp screen resolution: {e}").into());
     }
 
     // Validate fingerprint consistency before storing (fail fast)
-    if let Err(e) = Self::validate_fingerprint_consistency(&fingerprint, os) {
+    if let Err(e) = Self::validate_fingerprint_consistency(&fingerprint, requested_os) {
       cleanup().await;
       return Err(format!("Fingerprint validation failed: {e}").into());
     }
@@ -702,8 +650,8 @@ impl WayfernManager {
       .map_err(|e| format!("Failed to serialize fingerprint: {e}"))?;
 
     log::info!(
-      "Generated Wayfern fingerprint for OS: {}, fields: {:?}",
-      os,
+      "Generated Wayfern fingerprint for requested OS: {}, fields: {:?}",
+      requested_os,
       fingerprint
         .as_object()
         .map(|o| o.keys().collect::<Vec<_>>())
@@ -721,7 +669,12 @@ impl WayfernManager {
       );
     }
 
-    Ok(fingerprint_json)
+    Ok(GeneratedFingerprint {
+      fingerprint: fingerprint_json,
+      identity_id,
+      identity_baseline,
+      geolocation_applied,
+    })
   }
 
   /// Clamp screen resolution to OS-appropriate integer values.

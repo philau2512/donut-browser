@@ -329,8 +329,10 @@ impl ProfileManager {
           .generate_fingerprint_config(app_handle, &temp_profile, &config)
           .await
         {
-          Ok(generated_fingerprint) => {
-            config.fingerprint = Some(generated_fingerprint);
+          Ok(generated) => {
+            config.fingerprint = Some(generated.fingerprint);
+            config.identity_id = generated.identity_id;
+            config.identity_baseline = generated.identity_baseline;
             log::info!("Successfully generated fingerprint for Wayfern profile: {name}");
           }
           Err(e) => {

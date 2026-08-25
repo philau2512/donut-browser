@@ -38,6 +38,7 @@ pub mod updater;
 pub use updater::{app_auto_updater, auto_updater, geoip_downloader, version_updater};
 pub mod browser;
 pub mod profile;
+pub mod profile_import;
 pub mod proxy;
 pub mod settings;
 pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic_stats};
