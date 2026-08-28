@@ -18,6 +18,11 @@ const mcpOnlyCommands = [
   "cloud_get_wayfern_token",
   "cloud_refresh_wayfern_token",
   "lock_profile",
+  // Public cloud-location API retained for external clients. The current
+  // application UI only uses country-level cloud proxy selection.
+  "cloud_get_regions",
+  "cloud_get_cities",
+  "cloud_get_isps",
   // Storage custom configuration and state commands used by API/MCP
   "get_custom_storage_path",
   "is_custom_storage_active",
@@ -26,6 +31,10 @@ const mcpOnlyCommands = [
   "validate_automation_flow",
   "open_profile_with_automation",
   "close_profile_with_cleanup",
+  // Runtime feature flags — MCP/API only; no frontend UI yet
+  // (see src-tauri/src/settings/feature_flags.rs)
+  "get_feature_flags",
+  "set_feature_flag",
 ];
 
 const verbose = process.argv.includes('--verbose') || process.argv.includes('-v');

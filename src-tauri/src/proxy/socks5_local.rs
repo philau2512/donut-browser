@@ -1,14 +1,14 @@
 //! Local SOCKS5 server served to the browser (Wayfern/Chromium).
 //!
 //! The HTTP front-end (`proxy_server::handle_proxy_connection`) can only tunnel
-//! TCP, so QUIC and WebRTC — which are UDP — would be forced direct and leak the
+//! TCP, so QUIC and WebRTC ΓÇö which are UDP ΓÇö would be forced direct and leak the
 //! real IP. Serving SOCKS5 instead lets Chromium proxy UDP via SOCKS5 UDP
 //! ASSOCIATE (RFC 1928). TCP CONNECT reuses the exact same upstream-dial and
 //! tunnel code as the HTTP path, so every upstream type (direct, HTTP/HTTPS
 //! CONNECT, SOCKS4/5, Shadowsocks) behaves identically.
 //!
 //! UDP ASSOCIATE is leak-safe by construction: UDP is only relayed where it
-//! cannot expose the host IP — directly when there is no upstream proxy, or
+//! cannot expose the host IP ΓÇö directly when there is no upstream proxy, or
 //! tunneled through a UDP-capable SOCKS5 upstream. For upstreams that cannot
 //! carry UDP (HTTP/HTTPS/SOCKS4/Shadowsocks, or a SOCKS5 upstream that refuses
 //! the association) the request is refused, so Chromium falls back to proxied
@@ -24,13 +24,13 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpStream, UdpSocket};
 use url::Url;
 
-// SOCKS5 reply codes (RFC 1928 §6).
+// SOCKS5 reply codes (RFC 1928 ┬º6).
 const REP_SUCCEEDED: u8 = 0x00;
 const REP_GENERAL_FAILURE: u8 = 0x01;
 const REP_NOT_ALLOWED: u8 = 0x02;
 const REP_COMMAND_NOT_SUPPORTED: u8 = 0x07;
 
-// SOCKS5 commands (RFC 1928 §4).
+// SOCKS5 commands (RFC 1928 ┬º4).
 const CMD_CONNECT: u8 = 0x01;
 const CMD_UDP_ASSOCIATE: u8 = 0x03;
 
@@ -65,7 +65,7 @@ fn udp_mode(upstream_url: Option<&str>) -> UdpMode {
   }
 }
 
-/// `0.0.0.0:0` — used for BND fields in replies where the bound address is
+/// `0.0.0.0:0` ΓÇö used for BND fields in replies where the bound address is
 /// irrelevant to the client (e.g. CONNECT).
 fn unspecified() -> SocketAddr {
   SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0)
@@ -293,7 +293,7 @@ async fn handle_connect(
 /// SOCKS5 UDP ASSOCIATE, leak-safe per upstream (see [`UdpMode`]).
 ///
 /// `control` is the TCP control connection; the UDP association lives exactly
-/// as long as it stays open (RFC 1928 §6), so the relay loop tears down when
+/// as long as it stays open (RFC 1928 ┬º6), so the relay loop tears down when
 /// the browser closes it.
 async fn handle_udp_associate(mut control: TcpStream, upstream_url: Option<String>) {
   let mode = udp_mode(upstream_url.as_deref());
@@ -396,7 +396,7 @@ async fn associate_upstream(
   Ok(datagram)
 }
 
-/// Parsed SOCKS5 UDP datagram header (RFC 1928 §7): the destination and the
+/// Parsed SOCKS5 UDP datagram header (RFC 1928 ┬º7): the destination and the
 /// offset at which the payload begins. Fragmented datagrams (FRAG != 0) are
 /// rejected by the caller.
 struct UdpHeader {
@@ -597,7 +597,7 @@ mod tests {
   #[test]
   fn udp_mode_refuses_tcp_only_upstreams() {
     // HTTP/HTTPS CONNECT, SOCKS4, and Shadowsocks cannot carry UDP, so UDP
-    // ASSOCIATE must be refused (Chromium then uses proxied TCP — no leak).
+    // ASSOCIATE must be refused (Chromium then uses proxied TCP ΓÇö no leak).
     assert_eq!(udp_mode(Some("http://1.2.3.4:8080")), UdpMode::Refuse);
     assert_eq!(udp_mode(Some("https://1.2.3.4:8080")), UdpMode::Refuse);
     assert_eq!(udp_mode(Some("socks4://1.2.3.4:1080")), UdpMode::Refuse);

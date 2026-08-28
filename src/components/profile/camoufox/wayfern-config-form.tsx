@@ -71,12 +71,21 @@ export function WayfernConfigForm({
     setIsGeneratingFingerprint(true);
     try {
       const configJson = JSON.stringify(config);
-      const result = await invoke<string>("generate_sample_fingerprint", {
+      const result = await invoke<{
+        fingerprint: string;
+        identity_id?: string | null;
+        identity_baseline?: string | null;
+      }>("generate_sample_fingerprint", {
         browser: profileBrowser ?? "wayfern",
         version: profileVersion,
         configJson,
       });
-      onConfigChange("fingerprint", result);
+      onConfigChange("fingerprint", result.fingerprint);
+      onConfigChange("identity_id", result.identity_id ?? undefined);
+      onConfigChange(
+        "identity_baseline",
+        result.identity_baseline ?? undefined,
+      );
     } catch (error) {
       console.error("Failed to generate fingerprint:", error);
     } finally {
@@ -147,6 +156,27 @@ export function WayfernConfigForm({
     }
   };
 
+  const updateFingerprintConfigs = (
+    updates: Partial<WayfernFingerprintConfig>,
+  ) => {
+    const newConfig = { ...fingerprintConfig, ...updates };
+    for (const [key, value] of Object.entries(updates)) {
+      if (
+        value === undefined ||
+        value === "" ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
+        delete (newConfig as Record<string, unknown>)[key];
+      }
+    }
+    setFingerprintConfig(newConfig);
+    try {
+      onConfigChange("fingerprint", JSON.stringify(newConfig));
+    } catch (error) {
+      console.error("Failed to serialize fingerprint config:", error);
+    }
+  };
+
   const isAutoLocationEnabled = config.geoip !== false;
 
   const handleAutoLocationToggle = (enabled: boolean) => {
@@ -167,6 +197,7 @@ export function WayfernConfigForm({
           onConfigChange={onConfigChange}
           fingerprintConfig={fingerprintConfig}
           updateFingerprintConfig={updateFingerprintConfig}
+          updateFingerprintConfigs={updateFingerprintConfigs}
           isEditingDisabled={isEditingDisabled}
           limitedMode={limitedMode}
           readOnly={readOnly}
@@ -218,6 +249,7 @@ export function WayfernConfigForm({
               onConfigChange={onConfigChange}
               fingerprintConfig={fingerprintConfig}
               updateFingerprintConfig={updateFingerprintConfig}
+              updateFingerprintConfigs={updateFingerprintConfigs}
               isEditingDisabled={isEditingDisabled}
               limitedMode={limitedMode}
               readOnly={readOnly}

@@ -66,6 +66,16 @@ impl AppAutoUpdater {
       .download_update_silent(&update_info.download_url, &temp_dir, &filename)
       .await?;
 
+    // Verify SHA-256 against release checksums (and GitHub asset_digest when present)
+    // before extracting/installing. Helpers live in app_updater_core.rs.
+    self
+      .verify_download_checksum(
+        &download_path,
+        update_info,
+        update_info.asset_digest.as_deref(),
+      )
+      .await?;
+
     log::info!("Extracting update...");
     let extracted_app_path = self.extract_update(&download_path, &temp_dir).await?;
 
@@ -317,7 +327,7 @@ impl AppAutoUpdater {
             if !log_content.is_empty() {
               log::info!(
                 "Log file content (last 500 chars): {}",
-                &log_content
+                log_content
                   .chars()
                   .rev()
                   .take(500)

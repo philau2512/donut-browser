@@ -20,8 +20,7 @@ impl McpServer {
       McpTool {
         name: "update_profile_fingerprint".to_string(),
         description:
-          "Update the fingerprint configuration for a Wayfern or Camoufox profile. Requires an active Pro subscription."
-            .to_string(),
+          "Update the fingerprint configuration for a Wayfern or Camoufox profile. Cross-OS OS spoofing requires Pro.".to_string(),
         input_schema: serde_json::json!({
           "type": "object",
           "properties": {

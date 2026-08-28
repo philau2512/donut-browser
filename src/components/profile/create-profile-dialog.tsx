@@ -32,7 +32,6 @@ import { useVpnEvents } from "@/hooks/use-vpn-events";
 import { useWayfernConfig } from "@/hooks/use-wayfern-config";
 import { cn } from "@/lib/utils";
 import type {
-  BrowserProfile,
   CamoufoxConfig,
   ProfileAutomation,
   WayfernConfig,
@@ -152,11 +151,14 @@ export function CreateProfileDialog({
   const {
     isLoadingReleaseTypes,
     getCreatableVersion,
+    getDownloadedVersions,
     isBrowserCurrentlyDownloading,
     loadReleaseTypes,
     downloadBrowser,
     getBestAvailableVersion,
   } = useBrowserVersion();
+
+  const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
 
   const {
     wayfernConfig,
@@ -167,10 +169,30 @@ export function CreateProfileDialog({
     updateFingerprintConfigs,
     handleGenerateFingerprint,
     handleAutoLocationToggle,
+    handleFixedLanguageToggle,
+    handleFixedLanguageChange,
+    fixedLanguageEnabled,
+    fixedLanguage,
     isAutoLocationEnabled,
     isFingerprintEditingDisabled,
-    setWayfernConfig,
-  } = useWayfernConfig(getCreatableVersion);
+    resetWayfernState,
+    buildFinalWayfernConfig,
+  } = useWayfernConfig((browserType) =>
+    getCreatableVersion(browserType, selectedVersion),
+  );
+
+  // Default selected version when downloads load
+  useEffect(() => {
+    if (!isOpen) return;
+    const versions = getDownloadedVersions(browserType);
+    if (versions.length === 0) {
+      setSelectedVersion(null);
+      return;
+    }
+    setSelectedVersion((prev) =>
+      prev && versions.includes(prev) ? prev : versions[0],
+    );
+  }, [isOpen, browserType, getDownloadedVersions]);
 
   // Load profile groups and extension groups
   useEffect(() => {
@@ -248,56 +270,64 @@ export function CreateProfileDialog({
         : undefined;
 
     try {
-      const bestVersion = getCreatableVersion(browserType);
+      const bestVersion = getCreatableVersion(browserType, selectedVersion);
       if (!bestVersion) {
         toast.error(
-          `No ${browserType === "camoufox" ? "Camoufox" : "Wayfern"} browser version downloaded. Please download it first.`,
+          t("createProfile.version.noneDownloadedNamed", {
+            browser: browserType === "camoufox" ? "Camoufox" : "Wayfern",
+          }),
         );
         return;
       }
 
-      const finalWayfernConfig =
-        browserType === "wayfern" ? { ...wayfernConfig } : undefined;
+      // Build final wayfern config: full fingerprint + user overrides (screen/language)
+      const builtWayfernConfig =
+        browserType === "wayfern"
+          ? await buildFinalWayfernConfig(bestVersion.version)
+          : undefined;
+      const finalWayfernConfig = builtWayfernConfig ?? undefined;
+
+      if (browserType === "wayfern" && !finalWayfernConfig?.fingerprint) {
+        toast.error(t("createProfile.fingerprintRequired"));
+        return;
+      }
+
       const count = Math.max(1, batchCount);
+      const baseName = profileName.trim();
+      const proxyArray = proxyList
+        .split("\n")
+        .map((p) => p.trim())
+        .filter(Boolean);
 
-      // Batch mode: delegate to backend API for per-profile randomization & proxy rotation
-      if (count > 1) {
-        // Parse proxy list (one per line)
-        const proxyArray = proxyList
-          .split("\n")
-          .map((p) => p.trim())
-          .filter(Boolean);
+      let createdCount = 0;
 
-        const proxyRotation = proxyArray.length > 0 ? proxyArray : undefined;
+      for (let i = 0; i < count; i++) {
+        const finalName = count > 1 ? `${baseName} ${i + 1}` : baseName;
 
-        // Call create_profiles_batch with individual parameters (no CreateProfileRequest struct)
-        const created = await invoke<BrowserProfile[]>(
-          "create_profiles_batch",
-          {
-            name: profileName.trim(),
-            browser: browserType,
-            version: bestVersion.version,
-            releaseType: bestVersion.releaseType,
-            proxyId: resolvedProxyId,
-            vpnId: resolvedVpnId,
-            camoufoxConfig: browserType === "camoufox" ? camoufoxConfig : null,
-            wayfernConfig: finalWayfernConfig,
-            groupId: groupId || undefined,
-            ephemeral,
-            dnsBlocklist: dnsBlocklist || undefined,
-            launchHook: launchHook || undefined,
-            count,
-            randomizePerProfile,
-            proxyRotation,
-          },
-        );
+        // Optional per-profile fingerprint re-roll while keeping screen/language overrides
+        let profileWayfernConfig = finalWayfernConfig;
+        if (
+          browserType === "wayfern" &&
+          count > 1 &&
+          randomizePerProfile &&
+          i > 0
+        ) {
+          const regenerated = await handleGenerateFingerprint(
+            finalWayfernConfig,
+            bestVersion.version,
+          );
+          if (regenerated && finalWayfernConfig) {
+            profileWayfernConfig = {
+              ...finalWayfernConfig,
+              fingerprint: regenerated,
+            };
+          }
+        }
 
-        toast.success(`Created ${created.length} profiles`);
-      } else {
-        // Single profile (legacy path)
-        const finalName = profileName.trim();
+        // Proxy list rotation (one proxy string line per profile index) is not yet
+        // wired to stored proxy IDs — keep selectedProxyId for all unless list empty.
+        void proxyArray;
 
-        // 1. Create the browser profile
         const createdProfile = await onCreateProfile({
           name: finalName,
           browserStr: browserType,
@@ -307,7 +337,7 @@ export function CreateProfileDialog({
           vpnId: resolvedVpnId,
           camoufoxConfig:
             browserType === "camoufox" ? camoufoxConfig : undefined,
-          wayfernConfig: finalWayfernConfig,
+          wayfernConfig: profileWayfernConfig,
           groupId: groupId && groupId !== "none" ? groupId : undefined,
           extensionGroupId: selectedExtensionGroupId,
           ephemeral,
@@ -316,8 +346,7 @@ export function CreateProfileDialog({
           password: passwordToSet,
         });
 
-        // 2. Import raw cookies if provided
-        if (createdProfile?.id && rawCookies.trim()) {
+        if (createdProfile?.id && rawCookies.trim() && count === 1) {
           try {
             await invoke("import_cookies_from_file", {
               profileId: createdProfile.id,
@@ -329,17 +358,20 @@ export function CreateProfileDialog({
               cookieErr,
             );
             toast.warning(
-              `Profile created, but cookie import failed for ${finalName}`,
+              t("createProfile.cookieImportFailed", { name: finalName }),
             );
           }
         }
+
+        createdCount += 1;
       }
 
       toast.success(
         count > 1
-          ? `Successfully created ${count} profiles`
-          : "Profile created successfully",
+          ? t("createProfile.createdBatch", { count: createdCount })
+          : t("createProfile.createdSingle"),
       );
+
       handleClose();
     } catch (error) {
       console.error("Failed to create profile:", error);
@@ -357,9 +389,8 @@ export function CreateProfileDialog({
     setDnsBlocklist("");
     setRawCookies("");
     setSelectedExtensionGroupId(undefined);
-    setWayfernConfig({
-      os: getCurrentOS(),
-    });
+    resetWayfernState(getCurrentOS());
+    setSelectedVersion(null);
     setEphemeral(false);
     setEnablePassword(false);
     setPassword("");
@@ -375,13 +406,14 @@ export function CreateProfileDialog({
   const isCreateDisabled = useMemo(() => {
     if (!profileName.trim()) return true;
     if (isBrowserCurrentlyDownloading(browserType)) return true;
-    if (!getCreatableVersion(browserType)) return true;
+    if (!getCreatableVersion(browserType, selectedVersion)) return true;
     return false;
   }, [
     profileName,
     isBrowserCurrentlyDownloading,
     getCreatableVersion,
     browserType,
+    selectedVersion,
   ]);
 
   // Sidebar Items Definition
@@ -468,8 +500,7 @@ export function CreateProfileDialog({
               {t("createProfile.title")}
             </DialogTitle>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Configure your browser anti-detect parameters, location and
-              proxies
+              {t("createProfile.subtitle")}
             </p>
           </div>
           <Button
@@ -478,7 +509,7 @@ export function CreateProfileDialog({
             className="text-xs gap-1.5 text-muted-foreground hover:text-foreground"
           >
             <LuInfo className="size-4" />
-            How to create a profile
+            {t("createProfile.howToCreate")}
           </Button>
         </div>
 
@@ -530,6 +561,9 @@ export function CreateProfileDialog({
                     fingerprintConfig={fingerprintConfig}
                     updateFingerprintConfig={updateFingerprintConfig}
                     isLoadingReleaseTypes={isLoadingReleaseTypes}
+                    downloadedVersions={getDownloadedVersions(browserType)}
+                    selectedVersion={selectedVersion}
+                    onVersionChange={setSelectedVersion}
                     getCreatableVersion={getCreatableVersion}
                     crossOsUnlocked={crossOsUnlocked}
                     currentOS={getCurrentOS()}
@@ -548,6 +582,10 @@ export function CreateProfileDialog({
                     isEditingDisabled={isFingerprintEditingDisabled}
                     isAutoLocationEnabled={isAutoLocationEnabled}
                     handleAutoLocationToggle={handleAutoLocationToggle}
+                    fixedLanguageEnabled={fixedLanguageEnabled}
+                    fixedLanguage={fixedLanguage}
+                    handleFixedLanguageToggle={handleFixedLanguageToggle}
+                    handleFixedLanguageChange={handleFixedLanguageChange}
                   />
                 </TabsContent>
 
@@ -663,7 +701,7 @@ export function CreateProfileDialog({
             </div>
 
             {/* Download browser button (shown when selected browser not downloaded) */}
-            {!getCreatableVersion(browserType) && (
+            {!getCreatableVersion(browserType, selectedVersion) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -676,16 +714,24 @@ export function CreateProfileDialog({
                 ) : (
                   <FaPlus className="size-3" />
                 )}
-                Download {browserType === "camoufox" ? "Camoufox" : "Wayfern"}
+                {t("createProfile.downloadBrowser", {
+                  browser: browserType === "camoufox" ? "Camoufox" : "Wayfern",
+                })}
               </Button>
             )}
 
             <Button
               variant="outline"
               size="sm"
-              onClick={() => void handleGenerateFingerprint()}
+              onClick={() =>
+                void handleGenerateFingerprint(
+                  undefined,
+                  selectedVersion || undefined,
+                )
+              }
               disabled={
-                isGeneratingFingerprint || !getCreatableVersion(browserType)
+                isGeneratingFingerprint ||
+                !getCreatableVersion(browserType, selectedVersion)
               }
               className="h-8 px-3 text-xs gap-1.5 border-warning/60 bg-warning/5 text-warning hover:bg-warning/20 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
@@ -694,7 +740,7 @@ export function CreateProfileDialog({
               ) : (
                 <LuRefreshCw className="size-3.5" />
               )}
-              {t("createProfile.getFingerprint") || "Get new fingerprint"}
+              {t("createProfile.getFingerprint")}
             </Button>
           </div>
 

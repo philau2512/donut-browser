@@ -14,20 +14,45 @@ static PENDING_URLS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 // to the confirmation dialog.
 static QUIT_CONFIRMED: AtomicBool = AtomicBool::new(false);
 
+pub(crate) fn backend_error(code: &str) -> String {
+  serde_json::json!({ "code": code }).to_string()
+}
+
+pub(crate) fn vless_config_error(error: &crate::xray::XrayError) -> String {
+  serde_json::json!({
+    "code": "VLESS_CONFIG_INVALID",
+    "params": { "reason": error.reason_code(), "detail": error.to_string() }
+  })
+  .to_string()
+}
+
+#[cfg(feature = "e2e")]
+pub(crate) fn e2e_automation_enabled() -> bool {
+  std::env::var("TAURI_AUTOMATION")
+    .is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+}
+
 pub mod api;
 pub use api::{api_client, api_server, cloud_auth};
 pub mod updater;
 pub use updater::{app_auto_updater, auto_updater, geoip_downloader, version_updater};
 pub mod browser;
 pub mod profile;
+pub mod profile_import;
 pub mod proxy;
 pub mod settings;
 pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic_stats};
+mod automation_rate_limiter;
 pub mod events;
+pub mod fingerprint_consistency;
+pub mod fs_secure;
 pub mod mcp;
 pub mod sync;
 pub use mcp::{mcp_integrations, mcp_server};
 pub mod vpn;
+pub mod xray;
+pub mod xray_worker_runner;
+pub mod xray_worker_storage;
 
 pub mod automation;
 pub mod commands;
@@ -52,10 +77,10 @@ use browser::browser_runner::{
 
 use profile::manager::{
   check_browser_status, clone_profile, create_browser_profile_new, delete_profile,
-  list_browser_profiles, rename_profile, update_camoufox_config, update_profile_dns_blocklist,
-  update_profile_launch_hook, update_profile_note, update_profile_proxy,
-  update_profile_proxy_bypass_rules, update_profile_status, update_profile_tags,
-  update_profile_vpn, update_profile_window_color, update_wayfern_config,
+  list_browser_profiles, rename_profile, update_camoufox_config, update_profile_clear_on_close,
+  update_profile_dns_blocklist, update_profile_launch_hook, update_profile_note,
+  update_profile_proxy, update_profile_proxy_bypass_rules, update_profile_status,
+  update_profile_tags, update_profile_vpn, update_profile_window_color, update_wayfern_config,
 };
 
 use profile::password::{
@@ -94,6 +119,10 @@ use sync::{
 };
 
 use profile::profile_status_manager::{get_profile_statuses, save_profile_statuses};
+use profile::quick_create_template_manager::{
+  delete_quick_create_template, list_quick_create_templates, quick_create_profiles,
+  save_quick_create_template,
+};
 use profile::tag_manager::{delete_tag, get_all_tags};
 
 use browser::default_browser::{is_default_browser, set_as_default_browser};
@@ -110,7 +139,10 @@ use updater::app_auto_updater::{
   restart_application,
 };
 
-use profile::profile_importer::{detect_existing_profiles, import_browser_profile};
+use profile::profile_importer::{
+  cleanup_profile_import_scratch, detect_existing_profiles, import_browser_profiles,
+  scan_folder_for_profiles, scan_profile_archive,
+};
 
 use browser::extension_manager::{
   add_extension, add_extension_to_group, assign_extension_group_to_profile, create_extension_group,
@@ -204,7 +236,7 @@ impl<R: Runtime> WindowExt for WebviewWindow<R> {
   }
 }
 
-// Called internally for deep-link / startup URL handling — not invoked from the
+// Called internally for deep-link / startup URL handling ΓÇö not invoked from the
 // frontend, so it is intentionally not a `#[tauri::command]`.
 async fn handle_url_open(app: tauri::AppHandle, url: String) -> Result<(), String> {
   log::info!("handle_url_open called with URL: {url}");

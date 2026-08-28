@@ -39,6 +39,11 @@ mod tests {
       // Storage path commands — used via MCP/API, not directly in frontend
       "get_custom_storage_path",
       "is_custom_storage_active",
+      // Public cloud-location API retained for external clients. The current
+      // application UI only uses country-level cloud proxy selection.
+      "cloud_get_regions",
+      "cloud_get_cities",
+      "cloud_get_isps",
     ];
     let lib_rs_content = fs::read_to_string("src/lib_run.rs").expect("Failed to read lib_run.rs");
     let commands = extract_tauri_commands(&lib_rs_content);

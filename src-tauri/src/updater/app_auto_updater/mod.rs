@@ -185,33 +185,39 @@ mod tests {
         name: "Donut.Browser_0.1.0_aarch64.dmg".to_string(),
         browser_download_url: "https://example.com/aarch64.dmg".to_string(),
         size: 12345,
+        digest: None,
       },
       AppReleaseAsset {
         name: "Donut.Browser_0.1.0_x64.dmg".to_string(),
         browser_download_url: "https://example.com/x64.dmg".to_string(),
         size: 12345,
+        digest: None,
       },
       // Windows assets (NSIS naming: _ARCH-setup.exe)
       AppReleaseAsset {
         name: "Donut_0.1.0_x64-setup.exe".to_string(),
         browser_download_url: "https://example.com/x64-setup.exe".to_string(),
         size: 12345,
+        digest: None,
       },
       // Linux assets
       AppReleaseAsset {
         name: "donutbrowser_0.1.0_amd64.deb".to_string(),
         browser_download_url: "https://example.com/amd64.deb".to_string(),
         size: 12345,
+        digest: None,
       },
       AppReleaseAsset {
         name: "donutbrowser-0.1.0-1.x86_64.rpm".to_string(),
         browser_download_url: "https://example.com/x86_64.rpm".to_string(),
         size: 12345,
+        digest: None,
       },
       AppReleaseAsset {
         name: "Donut.Browser-0.1.0-x86_64.AppImage".to_string(),
         browser_download_url: "https://example.com/x86_64.AppImage".to_string(),
         size: 12345,
+        digest: None,
       },
     ];
 
@@ -314,11 +320,13 @@ mod tests {
         name: "donutbrowser_0.1.0_amd64.deb".to_string(),
         browser_download_url: "https://example.com/amd64.deb".to_string(),
         size: 12345,
+        digest: None,
       },
       AppReleaseAsset {
         name: "Donut.Browser-0.1.0-x86_64.AppImage".to_string(),
         browser_download_url: "https://example.com/x86_64.AppImage".to_string(),
         size: 12345,
+        digest: None,
       },
     ];
 
@@ -359,23 +367,27 @@ mod tests {
         name: "Donut.Browser_0.1.0_aarch64.dmg".to_string(),
         browser_download_url: "https://example.com/aarch64.dmg".to_string(),
         size: 12345,
+        digest: None,
       },
       // Windows assets
       AppReleaseAsset {
         name: "Donut.Browser_0.1.0_x64.msi".to_string(),
         browser_download_url: "https://example.com/x64.msi".to_string(),
         size: 12345,
+        digest: None,
       },
       // Linux assets
       AppReleaseAsset {
         name: "donutbrowser_0.1.0_amd64.deb".to_string(),
         browser_download_url: "https://example.com/amd64.deb".to_string(),
         size: 12345,
+        digest: None,
       },
       AppReleaseAsset {
         name: "Donut.Browser-0.1.0-x86_64.AppImage".to_string(),
         browser_download_url: "https://example.com/x86_64.AppImage".to_string(),
         size: 12345,
+        digest: None,
       },
     ];
 

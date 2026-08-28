@@ -94,6 +94,8 @@ impl McpServer {
       "create_profile" => self.handle_create_profile(arguments).await,
       "update_profile" => self.handle_update_profile(arguments).await,
       "delete_profile" => self.handle_delete_profile(arguments).await,
+      "detect_browser_profiles" => self.handle_detect_browser_profiles(arguments).await,
+      "import_browser_profiles" => self.handle_import_browser_profiles(arguments).await,
       "list_tags" => self.handle_list_tags().await,
       "list_proxies" => self.handle_list_proxies().await,
       "get_profile_status" => self.handle_get_profile_status(arguments).await,
@@ -119,18 +121,10 @@ impl McpServer {
       "connect_vpn" => self.handle_connect_vpn(arguments).await,
       "disconnect_vpn" => self.handle_disconnect_vpn(arguments).await,
       "get_vpn_status" => self.handle_get_vpn_status(arguments).await,
-      // Fingerprint management — viewing is free everywhere (matches the REST
-      // API and the get_profile tool, which already expose the config); only
-      // editing requires a paid plan.
+      // Fingerprint management — same-host view/edit is free; cross-OS OS
+      // spoofing remains gated inside the update handler.
       "get_profile_fingerprint" => self.handle_get_profile_fingerprint(arguments).await,
-      "update_profile_fingerprint" => {
-        Self::require_capability(
-          "Fingerprint editing",
-          CLOUD_AUTH.can_use_cross_os_fingerprints().await,
-        )
-        .await?;
-        self.handle_update_profile_fingerprint(arguments).await
-      }
+      "update_profile_fingerprint" => self.handle_update_profile_fingerprint(arguments).await,
       "update_profile_proxy_bypass_rules" => {
         self
           .handle_update_profile_proxy_bypass_rules(arguments)

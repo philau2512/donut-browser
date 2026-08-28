@@ -2,7 +2,7 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import * as React from "react";
-import { LuFingerprint, LuLock } from "react-icons/lu";
+import { LuFingerprint } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { translateBackendError } from "@/lib/backend-errors";
 import type { BrowserProfile, CamoufoxConfig, WayfernConfig } from "@/types";
@@ -46,7 +46,7 @@ export function FingerprintSectionInline({
 
   if (!isCamoufox && !isWayfern) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <LuFingerprint className="size-4" />
           {t("profileInfo.sections.fingerprint")}
@@ -58,19 +58,9 @@ export function FingerprintSectionInline({
     );
   }
 
-  if (!crossOsUnlocked) {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border p-6 text-center">
-        <LuLock className="size-4 shrink-0 text-muted-foreground" />
-        <h3 className="text-sm font-medium text-foreground">
-          {t("profileInfo.fingerprint.lockedTitle")}
-        </h3>
-        <p className="max-w-[48ch] text-sm text-pretty text-muted-foreground">
-          {t("profileInfo.fingerprint.lockedDescription")}
-        </p>
-      </div>
-    );
-  }
+  // NOTE: Do NOT gate the whole fingerprint editor behind Pro/crossOsUnlocked.
+  // Cross-OS OS spoofing is still limited inside the form; screen/DPR/language
+  // must remain editable for every plan (needed on 2K high-DPI hosts).
 
   const onCamoufoxChange = (key: keyof CamoufoxConfig, value: unknown) => {
     setCamoufoxConfig((prev) => ({ ...prev, [key]: value }));
@@ -106,6 +96,13 @@ export function FingerprintSectionInline({
     }
   };
 
+  const onCancel = () => {
+    setCamoufoxConfig(profile.camoufox_config ?? {});
+    setWayfernConfig(profile.wayfern_config ?? {});
+    setError(null);
+    setSuccess(null);
+  };
+
   const initial = isCamoufox
     ? JSON.stringify(profile.camoufox_config ?? {})
     : JSON.stringify(profile.wayfern_config ?? {});
@@ -115,47 +112,65 @@ export function FingerprintSectionInline({
   const dirty = current !== initial;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <LuFingerprint className="size-4" />
-        {t("profileInfo.sections.fingerprint")}
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Scrollable form body */}
+      <div className="scroll-fade min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <LuFingerprint className="size-4" />
+            {t("profileInfo.sections.fingerprint")}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t("profileInfo.sectionDesc.fingerprint")}
+          </p>
+
+          {isCamoufox && (
+            <SharedCamoufoxConfigForm
+              config={camoufoxConfig}
+              onConfigChange={onCamoufoxChange}
+              forceAdvanced={true}
+              readOnly={isDisabled}
+              browserType="camoufox"
+              crossOsUnlocked={crossOsUnlocked}
+              limitedMode={false}
+              profileVersion={profile.version}
+              profileBrowser={profile.browser}
+            />
+          )}
+          {isWayfern && (
+            <WayfernConfigForm
+              config={wayfernConfig}
+              onConfigChange={onWayfernChange}
+              forceAdvanced={true}
+              readOnly={isDisabled}
+              crossOsUnlocked={crossOsUnlocked}
+              limitedMode={false}
+              profileVersion={profile.version}
+              profileBrowser={profile.browser}
+            />
+          )}
+
+          {error && <p className="text-xs text-destructive">{error}</p>}
+          {success && !error && (
+            <p className="text-xs text-success">{success}</p>
+          )}
+        </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        {t("profileInfo.sectionDesc.fingerprint")}
-      </p>
 
-      {isCamoufox && (
-        <SharedCamoufoxConfigForm
-          config={camoufoxConfig}
-          onConfigChange={onCamoufoxChange}
-          forceAdvanced={true}
-          readOnly={isDisabled}
-          browserType="camoufox"
-          crossOsUnlocked={crossOsUnlocked}
-          limitedMode={false}
-          profileVersion={profile.version}
-          profileBrowser={profile.browser}
-        />
-      )}
-      {isWayfern && (
-        <WayfernConfigForm
-          config={wayfernConfig}
-          onConfigChange={onWayfernChange}
-          forceAdvanced={true}
-          readOnly={isDisabled}
-          crossOsUnlocked={crossOsUnlocked}
-          profileVersion={profile.version}
-          profileBrowser={profile.browser}
-        />
-      )}
-
-      {error && <p className="text-xs text-destructive">{error}</p>}
-      {success && !error && <p className="text-xs text-success">{success}</p>}
-
-      <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+      {/* Sticky footer outside the form frame — always visible */}
+      <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-background px-4 py-3">
         <Button
           size="sm"
-          className="h-7 text-xs"
+          variant="outline"
+          className="h-8 min-w-20 text-xs"
+          disabled={!dirty || isSaving}
+          onClick={onCancel}
+        >
+          {t("common.buttons.cancel")}
+        </Button>
+        <Button
+          size="sm"
+          className="h-8 min-w-20 text-xs"
           disabled={!dirty || isSaving || isDisabled}
           onClick={() => {
             void onSave();
@@ -163,21 +178,6 @@ export function FingerprintSectionInline({
         >
           {isSaving ? t("common.buttons.saving") : t("common.buttons.save")}
         </Button>
-        {dirty && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 text-xs"
-            onClick={() => {
-              setCamoufoxConfig(profile.camoufox_config ?? {});
-              setWayfernConfig(profile.wayfern_config ?? {});
-              setError(null);
-              setSuccess(null);
-            }}
-          >
-            {t("common.buttons.cancel")}
-          </Button>
-        )}
       </div>
     </div>
   );

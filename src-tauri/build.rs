@@ -1,5 +1,7 @@
 fn main() {
   println!("cargo::rustc-check-cfg=cfg(mobile)");
+  let build_target = std::env::var("TARGET").expect("Cargo must provide TARGET");
+  println!("cargo:rustc-env=DONUT_BUILD_TARGET={build_target}");
 
   // Ensure dist folder exists for tauri::generate_context!() macro
   // This allows running cargo test without building the frontend first
@@ -96,8 +98,13 @@ fn external_binaries_exist() -> bool {
   } else {
     format!("donut-proxy-{}", target)
   };
+  let xray_name = if target.contains("windows") {
+    format!("xray-{}.exe", target)
+  } else {
+    format!("xray-{}", target)
+  };
 
-  binaries_dir.join(&donut_proxy_name).exists()
+  binaries_dir.join(&donut_proxy_name).exists() && binaries_dir.join(&xray_name).exists()
 }
 
 fn ensure_dist_folder_exists() {
@@ -179,7 +186,7 @@ fn generate_tray_icons() {
     // macOS will automatically handle light/dark mode by inverting the icon
     // For template icons: RGB should be 0,0,0 (black) and alpha controls visibility
     let data = pixmap.data_mut();
-    for pixel in data.chunks_exact_mut(4) {
+    for pixel in data.as_chunks_mut::<4>().0 {
       // Keep the original alpha (shows where icon content is)
       // but make the color black for template icon format
       pixel[0] = 0; // R

@@ -1,3 +1,4 @@
+pub mod clear_on_close;
 pub mod cookie_manager;
 pub mod dns_blocklist;
 pub mod encryption;
@@ -6,6 +7,7 @@ pub mod manager;
 pub mod password;
 pub mod profile_importer;
 pub mod profile_status_manager;
+pub mod quick_create_template_manager;
 pub mod tag_manager;
 pub mod team_lock;
 pub mod types;

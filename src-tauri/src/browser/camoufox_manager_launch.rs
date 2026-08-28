@@ -18,6 +18,9 @@ impl CamoufoxManager {
       let profiles_dir = self.get_profiles_dir();
       profile.get_profile_data_path(&profiles_dir)
     };
+    // Materialize data dir on first open (Quick Create lazy profiles).
+    std::fs::create_dir_all(&profile_path)
+      .map_err(|e| format!("Failed to create profile data dir: {e}"))?;
     let profile_path_str = profile_path.to_string_lossy();
 
     // Check if there's already a running instance for this profile

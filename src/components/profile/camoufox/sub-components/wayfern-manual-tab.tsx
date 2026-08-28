@@ -28,6 +28,9 @@ interface WayfernManualTabProps {
     key: keyof WayfernFingerprintConfig,
     value: unknown,
   ) => void;
+  updateFingerprintConfigs: (
+    updates: Partial<WayfernFingerprintConfig>,
+  ) => void;
   isEditingDisabled: boolean;
   limitedMode: boolean;
   readOnly: boolean;
@@ -48,6 +51,7 @@ export function WayfernManualTab({
   onConfigChange,
   fingerprintConfig,
   updateFingerprintConfig,
+  updateFingerprintConfigs,
   isEditingDisabled,
   limitedMode,
   readOnly,
@@ -185,6 +189,7 @@ export function WayfernManualTab({
             onConfigChange={onConfigChange}
             fingerprintConfig={fingerprintConfig}
             updateFingerprintConfig={updateFingerprintConfig}
+            updateFingerprintConfigs={updateFingerprintConfigs}
             readOnly={readOnly}
             t={t}
           />

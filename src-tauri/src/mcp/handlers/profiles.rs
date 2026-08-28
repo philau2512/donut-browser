@@ -460,6 +460,7 @@ impl McpServer {
         false,
         None,
         launch_hook,
+        false,
       )
       .await
       .map_err(|e| McpError {
@@ -598,10 +599,106 @@ impl McpServer {
         })?;
     }
 
+    if let Some(clear_on_close) = arguments.get("clear_on_close").and_then(|v| v.as_bool()) {
+      pm.update_profile_clear_on_close(app_handle, profile_id, clear_on_close)
+        .map_err(|e| McpError {
+          code: -32000,
+          message: format!("Failed to update clear-on-close: {e}"),
+        })?;
+    }
+
     Ok(serde_json::json!({
       "content": [{
         "type": "text",
         "text": format!("Profile '{profile_id}' updated successfully")
+      }]
+    }))
+  }
+
+  async fn handle_detect_browser_profiles(
+    &self,
+    arguments: &serde_json::Value,
+  ) -> Result<serde_json::Value, McpError> {
+    let importer = crate::profile::profile_importer::ProfileImporter::instance();
+    let profiles = match arguments.get("folder").and_then(|v| v.as_str()) {
+      Some(folder) => importer.scan_folder(std::path::Path::new(folder)),
+      None => importer.detect_existing_profiles(),
+    }
+    .map_err(|e| McpError {
+      code: -32000,
+      message: format!("Failed to detect profiles: {e}"),
+    })?;
+
+    Ok(serde_json::json!({
+      "content": [{
+        "type": "text",
+        "text": serde_json::to_string_pretty(&profiles).unwrap_or_else(|_| "[]".to_string())
+      }]
+    }))
+  }
+
+  async fn handle_import_browser_profiles(
+    &self,
+    arguments: &serde_json::Value,
+  ) -> Result<serde_json::Value, McpError> {
+    let items: Vec<crate::profile::profile_importer::ImportProfileItem> = arguments
+      .get("items")
+      .cloned()
+      .ok_or_else(|| McpError {
+        code: -32602,
+        message: "Missing items".to_string(),
+      })
+      .and_then(|v| {
+        serde_json::from_value(v).map_err(|e| McpError {
+          code: -32602,
+          message: format!("Invalid items: {e}"),
+        })
+      })?;
+
+    let group_id = arguments
+      .get("group_id")
+      .and_then(|v| v.as_str())
+      .map(|s| s.to_string());
+
+    let duplicate_strategy = arguments
+      .get("duplicate_strategy")
+      .cloned()
+      .map(serde_json::from_value::<crate::profile::profile_importer::DuplicateStrategy>)
+      .transpose()
+      .map_err(|e| McpError {
+        code: -32602,
+        message: format!("Invalid duplicate_strategy: {e}"),
+      })?
+      .unwrap_or_default();
+
+    // Clone the handle instead of holding the inner lock across a potentially
+    // multi-GB copy.
+    let app_handle = {
+      let inner = self.inner.lock().await;
+      inner.app_handle.clone().ok_or_else(|| McpError {
+        code: -32000,
+        message: "MCP server not properly initialized".to_string(),
+      })?
+    };
+
+    let result = crate::profile::profile_importer::ProfileImporter::instance()
+      .import_profiles(&app_handle, items, group_id, duplicate_strategy, None)
+      .await
+      .map_err(|e| McpError {
+        code: -32000,
+        message: format!("Failed to import profiles: {e}"),
+      })?;
+
+    Ok(serde_json::json!({
+      "content": [{
+        "type": "text",
+        "text": format!(
+          "Import complete: {} imported, {} skipped, {} failed\n{}",
+          result.imported_count,
+          result.skipped_count,
+          result.failed_count,
+          serde_json::to_string_pretty(&result.results).unwrap_or_default()
+        )
       }]
     }))
   }

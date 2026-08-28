@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
   use super::*;
+  use serial_test::serial;
   use std::env;
   use std::path::PathBuf;
   use std::time::Duration;
@@ -160,6 +161,7 @@ mod tests {
 
   // Integration test that actually builds and uses donut-proxy binary
   #[tokio::test]
+  #[serial]
   async fn test_proxy_integration_with_real_proxy() -> Result<(), Box<dyn std::error::Error>> {
     // This test requires donut-proxy binary to be available
     // Skip if we can't find the binary or if proxy startup fails
@@ -688,6 +690,7 @@ mod tests {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
     let dead_config = ProxyConfig {
       id: dead_id.clone(),
@@ -701,6 +704,7 @@ mod tests {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
 
     save_proxy_config(&live_config).unwrap();

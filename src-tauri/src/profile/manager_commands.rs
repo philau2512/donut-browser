@@ -31,6 +31,7 @@ pub async fn create_browser_profile_with_group(
       ephemeral,
       dns_blocklist,
       launch_hook,
+      false,
     )
     .await
     .map_err(|e| format!("Failed to create profile: {e}"))
@@ -258,14 +259,7 @@ pub async fn update_camoufox_config(
   profile_id: String,
   config: CamoufoxConfig,
 ) -> Result<(), String> {
-  if config.fingerprint.is_some()
-    && !crate::api::cloud_auth::CLOUD_AUTH
-      .can_use_cross_os_fingerprints()
-      .await
-  {
-    return Err(serde_json::json!({ "code": "FINGERPRINT_REQUIRES_PRO" }).to_string());
-  }
-
+  // Same-host fingerprint view/edit is free. Only cross-OS OS spoofing is paid.
   if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(config.os.as_deref())
     .await
@@ -286,14 +280,7 @@ pub async fn update_wayfern_config(
   profile_id: String,
   config: WayfernConfig,
 ) -> Result<(), String> {
-  if config.fingerprint.is_some()
-    && !crate::api::cloud_auth::CLOUD_AUTH
-      .can_use_cross_os_fingerprints()
-      .await
-  {
-    return Err(serde_json::json!({ "code": "FINGERPRINT_REQUIRES_PRO" }).to_string());
-  }
-
+  // Same-host fingerprint view/edit is free. Only cross-OS OS spoofing is paid.
   if !crate::api::cloud_auth::CLOUD_AUTH
     .is_fingerprint_os_allowed(config.os.as_deref())
     .await
@@ -320,6 +307,18 @@ pub fn delete_profile(app_handle: tauri::AppHandle, profile_id: String) -> Resul
   ProfileManager::instance()
     .delete_profile(&app_handle, &profile_id)
     .map_err(|e| format!("Failed to delete profile: {e}"))
+}
+
+
+#[tauri::command]
+pub fn update_profile_clear_on_close(
+  app_handle: tauri::AppHandle,
+  profile_id: String,
+  clear_on_close: bool,
+) -> Result<BrowserProfile, String> {
+  ProfileManager::instance()
+    .update_profile_clear_on_close(&app_handle, &profile_id, clear_on_close)
+    .map_err(|e| e.to_string())
 }
 
 lazy_static::lazy_static! {

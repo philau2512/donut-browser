@@ -11,6 +11,7 @@ import { ExtensionManagementDialog } from "@/components/extension";
 import { GroupManagementDialog } from "@/components/group";
 // Home
 import { HomeHeader, ProfilesDataTable } from "@/components/home";
+import { ProfileFilterDialog } from "@/components/home/sub-components/profile-filter-dialog";
 import type { AppPage } from "@/components/navigation";
 // Navigation
 import { RailNav } from "@/components/navigation";
@@ -49,6 +50,12 @@ import {
   ONBOARDING_TOUR_FINISHED_EVENT,
   setOnboardingActive,
 } from "@/lib/onboarding-signal";
+import {
+  applyProfileFilter,
+  countActiveProfileFilters,
+  EMPTY_PROFILE_FILTER,
+  type ProfileFilterCriteria,
+} from "@/lib/profile-filter";
 import {
   matchesGroupDigit,
   matchesShortcut,
@@ -101,6 +108,24 @@ export default function Home() {
       startOnborda(ONBOARDING_TOUR);
     }
   }, [startOnborda, profiles.length]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent).detail as {
+        profile: BrowserProfile;
+        result: import("@/components/consistency-warning-dialog").ConsistencyResult;
+      } | null;
+      if (detail?.profile && detail?.result) {
+        setConsistencyWarning({
+          profile: detail.profile,
+          result: detail.result,
+        });
+      }
+    };
+    window.addEventListener("profile-consistency-warning", handler);
+    return () =>
+      window.removeEventListener("profile-consistency-warning", handler);
+  }, []);
 
   useEffect(() => {
     const handler = () => setThankYouOpen(true);
@@ -204,6 +229,7 @@ export default function Home() {
     "api" | "mcp"
   >("api");
   const [createProfileDialogOpen, setCreateProfileDialogOpen] = useState(false);
+  const [quickCreateDialogOpen, setQuickCreateDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [integrationsDialogOpen, setIntegrationsDialogOpen] = useState(false);
   const [importProfileDialogOpen, setImportProfileDialogOpen] = useState(false);
@@ -238,6 +264,9 @@ export default function Home() {
     useState<string[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("__all__");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [profileFilter, setProfileFilter] =
+    useState<ProfileFilterCriteria>(EMPTY_PROFILE_FILTER);
+  const [profileFilterDialogOpen, setProfileFilterDialogOpen] = useState(false);
   const [pendingUrls, setPendingUrls] = useState<PendingUrl[]>([]);
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
   const [currentPermissionType, setCurrentPermissionType] =
@@ -246,6 +275,11 @@ export default function Home() {
   const [deviceCodeDialogOpen, setDeviceCodeDialogOpen] = useState(false);
   const [syncAllDialogOpen, setSyncAllDialogOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
+  const [consistencyWarning, setConsistencyWarning] = useState<{
+    profile: BrowserProfile;
+    result: import("@/components/consistency-warning-dialog").ConsistencyResult;
+  } | null>(null);
   const [profileInfoDialog, setProfileInfoDialog] =
     useState<BrowserProfile | null>(null);
   const [quickProxyEditProfile, setQuickProxyEditProfile] =
@@ -301,7 +335,6 @@ export default function Home() {
     setPasswordDialogProfile,
     passwordDialogMode,
     windowResizeWarningOpen,
-    windowResizeWarningBrowserType,
     camoufoxConfigDialogOpen,
     setCamoufoxConfigDialogOpen,
     currentProfileForCamoufoxConfig,
@@ -600,8 +633,15 @@ export default function Home() {
       });
     }
 
+    filtered = applyProfileFilter(filtered, profileFilter, runningProfiles);
+
     return filtered;
-  }, [profiles, selectedGroupId, searchQuery]);
+  }, [profiles, selectedGroupId, searchQuery, profileFilter, runningProfiles]);
+
+  const activeFilterCount = useMemo(
+    () => countActiveProfileFilters(profileFilter),
+    [profileFilter],
+  );
 
   const _isLoading = profilesLoading || groupsLoading || proxiesLoading;
 
@@ -618,6 +658,7 @@ export default function Home() {
       <CamoufoxDeprecationDialog profiles={profiles} />
       <HomeHeader
         onCreateProfileDialogOpen={setCreateProfileDialogOpen}
+        onQuickCreateDialogOpen={setQuickCreateDialogOpen}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
         groups={groupsData}
@@ -626,6 +667,15 @@ export default function Home() {
         onGroupSelect={handleSelectGroup}
         pageTitle={subPageTitle}
         onRefresh={handleRefreshProfiles}
+        onOpenFilter={() => setProfileFilterDialogOpen(true)}
+        activeFilterCount={activeFilterCount}
+      />
+      <ProfileFilterDialog
+        open={profileFilterDialogOpen}
+        onOpenChange={setProfileFilterDialogOpen}
+        value={profileFilter}
+        onApply={setProfileFilter}
+        folders={groupsData}
       />
       <div className="flex min-h-0 flex-1">
         <RailNav
@@ -658,6 +708,7 @@ export default function Home() {
                 onDeleteSelectedProfiles={handleDeleteSelectedProfiles}
                 onAssignProfilesToGroup={handleAssignProfilesToGroup}
                 selectedGroupId={selectedGroupId}
+                groups={groupsData}
                 selectedProfiles={selectedProfiles}
                 onSelectedProfilesChange={setSelectedProfiles}
                 onBulkDelete={handleBulkDelete}
@@ -798,8 +849,14 @@ export default function Home() {
         selectedProfiles={selectedProfiles}
         createProfileDialogOpen={createProfileDialogOpen}
         setCreateProfileDialogOpen={setCreateProfileDialogOpen}
+        quickCreateDialogOpen={quickCreateDialogOpen}
+        setQuickCreateDialogOpen={setQuickCreateDialogOpen}
         commandPaletteOpen={commandPaletteOpen}
         setCommandPaletteOpen={setCommandPaletteOpen}
+        aboutDialogOpen={aboutDialogOpen}
+        setAboutDialogOpen={setAboutDialogOpen}
+        consistencyWarning={consistencyWarning}
+        setConsistencyWarning={setConsistencyWarning}
         pendingUrls={pendingUrls}
         setPendingUrls={setPendingUrls}
         permissionDialogOpen={permissionDialogOpen}
@@ -856,7 +913,6 @@ export default function Home() {
         syncLeaderProfile={syncLeaderProfile}
         setSyncLeaderProfile={setSyncLeaderProfile}
         windowResizeWarningOpen={windowResizeWarningOpen}
-        windowResizeWarningBrowserType={windowResizeWarningBrowserType}
         quickProxyEditProfile={quickProxyEditProfile}
         setQuickProxyEditProfile={setQuickProxyEditProfile}
         selectedGroupId={selectedGroupId}

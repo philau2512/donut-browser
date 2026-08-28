@@ -49,6 +49,8 @@ export interface ProfileInfoLayoutProps {
   ProfileIcon: React.ComponentType<{ className?: string }>;
   isRunning: boolean;
   isDisabled: boolean;
+  /** Paid entitlement for cross-OS OS spoofing only (not same-host fingerprint edit). */
+  crossOsUnlocked?: boolean;
   networkLabel: string;
   groupName: string | null;
   extensionGroupName: string | null;
@@ -221,6 +223,7 @@ export function ProfileInfoLayout({
   ProfileIcon,
   isRunning,
   isDisabled,
+  crossOsUnlocked = false,
   networkLabel,
   groupName,
   extensionGroupName,
@@ -419,7 +422,15 @@ export function ProfileInfoLayout({
           )}
         </nav>
 
-        <div className="scroll-fade min-w-0 flex-1 overflow-y-auto p-4">
+        <div
+          className={cn(
+            "min-w-0 flex-1",
+            // Fingerprint keeps its own scroll + sticky Save/Cancel footer.
+            section === "fingerprint"
+              ? "flex min-h-0 flex-col overflow-hidden"
+              : "scroll-fade overflow-y-auto p-4",
+          )}
+        >
           {section === "overview" && (
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
@@ -538,9 +549,7 @@ export function ProfileInfoLayout({
             <FingerprintSectionInline
               profile={profile}
               isDisabled={isDisabled}
-              crossOsUnlocked={Boolean(
-                fingerprintAction && !fingerprintAction.proBadge,
-              )}
+              crossOsUnlocked={crossOsUnlocked}
               onSaved={onClose}
               t={t}
             />

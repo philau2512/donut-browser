@@ -1,7 +1,7 @@
 use crate::browser::browser_runner::BrowserRunner;
 use crate::browser::wayfern_launch_args::{
-  build_wayfern_launch_args, resolve_webrtc_mode, WayfernLaunchArgsOptions,
-  WAYFERN_DISABLE_FEATURES,
+  build_wayfern_launch_args, ensure_https_first_mode_prefs, resolve_webrtc_mode,
+  WayfernLaunchArgsOptions, WAYFERN_DISABLE_FEATURES,
 };
 use crate::profile::BrowserProfile;
 use reqwest::Client;
@@ -51,6 +51,28 @@ pub struct WayfernConfig {
   /// location can be refreshed instead of showing stale data.
   #[serde(default)]
   pub geo_proxy_signature: Option<String>,
+  /// Stable identity handle returned by Wayfern's identity API.
+  #[serde(default)]
+  pub identity_id: Option<String>,
+  /// Device view captured before geolocation and user edits.
+  #[serde(default)]
+  pub identity_baseline: Option<String>,
+}
+
+/// Result of generating a Wayfern device, including identity persistence data.
+#[derive(Debug, Clone)]
+pub struct GeneratedFingerprint {
+  pub fingerprint: String,
+  pub identity_id: Option<String>,
+  pub identity_baseline: Option<String>,
+  pub geolocation_applied: bool,
+}
+
+const IDENTITY_API_MIN_VERSION: &str = "151";
+
+pub fn supports_identity_api(version: &str) -> bool {
+  crate::api::api_client::compare_versions(version, IDENTITY_API_MIN_VERSION)
+    != std::cmp::Ordering::Less
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -165,10 +187,9 @@ impl WayfernManager {
   /// Derive the on-screen window size Chromium should open at, from the stored
   /// fingerprint. `Wayfern.setFingerprint` only spoofs what the page *reports*
   /// for `windowOuterWidth`/`screenWidth`/etc.; it does not move or resize the
-  /// real top-level window. Without `--window-size` the OS window keeps
-  /// Chromium's default, so the visible window contradicts the reported
-  /// dimensions — a detectable mismatch. We pass `--window-size` so the actual
-  /// window matches the fingerprint.
+  /// real top-level window. We pass `--window-size` as restore bounds and
+  /// `--start-maximized` so large/high-DPI hosts open full-size like normal
+  /// Chrome while spoofed metrics stay on the fingerprint.
   ///
   /// Keys are the camelCase fields Wayfern uses in its fingerprint
   /// (`windowOuterWidth`, `screenAvailWidth`, …) — NOT the dotted
@@ -420,7 +441,7 @@ impl WayfernManager {
     _app_handle: &AppHandle,
     profile: &BrowserProfile,
     config: &WayfernConfig,
-  ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+  ) -> Result<GeneratedFingerprint, Box<dyn std::error::Error + Send + Sync>> {
     let executable_path = BrowserRunner::instance()
       .get_browser_executable_path(profile)
       .map_err(|e| format!("Failed to get Wayfern executable path: {e}"))?;
@@ -543,92 +564,82 @@ impl WayfernManager {
 
     let requested_os = config.os.as_deref().unwrap_or(host_os);
 
-    // If requested OS is different from host OS, it's cross-OS fingerprinting.
-    // Try to fetch wayfern token if we have a paid subscription but no cached token yet.
-    let mut wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
-    if wayfern_token.is_none()
-      && requested_os != host_os
-      && crate::api::cloud_auth::CLOUD_AUTH
-        .has_active_paid_subscription()
-        .await
-    {
-      log::info!("Wayfern token missing for cross-OS fingerprinting, requesting one...");
-      if let Err(e) = crate::api::cloud_auth::CLOUD_AUTH
-        .request_wayfern_token()
-        .await
-      {
-        log::warn!("Failed to request wayfern token: {e}");
-      } else {
-        wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
-      }
-    }
-
-    // Determine the final OS to use. If no token is available and requested OS is cross-OS,
-    // fallback to host OS to avoid CDP error "Cross-OS fingerprinting requires a paid plan".
-    let os = if wayfern_token.is_none() && requested_os != host_os {
-      log::warn!("No Wayfern token available for cross-OS fingerprinting. Falling back from '{requested_os}' to host OS '{host_os}' to avoid CDP error.");
-      host_os
-    } else {
-      requested_os
-    };
-
-    // Include wayfern token if available (enables cross-OS fingerprinting for paid users)
-    let mut refresh_params = json!({ "operatingSystem": os });
+    // Identity-backed generation is available from Wayfern 151 onward. A token
+    // is attached when available so cross-OS requests remain authorized.
+    let wayfern_token = crate::api::cloud_auth::CLOUD_AUTH.get_wayfern_token().await;
+    let mut generate_params = json!({ "operatingSystem": requested_os });
     if let Some(ref token) = wayfern_token {
-      refresh_params
+      generate_params
         .as_object_mut()
         .unwrap()
         .insert("wayfernToken".to_string(), json!(token));
     }
+    let use_identity_api = supports_identity_api(&profile.version);
+    let generate_result = if use_identity_api {
+      self
+        .send_cdp_command(&ws_url, "Wayfern.createIdentity", generate_params)
+        .await
+    } else {
+      match self
+        .send_cdp_command(&ws_url, "Wayfern.refreshFingerprint", generate_params)
+        .await
+      {
+        Ok(_) => {
+          self
+            .send_cdp_command(&ws_url, "Wayfern.getFingerprint", json!({}))
+            .await
+        }
+        Err(e) => Err(e),
+      }
+    };
 
-    let refresh_result = self
-      .send_cdp_command(&ws_url, "Wayfern.refreshFingerprint", refresh_params)
-      .await;
-
-    if let Err(e) = refresh_result {
-      cleanup().await;
-      return Err(format!("Failed to refresh fingerprint: {e}").into());
-    }
-
-    let get_result = self
-      .send_cdp_command(&ws_url, "Wayfern.getFingerprint", json!({}))
-      .await;
-
-    let mut fingerprint = match get_result {
+    let (mut fingerprint, identity_id, identity_baseline) = match generate_result {
       Ok(result) => {
-        // Wayfern.getFingerprint returns { fingerprint: {...} }
-        // We need to extract just the fingerprint object
-        let fp = result.get("fingerprint").cloned().unwrap_or(result);
-        // Normalize the fingerprint: convert JSON string fields to proper types
-        let mut normalized = Self::normalize_fingerprint(fp);
-
-        // Apply timezone/geolocation for the proxy this fingerprint is being
-        // generated against. Shared with the launch-time location refresh.
-        Self::apply_geolocation(
-          &mut normalized,
-          config.proxy.as_deref(),
-          config.geoip.as_ref(),
-        )
-        .await;
-
-        normalized
+        let identity_id = result
+          .get("identityId")
+          .and_then(|v| v.as_str())
+          .map(str::to_string);
+        let fp = result
+          .get("identity")
+          .or_else(|| result.get("fingerprint"))
+          .cloned()
+          .unwrap_or(result);
+        let normalized = Self::normalize_fingerprint(fp);
+        let baseline = if use_identity_api {
+          serde_json::to_string(&normalized).ok()
+        } else {
+          None
+        };
+        if use_identity_api && identity_id.is_none() {
+          cleanup().await;
+          return Err("Wayfern.createIdentity returned no identityId".into());
+        }
+        (normalized, identity_id, baseline)
       }
       Err(e) => {
         cleanup().await;
-        return Err(format!("Failed to get fingerprint: {e}").into());
+        return Err(format!("Failed to generate fingerprint: {e}").into());
       }
     };
+
+    // Apply timezone/geolocation using the configured route.
+    let geolocation_applied = Self::apply_geolocation(
+      &mut fingerprint,
+      config.proxy.as_deref(),
+      config.geoip.as_ref(),
+    )
+    .await;
 
     // Post-process: Clamp screen resolution to OS-appropriate integer values
     // This fixes pixelscan "inconsistent fingerprint" detection where Wayfern
     // generates Mac Retina fractional pixels (e.g., 2560.5) for Windows profiles
-    if let Err(e) = Self::clamp_screen_resolution(&mut fingerprint, os) {
+    if let Err(e) = Self::clamp_screen_resolution(&mut fingerprint, requested_os) {
       cleanup().await;
       return Err(format!("Failed to clamp screen resolution: {e}").into());
     }
 
     // Validate fingerprint consistency before storing (fail fast)
-    if let Err(e) = Self::validate_fingerprint_consistency(&fingerprint, os) {
+    if let Err(e) = Self::validate_fingerprint_consistency(&fingerprint, requested_os) {
       cleanup().await;
       return Err(format!("Fingerprint validation failed: {e}").into());
     }
@@ -639,8 +650,8 @@ impl WayfernManager {
       .map_err(|e| format!("Failed to serialize fingerprint: {e}"))?;
 
     log::info!(
-      "Generated Wayfern fingerprint for OS: {}, fields: {:?}",
-      os,
+      "Generated Wayfern fingerprint for requested OS: {}, fields: {:?}",
+      requested_os,
       fingerprint
         .as_object()
         .map(|o| o.keys().collect::<Vec<_>>())
@@ -658,7 +669,12 @@ impl WayfernManager {
       );
     }
 
-    Ok(fingerprint_json)
+    Ok(GeneratedFingerprint {
+      fingerprint: fingerprint_json,
+      identity_id,
+      identity_baseline,
+      geolocation_applied,
+    })
   }
 
   /// Clamp screen resolution to OS-appropriate integer values.

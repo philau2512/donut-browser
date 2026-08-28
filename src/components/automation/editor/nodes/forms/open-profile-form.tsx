@@ -40,15 +40,21 @@ interface OpenProfileFormProps {
   variableWarnings?: ValidationWarning[];
 }
 
+// Stable empty defaults — inline `= []` would allocate a new array every render
+// and re-trigger effects that depend on the prop reference.
+const EMPTY_VARIABLES: Record<string, string> = {};
+const EMPTY_WARNINGS: ValidationWarning[] = [];
+
 export function OpenProfileForm({
   value,
   onChange,
   profiles: _profiles,
-  variables: _variables = {},
-  variableWarnings = [],
+  variables: _variables = EMPTY_VARIABLES,
+  variableWarnings = EMPTY_WARNINGS,
 }: OpenProfileFormProps) {
   const { t } = useTranslation();
-  const [warnings, setWarnings] = useState<ValidationWarning[]>([]);
+  // Use prop directly — no mirrored state (avoids infinite setState loops).
+  const warnings = variableWarnings;
   const [parsedAutomation, setParsedAutomation] =
     useState<OpenProfileAutomationConfig>({});
 
@@ -72,15 +78,6 @@ export function OpenProfileForm({
       });
     }
   }, [value.automation]);
-
-  // Validation
-  useEffect(() => {
-    const newWarnings: ValidationWarning[] = [];
-    for (const w of variableWarnings) {
-      newWarnings.push(w);
-    }
-    setWarnings(newWarnings);
-  }, [variableWarnings]);
 
   const updateAutomation = (updates: Partial<OpenProfileAutomationConfig>) => {
     const newAutomation = {

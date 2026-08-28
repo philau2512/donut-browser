@@ -280,6 +280,31 @@ mod tests {
     assert!(err.is_err());
   }
 
+  /// EX-01/02 smoke: extension + group CRUD happy path.
+  #[test]
+  #[serial_test::serial]
+  fn smoke_extension_and_group_crud() {
+    let tmp = tempfile::tempdir().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(tmp.path().to_path_buf());
+    let mgr = ExtensionManager::new();
+
+    let ext = mgr
+      .add_extension("Smoke Ext".into(), "smoke.xpi".into(), vec![9, 9, 9])
+      .unwrap();
+    assert_eq!(mgr.list_extensions().unwrap().len(), 1);
+
+    let group = mgr.create_group("Smoke Group".into()).unwrap();
+    mgr.add_extension_to_group(&group.id, &ext.id).unwrap();
+    assert_eq!(
+      mgr.get_group(&group.id).unwrap().extension_ids,
+      vec![ext.id.clone()]
+    );
+
+    mgr.delete_extension_internal(&ext.id).unwrap();
+    assert!(mgr.list_extensions().unwrap().is_empty());
+    assert!(mgr.get_group(&group.id).unwrap().extension_ids.is_empty());
+  }
+
   #[test]
   fn test_validate_group_compatibility() {
     let tmp = tempfile::tempdir().unwrap();

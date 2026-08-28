@@ -2,6 +2,11 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { AboutDialog } from "@/components/about-dialog";
+import {
+  type ConsistencyResult,
+  ConsistencyWarningDialog,
+} from "@/components/consistency-warning-dialog";
 import { CookieCopyDialog, CookieManagementDialog } from "@/components/cookie";
 import {
   ExtensionGroupAssignmentDialog,
@@ -15,6 +20,7 @@ import {
   ProfilePasswordDialog,
   ProfileSelectorDialog,
   ProfileSyncDialog,
+  QuickCreateDialog,
   TagsAssignmentDialog,
 } from "@/components/profile";
 import {
@@ -71,8 +77,22 @@ interface HomeDialogsProps {
   // Dialog open states
   createProfileDialogOpen: boolean;
   setCreateProfileDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  quickCreateDialogOpen: boolean;
+  setQuickCreateDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  aboutDialogOpen: boolean;
+  setAboutDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  consistencyWarning: {
+    profile: BrowserProfile;
+    result: ConsistencyResult;
+  } | null;
+  setConsistencyWarning: React.Dispatch<
+    React.SetStateAction<{
+      profile: BrowserProfile;
+      result: ConsistencyResult;
+    } | null>
+  >;
   pendingUrls: PendingUrl[];
   setPendingUrls: React.Dispatch<React.SetStateAction<PendingUrl[]>>;
   permissionDialogOpen: boolean;
@@ -137,7 +157,6 @@ interface HomeDialogsProps {
     React.SetStateAction<BrowserProfile | null>
   >;
   windowResizeWarningOpen: boolean;
-  windowResizeWarningBrowserType: string | undefined;
   quickProxyEditProfile: BrowserProfile | null;
   setQuickProxyEditProfile: React.Dispatch<
     React.SetStateAction<BrowserProfile | null>
@@ -211,8 +230,14 @@ export function HomeDialogs({
   vpnConfigs,
   createProfileDialogOpen,
   setCreateProfileDialogOpen,
+  quickCreateDialogOpen,
+  setQuickCreateDialogOpen,
   commandPaletteOpen,
   setCommandPaletteOpen,
+  aboutDialogOpen,
+  setAboutDialogOpen,
+  consistencyWarning,
+  setConsistencyWarning,
   pendingUrls,
   setPendingUrls,
   permissionDialogOpen,
@@ -265,7 +290,6 @@ export function HomeDialogs({
   syncLeaderProfile,
   setSyncLeaderProfile,
   windowResizeWarningOpen,
-  windowResizeWarningBrowserType,
   quickProxyEditProfile,
   setQuickProxyEditProfile,
   selectedGroupId,
@@ -317,6 +341,15 @@ export function HomeDialogs({
         crossOsUnlocked={crossOsUnlocked}
       />
 
+      <QuickCreateDialog
+        isOpen={quickCreateDialogOpen}
+        onClose={() => {
+          setQuickCreateDialogOpen(false);
+        }}
+        selectedGroupId={selectedGroupId}
+        crossOsUnlocked={crossOsUnlocked}
+      />
+
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
@@ -338,6 +371,29 @@ export function HomeDialogs({
           handleRailNavigate("profiles");
           setProfileInfoDialog(profile);
         }}
+        onCreateProfile={() => {
+          setCreateProfileDialogOpen(true);
+        }}
+        onOpenAbout={() => {
+          setAboutDialogOpen(true);
+        }}
+      />
+
+      <AboutDialog
+        isOpen={aboutDialogOpen}
+        onClose={() => {
+          setAboutDialogOpen(false);
+        }}
+      />
+
+      <ConsistencyWarningDialog
+        isOpen={consistencyWarning !== null}
+        onClose={() => {
+          setConsistencyWarning(null);
+        }}
+        profileName={consistencyWarning?.profile.name ?? ""}
+        profileId={consistencyWarning?.profile.id ?? ""}
+        result={consistencyWarning?.result ?? null}
       />
 
       {pendingUrls.map((pendingUrl) => (
@@ -582,7 +638,6 @@ export function HomeDialogs({
 
       <WindowResizeWarningDialog
         isOpen={windowResizeWarningOpen}
-        browserType={windowResizeWarningBrowserType}
         onResult={handleWindowResizeWarningResult}
       />
 

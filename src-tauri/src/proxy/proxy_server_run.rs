@@ -2,7 +2,7 @@
 /// stripped. `config.upstream_url` carries `scheme://user:pass@host:port`, and
 /// these logs land in a world-readable file under the system temp dir, so the
 /// userinfo must never be emitted.
-fn redacted_upstream(upstream: &str) -> String {
+pub fn redacted_upstream(upstream: &str) -> String {
   if upstream.is_empty() {
     return "none".to_string();
   }

@@ -220,6 +220,14 @@ impl WayfernManager {
       }
     }
 
+    // Seed HTTPS-First prefs before spawn so omnibox bare hosts (x.com) open as
+    // https:// instead of http:// → server redirect. Must run while Chromium is
+    // not holding the Preferences file lock.
+    match ensure_https_first_mode_prefs(std::path::Path::new(profile_path)) {
+      Ok(()) => log::info!("Seeded HTTPS-First Mode prefs for profile data dir"),
+      Err(e) => log::warn!("Failed to seed HTTPS-First Mode prefs (continuing launch): {e}"),
+    }
+
     let mut command = TokioCommand::new(&executable_path);
     command
       .args(&args)

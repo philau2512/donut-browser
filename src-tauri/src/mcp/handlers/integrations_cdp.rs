@@ -327,6 +327,9 @@ mod tests {
     assert!(tool_names.contains(&"run_profile"));
     assert!(tool_names.contains(&"kill_profile"));
     assert!(tool_names.contains(&"get_profile_status"));
+    // Profile import tools
+    assert!(tool_names.contains(&"detect_browser_profiles"));
+    assert!(tool_names.contains(&"import_browser_profiles"));
     // Group tools
     assert!(tool_names.contains(&"list_groups"));
     assert!(tool_names.contains(&"get_group"));

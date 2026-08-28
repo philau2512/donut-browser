@@ -7,7 +7,7 @@ export interface ProxySettings {
 }
 
 export interface TableSortingSettings {
-  column: string; // "name", "note", "status"
+  column: string; // "name", "created_at", "note", "status"
   direction: string; // "asc" or "desc"
 }
 
@@ -33,6 +33,7 @@ export interface BrowserProfile {
   last_sync?: number; // Timestamp of last successful sync (epoch seconds)
   host_os?: string; // OS where profile was created ("macos", "windows", "linux")
   ephemeral?: boolean;
+  clear_on_close?: boolean;
   extension_group_id?: string;
   proxy_bypass_rules?: string[];
   created_by_id?: string;
@@ -99,6 +100,9 @@ export interface Entitlements {
   crossOsFingerprints: boolean;
   cloudBackup: boolean;
   teamCollaboration: boolean;
+  cookieBot: boolean;
+  remoteInteractive: boolean;
+  remoteBrowserHours: number;
   profileLimit: number;
   requestsPerHour: number;
 }
@@ -211,6 +215,135 @@ export interface DetectedProfile {
   path: string;
   description: string;
   mapped_browser: string;
+}
+
+export interface ImportProfileItem {
+  source_path: string;
+  browser_type?: string;
+  new_profile_name: string;
+  /** Mutually exclusive with `vpn_id`; the importer rejects setting both. */
+  proxy_id?: string | null;
+  vpn_id?: string | null;
+}
+
+export interface ConsistencyResult {
+  consistent: boolean;
+  checked: boolean;
+  exit_ip: string | null;
+  exit_country_code: string | null;
+  exit_timezone: string | null;
+  fingerprint_timezone: string | null;
+  fingerprint_language: string | null;
+  mismatches: string[];
+}
+
+export type VpnExtensionConfidence = "confirmed" | "likely" | "capability";
+export type ExtensionScanState =
+  | "scanned"
+  | "partial"
+  | "encrypted"
+  | "ephemeral"
+  | "missing";
+
+export interface DetectedVpnExtension {
+  key: string;
+  name: string;
+  version: string | null;
+  source: string;
+  confidence: VpnExtensionConfidence;
+  proxy_control: boolean;
+  signals: string[];
+}
+
+export interface PreLaunchChecks {
+  vpn_extensions: DetectedVpnExtension[];
+  scan_state: ExtensionScanState;
+  consistency: ConsistencyResult;
+  exit_probe_pending: boolean;
+  exit_measurement_unreliable: boolean;
+  consent_token: string | null;
+}
+
+export type ProfileImportWarning = string;
+
+export interface ProfileImportReport {
+  cookies_migrated: number;
+  cookies_unrecoverable: number;
+  passwords_migrated: number;
+  passwords_unrecoverable: number;
+  payment_methods_migrated: number;
+  payment_methods_unrecoverable: number;
+  extensions_migrated: number;
+  history_entries: number;
+  bookmarks: number;
+  local_storage_origins: number;
+  bytes_copied: number;
+  warnings: ProfileImportWarning[];
+}
+export interface ProfileImportItemResult {
+  name: string;
+  source_path: string;
+  status: "imported" | "skipped" | "failed";
+  profile_id: string | null;
+  error: string | null;
+  report?: ProfileImportReport | null;
+}
+
+export interface ProfileImportBatchResult {
+  imported_count: number;
+  skipped_count: number;
+  failed_count: number;
+  results: ProfileImportItemResult[];
+}
+
+export interface ArchiveScanResult {
+  extracted_dir: string;
+  profiles: DetectedProfile[];
+}
+
+export interface ProfileImportProgress {
+  total: number;
+  completed: number;
+  index: number;
+  name: string;
+  status: "importing" | "imported" | "skipped" | "failed";
+}
+
+/** Saved Quick Create template (browser defaults for bulk lazy create). */
+export interface QuickCreateTemplate {
+  id: string;
+  name: string;
+  browser: string;
+  version: string;
+  release_type: string;
+  proxy_id?: string;
+  vpn_id?: string;
+  camoufox_config?: CamoufoxConfig;
+  wayfern_config?: WayfernConfig;
+  extension_group_id?: string;
+  dns_blocklist?: string;
+  launch_hook?: string;
+  tags: string[];
+  profile_status?: string;
+  /**
+   * Fields intentionally preserved when Quick Create generates a fresh
+   * fingerprint for each profile. The generated sample provides uniqueness;
+   * these values carry the template's location and hardware decisions.
+   */
+  fingerprint_overrides?: WayfernFingerprintConfig;
+  /** Keep profile data in memory after Quick Create. */
+  ephemeral?: boolean;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface QuickCreateProgress {
+  total: number;
+  completed: number;
+  index: number;
+  name: string;
+  status: "creating" | "created" | "failed" | "done";
+  error?: string;
 }
 
 export interface BrowserReleaseTypes {
@@ -450,6 +583,8 @@ export interface WayfernConfig {
   randomize_fingerprint_on_launch?: boolean; // Generate new fingerprint on every launch
   os?: WayfernOS; // Operating system for fingerprint generation
   geo_proxy_signature?: string; // Internal: routing the fingerprint's location was computed for
+  identity_id?: string; // Internal: UUID the device is derived from on browsers with the identity API
+  identity_baseline?: string; // Internal: derived fingerprint before edits, diffed to recover overrides
 }
 
 // Wayfern fingerprint config - matches the C++ FingerprintData structure
@@ -715,6 +850,7 @@ export interface ParsedProxyLine {
   port: number;
   username?: string;
   password?: string;
+  vless_uri?: string;
   original_line: string;
 }
 

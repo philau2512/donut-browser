@@ -5,8 +5,8 @@ import type { TableSortingSettings } from "@/types";
 
 export function useTableSorting() {
   const [sortingSettings, setSortingSettings] = useState<TableSortingSettings>({
-    column: "name",
-    direction: "asc",
+    column: "created_at",
+    direction: "desc",
   });
   const [isLoaded, setIsLoaded] = useState(false);
 

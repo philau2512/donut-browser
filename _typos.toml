@@ -13,3 +13,6 @@ extend-exclude = [
 DBE = "DBE"
 nd = "nd"
 Sur = "Sur"
+PN = "PN"
+flate = "flate"
+writeable = "writeable"

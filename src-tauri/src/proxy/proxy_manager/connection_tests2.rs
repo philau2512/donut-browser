@@ -33,6 +33,7 @@ mod tests2 {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
 
     // Save
@@ -355,6 +356,7 @@ mod tests2 {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      dns_allowlist_mode: false,
     };
     save_proxy_config(&config).unwrap();
 
@@ -585,5 +587,151 @@ mod tests2 {
     assert_eq!(loaded.profile_id.as_deref(), Some("prof_bypass"));
 
     delete_proxy_config(&id);
+  }
+
+  /// PX-01: stored proxy create/list/update/delete without AppHandle.
+  /// Uses disk + ProxyManager load path (same store as create_stored_proxy).
+  #[test]
+  #[serial_test::serial]
+  fn smoke_stored_proxy_crud() {
+    use std::fs;
+    use tempfile::TempDir;
+
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+
+    let settings = ProxySettings {
+      proxy_type: "http".into(),
+      host: "10.0.0.9".into(),
+      port: 8080,
+      username: Some("u".into()),
+      password: Some("p".into()),
+    };
+    let mut proxy = StoredProxy::new("Smoke Proxy".into(), settings);
+    // Force deterministic flags for the smoke (avoid sync side-effects in CI).
+    proxy.sync_enabled = false;
+    proxy.check_before_start = Some(true);
+
+    let proxies_dir = crate::settings::app_dirs::proxies_dir();
+    fs::create_dir_all(&proxies_dir).unwrap();
+    let file_path = proxies_dir.join(format!("{}.json", proxy.id));
+    fs::write(
+      &file_path,
+      serde_json::to_string_pretty(&proxy).expect("serialize proxy"),
+    )
+    .unwrap();
+
+    let pm = ProxyManager::new();
+    let listed = pm.get_stored_proxies();
+    let found = listed
+      .iter()
+      .find(|p| p.id == proxy.id)
+      .expect("proxy loaded from disk");
+    assert_eq!(found.name, "Smoke Proxy");
+    assert_eq!(found.proxy_settings.host, "10.0.0.9");
+    assert_eq!(found.proxy_settings.port, 8080);
+
+    // Update path that persists without AppHandle
+    let updated = pm
+      .set_check_before_start(&proxy.id, false)
+      .expect("update check_before_start");
+    assert_eq!(updated.check_before_start, Some(false));
+
+    // Name + settings update via save_proxy-equivalent write + reload
+    let mut renamed = updated;
+    renamed.update_name("Smoke Proxy Renamed".into());
+    renamed.update_settings(ProxySettings {
+      proxy_type: "socks5".into(),
+      host: "10.0.0.10".into(),
+      port: 1080,
+      username: None,
+      password: None,
+    });
+    fs::write(
+      &file_path,
+      serde_json::to_string_pretty(&renamed).expect("serialize renamed"),
+    )
+    .unwrap();
+    pm.upsert_stored_proxy(renamed.clone());
+
+    let after = pm
+      .get_stored_proxies()
+      .into_iter()
+      .find(|p| p.id == proxy.id)
+      .expect("renamed proxy in memory");
+    assert_eq!(after.name, "Smoke Proxy Renamed");
+    assert_eq!(after.proxy_settings.proxy_type, "socks5");
+    assert_eq!(after.proxy_settings.port, 1080);
+
+    // Delete = memory + file (delete_stored_proxy needs AppHandle for sync)
+    pm.remove_from_memory(&proxy.id);
+    assert!(fs::remove_file(&file_path).is_ok());
+    assert!(
+      pm.get_stored_proxies()
+        .iter()
+        .all(|p| p.id != proxy.id),
+      "proxy removed from manager"
+    );
+    assert!(!file_path.exists());
+
+    let reloaded = ProxyManager::new();
+    assert!(
+      reloaded
+        .get_stored_proxies()
+        .iter()
+        .all(|p| p.id != proxy.id),
+      "deleted proxy must not reload"
+    );
+  }
+
+  /// PX-05: export JSON + TXT from stored proxies (no AppHandle).
+  #[test]
+  #[serial_test::serial]
+  fn smoke_export_proxies_json_and_txt() {
+    use std::fs;
+    use tempfile::TempDir;
+
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+
+    let settings = ProxySettings {
+      proxy_type: "http".into(),
+      host: "export.example".into(),
+      port: 8080,
+      username: Some("u".into()),
+      password: Some("p".into()),
+    };
+    let mut proxy = StoredProxy::new("Export Me".into(), settings);
+    proxy.sync_enabled = false;
+    proxy.is_cloud_managed = false;
+
+    let proxies_dir = crate::settings::app_dirs::proxies_dir();
+    fs::create_dir_all(&proxies_dir).unwrap();
+    fs::write(
+      proxies_dir.join(format!("{}.json", proxy.id)),
+      serde_json::to_string_pretty(&proxy).unwrap(),
+    )
+    .unwrap();
+
+    let pm = ProxyManager::new();
+    let json = pm.export_proxies_json().expect("export json");
+    assert!(json.contains("Export Me"));
+    assert!(json.contains("export.example"));
+    assert!(json.contains("\"version\": \"1.0\"") || json.contains("\"version\":\"1.0\""));
+
+    let txt = pm.export_proxies_txt();
+    assert!(
+      txt.contains("export.example") && txt.contains("8080"),
+      "txt export should include host:port, got: {txt}"
+    );
+  }
+
+  /// PX-04 smoke alias: parse import lines (happy + invalid).
+  #[test]
+  fn smoke_import_proxy_txt_parse() {
+    let ok = ProxyManager::parse_txt_proxies("socks5://u:p@1.2.3.4:1080\n#c\nbad\n");
+    assert_eq!(ok.len(), 2);
+    assert!(matches!(ok[0], ProxyParseResult::Parsed(_)));
+    assert!(matches!(ok[1], ProxyParseResult::Invalid { .. }));
   }
 }

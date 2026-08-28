@@ -70,6 +70,11 @@ impl ProfileManager {
     }
   }
 
+  /// Create a browser profile.
+  ///
+  /// When `skip_data_dir` is true (Quick Create lazy mode), only the UUID
+  /// directory + `metadata.json` are written. The real browser data folder
+  /// (`profiles/{uuid}/profile/`) is created on first launch.
   #[allow(clippy::too_many_arguments)]
   pub async fn create_profile_with_group(
     &self,
@@ -86,6 +91,7 @@ impl ProfileManager {
     ephemeral: bool,
     dns_blocklist: Option<String>,
     launch_hook: Option<String>,
+    skip_data_dir: bool,
   ) -> Result<BrowserProfile, Box<dyn std::error::Error>> {
     if proxy_id.is_some() && vpn_id.is_some() {
       return Err("Cannot set both proxy_id and vpn_id".into());
@@ -121,11 +127,12 @@ impl ProfileManager {
     let profile_data_dir = profile_uuid_dir.join("profile");
     let profile_file = profile_uuid_dir.join("metadata.json");
 
-    // Create profile directory with UUID and profile subdirectory
-    create_dir_all(&profile_uuid_dir)?;
-    if !ephemeral {
-      create_dir_all(&profile_data_dir)?;
-    }
+    Self::create_profile_directories(
+      &profile_uuid_dir,
+      &profile_data_dir,
+      ephemeral,
+      skip_data_dir,
+    )?;
 
     // For Camoufox profiles, generate fingerprint during creation
     let final_camoufox_config = if browser == "camoufox" {
@@ -203,6 +210,7 @@ impl ProfileManager {
           created_by_email: None,
           dns_blocklist: None,
           password_protected: false,
+          clear_on_close: false,
           created_at: None,
           updated_at: None,
           profile_status: None,
@@ -310,6 +318,7 @@ impl ProfileManager {
           created_by_email: None,
           dns_blocklist: None,
           password_protected: false,
+          clear_on_close: false,
           created_at: None,
           updated_at: None,
           profile_status: None,
@@ -320,8 +329,10 @@ impl ProfileManager {
           .generate_fingerprint_config(app_handle, &temp_profile, &config)
           .await
         {
-          Ok(generated_fingerprint) => {
-            config.fingerprint = Some(generated_fingerprint);
+          Ok(generated) => {
+            config.fingerprint = Some(generated.fingerprint);
+            config.identity_id = generated.identity_id;
+            config.identity_baseline = generated.identity_baseline;
             log::info!("Successfully generated fingerprint for Wayfern profile: {name}");
           }
           Err(e) => {
@@ -390,6 +401,7 @@ impl ProfileManager {
       created_by_email: None,
       dns_blocklist,
       password_protected: false,
+      clear_on_close: false,
       created_at: Some(
         std::time::SystemTime::now()
           .duration_since(std::time::UNIX_EPOCH)
@@ -419,9 +431,9 @@ impl ProfileManager {
     // - Wayfern: Chromium gets its proxy via `--proxy-pac-url=` at launch
     //   (see wayfern_manager.rs) and never reads user.js.
     // So we only call it for any unrecognized browser type that might be
-    // a true Firefox-family target (none currently). Ephemeral profiles
-    // skip regardless because their data dir is created at launch time.
-    if !ephemeral && !matches!(browser, "camoufox" | "wayfern") {
+    // a true Firefox-family target (none currently). Ephemeral / lazy-disk
+    // profiles skip regardless because their data dir is created at launch.
+    if !ephemeral && !skip_data_dir && !matches!(browser, "camoufox" | "wayfern") {
       if let Some(proxy_id_ref) = &proxy_id {
         if let Some(proxy_settings) = PROXY_MANAGER.get_proxy_settings_by_id(proxy_id_ref) {
           self.apply_proxy_settings_to_profile(&profile_data_dir, &proxy_settings, None)?;
@@ -441,6 +453,22 @@ impl ProfileManager {
     }
 
     Ok(profile)
+  }
+
+  /// Create UUID dir for metadata. Data dir is optional:
+  /// - ephemeral → RAM dir at launch
+  /// - skip_data_dir (Quick Create) → materialize on first open
+  pub(crate) fn create_profile_directories(
+    profile_uuid_dir: &Path,
+    profile_data_dir: &Path,
+    ephemeral: bool,
+    skip_data_dir: bool,
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    create_dir_all(profile_uuid_dir)?;
+    if !ephemeral && !skip_data_dir {
+      create_dir_all(profile_data_dir)?;
+    }
+    Ok(())
   }
 
   pub fn save_profile(&self, profile: &BrowserProfile) -> Result<(), Box<dyn std::error::Error>> {

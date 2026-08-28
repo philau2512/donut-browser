@@ -87,6 +87,14 @@ impl GroupManager {
     _app_handle: &tauri::AppHandle,
     name: String,
   ) -> Result<ProfileGroup, Box<dyn std::error::Error>> {
+    if name.trim().is_empty() {
+      return Err(
+        serde_json::json!({ "code": "NAME_CANNOT_BE_EMPTY" })
+          .to_string()
+          .into(),
+      );
+    }
+
     let mut groups_data = self.load_groups_data()?;
 
     // Check if group with this name already exists
@@ -133,6 +141,14 @@ impl GroupManager {
     id: String,
     name: String,
   ) -> Result<ProfileGroup, Box<dyn std::error::Error>> {
+    if name.trim().is_empty() {
+      return Err(
+        serde_json::json!({ "code": "NAME_CANNOT_BE_EMPTY" })
+          .to_string()
+          .into(),
+      );
+    }
+
     let mut groups_data = self.load_groups_data()?;
 
     // Check if another group with this name already exists
@@ -403,4 +419,100 @@ pub async fn delete_selected_profiles(
   profile_manager
     .delete_multiple_profiles(&app_handle, profile_ids)
     .map_err(|e| format!("Failed to delete profiles: {e}"))
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::profile::types::BrowserProfile;
+  use tempfile::TempDir;
+
+  #[test]
+  #[serial_test::serial]
+  fn smoke_empty_groups_then_upsert_and_delete() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = GroupManager::new();
+
+    assert!(mgr.get_all_groups().unwrap().is_empty());
+
+    let group = ProfileGroup {
+      id: uuid::Uuid::new_v4().to_string(),
+      name: "Quick Folder".into(),
+      sync_enabled: false,
+      last_sync: None,
+      updated_at: Some(1),
+    };
+    mgr.upsert_group_internal(&group).unwrap();
+    let listed = mgr.get_all_groups().unwrap();
+    assert_eq!(listed.len(), 1);
+    assert_eq!(listed[0].name, "Quick Folder");
+
+    let mut renamed = group.clone();
+    renamed.name = "Renamed Folder".into();
+    mgr.upsert_group_internal(&renamed).unwrap();
+    assert_eq!(mgr.get_all_groups().unwrap()[0].name, "Renamed Folder");
+
+    mgr.delete_group_internal(&group.id).unwrap();
+    assert!(mgr.get_all_groups().unwrap().is_empty());
+    assert!(mgr.delete_group_internal(&group.id).is_err());
+  }
+
+  #[test]
+  #[serial_test::serial]
+  fn smoke_groups_with_profile_counts() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = GroupManager::new();
+
+    let g1 = ProfileGroup {
+      id: "g1".into(),
+      name: "A".into(),
+      sync_enabled: false,
+      last_sync: None,
+      updated_at: None,
+    };
+    let g2 = ProfileGroup {
+      id: "g2".into(),
+      name: "B".into(),
+      sync_enabled: false,
+      last_sync: None,
+      updated_at: None,
+    };
+    mgr.upsert_group_internal(&g1).unwrap();
+    mgr.upsert_group_internal(&g2).unwrap();
+
+    let profiles = vec![
+      BrowserProfile {
+        id: uuid::Uuid::new_v4(),
+        name: "p1".into(),
+        browser: "wayfern".into(),
+        version: "1".into(),
+        group_id: Some("g1".into()),
+        ..Default::default()
+      },
+      BrowserProfile {
+        id: uuid::Uuid::new_v4(),
+        name: "p2".into(),
+        browser: "wayfern".into(),
+        version: "1".into(),
+        group_id: Some("g1".into()),
+        ..Default::default()
+      },
+      BrowserProfile {
+        id: uuid::Uuid::new_v4(),
+        name: "p3".into(),
+        browser: "wayfern".into(),
+        version: "1".into(),
+        group_id: Some("g2".into()),
+        ..Default::default()
+      },
+    ];
+
+    let counts = mgr.get_groups_with_profile_counts(&profiles).unwrap();
+    let a = counts.iter().find(|c| c.id == "g1").unwrap();
+    let b = counts.iter().find(|c| c.id == "g2").unwrap();
+    assert_eq!(a.count, 2);
+    assert_eq!(b.count, 1);
+  }
 }

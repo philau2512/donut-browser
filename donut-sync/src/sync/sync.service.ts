@@ -13,6 +13,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -81,34 +82,67 @@ function sanitizeMetadata(
 export class SyncService implements OnModuleInit {
   private readonly logger = new Logger(SyncService.name);
   private s3Client: S3Client;
+  // Signs the URLs handed to clients. Same instance as `s3Client` unless
+  // `S3_PUBLIC_ENDPOINT` names a different, client-reachable address.
+  private presignClient: S3Client;
+  private publicEndpoint: string;
   private bucket: string;
+  // Upper bound on presign batch array length (DoS guard).
+  private static readonly MAX_BATCH_ITEMS = 1000;
+
   private changeSubject = new Subject<SubscribeEventDto>();
   private s3Ready = false;
   private backendInternalUrl: string | undefined;
   private backendInternalKey: string | undefined;
 
   constructor(private configService: ConfigService) {
-    const endpoint =
-      this.configService.get<string>("S3_ENDPOINT") || "http://localhost:8987";
+    // Fail fast instead of silently falling back to insecure local dev defaults
+    // (localhost / minioadmin) — a misconfigured server must not start pointed
+    // at an unintended or public-default S3 backend.
+    const requireEnv = (name: string): string => {
+      const value = this.configService.get<string>(name);
+      if (!value) {
+        throw new Error(`Required environment variable ${name} is not set`);
+      }
+      return value;
+    };
+
+    const endpoint = requireEnv("S3_ENDPOINT");
     const region = this.configService.get<string>("S3_REGION") || "us-east-1";
-    const accessKeyId =
-      this.configService.get<string>("S3_ACCESS_KEY_ID") || "minioadmin";
-    const secretAccessKey =
-      this.configService.get<string>("S3_SECRET_ACCESS_KEY") || "minioadmin";
+    const accessKeyId = requireEnv("S3_ACCESS_KEY_ID");
+    const secretAccessKey = requireEnv("S3_SECRET_ACCESS_KEY");
     const forcePathStyle =
       this.configService.get<string>("S3_FORCE_PATH_STYLE") !== "false";
 
-    this.bucket = this.configService.get<string>("S3_BUCKET") || "donut-sync";
+    this.bucket = requireEnv("S3_BUCKET");
 
+    const credentials = { accessKeyId, secretAccessKey };
     this.s3Client = new S3Client({
       endpoint,
       region,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
+      credentials,
       forcePathStyle,
     });
+
+    // Presigned URLs are handed to a desktop client on another machine, so they
+    // must name a host that client can reach. `S3_ENDPOINT` is often reachable
+    // only from the server: the documented compose file points it at
+    // `http://minio:9000`, a Docker service name that resolves on the compose
+    // network and nowhere else. Signing is bound to the host, so the presign
+    // client is a second client pinned to the public address rather than a
+    // string rewrite of the signed URL.
+    const publicEndpoint =
+      this.configService.get<string>("S3_PUBLIC_ENDPOINT") || endpoint;
+    this.publicEndpoint = publicEndpoint;
+    this.presignClient =
+      publicEndpoint === endpoint
+        ? this.s3Client
+        : new S3Client({
+            endpoint: publicEndpoint,
+            region,
+            credentials,
+            forcePathStyle,
+          });
 
     this.backendInternalUrl = this.configService.get<string>(
       "BACKEND_INTERNAL_URL",
@@ -120,6 +154,51 @@ export class SyncService implements OnModuleInit {
 
   async onModuleInit() {
     await this.ensureBucketExists();
+    this.warnIfPresignEndpointIsServerOnly();
+  }
+
+  /**
+   * The address clients are sent to for object transfers, for `/readyz` to
+   * report when a self-hoster is debugging a failing sync.
+   *
+   * Withheld in cloud mode: `/readyz` is unauthenticated, and a managed
+   * deployment should not publish its storage host to anyone who can reach the
+   * probe. Self-hosters own both ends, and the value is the whole point of the
+   * diagnostic there.
+   */
+  getDiagnosticStorageEndpoint(): string | undefined {
+    const isCloud = Boolean(
+      this.configService.get<string>("SYNC_JWT_PUBLIC_KEY"),
+    );
+    return isCloud ? undefined : this.publicEndpoint;
+  }
+
+  /**
+   * A single-label host (`minio`, `s3`) only resolves inside the container
+   * network, so every presigned URL built from it is unreachable for the
+   * desktop client even though the server's own S3 calls succeed. That failure
+   * shows up as healthy `/health` and `/readyz` with every file transfer
+   * failing at connect, which is near-impossible to diagnose from the client.
+   * Say it once at boot instead.
+   */
+  private warnIfPresignEndpointIsServerOnly(): void {
+    let host: string;
+    try {
+      host = new URL(this.publicEndpoint).hostname;
+    } catch {
+      return;
+    }
+
+    const isSingleLabel =
+      !host.includes(".") && !host.includes(":") && host !== "localhost";
+    if (!isSingleLabel) return;
+
+    this.logger.warn(
+      `Storage endpoint '${this.publicEndpoint}' uses the container-only host '${host}'. ` +
+        "Presigned URLs built from it cannot be reached by Donut Browser, so every " +
+        "transfer will fail while /health and /readyz stay green. Set S3_PUBLIC_ENDPOINT " +
+        "to an address your devices can reach (and publish that port).",
+    );
   }
 
   private async ensureBucketExists(): Promise<void> {
@@ -181,7 +260,6 @@ export class SyncService implements OnModuleInit {
    */
   private scopeKey(ctx: UserContext, key: string): string {
     if (ctx.mode === "self-hosted") return key;
-    if (ctx.teamPrefix && key.startsWith(ctx.teamPrefix)) return key;
     return `${ctx.prefix}${key}`;
   }
 
@@ -192,9 +270,7 @@ export class SyncService implements OnModuleInit {
    */
   private scopesFor(ctx: UserContext): string[] {
     if (ctx.mode === "self-hosted") return [""];
-    const out = [ctx.prefix];
-    if (ctx.teamPrefix) out.push(ctx.teamPrefix);
-    return out;
+    return [ctx.prefix];
   }
 
   /**
@@ -243,9 +319,6 @@ export class SyncService implements OnModuleInit {
    */
   private scopeForKey(ctx: UserContext, scopedKey: string): string | null {
     if (ctx.mode === "self-hosted") return "";
-    if (ctx.teamPrefix && scopedKey.startsWith(ctx.teamPrefix)) {
-      return ctx.teamPrefix;
-    }
     if (scopedKey.startsWith(ctx.prefix)) return ctx.prefix;
     return null;
   }
@@ -258,7 +331,6 @@ export class SyncService implements OnModuleInit {
     if (ctx.mode === "self-hosted") return;
 
     if (key.startsWith(ctx.prefix)) return;
-    if (ctx.teamPrefix && key.startsWith(ctx.teamPrefix)) return;
 
     throw new ForbiddenException("Access denied to this key");
   }
@@ -324,7 +396,16 @@ export class SyncService implements OnModuleInit {
       Metadata: metadata,
     });
 
-    const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+    const metadataHeaders = new Set(
+      Object.keys(metadata ?? {}).map((name) => `x-amz-meta-${name}`),
+    );
+    const url = await getSignedUrl(this.presignClient, command, {
+      expiresIn,
+      // The AWS presigner otherwise hoists user metadata into the query string.
+      // The client echoes the response metadata as headers, so those headers
+      // must remain in the request and be covered by SignedHeaders.
+      unhoistableHeaders: metadataHeaders,
+    });
 
     // Report profile usage after upload presign if key is under profiles/
     if (ctx.mode === "cloud" && dto.key.startsWith("profiles/")) {
@@ -360,7 +441,7 @@ export class SyncService implements OnModuleInit {
       Key: key,
     });
 
-    const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+    const url = await getSignedUrl(this.presignClient, command, { expiresIn });
 
     return {
       url,
@@ -422,6 +503,9 @@ export class SyncService implements OnModuleInit {
 
   async list(dto: ListRequestDto, ctx?: UserContext): Promise<ListResponseDto> {
     const prefix = ctx ? this.scopeKey(ctx, dto.prefix) : dto.prefix;
+    // Enforce scope on the read side too, so a crafted absolute prefix can't
+    // enumerate another tenant's objects.
+    if (ctx) this.validateKeyAccess(ctx, prefix);
 
     const response = await this.s3Client.send(
       new ListObjectsV2Command({
@@ -433,15 +517,12 @@ export class SyncService implements OnModuleInit {
     );
 
     const userPrefix = ctx?.prefix || "";
-    const teamPrefix = ctx?.teamPrefix || "";
     const objects = (response.Contents || [])
       // Don't leak donut-sync's internal manifest object to clients.
       .filter((obj) => !(obj.Key || "").endsWith(MANIFEST_KEY))
       .map((obj) => {
         let key = obj.Key || "";
-        if (teamPrefix && key.startsWith(teamPrefix)) {
-          key = key.substring(teamPrefix.length);
-        } else if (userPrefix && key.startsWith(userPrefix)) {
+        if (userPrefix && key.startsWith(userPrefix)) {
           key = key.substring(userPrefix.length);
         }
         return {
@@ -462,6 +543,16 @@ export class SyncService implements OnModuleInit {
     dto: PresignUploadBatchRequestDto,
     ctx: UserContext,
   ): Promise<PresignUploadBatchResponseDto> {
+    // Cap batch size: each item triggers a signing operation, so an unbounded
+    // array is a CPU/memory amplification vector for an authenticated caller.
+    if (
+      !Array.isArray(dto.items) ||
+      dto.items.length > SyncService.MAX_BATCH_ITEMS
+    ) {
+      throw new BadRequestException(
+        `items must be an array of at most ${SyncService.MAX_BATCH_ITEMS} entries`,
+      );
+    }
     // Check profile limit for cloud users
     if (ctx.mode === "cloud" && ctx.profileLimit > 0) {
       await this.checkProfileLimit(ctx);
@@ -481,7 +572,9 @@ export class SyncService implements OnModuleInit {
           ContentType: item.contentType || "application/octet-stream",
         });
 
-        const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+        const url = await getSignedUrl(this.presignClient, command, {
+          expiresIn,
+        });
 
         return {
           key: item.key,
@@ -520,6 +613,14 @@ export class SyncService implements OnModuleInit {
     dto: PresignDownloadBatchRequestDto,
     ctx: UserContext,
   ): Promise<PresignDownloadBatchResponseDto> {
+    if (
+      !Array.isArray(dto.keys) ||
+      dto.keys.length > SyncService.MAX_BATCH_ITEMS
+    ) {
+      throw new BadRequestException(
+        `keys must be an array of at most ${SyncService.MAX_BATCH_ITEMS} entries`,
+      );
+    }
     const expiresIn = clampExpiresIn(dto.expiresIn);
     const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
@@ -533,7 +634,9 @@ export class SyncService implements OnModuleInit {
           Key: key,
         });
 
-        const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+        const url = await getSignedUrl(this.presignClient, command, {
+          expiresIn,
+        });
 
         return {
           key: rawKey,
@@ -551,6 +654,15 @@ export class SyncService implements OnModuleInit {
     ctx: UserContext,
   ): Promise<DeletePrefixResponseDto> {
     const prefix = this.scopeKey(ctx, dto.prefix);
+    // Bulk delete is the highest-blast-radius op, yet it was the only mutating
+    // path that skipped this check — so a client passing an absolute prefix
+    // (one already starting with its own/team scope, which scopeKey returns
+    // verbatim) could wipe an entire shared namespace. Enforce scope, and
+    // refuse an empty scoped prefix (which would match the whole scope).
+    this.validateKeyAccess(ctx, prefix);
+    if (ctx.mode === "cloud" && prefix.length === 0) {
+      throw new ForbiddenException("Refusing to delete an empty prefix");
+    }
     let deletedCount = 0;
     let tombstoneCreated = false;
     let continuationToken: string | undefined;
@@ -593,6 +705,7 @@ export class SyncService implements OnModuleInit {
     // Create tombstone if requested
     if (dto.tombstoneKey && deletedCount > 0) {
       const scopedTombstoneKey = this.scopeKey(ctx, dto.tombstoneKey);
+      this.validateKeyAccess(ctx, scopedTombstoneKey);
       const tombstoneData = JSON.stringify({
         prefix: dto.prefix,
         deleted_at: dto.deletedAt || new Date().toISOString(),
@@ -929,22 +1042,9 @@ export class SyncService implements OnModuleInit {
     );
     count += userResult.CommonPrefixes?.length || 0;
 
-    if (ctx.teamPrefix && ctx.teamProfileLimit && ctx.teamProfileLimit > 0) {
-      const teamResult = await this.s3Client.send(
-        new ListObjectsV2Command({
-          Bucket: this.bucket,
-          Prefix: `${ctx.teamPrefix}profiles/`,
-          Delimiter: "/",
-        }),
-      );
-      const teamCount = teamResult.CommonPrefixes?.length || 0;
-      if (teamCount >= ctx.teamProfileLimit) {
-        throw new ForbiddenException(
-          `Team profile limit reached (${ctx.teamProfileLimit}). Ask the team owner to upgrade.`,
-        );
-      }
-    }
-
+    // ctx.prefix is already the effective namespace (the team owner's, for a
+    // team member) and ctx.profileLimit the effective (team) limit, so this
+    // single check covers both personal and team accounts.
     if (count >= ctx.profileLimit) {
       throw new ForbiddenException(
         `Profile limit reached (${ctx.profileLimit}). Upgrade your plan for more profiles.`,
@@ -985,37 +1085,10 @@ export class SyncService implements OnModuleInit {
     return match ? match[1] : null;
   }
 
-  private async countTeamProfiles(ctx: UserContext): Promise<number> {
-    if (!ctx.teamPrefix) return 0;
-    const profilePrefix = `${ctx.teamPrefix}profiles/`;
-    let count = 0;
-    let continuationToken: string | undefined;
-
-    do {
-      const result = await this.s3Client.send(
-        new ListObjectsV2Command({
-          Bucket: this.bucket,
-          Prefix: profilePrefix,
-          Delimiter: "/",
-          MaxKeys: 1000,
-          ContinuationToken: continuationToken,
-        }),
-      );
-      count += result.CommonPrefixes?.length || 0;
-      continuationToken = result.NextContinuationToken;
-    } while (continuationToken);
-
-    return count;
-  }
-
-  private extractTeamId(ctx: UserContext): string | null {
-    if (!ctx.teamPrefix) return null;
-    const match = ctx.teamPrefix.match(/^teams\/([^/]+)\/$/);
-    return match ? match[1] : null;
-  }
-
   /**
-   * Fire-and-forget: count profiles and report to backend.
+   * Fire-and-forget: count profiles and report to backend. The count is for the
+   * effective namespace (the team owner's, for a team member), reported against
+   * that namespace's user id — i.e. the team account for teams.
    */
   private reportProfileUsageAsync(ctx: UserContext): void {
     if (!this.backendInternalUrl || !this.backendInternalKey) return;
@@ -1024,17 +1097,7 @@ export class SyncService implements OnModuleInit {
     if (!userId) return;
 
     this.countProfiles(ctx)
-      .then(async (count) => {
-        await this.reportProfileUsage(userId, count);
-
-        if (ctx.teamPrefix) {
-          const teamCount = await this.countTeamProfiles(ctx);
-          const teamId = this.extractTeamId(ctx);
-          if (teamId) {
-            await this.reportProfileUsage(teamId, teamCount);
-          }
-        }
-      })
+      .then((count) => this.reportProfileUsage(userId, count))
       .catch((err) =>
         this.logger.warn(`Failed to report profile usage: ${err.message}`),
       );

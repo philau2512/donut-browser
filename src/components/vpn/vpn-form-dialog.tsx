@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
@@ -69,6 +69,10 @@ function buildWireGuardConfig(form: WireGuardFormData): string {
     lines.push(`PresharedKey = ${form.presharedKey.trim()}`);
   return lines.join("\n");
 }
+
+export type { WireGuardFormData };
+/** Pure helper exported for unit smoke (VN-05). */
+export { buildWireGuardConfig };
 
 export function VpnFormDialog({
   isOpen,

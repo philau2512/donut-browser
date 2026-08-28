@@ -34,10 +34,7 @@
       "saving": "Saving…",
       "saved": "Saved",
       "copied": "Copied",
-      "learnMore": "Learn more",
-      "toggleTheme": "Toggle Theme",
-      "run": "Run",
-      "saveAs": "Save As"
+      "learnMore": "Learn more"
     },
     "status": {
       "active": "Active",
@@ -95,7 +92,8 @@
     "window": {
       "minimize": "Minimize",
       "maximize": "Maximize",
-      "restore": "Restore"
+      "restore": "Restore",
+      "close": "Close window"
     },
     "commandPalette": {
       "title": "Command Palette",
@@ -195,12 +193,21 @@
       "copyLogs": "Copy logs",
       "openLogDir": "Open log folder",
       "copyLogsSuccess": "Logs copied to clipboard",
-      "copyLogsDescription": "Bundles the most recent log files (up to 5 MB) into your clipboard for sharing in bug reports."
+      "copyLogsDescription": "Copies a redacted bundle of recent logs (up to 5 MB). Review it before sharing because redaction cannot identify every kind of personal data."
     },
     "disableAutoUpdates": "Disable App Auto Updates",
     "disableAutoUpdatesDescription": "Prevent the app from automatically checking and installing Donut Browser updates. Browser updates are not affected.",
     "keepDecryptedProfilesInRam": "Keep Decrypted Profiles In RAM",
-    "keepDecryptedProfilesInRamDescription": "Preserve the decrypted in-RAM copy of password-protected profiles between launches for faster startup. The on-disk copy stays encrypted regardless."
+    "keepDecryptedProfilesInRamDescription": "Preserve the decrypted in-RAM copy of password-protected profiles between launches for faster startup. The on-disk copy stays encrypted regardless.",
+    "privacy": {
+      "consistencyWarning": "Block on fingerprint mismatch",
+      "consistencyWarningDescription": "Stop the browser from starting when a profile's timezone or language doesn't match its proxy exit node. You can still choose to launch.",
+      "clearTraffic": "Clear all traffic history",
+      "clearTrafficDescription": "Securely erase recorded traffic statistics for every profile.",
+      "clearTrafficSuccess": "Traffic history cleared",
+      "vpnExtensionWarning": "VPN extension warning",
+      "vpnExtensionWarningDescription": "Warn before launching when a profile contains an extension that can reroute the browser's traffic."
+    }
   },
   "header": {
     "searchPlaceholder": "Search profiles...",
@@ -249,15 +256,13 @@
       "cantModifyLaunching": "Can't modify profile while launching",
       "cantModifyStopping": "Can't modify profile while stopping",
       "cantModifyUpdating": "Can't modify profile while browser is updating",
-      "lastOpen": "Last Open",
-      "os": "OS",
-      "message": "Message",
-      "changeProxy": "Change Proxy",
-      "statusReady": "Ready",
-      "statusRunning": "Running",
-      "statusLaunching": "Launching...",
-      "statusStopping": "Stopping...",
-      "errorCannotCheckProxy": "Error: Cannot check proxy"
+      "emptyTitle": "No profiles yet",
+      "emptyHint": "Create your first profile or import existing ones from another browser.",
+      "emptyCreate": "Create profile",
+      "emptyImport": "Import profiles",
+      "emptyFilteredTitle": "No profiles found",
+      "emptyFilteredHint": "No profiles match this group or search. Try another filter or create a new one.",
+      "bot": "Bot"
     },
     "actions": {
       "launch": "Launch",
@@ -302,6 +307,7 @@
       "confirmButton": "Delete {{count}} Profile(s)"
     },
     "note": {
+      "empty": "No Note",
       "placeholder": "Add a note..."
     },
     "aria": {
@@ -319,17 +325,7 @@
       "copyCookies": "Copy Cookies",
       "runSelected": "Run selected",
       "stopSelected": "Stop selected",
-      "proRequired": "Pro plan required for bulk run/stop",
-      "startCount": "Start {{count}} Profiles",
-      "start": "Start Profiles",
-      "stopCount": "Stop {{count}} Profiles",
-      "stop": "Stop Profiles",
-      "automation": "Automation",
-      "updateMultiple": "Update Multiple",
-      "proxy": "Proxy",
-      "exportCookies": "Export cookies",
-      "moreAction": "More action",
-      "synchronize": "Synchronize Actions"
+      "proRequired": "Pro plan required for bulk run/stop"
     },
     "passwordProtectedBadge": "Password Protected",
     "launchHook": {
@@ -353,22 +349,9 @@
       "newest": "Newest first",
       "oldest": "Oldest first"
     },
-    "status": {
-      "noStatus": "No Status",
-      "setting": "Status Setting",
-      "addStatus": "Add Status",
-      "labelPlaceholder": "Status label...",
-      "manageTitle": "Manage Statuses"
-    },
-    "menu": {
-      "rename": "Rename",
-      "edit": "Edit Settings",
-      "copyCookies": "Copy Cookies",
-      "manageCookies": "Manage Cookies",
-      "clone": "Clone Profile",
-      "assignGroup": "Assign to Group",
-      "assignExtension": "Assign Extension",
-      "configureCamoufox": "Configure Camoufox"
+    "remote": {
+      "runningTooltip": "Running on a remote machine. Stop it to bring the profile back here.",
+      "pendingSyncTooltip": "Downloading what the remote session changed. Available again when it finishes."
     }
   },
   "createProfile": {
@@ -378,7 +361,6 @@
       "title": "Anti-Detect Browser",
       "description": "Choose a browser with anti-detection capabilities",
       "chromium": "Wayfern",
-      "firefox": "Camoufox",
       "badge": "Anti-Detect Browser"
     },
     "regular": {
@@ -414,30 +396,13 @@
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "Powered by Wayfern",
-    "firefoxLabel": "Firefox",
-    "firefoxSubtitle": "Powered by Camoufox",
-    "camoufoxWarning": "Firefox (Camoufox) is maintained by a third-party organization. For production use, please use Chromium.",
     "platformUnavailable": "{{browser}} is not available on your platform yet.",
     "passwordProtect": {
       "label": "Password protect this profile",
       "description": "Encrypts the on-disk profile data. Required to launch."
     },
     "downloadingSubtitle": "Downloading…",
-    "browsersDownloading": "Browsers are still downloading. Profile creation will be available once a download finishes.",
-    "tabs": {
-      "baseInfo": "Base info",
-      "location": "Location",
-      "proxy": "Proxy",
-      "cookies": "Cookies",
-      "hardware": "Hardware",
-      "command": "Command",
-      "bookmark": "Bookmark",
-      "extension": "Extension",
-      "requests": "Requests",
-      "other": "Other"
-    },
-    "quantity": "Quantity",
-    "getFingerprint": "Get new fingerprint"
+    "browsersDownloading": "Browsers are still downloading. Profile creation will be available once a download finishes."
   },
   "deleteDialog": {
     "title": "Delete Profile",
@@ -502,7 +467,13 @@
       "hostPortRequired": "Host and port are required",
       "ssCipherRequired": "Cipher and password are required for Shadowsocks",
       "selectType": "Select proxy type",
-      "saveFailed": "Failed to save proxy: {{error}}"
+      "saveFailed": "Failed to save proxy: {{error}}",
+      "vlessType": "VLESS",
+      "vlessUri": "VLESS URI",
+      "vlessUriPlaceholder": "vless://…",
+      "vlessUriHint": "Requires XTLS Vision and REALITY.",
+      "vlessUriRequired": "Enter a VLESS URI.",
+      "vlessUriInvalid": "Enter a valid VLESS URI with a host and port."
     },
     "types": {
       "http": "HTTP",
@@ -586,15 +557,6 @@
       "vpnsTitle": "Delete Selected VPNs",
       "vpnsDescription": "This action cannot be undone. This will permanently delete {{count}} VPN(s): {{names}}.",
       "confirmButton": "Delete {{count}}"
-    },
-    "quickEdit": {
-      "quickEditTitle": "Quick Edit Proxy",
-      "formatLabel": "Format Proxy",
-      "formatPlaceholder": "type://user:pass@ip:port or ip:port",
-      "checkHostLabel": "Check proxy host",
-      "checkBeforeStart": "Check proxy before start profile.",
-      "checkButton": "Check Proxy",
-      "saveButton": "Edit Proxy"
     }
   },
   "groups": {
@@ -673,6 +635,7 @@
       "connectionSuccess": "Connection successful!",
       "serverError": "Server responded with an error",
       "connectFailed": "Failed to connect to server",
+      "storageEndpoint": "Storage: {{endpoint}}",
       "settingsSaved": "Sync settings saved",
       "saveFailed": "Failed to save settings",
       "disconnected": "Sync disconnected",
@@ -810,42 +773,6 @@
     "error": "Failed to import profile"
   },
   "config": {
-    "camoufox": {
-      "title": "Camoufox Configuration",
-      "fingerprint": {
-        "title": "Fingerprint",
-        "randomize": "Randomize on Launch",
-        "randomizeDescription": "Generate a new fingerprint each time the browser is launched.",
-        "osCpuPlaceholder": "e.g., Intel Mac OS X 10.15",
-        "webglRendererPlaceholder": "e.g., llvmpipe, or similar"
-      },
-      "os": {
-        "title": "Operating System",
-        "description": "The operating system to emulate for fingerprint generation.",
-        "windows": "Windows",
-        "macos": "macOS",
-        "linux": "Linux"
-      },
-      "screen": {
-        "title": "Screen Size",
-        "minWidth": "Min Width",
-        "maxWidth": "Max Width",
-        "minHeight": "Min Height",
-        "maxHeight": "Max Height"
-      },
-      "geoip": {
-        "title": "GeoIP",
-        "auto": "Automatic (based on proxy)",
-        "manual": "Manual",
-        "disabled": "Disabled"
-      },
-      "blocking": {
-        "title": "Blocking",
-        "images": "Block Images",
-        "webrtc": "Block WebRTC",
-        "webgl": "Block WebGL"
-      }
-    },
     "wayfern": {
       "title": "Wayfern Configuration",
       "fingerprint": {
@@ -900,7 +827,7 @@
       "sourcePlaceholder": "Select a profile to copy cookies from",
       "running": "(running)",
       "targetProfiles": "Target Profiles ({{count}})",
-      "noOtherTargets": "No other Wayfern/Camoufox profiles selected",
+      "noOtherTargets": "No other Wayfern profiles selected",
       "selectSourceFirst": "Select a source profile first",
       "selectionStatus": "({{selected}} of {{total}} selected)",
       "searchPlaceholder": "Search domains or cookies...",
@@ -1001,9 +928,7 @@
       "syncFailed": "Sync failed",
       "profileSyncFailed": "Failed to sync profile '{{name}}'",
       "cacheClearFailed": "Failed to clear cache",
-      "unknown": "An unknown error occurred",
-      "profileCrashTitle": "Profile '{{name}}' crashed",
-      "profileCrashDesc": "Browser exited unexpectedly: {{status}}"
+      "unknown": "An unknown error occurred"
     },
     "loading": {
       "downloading": "Downloading {{browser}} {{version}}",
@@ -1031,7 +956,6 @@
     "serverError": "Server error. Please try again later.",
     "unknownError": "An unknown error occurred. Please try again.",
     "noProfilesForUrl": "No profiles available. Please create a profile first before opening URLs.",
-    "updateCamoufoxConfigFailed": "Failed to update camoufox config: {{error}}",
     "updateWayfernConfigFailed": "Failed to update wayfern config: {{error}}",
     "createProfileFailed": "Failed to create profile: {{error}}",
     "launchBrowserFailed": "Failed to launch browser: {{error}}",
@@ -1040,7 +964,7 @@
     "renameProfileFailed": "Failed to rename profile: {{error}}",
     "killBrowserFailed": "Failed to kill browser: {{error}}",
     "deleteSelectedProfilesFailed": "Failed to delete selected profiles: {{error}}",
-    "cookieCopyUnsupportedBrowser": "Cookie copy only works with Wayfern and Camoufox profiles",
+    "cookieCopyUnsupportedBrowser": "Cookie copy only works with Wayfern profiles",
     "updateSyncSettingsFailed": "Failed to update sync settings",
     "cloneProfileFailed": "Failed to clone profile: {{error}}",
     "loadSupportedBrowsersFailed": "Failed to load supported browsers",
@@ -1057,7 +981,6 @@
     "setProfilePasswordFailed": "Failed to set profile password: {{error}}"
   },
   "browser": {
-    "camoufox": "Camoufox",
     "wayfern": "Wayfern"
   },
   "fingerprint": {
@@ -1071,6 +994,7 @@
     "autoLocationDescription": "Automatically configure location information based on proxy configuration or your connection if no proxy provided",
     "editingDisabledRunning": "Fingerprint editing is disabled because the profile is currently running. Stop the profile to make changes.",
     "editingDisabledRandomized": "Fingerprint editing is disabled because random fingerprint generation is enabled. Disable the option above to manually edit the fingerprint configuration.",
+    "derivedFromIdentity": "Derived from this profile's identity and not editable.",
     "advancedWarning": "Warning: Only edit these parameters if you know what you're doing. Incorrect values may break websites, make them detect you, and lead to hard-to-debug bugs.",
     "basicWarning": "Warning: Only edit these parameters if you know what you're doing.",
     "automatic": "Automatic",
@@ -1163,31 +1087,11 @@
     "refreshFingerprint": "Refresh Fingerprint",
     "canvasNoiseSeedPlaceholder": "Enter a seed string for canvas fingerprint",
     "addFontsPlaceholder": "Add fonts...",
-    "enterAsJson": "Enter {{title}} as JSON",
-    "webrtcMode": "WebRTC Mode",
-    "webrtcModes": {
-      "forward": "Forward (Proxy)",
-      "forwardGoogle": "Forward Google",
-      "alter": "Alter (Spoof)",
-      "real": "Real",
-      "disable": "Disable"
-    },
-    "subTabs": {
-      "screen": "Screen",
-      "system": "System (CPU & RAM)",
-      "graphics": "Graphics & Audio"
-    },
-    "customizeDetails": "Customize detailed hardware parameters",
-    "customizeDetailsDesc": "Manually adjust seeds, renderers, and JSON parameters",
-    "randomizeAll": "Randomize All",
-    "randomizeAllTooltip": "Auto-generate realistic hardware fingerprints (screen, CPU, RAM, GPU) matching the detected operating system",
-    "shuffleGPUTooltip": "Randomly select GPU vendor/renderer matching the operating system"
+    "enterAsJson": "Enter {{title}} as JSON"
   },
   "warnings": {
     "windowResizeTitle": "Custom Window Dimensions",
     "windowResizeDescription": "Changing browser window dimensions may increase the chance of website detection that browser information is spoofed.",
-    "windowResizeCamoufoxTitle": "Viewport Locked by Camoufox",
-    "windowResizeCamoufoxDescription": "Camoufox locks the viewport to the spoofed screen dimensions for anti-fingerprinting. Resizing the window may cause cropped or grey areas. This is expected behavior.",
     "dontShowAgain": "Don't show this again",
     "continue": "Continue",
     "cancel": "Cancel"
@@ -1318,15 +1222,21 @@
       "cannotWhileRunning": "Stop the profile before changing its password."
     },
     "fingerprint": {
-      "notSupported": "Fingerprint editing is only available for Camoufox and Wayfern profiles.",
+      "notSupported": "Fingerprint editing is only available for Wayfern profiles.",
       "lockedTitle": "Viewing & editing the fingerprint is a Pro feature",
-      "lockedDescription": "Fingerprint protection is included on every plan. Viewing and editing a profile's fingerprint values is what requires an active paid plan."
+      "lockedDescription": "Your device information is protected in every profile. Viewing and editing a profile's fingerprint requires an active paid plan."
     },
     "syncStatusValue": {
       "waiting": "Waiting",
       "syncing": "Syncing",
       "synced": "Synced",
       "error": "Error"
+    },
+    "ephemeral": {
+      "cookiesUnavailable": "Ephemeral profiles are discarded when the browser closes, so there are no cookies to manage here.",
+      "extensionsUnavailable": "Ephemeral profiles are discarded when the browser closes, so extension groups cannot be assigned to them.",
+      "syncUnavailable": "Ephemeral profiles are discarded when the browser closes, so there is nothing to sync to the cloud.",
+      "hint": "Create a regular profile if you need this to persist."
     }
   },
   "extensions": {
@@ -1348,9 +1258,7 @@
     "extensionGroup": "Extension Group",
     "compatibility": {
       "label": "Compatibility",
-      "chromium": "Chromium",
-      "firefox": "Firefox",
-      "both": "Chromium & Firefox"
+      "chromium": "Chromium"
     },
     "selectedFile": "Selected file",
     "namePlaceholder": "Extension name",
@@ -1364,7 +1272,7 @@
     "deleteConfirmDescription": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "deleteGroupConfirmTitle": "Delete Extension Group",
     "deleteGroupConfirmDescription": "Are you sure you want to delete the group \"{{name}}\"? This action cannot be undone.",
-    "invalidFileType": "Invalid file type. Please upload a .crx, .xpi, or .zip file.",
+    "invalidFileType": "Invalid file type. Please choose a .crx or .zip file.",
     "readError": "Failed to read the extension file.",
     "assignTitle": "Assign Extension Group",
     "assignDescription": "Assign {{count}} selected profile(s) to an extension group.",
@@ -1372,7 +1280,6 @@
     "assignSuccess": "Extension group assigned successfully",
     "editExtension": "Edit extension",
     "updateSuccess": "Extension updated successfully",
-    "reupload": "Re-upload",
     "version": "Version",
     "author": "Author",
     "homepage": "Homepage",
@@ -1380,10 +1287,26 @@
     "editGroupDescription": "Update the group name and manage which extensions are included.",
     "groupExtensions": "Extensions in this group",
     "noExtensionsInGroup": "No extensions added yet",
-    "editExtensionDescription": "Update extension name, view metadata, or re-upload the extension file.",
+    "editExtensionDescription": "Update the extension name, view its metadata, or replace it with another archive or folder.",
     "metadata": "Metadata",
     "noMetadata": "No metadata available from manifest.",
     "selectFile": "Choose File",
+    "loadUnpacked": "Load unpacked",
+    "loadUnpackedTooltip": "Load an extension from a folder containing manifest.json",
+    "selectFolderTitle": "Select Extension Folder",
+    "selectedFolder": "Selected folder",
+    "selectFolder": "Choose Folder",
+    "linkFolder": "Load in place from this folder",
+    "linkFolderOff": "The folder is copied into Donut. The extension is portable and syncs to your other devices.",
+    "linkFolderOn": "Donut loads the extension straight from this folder on every launch. Your edits apply on the next browser start, but the extension stays on this machine and never syncs.",
+    "replaceSource": "Replace source",
+    "linkedNoSync": "Linked extensions stay on this machine and can't sync.",
+    "uploadFailed": "Failed to add extension",
+    "updateFailed": "Failed to update extension",
+    "deleteFailed": "Failed to delete extension",
+    "groupCreateFailed": "Failed to create extension group",
+    "groupUpdateFailed": "Failed to update extension group",
+    "groupDeleteFailed": "Failed to delete extension group",
     "syncEnabled": "Sync enabled",
     "syncDisabled": "Sync disabled",
     "syncEnableTooltip": "Enable sync",
@@ -1396,6 +1319,14 @@
       "groupsTitle": "Delete extension groups",
       "groupsDescription": "Delete {{count}} extension groups? {{names}}",
       "confirmButton": "Delete"
+    },
+    "source": {
+      "label": "Source",
+      "archive": "Archive",
+      "unpacked": "Unpacked folder",
+      "linked": "Linked folder",
+      "folderLabel": "Folder",
+      "linkedTooltip": "Loaded in place from {{path}}"
     }
   },
   "pro": {
@@ -1421,7 +1352,28 @@
     "domains": "domains",
     "fresh": "Fresh",
     "stale": "Stale",
-    "notCached": "Not cached"
+    "notCached": "Not cached",
+    "tabBlocklists": "Blocklists",
+    "tabCustom": "Custom lists",
+    "custom.description": "Build your own blocklist from source URLs and manual rules. Allowed domains always override blocked ones.",
+    "custom.sourcesLabel": "Blocklist source URLs",
+    "custom.sourcesPlaceholder": "One URL per line",
+    "custom.blockLabel": "Blocked domains",
+    "custom.blockPlaceholder": "One domain per line",
+    "custom.allowLabel": "Allowed domains",
+    "custom.allowPlaceholder": "One domain per line",
+    "custom.allowHint": "Allowed domains are removed from the compiled blocklist, overriding any block rule.",
+    "custom.saved": "Custom DNS rules saved",
+    "custom.imported": "Custom DNS rules imported",
+    "custom.exported": "Custom DNS rules exported",
+    "custom.exportTxt": "Export TXT",
+    "custom.exportJson": "Export JSON",
+    "customLevel": "Custom",
+    "custom.allowlistModeLabel": "Allowlist mode",
+    "custom.allowlistModeOn": "Only the domains below are reachable; everything else is blocked.",
+    "custom.allowlistModeOff": "Block listed domains; allow everything else.",
+    "custom.allowedOnlyLabel": "Allowed domains (only these)",
+    "custom.allowedOnlyHint": "Subdomains of a listed domain are allowed too. An empty list disables filtering."
   },
   "vpns": {
     "form": {
@@ -1505,16 +1457,9 @@
     "scanning": "Scanning for browser profiles...",
     "noneFound": "No browser profiles found on your system.",
     "noneFoundHint": "Try the manual import option if you have profiles in custom locations.",
-    "selectProfile": "Select Profile:",
-    "selectProfilePlaceholder": "Choose a detected profile",
-    "pathLabel": "Path:",
-    "browserLabel": "Browser:",
     "newProfileName": "New Profile Name:",
     "newProfileNamePlaceholder": "Enter a name for the imported profile",
     "manualTitle": "Manual Profile Import",
-    "browserType": "Browser Type:",
-    "loadingBrowsers": "Loading browsers...",
-    "selectBrowserType": "Select browser type",
     "profileFolderPath": "Profile Folder Path:",
     "profileFolderPlaceholder": "Enter the full path to the profile folder",
     "browseFolderTitle": "Browse for folder",
@@ -1522,17 +1467,59 @@
     "selectFolderTitle": "Select Browser Profile Folder",
     "folderDialogFailed": "Failed to open folder dialog",
     "detectFailed": "Failed to detect existing browser profiles",
-    "fillFields": "Please fill in all fields",
-    "selectAndName": "Please select a profile and provide a name",
-    "profileNotFound": "Selected profile not found",
-    "importedSuccess": "Successfully imported profile \"{{name}}\"",
-    "notInstalled": "{{browser}} is not installed. Please download {{browser}} first from the main window, then try importing again.",
-    "importFailed": "Failed to import profile: {{error}}",
     "proxyOptional": "Proxy (Optional)",
     "noProxy": "No proxy",
     "nextButton": "Next",
-    "importButton": "Import",
-    "importedAs": "This profile will be imported as a {{browser}} profile."
+    "importedAs": "This profile will be imported as a {{browser}} profile.",
+    "selectAll": "Select all",
+    "selectedCount": "{{count}} selected",
+    "scanButton": "Scan",
+    "manualHint": "Choose a profile folder, a browser user-data folder, a folder of exported profiles, or a ZIP archive.",
+    "selectArchiveTitle": "Select ZIP archive",
+    "noProfilesInLocation": "No profiles found in this location.",
+    "selectAtLeastOne": "Select at least one profile to import",
+    "emptyNames": "Every selected profile needs a name",
+    "profilesToImport": "Profiles to import",
+    "groupOptional": "Group (Optional)",
+    "noGroup": "No group",
+    "createNewGroup": "Create new group…",
+    "newGroupNamePlaceholder": "New group name",
+    "duplicateStrategyLabel": "If a profile name already exists",
+    "duplicateRename": "Rename automatically",
+    "duplicateSkip": "Skip",
+    "proxyRoundRobin": "Distribute stored proxies (round-robin)",
+    "importingTitle": "Importing profiles…",
+    "importProgress": "{{completed}} of {{total}} processed",
+    "resultsSummary": "{{imported}} imported, {{skipped}} skipped, {{failed}} failed",
+    "statusImported": "Imported",
+    "statusSkipped": "Skipped",
+    "statusFailed": "Failed",
+    "importButtonCount": "Import ({{count}})",
+    "vpnOptional": "VPN (Optional)",
+    "noVpn": "No VPN",
+    "advancedOptions": "Advanced options",
+    "configureFingerprint": "Configure fingerprint (optional)",
+    "reportCookies": "Cookies",
+    "reportPasswords": "Passwords",
+    "reportAutofill": "Payment methods",
+    "reportExtensions": "Extensions",
+    "reportHistory": "History",
+    "reportBookmarks": "Bookmarks",
+    "reportLocalStorage": "Site data",
+    "reportNothingCarried": "No readable data was carried over",
+    "reportUnrecoverable": "Could not be decrypted: {{count}}",
+    "closeSourceBrowserHint": "Close the source browser and try again for a complete copy, or import now and accept that site data may be incomplete.",
+    "importAnyway": "Import anyway",
+    "warnings": {
+      "secretsNotMigrated": "Cookies and passwords could not be unlocked, so you will need to sign in again.",
+      "appBoundEncrypted": "Chrome 127+ on Windows locks cookies to the browser itself; those cookies cannot be migrated by any other app.",
+      "storeTooOld": "A database was too old for this browser to open and was skipped.",
+      "storeTooNew": "A database came from a newer browser than this one and was skipped.",
+      "sourceBrowserRunning": "The source browser was running, so site data may be incomplete.",
+      "securePreferencesReset": "Protected settings such as the homepage and search engine reset to defaults.",
+      "extensionsPartial": "Some extensions belonged to the source browser and were not carried over.",
+      "storeUnreadable": "A database could not be read and was skipped rather than copied damaged."
+    }
   },
   "syncTooltips": {
     "syncing": "Syncing...",
@@ -1584,14 +1571,7 @@
     "noneOption": "None",
     "noValidProfiles": "No valid profiles selected.",
     "vpnGroupHeading": "VPNs",
-    "failedFallback": "Failed to assign proxy/VPN to profiles",
-    "changeProxyTitle": "Change proxy",
-    "bulkChangeDescription": "Update proxy settings for {{count}} selected profile(s)",
-    "pleaseSelectProxy": "Please select a proxy configuration",
-    "pleaseInputProxy": "Please input a list of proxies",
-    "invalidJson": "Invalid JSON string content",
-    "successClear": "Successfully cleared proxy/VPN settings",
-    "withoutProxyWarning": "All selected profiles will be switched to No Proxy mode after submit."
+    "failedFallback": "Failed to assign proxy/VPN to profiles"
   },
   "groupAssignment": {
     "title": "Assign Group",
@@ -1627,47 +1607,6 @@
     "badgeRunning": "Running",
     "badgeUnavailable": "Unavailable",
     "openButton": "Open"
-  },
-  "locationProxy": {
-    "title": "Quick Location Proxy",
-    "description": "Choose a country to route this profile through. A proxy will be created automatically.",
-    "country": "Country",
-    "selectCountry": "Select a country",
-    "searchCountry": "Search country...",
-    "noCountriesFound": "No countries found.",
-    "apply": "Apply",
-    "creating": "Creating proxy...",
-    "success": "Location proxy applied",
-    "failed": "Failed to apply location proxy",
-    "titleCreate": "Create Location Proxy",
-    "descriptionCreate": "Create a geo-targeted proxy with a 24-hour sticky session",
-    "countryLabel": "Country (required)",
-    "regionLabel": "Region (optional)",
-    "cityLabel": "City (optional)",
-    "ispLabel": "ISP (optional)",
-    "nameLabel": "Name",
-    "namePlaceholder": "Proxy name",
-    "loadingCountries": "Loading countries...",
-    "selectCountryPh": "Select country",
-    "searchCountries": "Search countries...",
-    "loadFailed": "Failed to load countries",
-    "selectCountryFirst": "Select a country first",
-    "loadingRegions": "Loading regions...",
-    "noRegions": "No regions available",
-    "selectRegion": "Select region",
-    "searchRegions": "Search regions...",
-    "loadingCities": "Loading cities...",
-    "noCities": "No cities available",
-    "selectCity": "Select city",
-    "searchCities": "Search cities...",
-    "loadingIsps": "Loading ISPs...",
-    "noIsps": "No ISPs available",
-    "selectIsp": "Select ISP",
-    "searchIsps": "Search ISPs...",
-    "createSuccess": "Location proxy created",
-    "createFailed": "Failed to create location proxy",
-    "creatingButton": "Creating...",
-    "createButton": "Create"
   },
   "wayfernTerms": {
     "title": "Wayfern Terms and Conditions",
@@ -1742,15 +1681,14 @@
     "sentLegend": "Sent",
     "receivedLegend": "Received",
     "tooltipSent": "↑ Sent: ",
-    "tooltipReceived": "↓ Received: "
-  },
-  "camoufoxDialog": {
-    "titleView": "View Fingerprint Settings - {{name}} ({{browser}})",
-    "titleConfigure": "Configure Fingerprint Settings - {{name}} ({{browser}})",
-    "invalidFingerprint": "Invalid fingerprint configuration",
-    "invalidFingerprintDescription": "The fingerprint configuration contains invalid JSON. Please check your advanced settings.",
-    "saveFailed": "Failed to save configuration",
-    "unknownError": "Unknown error occurred"
+    "tooltipReceived": "↓ Received: ",
+    "clearHistory": "Clear history",
+    "clearHistoryTitle": "Clear traffic history",
+    "clearHistoryDescription": "Permanently and securely erase all recorded traffic history for \"{{name}}\". This can't be undone.",
+    "tabOverview": "Overview",
+    "tabTopDomains": "Top domains",
+    "searchDomains": "Search domains…",
+    "noDomainMatch": "No domains match your search."
   },
   "proxyCheck": {
     "unknownLocation": "Unknown",
@@ -1790,15 +1728,6 @@
     "noteHeader": "Note",
     "vpnsHeading": "VPNs",
     "createByCountryHeading": "Create by country"
-  },
-  "releaseTypeSelector": {
-    "noReleaseTypes": "No release types available.",
-    "placeholder": "Select release type...",
-    "stable": "Stable",
-    "nightly": "Nightly",
-    "downloaded": "Downloaded",
-    "downloadBrowser": "Download Browser",
-    "downloading": "Downloading..."
   },
   "dataTableActionBar": {
     "selected": "{{count}} selected",
@@ -1937,6 +1866,15 @@
     "vpnNotFound": "VPN not found",
     "extensionNotFound": "Extension not found",
     "extensionGroupNotFound": "Extension group not found",
+    "extensionUnsupportedFileType": "That file type isn't supported. An extension has to be a .crx or .zip archive, or a folder.",
+    "extensionDirNotFound": "That folder no longer exists.",
+    "extensionNotADirectory": "That path is not a folder.",
+    "extensionManifestMissing": "There is no manifest.json in that folder. Choose the folder that holds the extension's manifest.json.",
+    "extensionManifestInvalid": "The manifest.json in that folder could not be read.",
+    "extensionDirTooLarge": "That folder is too large to copy into Donut (the limit is 256 MB and 20,000 files). Link it in place instead.",
+    "extensionPathHasComma": "That folder's path contains a comma, which Chromium cannot load. Rename or move the folder.",
+    "extensionLinkRequiresDirectory": "Only a folder can be loaded in place. Turn linking off to add an archive.",
+    "extensionLinkedCannotSync": "This extension is loaded from a folder on this machine, so there is nothing to sync.",
     "cannotModifyCloudManagedProxy": "Cannot modify sync for a cloud-managed proxy",
     "syncLockedByProfile": "Sync cannot be disabled while this is used by synced profiles",
     "syncNotConfigured": "Sync is not configured. Sign in or configure a self-hosted server first.",
@@ -1949,16 +1887,102 @@
     "proxyNotWorking": "The selected proxy isn't working, so the profile wasn't created.",
     "proxyPaymentRequired": "The selected proxy requires payment (402) — its subscription may have expired — so the profile wasn't created.",
     "vpnNotWorking": "The selected VPN isn't working, so the profile wasn't created.",
-    "camoufoxImportDeprecated": "Importing Firefox-based (Camoufox) profiles is no longer supported. Camoufox is being deprecated — please use Wayfern instead.",
-    "wayfernFingerprintMissing": "This profile has no fingerprint. Generate one before launching Wayfern.",
-    "wayfernGeolocationRequired": "Fingerprint is missing timezone or geolocation and the proxy exit could not be resolved.",
-    "wayfernWebrtcAlterIpUnavailable": "WebRTC alter mode requires a proxy exit IP, but it could not be fetched.",
-    "wayfernWebrtcAlterIpInvalid": "WebRTC alter mode received an invalid proxy exit IP.",
-    "wayfernNoPageTargets": "Wayfern started but no browser page was available for fingerprint injection.",
-    "wayfernFingerprintApplyFailed": "Failed to apply the fingerprint to Wayfern: {{detail}}",
-    "wayfernRehydrateFailed": "Failed to restore fingerprint protection on a recovered Wayfern browser: {{reason}}",
-    "wayfernFingerprintInconsistent": "Fingerprint is inconsistent (e.g., screen resolution mismatch). Regenerate fingerprint to fix: {{reason}}",
-    "proxyNotWorkingLaunch": "The selected proxy is not working. The profile cannot be launched."
+    "camoufoxImportDeprecated": "Importing this profile type is no longer supported. Please use Wayfern instead.",
+    "updateChecksumsUnavailable": "The update {{version}} could not be verified because its checksum file could not be retrieved. The update was not installed; it will be retried later.",
+    "updateChecksumMismatch": "The downloaded update file {{file}} failed checksum verification and was discarded. Please try again.",
+    "nameCannotBeEmpty": "Name cannot be empty",
+    "wayfernVersionNotAvailable": "Wayfern version {{requested}} is not available for download. The current version is {{current}}.",
+    "profileNameExists": "A profile named \"{{name}}\" already exists",
+    "importSourceNotFound": "The source path does not exist",
+    "importNoItems": "Nothing selected to import",
+    "browserNotDownloaded": "No downloaded version of {{browser}} is available. Download it first, then retry the import.",
+    "archiveExtractionFailed": "Failed to extract the archive: {{detail}}",
+    "unsupportedArchiveFormat": "Unsupported archive format. Only ZIP archives are supported.",
+    "clearOnCloseUnavailable": "Clear-on-close isn't available for ephemeral or password-protected profiles.",
+    "proxyAndVpnMutuallyExclusive": "A profile can use either a proxy or a VPN, not both.",
+    "invalidDnsRulesJson": "The selected file isn't valid DNS rules JSON.",
+    "unsupportedDnsRulesFormat": "Unsupported rules format: {{format}}",
+    "dnsRulesSaveFailed": "Failed to save the DNS rules.",
+    "dnsRulesExportFailed": "Failed to export the DNS rules.",
+    "fingerprintMatchFailed": "Couldn't match the fingerprint to the proxy.",
+    "proxySidecarVersionMismatch": "Some Donut Browser files are from different versions. Reinstall the latest update; your profiles will stay safe.",
+    "updateProfilesRunning": "Stop all running profiles before installing the update.",
+    "updatePreparationFailed": "Donut Browser could not safely stop a background network process. Restart your computer, then try the update again.",
+    "wayfernTermsRequired": "Accept the Wayfern Terms and Conditions before starting the MCP server.",
+    "apiPortUnavailable": "The API server could not find an available port.",
+    "mcpServerAlreadyRunning": "The MCP server is already running.",
+    "mcpServerNotRunning": "The MCP server is not running.",
+    "mcpPortUnavailable": "The MCP server could not find an available port.",
+    "mcpConfigurationUnavailable": "The MCP server configuration is unavailable. Restart the server and try again.",
+    "mcpAgentUnknown": "This MCP client is not supported.",
+    "mcpAgentInstallFailed": "Could not add Donut Browser to the MCP client: {{detail}}",
+    "mcpAgentRemoveFailed": "Could not remove Donut Browser from the MCP client: {{detail}}",
+    "vlessConfigInvalid": "The VLESS URI is invalid.",
+    "xrayUnavailable": "Xray-core is unavailable on this system.",
+    "xrayUnsupportedOs": "VLESS requires macOS 12 or newer.",
+    "xrayStartFailed": "Xray-core could not start.",
+    "cloudNotSignedIn": "Sign in to your Donut Browser account to use this.",
+    "cloudUnreachable": "Could not reach Donut Browser's servers. Check your connection and try again.",
+    "cloudRequestFailed": "The request failed. Please try again in a moment.",
+    "remoteRateLimited": "Too many requests. Wait a moment and try again.",
+    "remoteNoCapacity": "No remote host is free right now. Try again in a few minutes.",
+    "remoteNotEntitled": "Your plan does not include remote execution.",
+    "remoteInteractiveNotEntitled": "Your plan includes remote hours for the Cookie Bot only, not for hands-on remote sessions.",
+    "remoteRequiresRemoteExitNode": "This profile's proxy only works on this computer (for example 127.0.0.1 or a home network address). A remote session runs on our hosts, so it needs a proxy with a public address.",
+    "remoteSessionRefused": "The remote host refused this session.",
+    "remoteSessionNotFound": "That remote session no longer exists.",
+    "remoteSessionConflict": "This profile is already open somewhere else.",
+    "remoteSyncInProgress": "This profile is still uploading to cloud sync. Wait for the sync to finish, then try again.",
+    "remoteHoursExhausted": "You have used all {{used}} of your {{granted}} remote hours this month.",
+    "notTeamMember": "You are not a member of a team.",
+    "cookieBotNotEntitled": "Your plan does not include the cookie bot.",
+    "cookieBotNotEnrolled": "This profile is not set up for the cookie bot yet.",
+    "cookieBotScheduleConflict": "{{email}} already warms this profile at {{time}}.",
+    "cookieBotRunInProgress": "A run is already in progress for this profile.",
+    "cookieBotRunNotFound": "That run no longer exists.",
+    "cookieBotInvalidSchedule": "That schedule is not valid. Check the run time, days and duration.",
+    "cookieBotInvalidTimezone": "{{timezone}} is not a time zone the server recognises.",
+    "cookieBotInvalidPeriod": "That period is not valid. Use a month such as 2026-08.",
+    "cookieBotSiteLimit": "Enter between {{min}} and {{max}} sites, each a full http or https address.",
+    "cookieBotRequiresCloudSync": "Turn on cloud sync for this profile first — a remote host has no other way to obtain it.",
+    "cookieBotEncryptedSyncUnsupported": "This profile uses end-to-end encrypted sync, which a remote host cannot decrypt. Switch it to Regular sync.",
+    "cookieBotUnknownPlatform": "This profile has no recorded operating system, so it cannot be matched to a host.",
+    "cookieBotUnsupportedPlatform": "The cookie bot cannot run {{platform}} profiles. Only Windows and macOS profiles are supported.",
+    "cookieBotRequiresExitNode": "Attach a proxy or VPN first. Without one the run would come from a datacenter address, which damages the profile's identity.",
+    "cookieBotRequiresRemoteExitNode": "This profile's proxy only works on this computer (for example 127.0.0.1 or a home network address). Cookie Bot runs on our hosts, so it needs a proxy with a public address.",
+    "unknownCode": "Something went wrong: {{code}}",
+    "cookieBotTouchFingerprintUnsupported": "This profile claims a touch device, which the bot cannot drive. Use a desktop fingerprint.",
+    "profileRunningRemotely": "This profile is running on a remote machine. Stop the remote session first.",
+    "profileRemoteSyncPending": "A remote session just finished. Waiting for its changes to download before this profile can open here.",
+    "profileLockedByMember": "This profile is in use by {{email}}.",
+    "profileLockedElsewhere": "This profile is in use on another device.",
+    "profileLockUnavailable": "Could not check whether this profile is in use elsewhere. Check your connection and try again.",
+    "fingerprintExitMismatch": "The proxy exit node doesn't match this profile's fingerprint.",
+    "launchConsentExpired": "That confirmation is no longer valid. Try launching again.",
+    "vpnWorkerStartFailed": "Couldn't start the VPN connection: {{detail}}",
+    "exitProbeFailed": "Couldn't reach the proxy exit node to check its location.",
+    "vlessUnsupported": {
+      "security": "This VLESS server does not use REALITY. Donut supports VLESS with REALITY only.",
+      "flow": "This VLESS server does not use XTLS Vision flow, which Donut requires.",
+      "transport": "Donut supports VLESS over plain TCP only — this server uses a different transport (such as WebSocket or gRPC).",
+      "encryption": "This VLESS server uses an encryption setting Donut does not support.",
+      "headerType": "This VLESS server uses a header obfuscation Donut does not support.",
+      "fingerprint": "This VLESS URI requests a TLS fingerprint Donut does not support.",
+      "sni": "The VLESS URI is missing the SNI (sni) needed for REALITY.",
+      "publicKey": "The VLESS URI is missing the REALITY public key (pbk).",
+      "scheme": "That is not a VLESS link. It must start with vless://.",
+      "parameter": "The VLESS URI contains an option Donut does not support.",
+      "malformed": "The VLESS URI is invalid."
+    },
+    "camoufoxRemoved": "Camoufox is no longer supported. Recreate this profile with Wayfern.",
+    "noE2ePasswordSet": "No end-to-end encryption password is set. Set one before syncing encrypted data.",
+    "importSourceNotChromium": "This folder is not a Chromium browser profile",
+    "importSourceNotChromiumNamed": "{{family}} profiles cannot be imported; only Chromium-based browsers are supported",
+    "importSourceBrowserRunning": "Close {{browser}} first, or choose to import anyway",
+    "wayfernFingerprintApplyFailed": "Could not apply this profile's fingerprint, so the browser was not started. {{detail}}",
+    "wayfernFingerprintGenerationFailed": "Could not create a fingerprint for this profile. {{detail}}",
+    "wayfernGenerationLimitReached": "The fingerprint generation limit for this account has been reached. New fingerprints are unavailable for up to 24 hours. This limit applies to this computer, not to one profile.",
+    "wayfernCrossOsRequiresPlan": "This profile claims {{detail}}, which needs a paid plan and an active sign-in. Sign in or switch the profile to your own operating system."
   },
   "rail": {
     "profiles": "Profiles",
@@ -1971,12 +1995,15 @@
       "importProfile": "Import profile",
       "importProfileHint": "Bring profiles from another tool",
       "keyboardShortcuts": "Keyboard shortcuts",
-      "keyboardShortcutsHint": "View all shortcuts"
+      "keyboardShortcutsHint": "View all shortcuts",
+      "about": "About Donut Browser",
+      "aboutHint": "Version and app information"
     },
     "network": "Network",
     "integrations": "Integrations",
     "account": "Account",
-    "automation": "Automation"
+    "cookieBot": "Cookie Bot",
+    "cookieBotRunning": "Cookie Bot — running now"
   },
   "pageTitle": {
     "proxies": "Network",
@@ -1988,7 +2015,7 @@
     "account": "Account",
     "import": "Import profile",
     "shortcuts": "Keyboard shortcuts",
-    "automation": "Automation"
+    "cookieBot": "Cookie Bot"
   },
   "encryption": {
     "required": {
@@ -2031,7 +2058,8 @@
     },
     "tabs": {
       "account": "Account",
-      "selfHosted": "Self-hosted"
+      "selfHosted": "Self-hosted",
+      "teamUsage": "Team usage"
     },
     "selfHosted": {
       "title": "Self-hosted sync server",
@@ -2044,7 +2072,8 @@
     },
     "deviceOrdinal": "{{ordinal}} of {{count}}",
     "automationPrimaryOnly": "Browser automation runs only on your primary device (Device 1). Sign out there to use it here.",
-    "automationActiveHere": "Browser automation is active on this device."
+    "automationActiveHere": "Browser automation is active on this device.",
+    "viewTeamUsage": "View team usage"
   },
   "shortcutsPage": {
     "title": "Keyboard shortcuts",
@@ -2062,7 +2091,9 @@
     "actions": {
       "launchProfile": "Launch {{name}}",
       "stopProfile": "Stop {{name}}",
-      "profileInfo": "Info — {{name}}"
+      "profileInfo": "Info — {{name}}",
+      "createProfile": "Create profile",
+      "about": "About Donut Browser"
     }
   },
   "shortcuts": {
@@ -2075,7 +2106,8 @@
     "goGroups": "Go to Groups",
     "goIntegrations": "Go to Integrations",
     "goAccount": "Go to Account",
-    "goSettings": "Go to Settings"
+    "goSettings": "Go to Settings",
+    "goCookieBot": "Cookie Bot"
   },
   "closeConfirm": {
     "title": "Close Donut Browser?",
@@ -2086,10 +2118,6 @@
   "tray": {
     "show": "Show Donut Browser",
     "quit": "Quit"
-  },
-  "browserSupport": {
-    "endingSoonTitle": "Browser support ending soon",
-    "endingSoonDescription": "Support for the following profiles will be removed on March 15, 2026: {{profiles}}. Please migrate to Wayfern profiles."
   },
   "onboarding": {
     "steps": {
@@ -2170,878 +2198,387 @@
   },
   "wayfernBlocked": {
     "title": "Browser automation paused",
-    "description": "Your account was temporarily restricted from Pro browser features, usually from signing in on multiple devices at once. Sign out of other devices, then relaunch the profile to restore it."
+    "description": "Browser automation runs on one device at a time, and another signed-in device is currently using it. Sign out there, then relaunch the profile."
   },
-  "camoufoxDeprecation": {
-    "title": "Camoufox support is ending",
-    "description": "Support for Camoufox profiles is ending on July 8, 2026. You have one or more Camoufox profiles. Please migrate them to Wayfern before then — after that date, Camoufox profiles may stop working.",
-    "acknowledge": "Got it"
+  "wayfernConfigDialog": {
+    "titleView": "View Fingerprint Settings - {{name}} ({{browser}})",
+    "titleConfigure": "Configure Fingerprint Settings - {{name}} ({{browser}})",
+    "invalidFingerprint": "Invalid fingerprint configuration",
+    "invalidFingerprintDescription": "The fingerprint configuration contains invalid JSON. Please check your advanced settings.",
+    "saveFailed": "Failed to save configuration",
+    "unknownError": "Unknown error occurred"
   },
-  "tags": {
-    "title": "Tags",
-    "assignSuccess": "Successfully added tags to {{count}} profile(s)",
-    "failed": "Failed to assign tags: {{error}}",
-    "placeholder": "Select or create tags...",
-    "description_one": "Assign tags to the selected profile.",
-    "description_other": "Assign tags to the {{count}} selected profiles.",
-    "selectedProfilesLabel": "Selected Profiles",
-    "assignTagsLabel": "Assign Tags",
-    "assignButton": "Add",
-    "deleteConfirmTitle": "Delete Tag",
-    "deleteConfirmDesc": "Are you sure you want to delete the tag \"{{tag}}\"? This will remove it from all profiles and the system globally.",
-    "deleteSuccess": "Tag \"{{tag}}\" deleted successfully",
-    "deleteFailed": "Failed to delete tag: {{error}}"
+  "cookieCopy": {
+    "noOtherTargets": "No other Wayfern profiles selected"
   },
-  "automation": {
-    "cleanupMode": {
-      "cookiesAndCacheDesc": "Delete browsing data but keep configuration and saved passwords",
-      "fullDesc": "Delete the entire profile directory",
-      "cookiesAndCache": "Cookies & Cache Only",
-      "full": "Full Profile Deletion"
+  "about": {
+    "title": "About",
+    "version": "Version {{version}}",
+    "portableBadge": "portable",
+    "licenseNotice": "Open-source anti-detect browser.",
+    "website": "Website",
+    "github": "GitHub",
+    "licenses": "Licenses",
+    "searchLicenses": "Search licenses…",
+    "noMatchingLicenses": "No matching licenses.",
+    "openSource": "View {{name}} source code"
+  },
+  "clearOnClose": {
+    "label": "Clear data on close",
+    "description": "Wipe cookies, history and cache when the browser closes. Extensions and bookmarks are kept."
+  },
+  "consistencyWarning": {
+    "timezoneDetail": "Exit node is in {{exit}} but the fingerprint reports {{fingerprint}}.",
+    "languageDetail": "Exit country is {{country}} but the fingerprint language is {{fingerprint}}.",
+    "explainer": "A timezone or language that disagrees with your exit IP is a strong anti-bot signal, even though your real device never leaks. Align the fingerprint with the proxy location to reduce hostile treatment.",
+    "matchToProxy": "Match fingerprint to proxy",
+    "matching": "Matching…",
+    "matchSuccess": "Fingerprint updated to match the proxy. Relaunch the profile to apply."
+  },
+  "cookieBot": {
+    "title": "Cookie Bot",
+    "description": "Overnight profile warming on a remote machine.",
+    "tabs": {
+      "overview": "Overview",
+      "schedule": "Schedule",
+      "activity": "Activity",
+      "team": "Team"
     },
-    "title": "Automation",
-    "addNode": "Add Task",
-    "securityWarning": {
-      "title": "Security Warning",
-      "localCommand": "Local commands run with your system permissions. Only use trusted scripts. Malicious commands can damage your system or steal data."
+    "locked": {
+      "title": "Cookie Bot",
+      "hint": "Cookie Bot warms your profiles overnight on a remote machine, so they keep their cookies and their history without your computer being on."
     },
-    "afterClose": {
-      "description": "Tasks to execute after the browser closes",
-      "title": "After Closing Profile"
+    "empty": {
+      "title": "No profiles are enrolled",
+      "hint": "Pick a profile and the bot warms it overnight on a remote machine. Your computer can be off.",
+      "cta": "Enrol a profile"
     },
-    "masterSwitch": "Enable Automation",
-    "fields": {
-      "allowedCountries": "Allowed Countries",
-      "protocol": "Protocol",
-      "requestBody": "Request Body",
-      "message": "Message",
-      "timeoutSeconds": "Timeout (seconds)",
-      "label": "Label",
-      "jsonPathPort": "JSON Path for Port",
-      "apiUrl": "API URL",
-      "maxFraudScore": "Max Fraud Score",
-      "cleanupMode": "Cleanup Mode",
-      "jsonPathIp": "JSON Path for IP",
-      "chatId": "Chat ID",
-      "timeout": "Timeout (seconds)",
-      "botToken": "Bot Token",
-      "variablesAvailable": "Available variables",
-      "webhookUrl": "Webhook URL",
-      "method": "HTTP Method",
-      "labelPlaceholder": "My Task",
-      "responseFormat": "Response Format",
-      "maxAttempts": "Max Retry Attempts",
-      "command": "Command"
+    "tonight": {
+      "label": "Tonight",
+      "nextRun": "Next run {{time}}",
+      "dueCount_one": "{{count}} profile due",
+      "dueCount_other": "{{count}} profiles due",
+      "nothingScheduled": "Nothing scheduled"
     },
-    "noNodes": "No automation tasks configured yet",
-    "masterSwitchDescription": "Run automated tasks before opening and after closing this profile",
-    "warnings": {
-      "proxyVariableNotAvailable": "This task uses proxy variables but no Dynamic Proxy task is configured before it",
-      "ipVariableNotAvailable": "This task uses IP variables but no IP Check task is configured before it"
+    "lastDay": {
+      "label": "Last 24 hours",
+      "none": "No runs yet",
+      "ran_one": "{{count}} ran",
+      "ran_other": "{{count}} ran",
+      "partial_one": "{{count}} partial",
+      "partial_other": "{{count}} partial",
+      "failed_one": "{{count}} failed",
+      "failed_other": "{{count}} failed"
     },
-    "beforeOpen": {
-      "description": "Tasks to execute before the browser launches",
-      "title": "Before Opening Profile"
+    "chart": {
+      "machineTime": "Machine time per night",
+      "minutes": "{{minutes}} min"
     },
-    "infoMessage": "Configure tasks to run automatically at specific lifecycle points",
-    "nodeTypes": {
-      "ipCheck": "IP Check",
-      "webhook": "Webhook",
-      "localCommand": "Local Command",
-      "cleanup": "Cleanup",
-      "dynamicProxy": "Dynamic Proxy",
-      "telegramAlert": "Telegram Alert",
-      "openProfile": "Browser Settings",
-      "closeProfile": "Close Profile"
+    "hours": {
+      "label": "Remote hours",
+      "remaining": "{{remaining}} h left of {{total}}",
+      "remainingOf": "of {{total}} h",
+      "used": "{{used}} of {{total}} h used",
+      "resets": "Resets {{date}}",
+      "exhausted": "No remote hours left. Schedules stay enrolled and resume next cycle.",
+      "exhaustedOn": "No remote hours left. Schedules stay enrolled and resume {{date}}.",
+      "estimate": "About {{hours}} h per week · {{remaining}} h left this cycle",
+      "estimateOverBudget": "Needs about {{hours}} h per week — only {{remaining}} h left",
+      "estimateOnly": "About {{hours}} h per week"
     },
-    "dependencyWarning": "Dependency issue",
-    "script": {
-      "searchPlaceholder": "Search scripts...",
-      "import": "Import Script",
-      "add": "Add Script",
-      "empty": "No automation scripts yet",
-      "confirm": {
-        "deleteDescription": "Are you sure you want to delete this script?",
-        "deleteTitle": "Delete Script",
-        "exportVariables": "This script contains variables. Export them too?",
-        "overwriteImport": "Script '{name}' already exists. Overwrite?"
-      },
-      "delete": "Delete",
-      "duplicate": "Duplicate",
-      "edit": "Edit",
-      "errors": {
-        "deleteFailed": "Failed to delete script: {error}",
-        "duplicateFailed": "Failed to duplicate script: {error}",
-        "exportFailed": "Failed to export script: {error}",
-        "importFailed": "Failed to import script: {error}"
-      },
-      "export": "Export",
-      "loading": "Loading...",
-      "modifiedAt": "Last modified: {date}",
-      "noMatches": "No scripts found",
-      "toast": {
-        "deleted": "Deleted script '{name}'",
-        "duplicated": "Duplicated script as '{name}'",
-        "exported": "Exported script '{name}'",
-        "imported": "Imported script '{name}'"
-      }
+    "enrolled": {
+      "columnProfile": "Profile",
+      "columnCadence": "Cadence",
+      "columnTime": "Time",
+      "columnNextRun": "Next run",
+      "columnLastRun": "Last run",
+      "enrolProfiles": "Enrol profiles",
+      "edit": "Edit schedule",
+      "neverRun": "Never",
+      "pausedNoHours": "Paused — out of hours",
+      "profileMissing": "That profile is not on this computer."
     },
-    "editor": {
-      "palette": "Palette",
-      "paletteHint": "Select an action to add to your script",
-      "searchNodes": "Search actions...",
-      "groups": {
-        "navigator": "Navigation",
-        "mouse": "Mouse",
-        "keyboard": "Keyboard",
-        "data": "Data",
-        "interaction": "Interaction",
-        "utility": "Utility",
-        "network": "Network",
-        "control": "Control Flow",
-        "other": "Other"
-      },
-      "start": "Start",
-      "booleanEnabled": "Enabled",
-      "comment": {
-        "characters": "characters",
-        "title": "Comment",
-        "placeholder": "Enter your comment..."
-      },
-      "errors": {
-        "loadFailed": "Failed to load script: {{error}}",
-        "saveFailed": "Failed to save script: {{error}}",
-        "nameRequired": "Flow name is required",
-        "startFailed": "Debug failed to start: {{error}}",
-        "functionExists": "Function name already exists",
-        "cannotRenameMain": "Cannot rename Main function",
-        "cannotDeleteMain": "Cannot delete Main function"
-      },
-      "debug": {
-        "running": "Debugging...",
-        "stopped": "Debug stopped",
-        "completed": "Debug completed",
-        "noNodes": "No reachable nodes from this point",
-        "startFromHere": "Start debugging from: {{name}}"
-      },
-      "saveAsTitle": "Save Flow As",
-      "saveAsDescription": "Enter a name for the new flow copy.",
-      "flowNameLabel": "Flow Name",
-      "linearHint": "Linear mode",
-      "name": "Script Name",
-      "namePlaceholder": "Enter script name...",
-      "properties": {
-        "continueOnError": "Continue on Error",
-        "continueOnErrorHint": "Skip errors and continue to next steps",
-        "document": "Documentation",
-        "options": "Options",
-        "setting": "Settings",
-        "selectNodeHint": "Select a node on the canvas to view its properties",
-        "sleepAfter": "Sleep time (milliseconds) before running the next node.",
-        "sleepAfterFrom": "From (milliseconds)",
-        "sleepAfterTo": "To (milliseconds)"
-      },
-      "saving": "Saving...",
-      "toast": {
-        "saved": "Script saved",
-        "startFromHere": "Start from here"
-      },
-      "toolbar": {
-        "delete": "Delete",
-        "edit": "Edit",
-        "startFromHere": "Start from here",
-        "duplicate": "Duplicate",
-        "runFull": "Run Full Flow",
-        "runStep": "Run 1 Node"
-      },
-      "variables": {
-        "add": "Add Variable",
-        "autoInjected": "Auto-injected",
-        "description": "Description",
-        "reserved": "System Variables",
-        "title": "Variables",
-        "search": "Search variables...",
-        "system": "System Variables",
-        "user": "User Variables",
-        "empty": "No variables defined",
-        "changesWarning": "⚠️ Changes apply on next run"
-      },
-      "logs": {
-        "title": "Log",
-        "timeline": "Execution Timeline",
-        "noSteps": "No steps executed yet",
-        "variablesState": "Variables State",
-        "noVariables": "No variables in scope",
-        "console": "Console Output",
-        "consoleEmpty": "No log output"
-      },
-      "controls": {
-        "zoomIn": "Zoom In",
-        "zoomOut": "Zoom Out",
-        "fitView": "Fit View",
-        "lock": "Lock Canvas",
-        "unlock": "Unlock Canvas"
-      },
-      "tabs": {
-        "properties": "Properties",
-        "variables": "Variables",
-        "resources": "Resources"
-      },
-      "actions": {
-        "run": "Run",
-        "running": "Running...",
-        "stop": "Stop"
-      },
-      "sidebar": {
-        "collapse": "Collapse Sidebar",
-        "showLogs": "Show Logs",
-        "hideLogs": "Hide Logs",
-        "settings": "Settings"
-      },
-      "resources": {
-        "advanced": {
-          "filenames": "Select the local file (.txt, .csv, .log) or folder source containing the resource lines.",
-          "readFile": "Allow reading lines/files from the source as input variables.",
-          "writeFile": "Allow writing or appending data outputs back into this resource file.",
-          "mix": "Randomly shuffle items upon allocation instead of using sequential declaration order.",
-          "maxSuccess": "Maximum successful leases allowed per item before it becomes exhausted (0 = unlimited).",
-          "maxFail": "Maximum allowed failure count per item before it becomes disabled (0 = unlimited).",
-          "maxSimultaneous": "Maximum concurrent active leases one item can hold (default is 1).",
-          "interval": "Minimum cooldown time in milliseconds required before reusing the same item.",
-          "greedy": "Immediately allocate the first available item in declaration order, bypassing random shuffle.",
-          "reload": "Monitor the source file for external changes and automatically reload items dynamically.",
-          "renew": "Reset all item usage statistics (success/fail count) back to available every 30 seconds."
-        },
-        "generalSettings": "General Settings",
-        "saveLayout": "Save layout on close",
-        "autoAlign": "Auto-align nodes",
-        "title": "Flow Resources",
-        "empty": "No extra resources loaded in this flow.",
-        "wizard": {
-          "title": "Create Resource",
-          "step1_title": "Name.",
-          "step1_subtitle": "Select resource internal name and description.",
-          "step1_name_label": "Name.",
-          "step1_name_help": "This is internal resource name used inside script.",
-          "step1_desc_en_label": "Description En.",
-          "step1_desc_en_help": "Description for English speaking users.",
-          "step1_desc_ru_label": "Description Ru.",
-          "step1_desc_ru_help": "Description for Russian speaking users.",
-          "step1_hint_label": "Enable hint",
-          "step2_title": "Type.",
-          "step2_subtitle": "Select resource type.",
-          "step3_title": "Read/Write Mode.",
-          "step3_subtitle": "Set read/write mode.",
-          "step3_only_read": "Only read.",
-          "step3_read_delete": "Read and delete lines after use.",
-          "step3_read_delete_help": "Lines will be deleted from file only after some time or after script restart.",
-          "step3_only_write": "Only write.",
-          "step3_mix": "Mix lines.",
-          "step4_title_string": "String properties.",
-          "step4_subtitle_string": "Select default value and can the string be empty?",
-          "step4_default_value": "Default value",
-          "step4_default_value_help": "Leave blank to let user fill it.",
-          "step4_not_empty": "String must be not empty",
-          "step4_multiline": "String must be multiline",
-          "btn_back": "< Back",
-          "btn_next": "Next >",
-          "btn_finish": "Finish",
-          "btn_cancel": "Cancel",
-          "step4_title_select": "Select constructor.",
-          "step4_subtitle_select": "Configure select options.",
-          "step4_title_generic": "{{type}} properties",
-          "step4_subtitle_generic": "Configure properties for this resource type.",
-          "step4_min_value": "Min value",
-          "step4_max_value": "Max value",
-          "step4_not_empty_number": "Number must be not empty",
-          "step4_file_path": "File path",
-          "step4_directory_path": "Directory path",
-          "step4_btn_choose_file": "Choose File",
-          "step4_btn_choose_folder": "Choose Folder",
-          "step4_file_path_help": "Specify the absolute path of the text file containing the resource lines.",
-          "step4_directory_path_help": "Specify the absolute path of the directory.",
-          "step4_url": "URL",
-          "step4_url_help": "Specify the URL containing the resource data.",
-          "step4_select_type": "Type:",
-          "step4_select_options": "Options:",
-          "step4_select_placeholder": "Select default option...",
-          "step4_checkbox_help": "If the checkbox is enabled, the resource will return true, otherwise false.",
-          "step4_connection_string": "Connection string",
-          "step4_db_connection_help": "Provide the database connection details.",
-          "step4_message": "Message",
-          "step4_info_message_help": "This text will be shown to the user on execution."
-        }
-      },
-      "debugProfile": {
-        "placeholder": "Select profile...",
-        "virtual": "Virtual Profile (Ephemeral)"
-      },
-      "help": {
-        "waitUntil": "Page load wait mode:\n• load: Wait for all resources (HTML, images, styles) to load\n• domcontentloaded: Wait for HTML structure (DOM) to load\n• networkidle: Wait until network requests have stopped for at least 500ms",
-        "timeout": "Maximum time to wait (ms) before throwing an error. Default is 30000ms.",
-        "url": "The website address (URL) to navigate to.",
-        "selector": "CSS Selector or XPath to locate the element (e.g., button.submit, //input[@id='username']).",
-        "value": "The text value or content to insert/select.",
-        "milliseconds": "Duration to pause execution in milliseconds."
-      },
-      "selector": {
-        "exact": "Exact match",
-        "include": "Include (contains)",
-        "start": "Start with",
-        "end": "End with"
-      },
-      "scriptEditor": "Script Editor",
-      "returnToMain": "Return to main screen",
-      "groupDescriptions": {
-        "navigator": "Browser navigation, tabs, frames, and extensions.",
-        "mouse": "Emulate mouse clicks, movements, and drag-and-drops.",
-        "keyboard": "Emulate keyboard inputs and text typing.",
-        "data": "Data extraction and variable management.",
-        "network": "HTTP requests and user agent control.",
-        "control": "Loops, conditions, and flow logic.",
-        "utility": "Helpers like delay, screenshot, and logs.",
-        "other": "Other automation actions."
-      }
+    "schedule": {
+      "empty": "Nothing is scheduled yet.",
+      "quietHours_one": "{{count}} quiet hour",
+      "quietHours_other": "{{count}} quiet hours",
+      "crowded_one": "{{count}} profile starts at once",
+      "crowded_other": "{{count}} profiles start at once",
+      "unenrol": "Remove from Cookie Bot",
+      "unenrolTitle": "Remove {{name}} from Cookie Bot?",
+      "unenrolDescription": "It stops warming tonight. Past runs stay in Activity.",
+      "unenrolled": "Removed from Cookie Bot"
+    },
+    "status": {
+      "provisioning": "Preparing a machine",
+      "ready": "Loading profile",
+      "warming": "Warming",
+      "finished": "Finishing",
+      "failed": "Failed"
+    },
+    "runStatus": {
+      "pending": "Queued",
+      "running": "Running",
+      "succeeded": "Complete",
+      "partial": "Partial",
+      "failed": "Failed",
+      "skipped": "Skipped",
+      "cancelled": "Stopped"
+    },
+    "running": {
+      "label": "Running now",
+      "more": "+{{count}} more",
+      "stop": "Stop run",
+      "stopped": "Run stopped"
+    },
+    "live": {
+      "idle": "Nothing is running right now",
+      "streamOffline": "Live updates are offline",
+      "streamOfflineDetail": "Live updates are offline — reconnecting. The runs below may be out of date.",
+      "unnamedSession": "Remote session",
+      "notStartedYet": "The machine has not reported a start time yet.",
+      "sitesProgress": "{{visited}} of {{total}} sites",
+      "sitesUnknown": "Sites not reported yet",
+      "consentHandled_one": "{{count}} consent prompt handled",
+      "consentHandled_other": "{{count}} consent prompts handled",
+      "consentUnknown": "Consent prompts not reported yet",
+      "billed": "{{duration}} billed",
+      "billedUnknown": "Billed time not reported yet",
+      "chunk": "Part {{index}} of {{total}}"
+    },
+    "history": {
+      "title": "Runs",
+      "allProfiles": "All profiles",
+      "searchPlaceholder": "Search profiles…",
+      "filterAll": "All runs",
+      "filterComplete": "Complete",
+      "filterPartial": "Partial",
+      "filterFailed": "Failed",
+      "columnStarted": "Started",
+      "columnProfile": "Profile",
+      "columnDuration": "Duration",
+      "columnSites": "Sites",
+      "columnStatus": "Status",
+      "columnOperator": "Operator",
+      "empty": "No runs yet.",
+      "noMatch": "No runs match this filter.",
+      "unknownProfile": "Unknown profile",
+      "outcome": "Reason: {{reason}}",
+      "sitesVisited": "{{visited}}/{{total}}",
+      "sitesFailed_one": "{{count}} site could not be reached",
+      "sitesFailed_other": "{{count}} sites could not be reached",
+      "consentHandled_one": "{{count}} consent prompt handled",
+      "consentHandled_other": "{{count}} consent prompts handled",
+      "sitesUnknown": "Not reported"
+    },
+    "duration": {
+      "hm": "{{hours}}h {{minutes}}m",
+      "ms": "{{minutes}}m {{seconds}}s",
+      "s": "{{seconds}}s"
+    },
+    "picker": {
+      "title": "Enrol profiles",
+      "description": "Pick the profiles the bot should warm overnight.",
+      "searchPlaceholder": "Search profiles…",
+      "noProfiles": "No profiles match.",
+      "alreadyEnrolled": "Enrolled",
+      "continue_one": "Continue with {{count}}",
+      "continue_other": "Continue with {{count}}"
+    },
+    "enrol": {
+      "titleOne": "Enrol {{name}}",
+      "titleCount_one": "Enrol {{count}} profile",
+      "titleCount_other": "Enrol {{count}} profiles",
+      "editTitle": "Edit schedule",
+      "description": "The bot opens the profile on a remote machine and browses the sites you list. Your computer can be off.",
+      "summaryNightly": "Runs every night at {{time}}, up to {{minutes}} min each.",
+      "summaryWeeknights": "Runs Monday to Friday at {{time}}, up to {{minutes}} min each.",
+      "summaryAlternate": "Runs every other night at {{time}}, up to {{minutes}} min each.",
+      "summaryCustom_one": "Runs {{count}} night a week at {{time}}, up to {{minutes}} min each.",
+      "summaryCustom_other": "Runs {{count}} nights a week at {{time}}, up to {{minutes}} min each.",
+      "confirm": "Enrol tonight",
+      "confirmSome": "Enrol {{eligible}} of {{total}} tonight",
+      "fixFirst": "Fix these first",
+      "saving": "Enrolling…",
+      "saved": "Schedule saved",
+      "enrolled_one": "Enrolled {{count}} profile",
+      "enrolled_other": "Enrolled {{count}} profiles",
+      "adjust": "Adjust schedule",
+      "cadenceLabel": "Cadence",
+      "cadenceNightly": "Nightly",
+      "cadenceWeeknights": "Weeknights",
+      "cadenceAlternate": "Every other night",
+      "cadenceCustom_one": "{{count}} night a week",
+      "cadenceCustom_other": "{{count}} nights a week",
+      "timeLabel": "Start time",
+      "timeHint": "Local to each profile's fingerprint timezone.",
+      "maxMinutesLabel": "Max minutes",
+      "intensityLabel": "Depth",
+      "sitesLabel": "Sites",
+      "sitesPlaceholder": "One address per line",
+      "sitesHint_one": "{{count}} site. Only pages you list here are visited.",
+      "sitesHint_other": "{{count}} sites. Only pages you list here are visited.",
+      "sitesTooMany": "At most {{max}} sites.",
+      "presetsUnavailable": "Could not load the depth presets. Try again in a moment.",
+      "confirmBulkTitle_one": "Enrol {{count}} profile in Cookie Bot?",
+      "confirmBulkTitle_other": "Enrol {{count}} profiles in Cookie Bot?",
+      "confirmBulkDescription_one": "It books a nightly run against your shared remote hours. You choose the time and the sites next.",
+      "confirmBulkDescription_other": "They book {{count}} nightly runs against your shared remote hours. You choose the time and the sites next.",
+      "confirmBulkButton_one": "Continue with {{count}} profile",
+      "confirmBulkButton_other": "Continue with {{count}} profiles",
+      "sitesRequired": "Add at least one site.",
+      "addSitesFirst": "Add a site first",
+      "presetsMissing": "Depth presets unavailable",
+      "sourceOwn": "My own list",
+      "sourceCurated": "Curated",
+      "sourceSaved": "Saved",
+      "curatedEmpty": "No curated lists are available right now.",
+      "curatedNote": "A curated list we keep up to date. Every profile draws its own sample from it, so no two profiles browse the same set — which is what stops the list itself becoming a signature. The addresses stay on our side.",
+      "savedEmpty": "Nothing saved yet. Type a list under My own list, then save it from there.",
+      "savedNote": "The sites are copied onto the schedule when you save it, so editing a list later leaves existing schedules alone.",
+      "savedUnavailable": "Could not load your saved lists.",
+      "saveAsList": "Save as a list",
+      "listNamePlaceholder": "Name this list",
+      "listSaved": "List saved",
+      "listRenamed": "List renamed",
+      "listDeleted": "List deleted",
+      "listRename": "Rename",
+      "listDeleteConfirm": "Delete?",
+      "templateMissing": "That saved list no longer exists. Pick another one.",
+      "templateNameTaken": "You already have a list with that name.",
+      "templateNameInvalid": "Give the list a name of {{max}} characters or fewer.",
+      "calendarLabel": "When it runs",
+      "daysLabel": "Days of the week",
+      "addSlot": "Add a time",
+      "slotsFull": "At most {{max}} start times.",
+      "removeSlot": "Remove this time",
+      "pickListFirst": "Pick a list first",
+      "finishCalendarFirst": "Finish the schedule first",
+      "duplicateSlot": "Two rows have the same days and time",
+      "listSites_one": "{{count}} site",
+      "listSites_other": "{{count}} sites",
+      "summarySlots_one": "Runs {{count}} time a week, up to {{minutes}} min each.",
+      "summarySlots_other": "Runs {{count}} times a week, up to {{minutes}} min each.",
+      "templateNameInvalidNoMax": "That name can't be used for a saved list."
+    },
+    "preset": {
+      "light": "Light",
+      "balanced": "Standard",
+      "deep": "Deep"
+    },
+    "template": {
+      "lowIntentPurchaser": "Low-intent purchaser",
+      "lowIntentPurchaserHint": "Positions the profile as a price-sensitive buyer: comparison, coupon, cashback and resale sites, reaching retailers through aggregators rather than directly."
+    },
+    "preflight": {
+      "ineligible_one": "{{count}} profile can't run remotely",
+      "ineligible_other": "{{count}} profiles can't run remotely",
+      "reasonSync": "Sync is off",
+      "reasonEncrypted": "End-to-end encrypted",
+      "reasonNoFingerprint": "No recorded operating system",
+      "reasonCrossOs": "Built for {{os}} — no remote machine matches",
+      "reasonNoExitNode": "No proxy or VPN",
+      "fixSync": "Turn on sync",
+      "fixEncrypted": "Open sync settings",
+      "fixProxy": "Attach a proxy",
+      "fixFailed": "Could not apply that fix.",
+      "exitNodeHint": "Without a proxy or VPN the run leaves from the fleet's own datacenter address. Hours of traffic from a hosting network damages the profile's identity more than not warming it at all."
+    },
+    "conflict": {
+      "title": "{{email}} already warms this profile at {{time}}",
+      "detail": "Two schedules on one profile spend hours twice and can collide mid-run.",
+      "keepTheirs": "Use their schedule",
+      "replace": "Replace with mine",
+      "replaceForbidden": "Only a team owner or admin can change someone else's schedule.",
+      "askThem": "Copy {{email}}",
+      "emailCopied": "Email copied",
+      "copyFailed": "Could not copy the address."
+    },
+    "actionBar": {
+      "enrol": "Enrol in Cookie Bot",
+      "proRequired": "Cookie Bot requires a paid plan",
+      "noneEligible": "None of the selected profiles can be warmed remotely"
     },
     "actions": {
-      "run": "Run",
-      "starting": "Starting...",
-      "stopAll": "Stop All"
+      "enrol": "Enrol in Cookie Bot",
+      "editSchedule": "Edit schedule",
+      "runNow": "Run now",
+      "runStarted": "Run started",
+      "viewActivity": "View activity",
+      "runNotStarted": "The run did not start: {{reason}}"
     },
-    "errors": {
-      "readFlowFailed": "Failed to read script",
-      "startFailed": "Failed to start script",
-      "stopFailed": "Failed to stop script"
+    "state": {
+      "enrolled": "Enrolled",
+      "notEnrolled": "Not enrolled",
+      "paused": "Paused",
+      "summary": "{{cadence}} at {{time}}",
+      "rowMenu": "Cookie Bot options for {{name}}",
+      "blocked": "Cannot run: {{reason}}"
     },
-    "flow": {
-      "empty": "Script is empty",
-      "label": "Label",
-      "placeholder": "Enter label...",
-      "refresh": "Refresh"
+    "team": {
+      "title": "Team usage",
+      "pooled_one": "{{used}} of {{total}} h, {{count}} seat",
+      "pooled_other": "{{used}} of {{total}} h pooled across {{count}} seats",
+      "hours": "{{hours}} h",
+      "legendBot": "Cookie Bot",
+      "legendInteractive": "Interactive",
+      "columnMember": "Member",
+      "columnRuns": "Runs",
+      "columnHours": "Hours",
+      "columnShare": "Share",
+      "noActivity": "No remote sessions in this period.",
+      "soloNote": "Only your own usage so far. Invite teammates to see the pool split by member.",
+      "runsFailed": "· {{n}} failed"
     },
-    "grid": {
-      "empty": "No scripts yet",
-      "stopProfile": "Stop Profile"
+    "closeReason": {
+      "stoppedByUser": "Stopped by hand",
+      "maxDuration": "Reached the time limit",
+      "other": "Ended: {{reason}}"
     },
-    "log": {
-      "allProfiles": "All Profiles",
-      "empty": "No logs yet",
-      "openFile": "Open File",
-      "scrollLock": "Lock Scroll",
-      "scrollUnlock": "Unlock Scroll",
-      "title": "Logs"
-    },
-    "profiles": {
-      "deselectAll": "Deselect All",
-      "empty": "No profiles",
-      "label": "Profile",
-      "selectAll": "Select All"
-    },
-    "review": {
-      "confirm": "Confirm",
-      "description": "Description",
-      "noSelectors": "No selectors",
-      "noUrls": "No URLs",
-      "selectors": "Selectors",
-      "templatedOrInvalidHost": "Invalid or templated host",
-      "title": "Review",
-      "urls": "URLs"
-    },
-    "runInfo": "Run Info",
-    "settings": {
-      "closeOnComplete": "Close on Complete",
-      "closeOnCompleteHint": "Automatically close browser after script completes",
-      "concurrency": "Concurrent Profiles",
-      "concurrencyHint": "Maximum number of profiles to run simultaneously",
-      "delayOpen": "Profile Open Delay (ms)",
-      "delayOpenHint": "Wait time before opening next profile",
-      "headless": "Headless Mode",
-      "headlessHint": "Run browser in background (no window)",
-      "noOverlapping": "No Overlapping",
-      "noOverlappingHint": "Don't run multiple scripts on the same profile",
-      "title": "Settings",
-      "writeLogs": "Write Logs",
-      "writeLogsHint": "Save detailed logs to file"
-    },
-    "nodes": {
-      "addComment": {
-        "description": "Add a comment",
-        "document": "Adds a non-executable comment to document the script.",
-        "label": "Add Comment",
-        "params": {
-          "comment": "Comment"
-        }
-      },
-      "addLog": {
-        "description": "Write to log",
-        "document": "Writes a message to the automation log.",
-        "label": "Add Log",
-        "params": {
-          "level": "Level",
-          "message": "Message"
-        }
-      },
-      "clearCookies": {
-        "description": "Clear all cookies",
-        "document": "Removes all cookies from the browser.",
-        "label": "Clear Cookies"
-      },
-      "clearInput": {
-        "description": "Clear input field",
-        "document": "Clears the value of an input field.",
-        "label": "Clear Input"
-      },
-      "click": {
-        "description": "Click an element",
-        "document": "Clicks on an element matching the specified selector.",
-        "label": "Click"
-      },
-      "moveAndClick": {
-        "description": "Move mouse smoothly to element then click",
-        "document": "Moves the mouse cursor from its current position to the center of the target element using smooth interpolation (human-like movement), then performs a click. Mouse position is tracked across nodes.",
-        "label": "Move and Click"
-      },
-      "clickDown": {
-        "description": "Press mouse button",
-        "document": "Presses and holds a mouse button at the specified position.",
-        "label": "Mouse Down"
-      },
-      "clickUp": {
-        "description": "Release mouse button",
-        "document": "Releases a previously pressed mouse button.",
-        "label": "Mouse Up"
-      },
-      "closeTab": {
-        "description": "Close current tab",
-        "document": "Closes the currently active browser tab.",
-        "label": "Close Tab",
-        "target": {
-          "current": "Current tab",
-          "select": "Select tab (by index)",
-          "other": "Other all tabs"
-        }
-      },
-      "closeProfile": {
-        "description": "Close browser profile with cleanup options",
-        "document": "Closes a browser profile and performs cleanup: cookies-only mode preserves passwords, full mode deletes entire profile directory.",
-        "label": "Close Profile",
-        "params": {
-          "profileId": "Profile",
-          "profileIdHelp": "Select the browser profile to close",
-          "cleanupMode": "Cleanup Mode",
-          "cleanupModeHelp": "Cookies: delete browsing data only. Full: delete entire profile directory"
-        },
-        "cleanupMode": {
-          "cookies": "Cookies & Cache Only",
-          "full": "Full Directory"
-        }
-      },
-      "convertingJson": {
-        "description": "Parse or stringify JSON",
-        "document": "Converts between JSON strings and JavaScript objects.",
-        "label": "Convert JSON",
-        "options": {
-          "parse": "Parse",
-          "stringify": "Stringify"
-        },
-        "params": {
-          "input": "Input",
-          "operation": "Operation",
-          "saveToVar": "Save to Variable"
-        }
-      },
-      "delay": {
-        "description": "Pause execution",
-        "document": "Pauses script execution for a specified duration.",
-        "label": "Delay"
-      },
-      "downloadFile": {
-        "description": "Download a file",
-        "document": "Downloads a file from a URL to the local filesystem.",
-        "label": "Download File"
-      },
-      "dragAndDrop": {
-        "description": "Drag element to target",
-        "document": "Drags an element from source to target location.",
-        "label": "Drag & Drop"
-      },
-      "elementExists": {
-        "description": "Check if element exists",
-        "document": "Checks whether an element matching the selector exists.",
-        "label": "Element Exists",
-        "options": {
-          "any": "Any",
-          "hidden": "Hidden",
-          "visible": "Visible"
-        },
-        "params": {
-          "selector": "Selector",
-          "timeout": "Timeout (ms)",
-          "visibility": "Visibility"
-        }
-      },
-      "evalJs": {
-        "description": "Run custom JS code",
-        "document": "Executes arbitrary JavaScript code in the page context.",
-        "label": "Evaluate JavaScript"
-      },
-      "extractionInText": {
-        "description": "Extract using regex",
-        "document": "Extracts text matching a regular expression pattern.",
-        "label": "Extract Text",
-        "params": {
-          "flags": "Regex Flags",
-          "regex": "Regex Pattern",
-          "saveToVar": "Save to variable",
-          "text": "Input Text"
-        }
-      },
-      "getAttributeValue": {
-        "description": "Get element attribute",
-        "document": "Retrieves a specific attribute value from an element.",
-        "label": "Get Attribute",
-        "params": {
-          "attribute": "Attribute Name",
-          "saveToVar": "Save to variable",
-          "selector": "Selector",
-          "timeout": "Timeout (ms)"
-        }
-      },
-      "getCookies": {
-        "description": "Retrieve cookies",
-        "document": "Retrieves cookies for the current domain.",
-        "label": "Get Cookies"
-      },
-      "getText": {
-        "description": "Extract text from element",
-        "document": "Retrieves text content from an element and stores it in a variable.",
-        "label": "Get Text",
-        "params": {
-          "saveToVar": "Save to variable",
-          "selector": "Selector",
-          "timeout": "Timeout (ms)"
-        }
-      },
-      "getUrl": {
-        "description": "Get current page URL",
-        "document": "Retrieves the URL of the current page and stores it in a variable.",
-        "label": "Get URL",
-        "params": {
-          "saveToVar": "Save to variable"
-        }
-      },
-      "getValue": {
-        "description": "Get input value",
-        "document": "Retrieves the value of an input field.",
-        "label": "Get Value",
-        "params": {
-          "saveToVar": "Save to variable",
-          "selector": "Selector",
-          "timeout": "Timeout (ms)"
-        }
-      },
-      "goBack": {
-        "description": "Navigate back in history",
-        "document": "Navigates to the previous page in browser history.",
-        "label": "Go Back"
-      },
-      "goForward": {
-        "description": "Navigate forward in history",
-        "document": "Navigates to the next page in browser history.",
-        "label": "Go Forward"
-      },
-      "hover": {
-        "description": "Hover over element",
-        "document": "Moves the mouse cursor over an element without clicking.",
-        "label": "Hover"
-      },
-      "http": {
-        "description": "Make HTTP request",
-        "document": "Performs an HTTP request and optionally stores the response.",
-        "label": "HTTP Request",
-        "params": {
-          "body": "Request Body",
-          "headers": "Headers",
-          "method": "Method",
-          "saveToVar": "Save to Variable",
-          "timeout": "Timeout (ms)",
-          "url": "URL"
-        }
-      },
-      "ifCondition": {
-        "description": "Conditional branching",
-        "document": "Executes different branches based on a condition.",
-        "label": "If Condition"
-      },
-      "imageSearch": {
-        "description": "Find image on screen",
-        "document": "Searches for an image on the screen using template matching.",
-        "label": "Image Search",
-        "params": {
-          "imagePath": "Image Path",
-          "saveToVar": "Save to variable",
-          "threshold": "Threshold"
-        }
-      },
-      "log": {
-        "description": "Log to console",
-        "document": "Logs a message to the browser console.",
-        "label": "Log Message"
-      },
-      "loopElements": {
-        "description": "Iterate over elements",
-        "document": "Iterates over all elements matching a selector.",
-        "label": "Loop Elements"
-      },
-      "loopFor": {
-        "description": "Repeat N times",
-        "document": "Executes a block a specified number of times.",
-        "label": "For Loop"
-      },
-      "newTab": {
-        "description": "Open a new tab",
-        "document": "Opens a new browser tab with an optional URL.",
-        "label": "New Tab"
-      },
-      "openUrl": {
-        "description": "Navigate to a URL",
-        "document": "Opens a URL in the current tab or a new tab.",
-        "label": "Open URL",
-        "retryOnFail": "Retry on Fail",
-        "retryOnFailHelp": "Automatically retry navigation if the page fails to load.",
-        "maxRetry": "Max Retry",
-        "retrySleep": "Sleep Between Retries (ms)",
-        "retrySleepHelp": "Time to wait in milliseconds between each retry attempt."
-      },
-      "openProfile": {
-        "description": "Configure proxy and browser settings before launch",
-        "document": "Applies custom proxy settings, timezone, geolocation, language, WebRTC, and DNS settings before opening the browser profile.",
-        "label": "Browser Settings",
-        "params": {
-          "profileId": "Profile Override",
-          "profileIdHelp": "Select a profile to override, or leave blank to use the current profile",
-          "automation": "Browser Settings Config",
-          "automationHelp": "JSON configuration for browser proxy and fingerprint overrides"
-        }
-      },
-      "pressKey": {
-        "description": "Press keyboard key",
-        "document": "Simulates pressing a keyboard key or key combination.",
-        "label": "Press Key"
-      },
-      "random": {
-        "description": "Generate random data",
-        "document": "Generates random values of various types.",
-        "label": "Random Value",
-        "options": {
-          "email": "Email",
-          "firstName": "First Name",
-          "fullName": "Full Name",
-          "lastName": "Last Name",
-          "number": "Number",
-          "password": "Password",
-          "randomLetters": "Random Letters"
-        },
-        "params": {
-          "domain": "Domain",
-          "length": "Length",
-          "max": "Maximum",
-          "min": "Minimum",
-          "quantity": "Quantity",
-          "saveToVar": "Save to Variable",
-          "type": "Type"
-        }
-      },
-      "readCsv": {
-        "description": "Read CSV file",
-        "document": "Reads and parses a CSV file.",
-        "label": "Read CSV"
-      },
-      "reloadPage": {
-        "description": "Reload the current page",
-        "document": "Reloads the current page, optionally bypassing cache.",
-        "label": "Reload Page"
-      },
-      "runOtherScript": {
-        "description": "Execute another script",
-        "document": "Runs another automation script from within this script.",
-        "label": "Run Other Script",
-        "params": {
-          "scriptName": "Script Name",
-          "vars": "Variables"
-        }
-      },
-      "screenshot": {
-        "description": "Capture screenshot",
-        "document": "Captures a screenshot of the current page or element.",
-        "label": "Screenshot"
-      },
-      "scroll": {
-        "description": "Scroll the page",
-        "document": "Scrolls the page to reveal more content.",
-        "label": "Scroll"
-      },
-      "sendTextToSelector": {
-        "description": "Send text to element",
-        "document": "Sends text to an element matching the selector.",
-        "label": "Send Text to Selector"
-      },
-      "setCookies": {
-        "description": "Set cookies",
-        "document": "Sets cookies for the current domain.",
-        "label": "Set Cookies"
-      },
-      "setUserAgent": {
-        "description": "Override user agent",
-        "document": "Sets a custom User-Agent string for browser requests.",
-        "label": "Set User Agent",
-        "params": {
-          "userAgent": "User Agent"
-        }
-      },
-      "setVariable": {
-        "description": "Store a value",
-        "document": "Stores a value in a script variable.",
-        "label": "Set Variable",
-        "operator": {
-          "assign": "Assign (=)",
-          "add": "Add (+)",
-          "subtract": "Subtract (-)",
-          "multiply": "Multiply (*)",
-          "divide": "Divide (/)",
-          "concat": "Concatenate"
-        }
-      },
-      "stopLoop": {
-        "description": "Break out of loop",
-        "document": "Exits the current loop immediately.",
-        "label": "Stop Loop"
-      },
-      "switchExtensionPopup": {
-        "description": "Open extension popup",
-        "document": "Switches context to an extension popup page.",
-        "label": "Switch Extension Popup"
-      },
-      "switchFrame": {
-        "description": "Switch to iframe",
-        "document": "Switches context to an iframe for subsequent operations.",
-        "label": "Switch Frame"
-      },
-      "switchTab": {
-        "description": "Switch to another tab",
-        "document": "Switches focus to a different browser tab by index.",
-        "label": "Switch Tab",
-        "matchBy": {
-          "url": "URL",
-          "title": "Title",
-          "index": "Tab Index"
-        }
-      },
-      "type": {
-        "description": "Type text",
-        "document": "Types text into the currently focused element.",
-        "label": "Type"
-      },
-      "typeText": {
-        "description": "Type text into element",
-        "document": "Types text into an element matching the specified selector.",
-        "label": "Type Text"
-      },
-      "wait": {
-        "description": "Wait for condition",
-        "document": "Waits for a specified condition before continuing.",
-        "label": "Wait"
-      },
-      "while": {
-        "description": "Repeat while condition true",
-        "document": "Repeatedly executes a block while a condition remains true.",
-        "label": "While Loop",
-        "params": {
-          "leftValue": "Left Value",
-          "operator": "Operator",
-          "rightValue": "Right Value"
-        }
-      },
-      "writeCsv": {
-        "description": "Write CSV file",
-        "document": "Writes data to a CSV file.",
-        "label": "Write CSV"
-      },
-      "label": {
-        "description": "Set a label in the script",
-        "document": "Sets a label that can be jumped to using a Move to Label action.",
-        "label": "Set label",
-        "params": {
-          "labelName": "Label Name"
-        }
-      },
-      "moveToLabel": {
-        "description": "Jump to a label",
-        "document": "Jumps execution to the specified label in the script.",
-        "label": "Move to label",
-        "params": {
-          "targetLabelNodeId": "Target Label Node ID",
-          "targetLabelName": "Target Label Name"
-        }
-      },
-      "ignoreErrorsStart": {
-        "label": "Ignore Errors",
-        "description": "Start ignore errors block",
-        "document": "Ignores any errors that occur within this block."
-      },
-      "ignoreErrorsEnd": {
-        "label": "End Ignore Errors",
-        "description": "End ignore errors block",
-        "document": "Ends the ignore errors block."
-      },
-      "endIf": {
-        "label": "End If",
-        "description": "End of conditional block",
-        "document": "Ends the If conditional block."
-      },
-      "profileSuccess": {
-        "label": "Profile Success",
-        "description": "Report successful execution of the profile script",
-        "document": "Reports that the automation run succeeded, with optional message and statistics.",
-        "params": {
-          "message": "Message",
-          "messageHelp": "Message text, supports variables",
-          "includeResourceStats": "Include Resource Stats",
-          "includeResourceStatsHelp": "Include stats like duration and success count",
-          "stopFlow": "Stop Flow",
-          "stopFlowHelp": "Immediately stop execution after logging success"
-        }
-      },
-      "profileFail": {
-        "label": "Profile Failure",
-        "description": "Report failure of the profile script",
-        "document": "Reports that the automation run failed, logging reasons and optional error data.",
-        "params": {
-          "message": "Message",
-          "messageHelp": "Failure message text, supports variables",
-          "reasonCode": "Reason Code",
-          "reasonCodeHelp": "Error identification code (e.g. LOGIN_FAILED)",
-          "includeLastError": "Include Last Error",
-          "includeLastErrorHelp": "Append the detailed last error message",
-          "includeResourceStats": "Include Resource Stats",
-          "includeResourceStatsHelp": "Include execution duration and stats",
-          "stopFlow": "Stop Flow",
-          "stopFlowHelp": "Immediately abort execution"
-        }
-      },
-      "callFunction": {
-        "description": "Execute a sub-function",
-        "document": "Executes the specified sub-function sequence.",
-        "label": "Call Function",
-        "params": {
-          "functionName": "Function Name"
-        }
-      }
-    },
-    "validation": {
-      "profileRequired": "Profile selection is required",
-      "ipCheckNeedsProxy": "IP check requires dynamic proxy to be configured",
-      "profileNotFound": "Profile not found: {{profileId}}"
+    "outcome": {
+      "notEntitled": "Not included in your plan",
+      "syncDisabled": "Cloud sync is off for this profile",
+      "encryptedSync": "End-to-end encrypted sync is not supported",
+      "proxyRequired": "No proxy or VPN attached",
+      "touchFingerprint": "Touch fingerprints are not supported",
+      "platformUnsupported": "No machine runs this profile's system",
+      "noSites": "No sites to visit",
+      "quotaExhausted": "Remote hours used up",
+      "profileLocked": "The profile was open somewhere else",
+      "noCapacity": "No machine was free",
+      "managerError": "The fleet could not start the browser",
+      "budgetExceeded": "The night's budget ran out",
+      "cancelledByUser": "Stopped by hand",
+      "unknown": "Unknown reason ({{code}})"
     }
+  },
+  "prelaunchGate": {
+    "titleBlocked": "Launch blocked",
+    "titleWarning": "Before you launch",
+    "intro": "Review these issues with \"{{name}}\" before starting the browser.",
+    "fingerprintHeading": "The measured exit doesn't match the fingerprint",
+    "vpnExtensionHeading": "VPN or proxy extension detected",
+    "vpnExtensionIntro": "Extensions in this profile that can reroute the browser's traffic:",
+    "vpnExtensionConfirmed": "Known VPN or proxy tool",
+    "vpnExtensionLikely": "Looks like a VPN or proxy tool",
+    "vpnExtensionCapability": "Holds the proxy permission",
+    "vpnExtensionExplainer": "If one of these routes your traffic elsewhere, the browser's real location will no longer match the timezone, language and geolocation this profile was created with, and Donut cannot detect that from the outside.",
+    "proxyCapableHeading": "Extensions that can change the proxy",
+    "proxyCapableIntro": "These don't look like VPNs, but they hold Chromium's proxy permission, which download managers and debugging tools need too. Donut cannot tell whether any of them is using it:",
+    "sourceDonut": "Managed by Donut",
+    "sourceBrowser": "Installed in the profile",
+    "measurementUnreliable": "An extension in this profile holds the proxy permission, so the exit check may not describe the route the browser actually takes.",
+    "scanIncompleteEncrypted": "This profile is encrypted, so only Donut-managed extensions could be checked.",
+    "scanIncompleteEphemeral": "This profile has no data yet, so only Donut-managed extensions could be checked.",
+    "scanIncompletePartial": "The extension scan was cut short, so some extensions may not be listed.",
+    "probePending": "The proxy exit hasn't been measured yet. Donut will check it while starting and stop if it doesn't match.",
+    "launchAnyway": "Launch anyway",
+    "dontBlockAgain": "Don't block again for this exact mismatch",
+    "dontWarnExtensions": "Don't warn again about these extensions",
+    "applyToRemaining": "Apply this choice to the remaining profiles",
+    "cancelledSummary": "{{cancelled}} of {{total}} launches cancelled",
+    "vpnExtensionEntry": " {{version}} — {{capability}}, {{source}}",
+    "vpnExtensionEntryNoVersion": " — {{capability}}, {{source}}",
+    "scanIncompleteMissing": "This profile has not been launched yet, so only Donut-managed extensions could be checked."
   }
 }

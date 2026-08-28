@@ -43,8 +43,13 @@ interface BaseInfoTabProps {
     value: unknown,
   ) => void;
   isLoadingReleaseTypes: boolean;
+  /** Downloaded browser binary versions available for selection */
+  downloadedVersions: string[];
+  selectedVersion: string | null;
+  onVersionChange: (version: string) => void;
   getCreatableVersion: (
     browser: string,
+    preferredVersion?: string | null,
   ) => { version: string; releaseType: "stable" | "nightly" } | null;
   crossOsUnlocked: boolean;
   currentOS: WayfernOS;
@@ -67,6 +72,9 @@ export function BaseInfoTab({
   fingerprintConfig,
   updateFingerprintConfig,
   isLoadingReleaseTypes,
+  downloadedVersions,
+  selectedVersion,
+  onVersionChange,
   getCreatableVersion,
   crossOsUnlocked,
   currentOS,
@@ -78,13 +86,15 @@ export function BaseInfoTab({
   const { t } = useTranslation();
 
   const selectedOS = wayfernConfig.os || currentOS;
+  const creatable = getCreatableVersion(browserType, selectedVersion);
+  const versionValue = selectedVersion || creatable?.version || "";
 
   const osOptions = [
     { value: "windows" as WayfernOS, label: "Windows", icon: FaWindows },
     { value: "macos" as WayfernOS, label: "macOS", icon: FaApple },
     { value: "linux" as WayfernOS, label: "Linux", icon: FaLinux },
     { value: "android" as WayfernOS, label: "Android", icon: FaAndroid },
-    { value: "ios" as WayfernOS, label: "iOS", icon: FaApple }, // Dùng FaApple đại diện cho iOS
+    { value: "ios" as WayfernOS, label: "iOS", icon: FaApple },
   ];
 
   const browserOptions = [
@@ -114,9 +124,7 @@ export function BaseInfoTab({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="profile-folder">
-            {t("common.labels.folder") || "Folder"}
-          </Label>
+          <Label htmlFor="profile-folder">{t("common.labels.folder")}</Label>
           <Select
             value={groupId ?? "none"}
             onValueChange={(val) =>
@@ -138,16 +146,19 @@ export function BaseInfoTab({
         </div>
         <div className="space-y-2">
           <Label htmlFor="profile-status">{t("common.labels.status")}</Label>
-          <Select defaultValue="no-status">
+          <Select defaultValue="no-status" disabled>
             <SelectTrigger id="profile-status" className="h-9">
-              <SelectValue placeholder="No status" />
+              <SelectValue placeholder={t("createProfile.status.none")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="no-status">No status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="no-status">
+                {t("createProfile.status.none")}
+              </SelectItem>
             </SelectContent>
           </Select>
+          <p className="text-[11px] text-muted-foreground">
+            {t("createProfile.status.afterCreateHint")}
+          </p>
         </div>
       </div>
 
@@ -218,10 +229,12 @@ export function BaseInfoTab({
           }
         >
           <SelectTrigger id="platform-version-select" className="h-9 max-w-xs">
-            <SelectValue placeholder="Default" />
+            <SelectValue placeholder={t("common.labels.default")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="default">Default</SelectItem>
+            <SelectItem value="default">
+              {t("common.labels.default")}
+            </SelectItem>
             {selectedOS === "windows" && (
               <>
                 <SelectItem value="10.0">Windows 10</SelectItem>
@@ -240,9 +253,9 @@ export function BaseInfoTab({
         </Select>
       </div>
 
-      {/* Browser Selection mock-up list */}
+      {/* Browser engine */}
       <div className="space-y-3">
-        <Label>Browser Engine</Label>
+        <Label>{t("createProfile.browserEngine")}</Label>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {browserOptions.map((opt) => {
             const Icon = opt.icon;
@@ -279,47 +292,45 @@ export function BaseInfoTab({
         </div>
       </div>
 
-      {/* Core version & Browser version */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label>Core version</Label>
-          <Select defaultValue="142">
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="142" />
+      {/* Browser binary version — only real selectable field (no fake "Core version") */}
+      <div className="space-y-2 max-w-md">
+        <Label htmlFor="browser-version-select">
+          {t("createProfile.browserVersion")}
+        </Label>
+        {isLoadingReleaseTypes ? (
+          <div className="h-9 rounded-md border border-input bg-background px-3 py-2 text-xs flex items-center text-muted-foreground">
+            {t("createProfile.version.fetching")}
+          </div>
+        ) : downloadedVersions.length === 0 ? (
+          <div className="h-9 rounded-md border border-input bg-background px-3 py-2 text-xs flex items-center text-muted-foreground">
+            {t("createProfile.version.noneDownloaded")}
+          </div>
+        ) : (
+          <Select
+            value={versionValue || "none"}
+            onValueChange={(val) => {
+              if (val !== "none") onVersionChange(val);
+            }}
+          >
+            <SelectTrigger id="browser-version-select" className="h-9">
+              <SelectValue
+                placeholder={t("createProfile.version.selectPlaceholder")}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="142">142</SelectItem>
+              {downloadedVersions.map((ver) => (
+                <SelectItem key={ver} value={ver}>
+                  {ver}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Browser Version</Label>
-          {isLoadingReleaseTypes ? (
-            <div className="h-9 rounded-md border border-input bg-background px-3 py-2 text-xs flex items-center text-muted-foreground">
-              {t("createProfile.version.fetching")}
-            </div>
-          ) : (
-            <Select
-              value={getCreatableVersion(browserType)?.version || "none"}
-              disabled
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue
-                  placeholder={
-                    getCreatableVersion(browserType)?.version || "No version"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value={getCreatableVersion(browserType)?.version || "none"}
-                >
-                  {getCreatableVersion(browserType)?.version || "No version"}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        </div>
+        )}
+        <p className="text-[11px] text-muted-foreground">
+          {browserType === "wayfern"
+            ? t("createProfile.version.wayfernHint")
+            : t("createProfile.version.camoufoxHint")}
+        </p>
       </div>
     </div>
   );

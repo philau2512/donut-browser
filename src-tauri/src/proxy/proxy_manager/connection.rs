@@ -57,7 +57,7 @@ impl ProxyManager {
   }
 
   // Build proxy URL string from ProxySettings
-  fn build_proxy_url(proxy_settings: &ProxySettings) -> String {
+  pub(crate) fn build_proxy_url(proxy_settings: &ProxySettings) -> String {
     let mut url = format!("{}://", proxy_settings.proxy_type);
 
     let username_opt = proxy_settings.username.as_deref().filter(|u| !u.is_empty());
@@ -337,10 +337,9 @@ impl ProxyManager {
       ("socks5", rest) // Default socks to socks5
     } else if let Some(rest) = line.strip_prefix("ss://") {
       ("ss", rest)
-    } else if let Some(rest) = line.strip_prefix("shadowsocks://") {
-      ("ss", rest)
     } else {
-      return None;
+        let rest = line.strip_prefix("shadowsocks://")?;
+      ("ss", rest)
     };
 
     // Check if there's auth (contains @)
@@ -404,13 +403,12 @@ impl ProxyManager {
       let host_port = &line[at_pos + 1..];
 
       // Parse auth
-      let (username, password) = if let Some(colon_pos) = auth.find(':') {
+      let (username, password) = {
+          let colon_pos = auth.find(':')?;
         (
           Some(auth[..colon_pos].to_string()),
           Some(auth[colon_pos + 1..].to_string()),
         )
-      } else {
-        return None;
       };
 
       // Parse host:port

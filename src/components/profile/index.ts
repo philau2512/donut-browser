@@ -11,5 +11,6 @@ export type { PasswordDialogMode } from "./profile-password-dialog";
 export { ProfilePasswordDialog } from "./profile-password-dialog";
 export { ProfileSelectorDialog } from "./profile-selector-dialog";
 export { ProfileSyncDialog } from "./profile-sync-dialog";
+export { QuickCreateDialog } from "./quick-create-dialog";
 export { ReleaseTypeSelector } from "./release-type-selector";
 export { TagsAssignmentDialog } from "./tags-assignment-dialog";

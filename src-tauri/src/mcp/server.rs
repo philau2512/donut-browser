@@ -290,9 +290,6 @@ impl McpServer {
           .delete(Self::handle_mcp_delete),
       )
       .route("/health", get(Self::handle_health))
-      // Inert chokepoint (innermost → runs after auth) for the future per-hour
-      // automation request limit. See rate_limit_middleware.
-      .layer(middleware::from_fn(Self::rate_limit_middleware))
       .layer(middleware::from_fn_with_state(
         state.clone(),
         Self::auth_middleware,
@@ -321,17 +318,6 @@ impl McpServer {
         log::info!("[mcp] Server shutting down");
       },
     }
-  }
-
-  /// Chokepoint for the future per-hour automation request limit, mirroring the
-  /// REST API's. The limit (`requests_per_hour`, default 100) is plumbed through
-  /// entitlements; this is intentionally inert today — it resolves the limit but
-  /// never blocks. To enforce, count authenticated tool calls per rolling hour
-  /// and return StatusCode::TOO_MANY_REQUESTS once the limit (when > 0) is hit.
-  async fn rate_limit_middleware(req: Request<Body>, next: Next) -> Result<Response, StatusCode> {
-    let _requests_per_hour = CLOUD_AUTH.requests_per_hour().await;
-    // TODO(rate-limit): enforce `_requests_per_hour` for MCP tool calls.
-    Ok(next.run(req).await)
   }
 
   async fn auth_middleware(
@@ -480,9 +466,60 @@ impl McpServer {
         }
       }
 
+      if Self::is_automation_tool_call(&request) {
+        if let crate::automation_rate_limiter::RateLimitOutcome::Limited { retry_after_secs } =
+          crate::automation_rate_limiter::check_automation_rate_limit().await
+        {
+          log::warn!(
+            "[mcp] Rejected tools/call: automation rate limit exceeded; retry in {}s",
+            retry_after_secs
+          );
+          return (
+            StatusCode::TOO_MANY_REQUESTS,
+            [(header::RETRY_AFTER, retry_after_secs.to_string())],
+            "automation request rate limit exceeded",
+          )
+            .into_response();
+        }
+      }
+
       let response = state.server.handle_request(request).await;
       Json(response).into_response()
     }
+  }
+
+  fn is_automation_tool_call(request: &McpRequest) -> bool {
+    if request.method != "tools/call" {
+      return false;
+    }
+
+    let Some(tool_name) = request
+      .params
+      .as_ref()
+      .and_then(|params| params.get("name"))
+      .and_then(|name| name.as_str())
+    else {
+      return false;
+    };
+
+    matches!(
+      tool_name,
+      "run_profile"
+        | "kill_profile"
+        | "batch_run_profiles"
+        | "batch_stop_profiles"
+        | "start_sync_session"
+        | "navigate"
+        | "screenshot"
+        | "evaluate_javascript"
+        | "click_element"
+        | "type_text"
+        | "get_page_content"
+        | "get_page_info"
+        | "get_interactive_elements"
+        | "click_by_index"
+        | "type_by_index"
+    )
   }
 
   pub async fn stop(&self) -> Result<(), String> {

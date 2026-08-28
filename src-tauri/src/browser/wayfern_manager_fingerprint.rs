@@ -226,6 +226,25 @@ impl WayfernManager {
       );
     }
 
+    // Align devicePixelRatio with host high-DPI scale so page layout / CSS
+    // is not painted at 1x on 2K+ laptops (fingerprint samples often use 1.0).
+    {
+      use crate::browser::wayfern_launch_args::effective_device_scale_factor;
+      let scale = effective_device_scale_factor(config.fingerprint.as_deref());
+      if let Some(obj) = fingerprint_params.as_object_mut() {
+        let prev = obj
+          .get("devicePixelRatio")
+          .and_then(|v| v.as_f64().or_else(|| v.as_str()?.parse().ok()))
+          .unwrap_or(1.0);
+        if (scale - prev).abs() > 0.05 {
+          obj.insert("devicePixelRatio".to_string(), json!(scale));
+          log::info!(
+            "Fingerprint devicePixelRatio adjusted for host DPI: {prev} → {scale}"
+          );
+        }
+      }
+    }
+
     // Defense in depth: Validate fingerprint consistency before launch
     // This catches stale fingerprints from before screen consistency fix
     // and manually edited fingerprints in profile metadata

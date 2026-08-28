@@ -80,7 +80,7 @@ impl AutoUpdater {
     }
 
     for (browser, profiles) in browser_profiles {
-      // Always fetch fresh versions for update checks — stale cache would miss new releases
+      // Always fetch fresh versions for update checks ΓÇö stale cache would miss new releases
       let versions = match self
         .browser_version_manager
         .fetch_browser_versions_detailed(&browser, false)
@@ -117,7 +117,7 @@ impl AutoUpdater {
   pub async fn check_for_updates_with_progress(&self, app_handle: &tauri::AppHandle) {
     log::info!("Starting auto-update check with progress...");
 
-    // Browser auto-updates are always enabled — the disable_auto_updates setting
+    // Browser auto-updates are always enabled ΓÇö the disable_auto_updates setting
     // only controls app self-updates, not browser version updates.
 
     // Check for browser updates and trigger auto-downloads
@@ -178,7 +178,7 @@ impl AutoUpdater {
               } else {
                 log::info!("Downloading browser {browser} version {new_version}...");
 
-                // Download directly from Rust — download_browser_full already
+                // Download directly from Rust ΓÇö download_browser_full already
                 // auto-updates non-running profiles after successful download.
                 match crate::browser::downloader::download_browser(
                   app_handle_clone,

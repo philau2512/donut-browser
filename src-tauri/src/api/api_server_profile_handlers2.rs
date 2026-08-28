@@ -90,17 +90,16 @@ async fn update_profile(
   }
 
   if let Some(camoufox_config) = request.camoufox_config {
-    // Editing a profile's fingerprint config is part of the cross-OS fingerprint
-    // capability (GUI, API, MCP). Viewing it is free; mutating it is not.
-    if !crate::api::cloud_auth::CLOUD_AUTH
-      .can_use_cross_os_fingerprints()
-      .await
-    {
-      return Err(StatusCode::PAYMENT_REQUIRED);
-    }
+    // Same-host fingerprint edits are free. Cross-OS OS spoofing remains paid.
     let config: Result<CamoufoxConfig, _> = serde_json::from_value(camoufox_config);
     match config {
       Ok(config) => {
+        if !crate::api::cloud_auth::CLOUD_AUTH
+          .is_fingerprint_os_allowed(config.os.as_deref())
+          .await
+        {
+          return Err(StatusCode::PAYMENT_REQUIRED);
+        }
         if profile_manager
           .update_camoufox_config(state.app_handle.clone(), &id, config)
           .await
@@ -170,6 +169,15 @@ async fn update_profile(
     }
   }
 
+  if let Some(clear_on_close) = request.clear_on_close {
+    if profile_manager
+      .update_profile_clear_on_close(&state.app_handle, &id, clear_on_close)
+      .is_err()
+    {
+      return Err(StatusCode::BAD_REQUEST);
+    }
+  }
+
   // Return updated profile
   get_profile(Path(id), State(state)).await
 }
@@ -200,6 +208,84 @@ async fn delete_profile(
     Ok(_) => Ok(StatusCode::NO_CONTENT),
     Err(_) => Err(StatusCode::BAD_REQUEST),
   }
+}
+
+// Detect importable Chromium-family browser profiles on this machine, or scan
+// a custom folder. Free: importing is not gated behind browser automation.
+#[utoipa::path(
+  get,
+  path = "/v1/profiles/import/detect",
+  params(
+    ("folder" = Option<String>, Query, description = "Optional folder to scan instead of the default browser locations. Accepts a single profile dir, a Chromium user-data dir, or a folder holding one profile dir per child.")
+  ),
+  responses(
+    (status = 200, description = "Detected importable profiles", body = DetectedProfilesResponse),
+    (status = 401, description = "Unauthorized"),
+    (status = 404, description = "Folder not found"),
+    (status = 500, description = "Internal server error")
+  ),
+  security(
+    ("bearer_auth" = [])
+  ),
+  tag = "profiles"
+)]
+async fn detect_import_profiles(
+  Query(query): Query<DetectImportQuery>,
+  State(_state): State<ApiServerState>,
+) -> Result<Json<DetectedProfilesResponse>, (StatusCode, String)> {
+  let importer = crate::profile::profile_importer::ProfileImporter::instance();
+  let profiles = match query.folder.as_deref() {
+    Some(folder) => importer.scan_folder(std::path::Path::new(folder)),
+    None => importer.detect_existing_profiles(),
+  }
+  .map_err(manager_error_response)?;
+  let total = profiles.len();
+  Ok(Json(DetectedProfilesResponse { profiles, total }))
+}
+
+// Bulk-import browser profiles from on-disk profile folders.
+// Free (parity with create_profile); only fingerprint OS spoofing is Pro.
+// Items are isolated — one failure doesn't stop the rest.
+#[utoipa::path(
+  post,
+  path = "/v1/profiles/import",
+  request_body = ImportProfilesRequest,
+  responses(
+    (status = 200, description = "Batch import completed; inspect per-item results", body = crate::profile::profile_importer::ProfileImportBatchResult),
+    (status = 400, description = "No items, or invalid input"),
+    (status = 401, description = "Unauthorized"),
+    (status = 402, description = "Fingerprint OS spoofing requires an active Pro subscription"),
+    (status = 404, description = "Group not found"),
+    (status = 500, description = "Internal server error")
+  ),
+  security(
+    ("bearer_auth" = [])
+  ),
+  tag = "profiles"
+)]
+async fn import_profiles_api(
+  State(state): State<ApiServerState>,
+  Json(request): Json<ImportProfilesRequest>,
+) -> Result<Json<crate::profile::profile_importer::ProfileImportBatchResult>, (StatusCode, String)>
+{
+  let wayfern_config: Option<crate::browser::wayfern_manager::WayfernConfig> = request
+    .wayfern_config
+    .as_ref()
+    .and_then(|config| serde_json::from_value(config.clone()).ok());
+
+  // Pro gate for fingerprint OS spoofing lives inside import_profiles.
+  let importer = crate::profile::profile_importer::ProfileImporter::instance();
+  importer
+    .import_profiles(
+      &state.app_handle,
+      request.items,
+      request.group_id,
+      request.duplicate_strategy.unwrap_or_default(),
+      wayfern_config,
+    )
+    .await
+    .map(Json)
+    .map_err(manager_error_response)
 }
 
 // API Handlers - Groups

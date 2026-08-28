@@ -506,4 +506,43 @@ impl ProfileManager {
     }
   }
 
+
+  pub fn update_profile_clear_on_close(
+    &self,
+    _app_handle: &tauri::AppHandle,
+    profile_id: &str,
+    clear_on_close: bool,
+  ) -> Result<BrowserProfile, Box<dyn std::error::Error>> {
+    let profile_uuid =
+      uuid::Uuid::parse_str(profile_id).map_err(|_| format!("Invalid profile ID: {profile_id}"))?;
+    let profiles = self.list_profiles()?;
+    let mut profile = profiles
+      .into_iter()
+      .find(|p| p.id == profile_uuid)
+      .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
+
+    // Ephemeral profiles are already wiped on close; password-protected ones
+    // re-encrypt and never persist plaintext — the flag is meaningless there.
+    if clear_on_close && (profile.ephemeral || profile.password_protected) {
+      return Err(
+        serde_json::json!({ "code": "CLEAR_ON_CLOSE_UNAVAILABLE" })
+          .to_string()
+          .into(),
+      );
+    }
+
+    profile.clear_on_close = clear_on_close;
+    profile.updated_at = Some(crate::proxy::proxy_manager::now_secs());
+
+    self.save_profile(&profile)?;
+
+    crate::sync::queue_profile_sync_if_eligible(&profile);
+
+    if let Err(e) = events::emit_empty("profiles-changed") {
+      log::warn!("Warning: Failed to emit profiles-changed event: {e}");
+    }
+
+    Ok(profile)
+  }
+
 }

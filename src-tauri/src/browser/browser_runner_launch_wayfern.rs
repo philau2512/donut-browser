@@ -122,11 +122,12 @@ impl BrowserRunner {
     config_for_generation.fingerprint = None;
 
     // Generate a new fingerprint
-    let new_fingerprint = self
+    let generated = self
       .wayfern_manager
       .generate_fingerprint_config(&app_handle, profile, &config_for_generation)
       .await
       .map_err(|e| format!("Failed to generate random fingerprint: {e}"))?;
+    let new_fingerprint = generated.fingerprint.clone();
 
     log::info!(
       "New fingerprint generated, length: {} chars",
@@ -139,6 +140,8 @@ impl BrowserRunner {
     // Save the updated fingerprint to the profile so it persists.
     let mut updated_wayfern_config = updated_profile.wayfern_config.clone().unwrap_or_default();
     updated_wayfern_config.fingerprint = Some(new_fingerprint);
+    updated_wayfern_config.identity_id = generated.identity_id;
+    updated_wayfern_config.identity_baseline = generated.identity_baseline;
     // Preserve the randomize flag so it persists across launches
     updated_wayfern_config.randomize_fingerprint_on_launch = Some(true);
     // Preserve the OS setting so it's used for future fingerprint generation
@@ -235,6 +238,12 @@ impl BrowserRunner {
   let profiles_dir = self.profile_manager.get_profiles_dir();
   let profile_data_path =
     crate::browser::ephemeral_dirs::get_effective_profile_path(&updated_profile, &profiles_dir);
+  // Materialize data dir on first open (Quick Create lazy profiles only
+  // wrote metadata.json until now).
+  std::fs::create_dir_all(&profile_data_path)
+    .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> {
+      format!("Failed to create profile data dir: {e}").into()
+    })?;
   let profile_path_str = profile_data_path.to_string_lossy().to_string();
 
   // Install extensions if an extension group is assigned

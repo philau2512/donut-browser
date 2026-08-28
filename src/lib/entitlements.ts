@@ -15,7 +15,14 @@ export function getEntitlements(
     crossOsFingerprints: true,
     cloudBackup: true,
     teamCollaboration: true,
+    cookieBot: true,
+    remoteInteractive: true,
+    remoteBrowserHours: Number.MAX_SAFE_INTEGER,
     profileLimit: Number.MAX_SAFE_INTEGER,
     requestsPerHour: DEFAULT_REQUESTS_PER_HOUR,
   };
+}
+
+export function canUseCookieBot(_user: CloudUser | null | undefined): boolean {
+  return true;
 }

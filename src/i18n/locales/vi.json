@@ -68,7 +68,8 @@
       "required": "Bắt buộc",
       "unknownProfile": "Không xác định",
       "mode": "Chế độ",
-      "never": "Không bao giờ"
+      "never": "Không bao giờ",
+      "folder": "Thư mục"
     },
     "time": {
       "days": "ngày",
@@ -84,7 +85,9 @@
       "copy": "Sao chép vào clipboard",
       "copied": "Đã sao chép",
       "showToken": "Hiện token",
-      "hideToken": "Ẩn token"
+      "hideToken": "Ẩn token",
+      "showPassword": "Hiện mật khẩu",
+      "hidePassword": "Ẩn mật khẩu"
     },
     "keys": {
       "escape": "Escape"
@@ -195,18 +198,26 @@
       "copyLogs": "Sao chép nhật ký",
       "openLogDir": "Mở thư mục nhật ký",
       "copyLogsSuccess": "Đã sao chép nhật ký vào clipboard",
-      "copyLogsDescription": "Đóng gói các file nhật ký gần nhất (tối đa 5 MB) vào clipboard để chia sẻ trong báo cáo lỗi."
+      "copyLogsDescription": "Sao chép gói nhật ký gần đây đã được che thông tin nhạy cảm (tối đa 5 MB). Hãy xem lại trước khi chia sẻ vì việc che dữ liệu không thể nhận diện mọi loại dữ liệu cá nhân."
     },
     "disableAutoUpdates": "Tắt tự động cập nhật ứng dụng",
     "disableAutoUpdatesDescription": "Ngăn ứng dụng tự động kiểm tra và cài đặt bản cập nhật Donut Browser. Cập nhật trình duyệt không bị ảnh hưởng.",
     "keepDecryptedProfilesInRam": "Giữ hồ sơ đã giải mã trong RAM",
-    "keepDecryptedProfilesInRamDescription": "Giữ bản sao đã giải mã trong RAM của hồ sơ được bảo vệ bằng mật khẩu giữa các lần khởi chạy để khởi động nhanh hơn. Bản sao trên ổ đĩa vẫn được mã hóa."
+    "keepDecryptedProfilesInRamDescription": "Giữ bản sao đã giải mã trong RAM của hồ sơ được bảo vệ bằng mật khẩu giữa các lần khởi chạy để khởi động nhanh hơn. Bản sao trên ổ đĩa vẫn được mã hóa.",
+    "privacy": {
+      "consistencyWarning": "Cảnh báo nhất quán vân tay",
+      "consistencyWarningDescription": "Cảnh báo khi khởi chạy nếu múi giờ hoặc ngôn ngữ của hồ sơ không khớp với nút thoát proxy.",
+      "clearTraffic": "Xóa toàn bộ lịch sử lưu lượng",
+      "clearTrafficDescription": "Xóa an toàn số liệu thống kê lưu lượng đã ghi của mọi hồ sơ.",
+      "clearTrafficSuccess": "Đã xóa lịch sử lưu lượng"
+    }
   },
   "header": {
-    "searchPlaceholder": "Tìm kiếm hồ sơ...",
+    "searchPlaceholder": "Tìm theo tên",
     "clearSearch": "Xóa tìm kiếm",
     "moreActions": "Thêm thao tác",
     "createProfile": "Tạo hồ sơ mới",
+    "filterProfile": "Lọc hồ sơ",
     "menu": {
       "settings": "Cài đặt",
       "proxies": "Proxy & VPN",
@@ -217,9 +228,66 @@
       "extensions": "Tiện ích mở rộng"
     },
     "newProfile": "Mới",
+    "quickCreate": "Tạo nhanh",
+    "quickCreateTooltip": "Tạo hàng loạt profile từ template đã lưu",
     "donutLogo": "Logo Donut Browser",
     "scrollGroupsLeft": "Cuộn nhóm sang trái",
     "scrollGroupsRight": "Cuộn nhóm sang phải"
+  },
+  "quickCreate": {
+    "title": "Tạo nhanh",
+    "subtitle": "Tạo nhiều profile từ template. Thư mục data chỉ được tạo khi mở lần đầu.",
+    "tabs": {
+      "create": "Tạo",
+      "templates": "Quản lý template"
+    },
+    "template": "Template",
+    "selectTemplate": "Chọn template",
+    "quantity": "Số lượng",
+    "quantityHint": "1–{{max}} profile",
+    "folder": "Thư mục (nhóm)",
+    "noFolder": "Không chọn thư mục",
+    "lazyHint": "Profile chỉ lưu metadata. Thư mục browser thật được tạo khi bạn mở profile lần đầu. Tên là Firstname Lastname ngẫu nhiên.",
+    "createButton": "Tạo {{count}}",
+    "created": "Đã tạo {{count}} profile",
+    "noTemplates": "Chưa có template. Tạo một template để dùng Tạo nhanh.",
+    "createFirstTemplate": "Tạo template",
+    "savedTemplates": "Template đã lưu",
+    "newTemplate": "Template mới",
+    "editTemplate": "Sửa template",
+    "cancelEdit": "Hủy sửa",
+    "templateName": "Tên template",
+    "templateNamePlaceholder": "vd: Nextdoor-US-Real-v1",
+    "browser": "Trình duyệt",
+    "version": "Phiên bản",
+    "selectVersion": "Chọn phiên bản",
+    "fingerprintOs": "Fingerprint OS",
+    "proxy": "Proxy / VPN",
+    "noProxy": "Không proxy",
+    "extensionGroup": "Nhóm extension",
+    "noExtensionGroup": "Không",
+    "status": "Trạng thái profile",
+    "noStatus": "Không trạng thái",
+    "tags": "Tags",
+    "tagsPlaceholder": "tag1, tag2",
+    "launchHook": "URL launch hook",
+    "saveTemplate": "Lưu template",
+    "templateSaved": "Đã lưu template",
+    "templateDeleted": "Đã xóa template",
+    "progressTitle": "Đang tạo profile…",
+    "progressCount": "{{completed}} / {{total}}",
+    "progressPreparing": "Đang chuẩn bị…",
+    "creatingName": "Đang tạo {{name}}…",
+    "createdName": "Đã tạo {{name}}",
+    "errors": {
+      "loadTemplates": "Không tải được template",
+      "createFailed": "Tạo nhanh thất bại: {{error}}",
+      "nameRequired": "Cần tên template",
+      "versionRequired": "Cần phiên bản browser",
+      "crossOsLocked": "Fingerprint cross-OS cần Pro",
+      "saveFailed": "Lưu template thất bại: {{error}}",
+      "deleteFailed": "Xóa template thất bại"
+    }
   },
   "profiles": {
     "title": "Hồ sơ",
@@ -251,13 +319,29 @@
       "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật",
       "lastOpen": "Lần mở cuối",
       "os": "OS",
+      "folder": "Thư mục",
       "message": "Thông báo",
       "changeProxy": "Đổi Proxy",
       "statusReady": "Sẵn sàng",
       "statusRunning": "Đang chạy",
       "statusLaunching": "Đang khởi động...",
       "statusStopping": "Đang dừng...",
-      "errorCannotCheckProxy": "Lỗi: Không thể kiểm tra proxy"
+      "errorCannotCheckProxy": "Lỗi: Không thể kiểm tra proxy",
+      "columnsMenu": "Hiện cột",
+      "emptyTitle": "Chưa có hồ sơ nào",
+      "emptyHint": "Tạo hồ sơ đầu tiên của bạn hoặc nhập hồ sơ hiện có từ trình duyệt khác.",
+      "emptyCreate": "Tạo hồ sơ",
+      "emptyImport": "Nhập hồ sơ",
+      "emptyFilteredTitle": "Không tìm thấy hồ sơ",
+      "emptyFilteredHint": "Không có hồ sơ nào khớp với nhóm hoặc tìm kiếm này. Hãy thử bộ lọc khác hoặc tạo mới."
+    },
+    "pagination": {
+      "total": "Profiles:{{count}}",
+      "perPage": "/trang",
+      "prev": "Trang trước",
+      "next": "Trang sau",
+      "goTo": "Đến",
+      "page": "Trang"
     },
     "actions": {
       "launch": "Khởi chạy",
@@ -299,10 +383,13 @@
     "bulkDelete": {
       "title": "Xóa các hồ sơ đã chọn",
       "description": "Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn {{count}} hồ sơ và tất cả dữ liệu liên quan.",
-      "confirmButton": "Xóa {{count}} hồ sơ"
+      "confirmButton": "Xóa {{count}} hồ sơ",
+      "success": "Đã xóa {{count}} hồ sơ",
+      "failed": "Xóa {{count}} hồ sơ thất bại"
     },
     "note": {
-      "placeholder": "Thêm ghi chú..."
+      "placeholder": "Thêm ghi chú...",
+      "empty": "Không có ghi chú"
     },
     "aria": {
       "profileInfo": "Thông tin hồ sơ"
@@ -330,6 +417,25 @@
       "exportCookies": "Xuất cookie",
       "moreAction": "Hành động khác",
       "synchronize": "Đồng bộ thao tác"
+    },
+    "filter": {
+      "title": "Lọc hồ sơ",
+      "uuid": "Uuid",
+      "uuidPlaceholder": "uuid1\nuuid2",
+      "name": "Tên",
+      "namePlaceholder": "name1\nname2",
+      "runningOnly": "Hồ sơ đang chạy",
+      "folder": "Thư mục",
+      "tag": "Tag",
+      "selectPlaceholder": "Chọn",
+      "noFolders": "Chưa có thư mục",
+      "noTags": "Chưa có tag",
+      "status": "Trạng thái",
+      "statusAll": "Tất cả",
+      "createdDate": "Ngày tạo",
+      "startDate": "Từ ngày",
+      "endDate": "Đến ngày",
+      "apply": "Lọc"
     },
     "passwordProtectedBadge": "Được bảo vệ bằng mật khẩu",
     "launchHook": {
@@ -410,7 +516,12 @@
       "latestNeedsDownload": "Phiên bản mới nhất ({{version}}) cần được tải xuống",
       "latestAvailable": "Phiên bản mới nhất ({{version}}) đã sẵn sàng",
       "latestDownloading": "Đang tải xuống phiên bản ({{version}})...",
-      "upgradeAvailable": "Đã có phiên bản mới hơn ({{version}}) của {{browser}}."
+      "upgradeAvailable": "Đã có phiên bản mới hơn ({{version}}) của {{browser}}.",
+      "noneDownloaded": "Chưa tải phiên bản nào",
+      "noneDownloadedNamed": "Chưa tải phiên bản {{browser}}. Vui lòng tải xuống trước.",
+      "selectPlaceholder": "Chọn phiên bản",
+      "wayfernHint": "Phiên bản binary Wayfern (Chromium anti-detect) đã cài trên máy. Không có Core version riêng.",
+      "camoufoxHint": "Phiên bản binary Camoufox (Firefox anti-detect) đã cài trên máy."
     },
     "chromiumLabel": "Chromium",
     "chromiumSubtitle": "Dựa trên Wayfern",
@@ -437,7 +548,38 @@
       "other": "Khác"
     },
     "quantity": "Số lượng",
-    "getFingerprint": "Lấy vân tay mới"
+    "getFingerprint": "Lấy vân tay mới",
+    "subtitle": "Cấu hình tham số anti-detect, vị trí và proxy cho trình duyệt",
+    "howToCreate": "Cách tạo hồ sơ",
+    "browserEngine": "Engine trình duyệt",
+    "browserVersion": "Phiên bản trình duyệt",
+    "downloadBrowser": "Tải {{browser}}",
+    "fingerprintRequired": "Không tạo được fingerprint đầy đủ. Vui lòng thử lại.",
+    "createdBatch": "Đã tạo {{count}} hồ sơ",
+    "createdSingle": "Tạo hồ sơ thành công",
+    "cookieImportFailed": "Đã tạo hồ sơ nhưng import cookie thất bại cho {{name}}",
+    "status": {
+      "none": "Không có trạng thái",
+      "afterCreateHint": "Có thể gán trạng thái từ danh sách hồ sơ sau khi tạo."
+    },
+    "language": {
+      "fixedLabel": "Cố định ngôn ngữ trình duyệt",
+      "fixedHint": "Tắt: ngôn ngữ theo vị trí proxy/IP. Bật: ép navigator.language.",
+      "selectLabel": "Ngôn ngữ trình duyệt",
+      "customLabel": "Locale tùy chỉnh (BCP 47)",
+      "autoPlaceholder": "Tự động theo vị trí",
+      "autoFromLocation": "Tự động theo vị trí"
+    },
+    "location": {
+      "autoLocationHint": "Tự động lấy tọa độ và múi giờ theo địa chỉ IP",
+      "coordinatesTitle": "Tọa độ địa lý",
+      "timezoneTitle": "Cài đặt múi giờ"
+    },
+    "hardware": {
+      "screenPreset": "Preset độ phân giải",
+      "screenAuto": "Tự động (theo fingerprint)",
+      "screenHint": "Chọn preset sẽ khóa độ phân giải; regenerate/create sẽ giữ nguyên."
+    }
   },
   "deleteDialog": {
     "title": "Xóa hồ sơ",
@@ -594,7 +736,10 @@
       "checkHostLabel": "Host kiểm tra proxy",
       "checkBeforeStart": "Kiểm tra proxy trước khi khởi chạy profile.",
       "checkButton": "Kiểm tra Proxy",
-      "saveButton": "Lưu Proxy"
+      "saveButton": "Lưu Proxy",
+      "noProxyButton": "Không dùng proxy",
+      "clearSuccess": "Đã gỡ proxy khỏi profile",
+      "clearFailed": "Gỡ proxy thất bại: {{error}}"
     }
   },
   "groups": {
@@ -1104,7 +1249,14 @@
     "availableHeight": "Chiều cao khả dụng",
     "colorDepth": "Độ sâu màu",
     "pixelDepth": "Độ sâu pixel",
-    "devicePixelRatio": "Tỷ lệ pixel thiết bị",
+    "devicePixelRatio": "Tỷ lệ pixel thiết bị (DPR)",
+    "displayScaleTitle": "Tỷ lệ hiển thị (Màn hình & DPR)",
+    "displayScaleHint": "Trên laptop 2K/4K, đặt DPR theo Scale Windows (vd 1.25 hoặc 1.5). DPR 1.0 khiến UI trình duyệt và layout trang trông rất nhỏ.",
+    "useHostDisplay": "Dùng màn hình máy này",
+    "screenSizePreset": "Preset độ phân giải",
+    "screenSizePresetPlaceholder": "Chọn độ phân giải",
+    "dprPlaceholder": "Chọn DPR",
+    "dprHint": "Khớp Scale Windows (Cài đặt → Hệ thống → Màn hình → Tỷ lệ). 100%=1.0, 125%=1.25, 150%=1.5.",
     "windowProperties": "Thuộc tính cửa sổ",
     "outerWidth": "Chiều rộng ngoài",
     "outerHeight": "Chiều cao ngoài",
@@ -1421,7 +1573,28 @@
     "domains": "tên miền",
     "fresh": "Mới",
     "stale": "Cũ",
-    "notCached": "Chưa lưu bộ nhớ đệm"
+    "notCached": "Chưa lưu bộ nhớ đệm",
+    "tabBlocklists": "Danh sách chặn",
+    "tabCustom": "Danh sách tùy chỉnh",
+    "custom.description": "Tự tạo danh sách chặn của riêng bạn từ các URL nguồn và quy tắc thủ công. Tên miền được phép luôn được ưu tiên hơn tên miền bị chặn.",
+    "custom.sourcesLabel": "URL nguồn danh sách chặn",
+    "custom.sourcesPlaceholder": "Mỗi dòng một URL",
+    "custom.blockLabel": "Tên miền bị chặn",
+    "custom.blockPlaceholder": "Mỗi dòng một tên miền",
+    "custom.allowLabel": "Tên miền được phép",
+    "custom.allowPlaceholder": "Mỗi dòng một tên miền",
+    "custom.allowHint": "Tên miền được phép sẽ bị loại khỏi danh sách chặn đã biên dịch, ghi đè mọi quy tắc chặn.",
+    "custom.saved": "Đã lưu quy tắc DNS tùy chỉnh",
+    "custom.imported": "Đã nhập quy tắc DNS tùy chỉnh",
+    "custom.exported": "Đã xuất quy tắc DNS tùy chỉnh",
+    "custom.exportTxt": "Xuất TXT",
+    "custom.exportJson": "Xuất JSON",
+    "customLevel": "Tùy chỉnh",
+    "custom.allowlistModeLabel": "Chế độ danh sách cho phép",
+    "custom.allowlistModeOn": "Chỉ các tên miền bên dưới có thể truy cập; mọi thứ khác đều bị chặn.",
+    "custom.allowlistModeOff": "Chặn các tên miền trong danh sách; cho phép mọi thứ khác.",
+    "custom.allowedOnlyLabel": "Tên miền được phép (chỉ những tên này)",
+    "custom.allowedOnlyHint": "Tên miền phụ của tên miền trong danh sách cũng được phép. Danh sách trống sẽ tắt bộ lọc."
   },
   "vpns": {
     "form": {
@@ -1532,7 +1705,35 @@
     "noProxy": "Không có proxy",
     "nextButton": "Tiếp theo",
     "importButton": "Nhập",
-    "importedAs": "Profile này sẽ được nhập dưới dạng profile {{browser}}."
+    "importedAs": "Profile này sẽ được nhập dưới dạng profile {{browser}}.",
+    "selectAll": "Chọn tất cả",
+    "selectedCount": "Đã chọn {{count}}",
+    "scanButton": "Quét",
+    "manualHint": "Chọn thư mục hồ sơ, thư mục dữ liệu người dùng của trình duyệt, thư mục chứa các hồ sơ đã xuất hoặc tệp ZIP.",
+    "selectArchiveTitle": "Chọn tệp ZIP",
+    "noProfilesInLocation": "Không tìm thấy hồ sơ nào ở vị trí này.",
+    "selectAtLeastOne": "Chọn ít nhất một hồ sơ để nhập",
+    "emptyNames": "Mỗi hồ sơ đã chọn cần có tên",
+    "profilesToImport": "Hồ sơ sẽ nhập",
+    "groupOptional": "Nhóm (tùy chọn)",
+    "noGroup": "Không có nhóm",
+    "createNewGroup": "Tạo nhóm mới…",
+    "newGroupNamePlaceholder": "Tên nhóm mới",
+    "duplicateStrategyLabel": "Nếu tên hồ sơ đã tồn tại",
+    "duplicateRename": "Tự động đổi tên",
+    "duplicateSkip": "Bỏ qua",
+    "proxyRoundRobin": "Phân bổ proxy đã lưu (xoay vòng)",
+    "importingTitle": "Đang nhập hồ sơ…",
+    "importProgress": "Đã xử lý {{completed}} / {{total}}",
+    "resultsSummary": "Đã nhập {{imported}}, bỏ qua {{skipped}}, thất bại {{failed}}",
+    "statusImported": "Đã nhập",
+    "statusSkipped": "Bỏ qua",
+    "statusFailed": "Thất bại",
+    "importButtonCount": "Nhập ({{count}})",
+    "vpnOptional": "VPN (tùy chọn)",
+    "noVpn": "Không dùng VPN",
+    "advancedOptions": "Tùy chọn nâng cao",
+    "configureFingerprint": "Cấu hình vân tay (tùy chọn)"
   },
   "syncTooltips": {
     "syncing": "Đang đồng bộ...",
@@ -1594,7 +1795,7 @@
     "withoutProxyWarning": "Tất cả các hồ sơ được chọn sẽ chuyển sang chế độ Không proxy sau khi xác nhận."
   },
   "groupAssignment": {
-    "title": "Gán nhóm",
+    "title": "Thêm hồ sơ vào thư mục",
     "description_one": "Gán nhóm cho {{count}} profile đã chọn.",
     "description_other": "Gán nhóm cho {{count}} profile đã chọn.",
     "selectLabel": "Nhóm",
@@ -1606,7 +1807,21 @@
     "selectedProfilesLabel": "Profile đã chọn:",
     "assignGroupLabel": "Gán vào nhóm:",
     "noValidProfiles": "Chưa chọn profile hợp lệ nào.",
-    "failedFallback": "Gán nhóm cho profile thất bại"
+    "failedFallback": "Gán nhóm cho profile thất bại",
+    "addNewFolder": "Thêm thư mục mới",
+    "folderNamePlaceholder": "Tên thư mục",
+    "create": "Tạo",
+    "colNo": "STT",
+    "colName": "Tên",
+    "colProfiles": "Hồ sơ",
+    "colAction": "Thao tác",
+    "add": "Thêm",
+    "empty": "Chưa có thư mục. Tạo một thư mục ở trên.",
+    "profileCount": "{{count}} hồ sơ",
+    "profileCount_one": "{{count}} hồ sơ",
+    "profileCount_other": "{{count}} hồ sơ",
+    "prevPage": "Trang trước",
+    "nextPage": "Trang sau"
   },
   "profileSelector": {
     "title": "Chọn profile",
@@ -1627,47 +1842,6 @@
     "badgeRunning": "Đang chạy",
     "badgeUnavailable": "Không khả dụng",
     "openButton": "Mở"
-  },
-  "locationProxy": {
-    "title": "Proxy vị trí nhanh",
-    "description": "Chọn một quốc gia để định tuyến profile này qua đó. Proxy sẽ được tạo tự động.",
-    "country": "Quốc gia",
-    "selectCountry": "Chọn quốc gia",
-    "searchCountry": "Tìm kiếm quốc gia...",
-    "noCountriesFound": "Không tìm thấy quốc gia nào.",
-    "apply": "Áp dụng",
-    "creating": "Đang tạo proxy...",
-    "success": "Đã áp dụng proxy vị trí",
-    "failed": "Áp dụng proxy vị trí thất bại",
-    "titleCreate": "Tạo proxy vị trí",
-    "descriptionCreate": "Tạo proxy nhắm mục tiêu địa lý với phiên bản cố định 24 giờ",
-    "countryLabel": "Quốc gia (bắt buộc)",
-    "regionLabel": "Khu vực (tùy chọn)",
-    "cityLabel": "Thành phố (tùy chọn)",
-    "ispLabel": "Nhà mạng (tùy chọn)",
-    "nameLabel": "Tên",
-    "namePlaceholder": "Tên proxy",
-    "loadingCountries": "Đang tải quốc gia...",
-    "selectCountryPh": "Chọn quốc gia",
-    "searchCountries": "Tìm kiếm quốc gia...",
-    "loadFailed": "Tải quốc gia thất bại",
-    "selectCountryFirst": "Hãy chọn quốc gia trước",
-    "loadingRegions": "Đang tải khu vực...",
-    "noRegions": "Không có khu vực nào",
-    "selectRegion": "Chọn khu vực",
-    "searchRegions": "Tìm kiếm khu vực...",
-    "loadingCities": "Đang tải thành phố...",
-    "noCities": "Không có thành phố nào",
-    "selectCity": "Chọn thành phố",
-    "searchCities": "Tìm kiếm thành phố...",
-    "loadingIsps": "Đang tải nhà mạng...",
-    "noIsps": "Không có nhà mạng nào",
-    "selectIsp": "Chọn nhà mạng",
-    "searchIsps": "Tìm kiếm nhà mạng...",
-    "createSuccess": "Tạo proxy vị trí thành công",
-    "createFailed": "Tạo proxy vị trí thất bại",
-    "creatingButton": "Đang tạo...",
-    "createButton": "Tạo"
   },
   "wayfernTerms": {
     "title": "Điều khoản và điều kiện Wayfern",
@@ -1742,7 +1916,14 @@
     "sentLegend": "Đã gửi",
     "receivedLegend": "Đã nhận",
     "tooltipSent": "↑ Đã gửi: ",
-    "tooltipReceived": "↓ Đã nhận: "
+    "tooltipReceived": "↓ Đã nhận: ",
+    "clearHistory": "Xóa lịch sử",
+    "clearHistoryTitle": "Xóa lịch sử lưu lượng",
+    "clearHistoryDescription": "Xóa vĩnh viễn và an toàn toàn bộ lịch sử lưu lượng đã ghi của \"{{name}}\". Hành động này không thể hoàn tác.",
+    "tabOverview": "Tổng quan",
+    "tabTopDomains": "Tên miền hàng đầu",
+    "searchDomains": "Tìm kiếm tên miền…",
+    "noDomainMatch": "Không có tên miền nào khớp với tìm kiếm."
   },
   "camoufoxDialog": {
     "titleView": "Xem cài đặt vân tay - {{name}} ({{browser}})",
@@ -1957,7 +2138,37 @@
     "wayfernNoPageTargets": "Wayfern đã khởi động nhưng không có tab để inject vân tay.",
     "wayfernFingerprintApplyFailed": "Không thể áp dụng vân tay cho Wayfern: {{detail}}",
     "wayfernRehydrateFailed": "Không thể khôi phục bảo vệ vân tay trên trình duyệt Wayfern đã phục hồi: {{reason}}",
-    "proxyNotWorkingLaunch": "Proxy đã chọn không hoạt động. Không thể khởi chạy profile."
+    "proxyNotWorkingLaunch": "Proxy đã chọn không hoạt động. Không thể khởi chạy profile.",
+    "updateChecksumsUnavailable": "Không thể xác minh bản cập nhật {{version}} vì không lấy được tệp checksum. Bản cập nhật chưa được cài đặt và sẽ thử lại sau.",
+    "updateChecksumMismatch": "Tệp cập nhật {{file}} đã tải xuống không khớp checksum và đã bị xóa. Vui lòng thử lại.",
+    "nameCannotBeEmpty": "Tên không được để trống",
+    "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải. Phiên bản hiện tại là {{current}}.",
+    "wayfernFingerprintInconsistent": "Vân tay Wayfern không nhất quán: {{reason}}",
+    "profileNameExists": "Hồ sơ có tên \"{{name}}\" đã tồn tại",
+    "importSourceNotFound": "Đường dẫn nguồn không tồn tại",
+    "importNoItems": "Chưa chọn mục nào để nhập",
+    "browserNotDownloaded": "Không có phiên bản {{browser}} nào đã tải xuống. Hãy tải xuống trước, sau đó thử nhập lại.",
+    "archiveExtractionFailed": "Không thể giải nén tệp: {{detail}}",
+    "unsupportedArchiveFormat": "Định dạng tệp nén không được hỗ trợ. Chỉ hỗ trợ tệp ZIP.",
+    "clearOnCloseUnavailable": "Tính năng xóa khi đóng không khả dụng với hồ sơ tạm thời hoặc hồ sơ được bảo vệ bằng mật khẩu.",
+    "proxyAndVpnMutuallyExclusive": "Một hồ sơ chỉ có thể dùng proxy hoặc VPN, không dùng cả hai.",
+    "invalidDnsRulesJson": "Tệp đã chọn không phải là JSON quy tắc DNS hợp lệ.",
+    "unsupportedDnsRulesFormat": "Định dạng quy tắc không được hỗ trợ: {{format}}",
+    "dnsRulesSaveFailed": "Không thể lưu quy tắc DNS.",
+    "dnsRulesExportFailed": "Không thể xuất quy tắc DNS.",
+    "fingerprintMatchFailed": "Không thể khớp vân tay với proxy.",
+    "proxySidecarVersionMismatch": "Một số tệp Donut Browser thuộc các phiên bản khác nhau. Hãy cài đặt lại bản cập nhật mới nhất; hồ sơ của bạn vẫn được giữ an toàn.",
+    "updateProfilesRunning": "Hãy dừng tất cả hồ sơ đang chạy trước khi cài đặt bản cập nhật.",
+    "updatePreparationFailed": "Donut Browser không thể dừng an toàn một tiến trình mạng chạy nền. Hãy khởi động lại máy tính rồi thử cập nhật lại.",
+    "wayfernTermsRequired": "Hãy chấp nhận Điều khoản và Điều kiện của Wayfern trước khi khởi động máy chủ MCP.",
+    "apiPortUnavailable": "Máy chủ API không tìm thấy cổng khả dụng.",
+    "mcpServerAlreadyRunning": "Máy chủ MCP đang chạy.",
+    "mcpServerNotRunning": "Máy chủ MCP chưa chạy.",
+    "mcpPortUnavailable": "Máy chủ MCP không tìm thấy cổng khả dụng.",
+    "mcpConfigurationUnavailable": "Cấu hình máy chủ MCP không khả dụng. Hãy khởi động lại máy chủ rồi thử lại.",
+    "mcpAgentUnknown": "Ứng dụng MCP này không được hỗ trợ.",
+    "mcpAgentInstallFailed": "Không thể thêm Donut Browser vào ứng dụng MCP: {{detail}}",
+    "mcpAgentRemoveFailed": "Không thể xóa Donut Browser khỏi ứng dụng MCP: {{detail}}"
   },
   "rail": {
     "profiles": "Profile",
@@ -1970,7 +2181,9 @@
       "importProfile": "Nhập profile",
       "importProfileHint": "Đưa profile từ công cụ khác",
       "keyboardShortcuts": "Phím tắt",
-      "keyboardShortcutsHint": "Xem tất cả phím tắt"
+      "keyboardShortcutsHint": "Xem tất cả phím tắt",
+      "about": "Giới thiệu về Donut Browser",
+      "aboutHint": "Phiên bản và thông tin ứng dụng"
     },
     "network": "Mạng",
     "integrations": "Tích hợp",
@@ -2061,7 +2274,9 @@
     "actions": {
       "launchProfile": "Khởi chạy {{name}}",
       "stopProfile": "Dừng {{name}}",
-      "profileInfo": "Thông tin — {{name}}"
+      "profileInfo": "Thông tin — {{name}}",
+      "createProfile": "Tạo hồ sơ",
+      "about": "Giới thiệu về Donut Browser"
     }
   },
   "shortcuts": {
@@ -2250,7 +2465,8 @@
       "cleanup": "Cleanup",
       "dynamicProxy": "Dynamic Proxy",
       "telegramAlert": "Telegram Alert",
-      "openProfile": "Browser Settings"
+      "openProfile": "Browser Settings",
+      "closeProfile": "Đóng hồ sơ"
     },
     "dependencyWarning": "Dependency issue",
     "script": {
@@ -2332,7 +2548,9 @@
       "saving": "Đang lưu...",
       "toast": {
         "saved": "Đã lưu script",
-        "startFromHere": "Bắt đầu từ đây"
+        "startFromHere": "Bắt đầu từ đây",
+        "copied": "[TODO: Thêm bản dịch tiếng Việt]",
+        "pasted": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "toolbar": {
         "delete": "Xóa",
@@ -2340,7 +2558,9 @@
         "startFromHere": "Bắt đầu từ đây",
         "duplicate": "Nhân bản",
         "runFull": "Chạy toàn bộ quy trình",
-        "runStep": "Chạy 1 bước (1 node)"
+        "runStep": "Chạy 1 bước (1 node)",
+        "runStepCurrent": "[TODO: Thêm bản dịch tiếng Việt]",
+        "runStepNext": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "variables": {
         "add": "Thêm biến",
@@ -2352,7 +2572,13 @@
         "system": "Biến Hệ Thống",
         "user": "Biến Người Dùng",
         "empty": "Chưa có biến nào",
-        "changesWarning": "⚠️ Thay đổi sẽ áp dụng ở lần chạy sau"
+        "changesWarning": "⚠️ Thay đổi sẽ áp dụng ở lần chạy sau",
+        "defaultValue": "[TODO: Thêm bản dịch tiếng Việt]",
+        "edit": "[TODO: Thêm bản dịch tiếng Việt]",
+        "name": "[TODO: Thêm bản dịch tiếng Việt]",
+        "scope": "[TODO: Thêm bản dịch tiếng Việt]",
+        "unnamed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "valueType": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "logs": {
         "title": "Nhật ký",
@@ -2458,11 +2684,13 @@
           "step4_db_connection_help": "Cung cấp chi tiết kết nối cơ sở dữ liệu.",
           "step4_message": "Thông điệp",
           "step4_info_message_help": "Văn bản này sẽ hiển thị cho người dùng khi thực thi."
-        }
+        },
+        "add": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "debugProfile": {
         "placeholder": "Chọn profile...",
-        "virtual": "Hồ sơ ảo (Tạm thời)"
+        "virtual": "Hồ sơ ảo (Tạm thời)",
+        "required": "[TODO: Thêm bản dịch tiếng Việt]"
       },
       "debug": {
         "running": "Đang debug...",
@@ -2499,7 +2727,8 @@
         "control": "Vòng lặp, điều kiện và luồng logic.",
         "utility": "Hành động phụ trợ như chờ, chụp màn hình và ghi log.",
         "other": "Các hành động tự động hóa khác."
-      }
+      },
+      "noMatches": "[TODO: Thêm bản dịch tiếng Việt]"
     },
     "actions": {
       "run": "Chạy",
@@ -3040,6 +3269,76 @@
       "profileRequired": "Phải chọn profile",
       "ipCheckNeedsProxy": "Kiểm tra IP yêu cầu phải cấu hình proxy động",
       "profileNotFound": "Không tìm thấy profile: {{profileId}}"
+    },
+    "report": {
+      "resource": {
+        "activeLeases": "[TODO: Thêm bản dịch tiếng Việt]",
+        "available": "[TODO: Thêm bản dịch tiếng Việt]",
+        "cooldown": "[TODO: Thêm bản dịch tiếng Việt]",
+        "disabled": "[TODO: Thêm bản dịch tiếng Việt]",
+        "empty": "[TODO: Thêm bản dịch tiếng Việt]",
+        "exhausted": "[TODO: Thêm bản dịch tiếng Việt]",
+        "failUsage": "[TODO: Thêm bản dịch tiếng Việt]",
+        "leased": "[TODO: Thêm bản dịch tiếng Việt]",
+        "successUsage": "[TODO: Thêm bản dịch tiếng Việt]",
+        "title": "[TODO: Thêm bản dịch tiếng Việt]",
+        "total": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writes": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesFailed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesSuccess": "[TODO: Thêm bản dịch tiếng Việt]",
+        "writesTotal": "[TODO: Thêm bản dịch tiếng Việt]"
+      },
+      "script": {
+        "cancelled": "[TODO: Thêm bản dịch tiếng Việt]",
+        "duration": "[TODO: Thêm bản dịch tiếng Việt]",
+        "empty": "[TODO: Thêm bản dịch tiếng Việt]",
+        "failed": "[TODO: Thêm bản dịch tiếng Việt]",
+        "finishedAt": "[TODO: Thêm bản dịch tiếng Việt]",
+        "messages": "[TODO: Thêm bản dịch tiếng Việt]",
+        "nodeStats": "[TODO: Thêm bản dịch tiếng Việt]",
+        "profileStats": "[TODO: Thêm bản dịch tiếng Việt]",
+        "running": "[TODO: Thêm bản dịch tiếng Việt]",
+        "skipped": "[TODO: Thêm bản dịch tiếng Việt]",
+        "startedAt": "[TODO: Thêm bản dịch tiếng Việt]",
+        "success": "[TODO: Thêm bản dịch tiếng Việt]",
+        "title": "[TODO: Thêm bản dịch tiếng Việt]",
+        "total": "[TODO: Thêm bản dịch tiếng Việt]"
+      }
     }
+  },
+  "wayfernConfigDialog": {
+    "titleView": "Xem cài đặt dấu vân tay - {{name}} ({{browser}})",
+    "titleConfigure": "Cấu hình dấu vân tay - {{name}} ({{browser}})",
+    "invalidFingerprint": "Cấu hình dấu vân tay không hợp lệ",
+    "invalidFingerprintDescription": "Cấu hình dấu vân tay chứa JSON không hợp lệ. Vui lòng kiểm tra lại cài đặt nâng cao.",
+    "saveFailed": "Không thể lưu cấu hình",
+    "unknownError": "Đã xảy ra lỗi không xác định"
+  },
+  "cookieCopy": {
+    "noOtherTargets": "Không có hồ sơ Wayfern nào khác được chọn"
+  },
+  "about": {
+    "title": "Giới thiệu",
+    "version": "Phiên bản {{version}}",
+    "portableBadge": "bản portable",
+    "licenseNotice": "Trình duyệt chống phát hiện mã nguồn mở, được cấp phép theo AGPL-3.0.",
+    "website": "Trang web"
+  },
+  "clearOnClose": {
+    "label": "Xóa dữ liệu khi đóng",
+    "description": "Xóa cookie, lịch sử và bộ nhớ đệm khi trình duyệt đóng. Tiện ích mở rộng và dấu trang được giữ lại."
+  },
+  "consistencyWarning": {
+    "title": "Vân tay không khớp",
+    "intro": "Điểm thoát proxy của \"{{name}}\" không khớp với vân tay của hồ sơ này:",
+    "timezoneTitle": "Múi giờ không khớp",
+    "timezoneDetail": "Nút thoát nằm ở {{exit}} nhưng vân tay báo là {{fingerprint}}.",
+    "languageTitle": "Ngôn ngữ không khớp",
+    "languageDetail": "Quốc gia thoát là {{country}} nhưng ngôn ngữ của vân tay là {{fingerprint}}.",
+    "explainer": "Múi giờ hoặc ngôn ngữ không khớp với IP thoát là một tín hiệu chống bot rất mạnh, dù thiết bị thật của bạn không bao giờ bị lộ. Hãy căn chỉnh vân tay theo vị trí proxy để giảm bị đối xử khắt khe.",
+    "dontWarnAgain": "Không cảnh báo lại cho hồ sơ này",
+    "matchToProxy": "Khớp vân tay với proxy",
+    "matching": "Đang khớp…",
+    "matchSuccess": "Đã cập nhật vân tay để khớp với proxy. Khởi động lại hồ sơ để áp dụng."
   }
 }

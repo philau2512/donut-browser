@@ -8,15 +8,20 @@ import {
   LuCheck,
   LuChevronDown,
   LuChevronUp,
+  LuFolder,
   LuPlay,
+  LuSettings2,
   LuSquare,
 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -192,9 +197,24 @@ export interface TableMeta {
       }
     | undefined;
   onLaunchWithSync: (profile: BrowserProfile, followerIds?: string[]) => void;
+
+  /** group_id → folder/group display name */
+  folderNames: Record<string, string>;
 }
 
 const _MAX_VISIBLE_ICONS = 3;
+
+/** Columns the user can toggle in the gear menu (order = menu order). */
+export const PROFILE_TABLE_TOGGLEABLE_COLUMNS = [
+  { id: "folder", labelKey: "profiles.table.folder" },
+  { id: "os", labelKey: "profiles.table.os" },
+  { id: "proxy", labelKey: "profiles.table.proxy" },
+  { id: "tags", labelKey: "profileTable.tagsHeader" },
+  { id: "note", labelKey: "profiles.table.note" },
+  { id: "last_open", labelKey: "profiles.table.lastOpen" },
+  { id: "status", labelKey: "profiles.table.status" },
+  { id: "message", labelKey: "profiles.table.message" },
+] as const;
 
 export function getProfileTableColumns(
   t: (key: string) => string,
@@ -242,9 +262,21 @@ export function getProfileTableColumns(
       enableHiding: false,
       size: 28,
     },
+    // Sort-only: newest/oldest menu targets this id. Hidden via columnVisibility
+    // in ProfilesDataTable so no Created column is shown in the grid.
+    {
+      id: "created_at",
+      accessorFn: (row) => row.created_at ?? 0,
+      enableSorting: true,
+      enableHiding: true,
+      sortingFn: "basic",
+      header: () => null,
+      cell: () => null,
+    },
     {
       accessorKey: "name",
       meta: { flexWidth: true },
+      enableHiding: false,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
         const sort = table.getState().sorting[0];
@@ -315,7 +347,15 @@ export function getProfileTableColumns(
         const profile = row.original as BrowserProfile;
         const rawName: string = row.getValue("name");
         const name = getBrowserDisplayName(rawName);
-        const isEditing = meta.profileToRename?.id === profile.id;
+        const isRuntimeLocked =
+          (meta.isClient && meta.runningProfiles.has(profile.id)) ||
+          meta.launchingProfiles.has(profile.id) ||
+          meta.stoppingProfiles.has(profile.id);
+        const isCrossOsBlocked = isCrossOsProfile(profile);
+        const isEditing =
+          meta.profileToRename?.id === profile.id &&
+          !isRuntimeLocked &&
+          !isCrossOsBlocked;
 
         if (isEditing) {
           return (
@@ -359,22 +399,73 @@ export function getProfileTableColumns(
           );
         }
 
-        return (
-          <div className="flex w-full min-w-0 items-center overflow-hidden py-0.5">
-            <button
-              type="button"
-              className={cn(
-                "h-6 max-w-[240px] truncate rounded border-none bg-transparent px-2 py-1 text-left grow min-w-0",
-                "cursor-pointer hover:bg-accent/50 text-sm font-medium",
-              )}
-              onClick={() => {
+        const nameControl = isRuntimeLocked ? (
+          <div className="h-6 max-w-[240px] grow min-w-0 cursor-text truncate rounded px-2 py-1 text-left text-sm font-medium select-text">
+            <OverflowTooltipText text={name} className="text-left" />
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={cn(
+              "h-6 max-w-[240px] truncate rounded border-none bg-transparent px-2 py-1 text-left grow min-w-0",
+              "text-sm font-medium",
+              isCrossOsBlocked
+                ? "cursor-not-allowed opacity-60"
+                : "cursor-pointer hover:bg-accent/50",
+            )}
+            onClick={() => {
+              if (isCrossOsBlocked) return;
+              meta.setProfileToRename(profile);
+              meta.setNewProfileName(profile.name);
+              meta.setRenameError(null);
+            }}
+            onKeyDown={(e) => {
+              if (isCrossOsBlocked) return;
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
                 meta.setProfileToRename(profile);
                 meta.setNewProfileName(profile.name);
                 meta.setRenameError(null);
-              }}
-            >
-              <OverflowTooltipText text={name} className="text-left" />
-            </button>
+              }
+            }}
+          >
+            <OverflowTooltipText text={name} className="text-left" />
+          </button>
+        );
+
+        return (
+          <div className="flex w-full min-w-0 items-center overflow-hidden py-0.5">
+            {nameControl}
+          </div>
+        );
+      },
+    },
+    {
+      id: "folder",
+      size: 120,
+      enableHiding: true,
+      header: ({ table }) => {
+        const meta = table.options.meta as TableMeta;
+        return meta.t("profiles.table.folder");
+      },
+      accessorFn: (row) => row.group_id ?? "",
+      cell: ({ row, table }) => {
+        const meta = table.options.meta as TableMeta;
+        const groupId = row.original.group_id;
+        if (!groupId) {
+          return (
+            <span className="block text-center text-xs text-muted-foreground">
+              ---
+            </span>
+          );
+        }
+        const folderName = meta.folderNames[groupId] ?? "---";
+        return (
+          <div className="flex min-w-0 items-center justify-center gap-1.5 px-1">
+            <LuFolder className="size-3.5 shrink-0 text-blue-400" />
+            <span className="truncate text-xs font-medium" title={folderName}>
+              {folderName}
+            </span>
           </div>
         );
       },
@@ -382,6 +473,7 @@ export function getProfileTableColumns(
     {
       id: "os",
       size: 110,
+      enableHiding: true,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
         return meta.t("profiles.table.os");
@@ -416,6 +508,7 @@ export function getProfileTableColumns(
     {
       id: "proxy",
       size: 120,
+      enableHiding: true,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
         return meta.t("profiles.table.proxy");
@@ -491,6 +584,7 @@ export function getProfileTableColumns(
     },
     {
       id: "tags",
+      enableHiding: true,
       size: 100,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
@@ -499,13 +593,8 @@ export function getProfileTableColumns(
       cell: ({ row, table }) => {
         const meta = table.options.meta as TableMeta;
         const profile = row.original;
-        const isCrossOs = isCrossOsProfile(profile);
-        const isCrossOsBlocked = isCrossOs;
-        const isRunning = meta.isClient && meta.runningProfiles.has(profile.id);
-        const isLaunching = meta.launchingProfiles.has(profile.id);
-        const isStopping = meta.stoppingProfiles.has(profile.id);
-        const isDisabled =
-          isRunning || isLaunching || isStopping || isCrossOsBlocked;
+        // Upstream: tags remain editable while browser is running; only block cross-OS.
+        const isDisabled = isCrossOsProfile(profile);
 
         return (
           <div className="flex justify-center">
@@ -521,6 +610,7 @@ export function getProfileTableColumns(
     },
     {
       id: "note",
+      enableHiding: true,
       size: 80,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
@@ -529,13 +619,8 @@ export function getProfileTableColumns(
       cell: ({ row, table }) => {
         const meta = table.options.meta as TableMeta;
         const profile = row.original;
-        const isCrossOs = isCrossOsProfile(profile);
-        const isCrossOsBlocked = isCrossOs;
-        const isRunning = meta.isClient && meta.runningProfiles.has(profile.id);
-        const isLaunching = meta.launchingProfiles.has(profile.id);
-        const isStopping = meta.stoppingProfiles.has(profile.id);
-        const isDisabled =
-          isRunning || isLaunching || isStopping || isCrossOsBlocked;
+        // Upstream: notes remain editable while browser is running; only block cross-OS.
+        const isDisabled = isCrossOsProfile(profile);
 
         return (
           <div className="flex justify-center">
@@ -553,6 +638,7 @@ export function getProfileTableColumns(
     },
     {
       id: "last_open",
+      enableHiding: true,
       size: 110,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
@@ -572,6 +658,7 @@ export function getProfileTableColumns(
     },
     {
       id: "status",
+      enableHiding: true,
       size: 110,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
@@ -595,7 +682,8 @@ export function getProfileTableColumns(
     },
     {
       id: "message",
-      size: 100,
+      enableHiding: true,
+      size: 140,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
         return meta.t("profiles.table.message");
@@ -607,21 +695,24 @@ export function getProfileTableColumns(
         const isLaunching = meta.launchingProfiles.has(profile.id);
         const isStopping = meta.stoppingProfiles.has(profile.id);
 
+        const baseClass =
+          "text-xs max-w-full w-full block text-center whitespace-normal break-words [overflow-wrap:anywhere] leading-snug px-0.5 py-0.5";
+
         if (isRunning)
           return (
-            <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
+            <span className={cn(baseClass, "text-muted-foreground")}>
               {meta.t("profiles.table.statusRunning")}
             </span>
           );
         if (isLaunching)
           return (
-            <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
+            <span className={cn(baseClass, "text-muted-foreground")}>
               {meta.t("profiles.table.statusLaunching")}
             </span>
           );
         if (isStopping)
           return (
-            <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
+            <span className={cn(baseClass, "text-muted-foreground")}>
               {meta.t("profiles.table.statusStopping")}
             </span>
           );
@@ -639,7 +730,11 @@ export function getProfileTableColumns(
                   if (e.key === "Enter" || e.key === " ")
                     meta.onQuickProxyEdit?.(profile);
                 }}
-                className="text-xs text-destructive underline underline-offset-2 cursor-pointer hover:text-destructive/80 font-medium block text-center truncate max-w-full"
+                className={cn(
+                  baseClass,
+                  "text-destructive underline underline-offset-2 cursor-pointer hover:text-destructive/80 font-medium",
+                )}
+                title={meta.t("profiles.table.errorCannotCheckProxy")}
               >
                 {meta.t("profiles.table.errorCannotCheckProxy")}
               </span>
@@ -648,7 +743,7 @@ export function getProfileTableColumns(
         }
 
         return (
-          <span className="text-xs text-muted-foreground truncate max-w-full block text-center">
+          <span className={cn(baseClass, "text-muted-foreground")}>
             {meta.t("profiles.table.statusReady")}
           </span>
         );
@@ -657,9 +752,50 @@ export function getProfileTableColumns(
     {
       id: "actions",
       size: 110,
+      enableHiding: false,
       header: ({ table }) => {
         const meta = table.options.meta as TableMeta;
-        return meta.t("profiles.table.actions");
+        return (
+          <div className="flex items-center justify-center gap-1">
+            <span>{meta.t("profiles.table.actions")}</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-6 text-muted-foreground hover:text-foreground"
+                  aria-label={meta.t("profiles.table.columnsMenu")}
+                >
+                  <LuSettings2 className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>
+                  {meta.t("profiles.table.columnsMenu")}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {PROFILE_TABLE_TOGGLEABLE_COLUMNS.map((col) => {
+                  const column = table.getColumn(col.id);
+                  if (!column) return null;
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={col.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => {
+                        column.toggleVisibility(!!value);
+                      }}
+                      onSelect={(e) => e.preventDefault()}
+                    >
+                      {meta.t(col.labelKey)}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
       },
       cell: ({ row, table }) => {
         const meta = table.options.meta as TableMeta;

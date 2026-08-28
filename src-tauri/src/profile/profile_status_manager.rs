@@ -107,3 +107,57 @@ pub fn save_profile_statuses(
     .save_all(statuses)
     .map_err(|e| format!("Failed to save profile statuses: {e}"))
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use tempfile::TempDir;
+
+  #[test]
+  #[serial_test::serial]
+  fn smoke_default_statuses_when_file_missing() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileStatusManager::new();
+    let statuses = mgr.get_all().unwrap();
+    assert_eq!(statuses.len(), 3);
+    assert!(statuses.iter().any(|s| s.label == "Ban"));
+    assert!(statuses.iter().any(|s| s.label == "Ready"));
+    assert!(statuses.iter().any(|s| s.label == "New"));
+  }
+
+  #[test]
+  #[serial_test::serial]
+  fn smoke_save_and_reload_statuses() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileStatusManager::new();
+
+    let custom = vec![
+      ProfileStatusConfig {
+        label: "Warm".into(),
+        color: "#f59e0b".into(),
+      },
+      ProfileStatusConfig {
+        label: "Cold".into(),
+        color: "#3b82f6".into(),
+      },
+    ];
+    let saved = mgr.save_all(custom.clone()).unwrap();
+    assert_eq!(saved.len(), 2);
+
+    let reloaded = mgr.get_all().unwrap();
+    assert_eq!(reloaded, custom);
+
+    // Tauri command wrappers
+    let via_cmd = get_profile_statuses().unwrap();
+    assert_eq!(via_cmd.len(), 2);
+    let via_save = save_profile_statuses(vec![ProfileStatusConfig {
+      label: "Only".into(),
+      color: "#000".into(),
+    }])
+    .unwrap();
+    assert_eq!(via_save.len(), 1);
+    assert_eq!(get_profile_statuses().unwrap()[0].label, "Only");
+  }
+}

@@ -146,6 +146,33 @@ export function usePageProfileActions({
           profile,
         });
         console.log("Successfully launched profile:", result.name);
+
+        // Launch-time proxy exit vs fingerprint timezone/language check.
+        // Non-blocking: never fail launch if the check itself errors.
+        if (profile.proxy_id) {
+          try {
+            const { isConsistencyWarningSuppressed } = await import(
+              "@/components/consistency-warning-dialog"
+            );
+            if (!isConsistencyWarningSuppressed(profile.id)) {
+              const res = await invoke<{
+                checked: boolean;
+                consistent: boolean;
+              }>("check_profile_fingerprint_consistency", {
+                profileId: profile.id,
+              });
+              if (res.checked && !res.consistent) {
+                window.dispatchEvent(
+                  new CustomEvent("profile-consistency-warning", {
+                    detail: { profile, result: res },
+                  }),
+                );
+              }
+            }
+          } catch (e) {
+            console.debug("Consistency check skipped:", e);
+          }
+        }
       } catch (err: unknown) {
         console.error("Failed to launch browser:", err);
         const errorMessage = err instanceof Error ? err.message : String(err);

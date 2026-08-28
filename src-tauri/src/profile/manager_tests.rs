@@ -237,5 +237,321 @@ mod tests {
     let result_none = super::validate_launch_hook(None).unwrap();
     assert!(result_none.is_none());
   }
+
+  /// PR-02: single profile create with disk materialize (no AppHandle).
+  /// Mirrors create_profile_with_group dirs + metadata without fingerprint/events.
+  #[test]
+  #[serial_test::serial]
+  fn smoke_create_single_profile_eager_disk() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let id = uuid::Uuid::new_v4();
+    let profiles_dir = mgr.get_profiles_dir();
+    let uuid_dir = profiles_dir.join(id.to_string());
+    let data_dir = uuid_dir.join("profile");
+
+    ProfileManager::create_profile_directories(&uuid_dir, &data_dir, false, false).unwrap();
+    assert!(uuid_dir.is_dir());
+    assert!(data_dir.is_dir(), "eager create must materialize profile/ data dir");
+
+    let profile = BrowserProfile {
+      id,
+      name: "Smoke Single Create".into(),
+      browser: "wayfern".into(),
+      version: "1.0.0".into(),
+      release_type: "stable".into(),
+      host_os: Some("windows".into()),
+      created_at: Some(1),
+      updated_at: Some(1),
+      ..Default::default()
+    };
+    mgr.save_profile(&profile).unwrap();
+
+    let listed = mgr.list_profiles().unwrap();
+    let found = listed.iter().find(|p| p.id == id).expect("profile listed");
+    assert_eq!(found.name, "Smoke Single Create");
+    assert!(found.get_profile_data_path(&profiles_dir).is_dir());
+    assert!(uuid_dir.join("metadata.json").is_file());
+  }
+
+  /// PR-05: first open materializes lazy profile data dir (launch contract).
+  #[test]
+  #[serial_test::serial]
+  fn smoke_first_open_materializes_lazy_profile_data_dir() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let id = uuid::Uuid::new_v4();
+    let profiles_dir = mgr.get_profiles_dir();
+    let uuid_dir = profiles_dir.join(id.to_string());
+    let data_dir = uuid_dir.join("profile");
+
+    // Quick Create / lazy path
+    ProfileManager::create_profile_directories(&uuid_dir, &data_dir, false, true).unwrap();
+    let profile = BrowserProfile {
+      id,
+      name: "Lazy First Open".into(),
+      browser: "wayfern".into(),
+      version: "1.0.0".into(),
+      release_type: "stable".into(),
+      host_os: Some("windows".into()),
+      created_at: Some(1),
+      updated_at: Some(1),
+      ..Default::default()
+    };
+    mgr.save_profile(&profile).unwrap();
+    assert!(!data_dir.exists(), "lazy create must not create profile/ yet");
+
+    // Same step as browser_runner_launch_wayfern / camoufox launch
+    let profile_data_path = profile.get_profile_data_path(&profiles_dir);
+    std::fs::create_dir_all(&profile_data_path).unwrap();
+    assert!(
+      profile_data_path.is_dir(),
+      "first open must materialize profile data dir"
+    );
+
+    let listed = mgr.list_profiles().unwrap();
+    let found = listed.iter().find(|p| p.id == id).expect("listed after materialize");
+    assert_eq!(found.name, "Lazy First Open");
+    assert!(found.get_profile_data_path(&profiles_dir).is_dir());
+  }
+
+  /// PX-03: assign / clear proxy_id on profile metadata (core of update_profile_proxy).
+  #[test]
+  #[serial_test::serial]
+  fn smoke_assign_proxy_id_to_profile_metadata() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let id = uuid::Uuid::new_v4();
+    let profiles_dir = mgr.get_profiles_dir();
+    let uuid_dir = profiles_dir.join(id.to_string());
+    let data_dir = uuid_dir.join("profile");
+    ProfileManager::create_profile_directories(&uuid_dir, &data_dir, false, false).unwrap();
+
+    let mut profile = BrowserProfile {
+      id,
+      name: "Proxy Assign".into(),
+      browser: "wayfern".into(),
+      version: "1.0.0".into(),
+      release_type: "stable".into(),
+      proxy_id: None,
+      created_at: Some(1),
+      updated_at: Some(1),
+      ..Default::default()
+    };
+    mgr.save_profile(&profile).unwrap();
+
+    profile.proxy_id = Some("proxy-smoke-1".into());
+    profile.updated_at = Some(2);
+    mgr.save_profile(&profile).unwrap();
+
+    let listed = mgr.list_profiles().unwrap();
+    let found = listed.iter().find(|p| p.id == id).expect("listed");
+    assert_eq!(found.proxy_id.as_deref(), Some("proxy-smoke-1"));
+
+    profile.proxy_id = None;
+    profile.updated_at = Some(3);
+    mgr.save_profile(&profile).unwrap();
+    let cleared = mgr
+      .list_profiles()
+      .unwrap()
+      .into_iter()
+      .find(|p| p.id == id)
+      .expect("listed");
+    assert!(cleared.proxy_id.is_none());
+  }
+
+  fn seed_profile(name: &str) -> (uuid::Uuid, BrowserProfile) {
+    let mgr = ProfileManager::instance();
+    let id = uuid::Uuid::new_v4();
+    let profiles_dir = mgr.get_profiles_dir();
+    let uuid_dir = profiles_dir.join(id.to_string());
+    let data_dir = uuid_dir.join("profile");
+    ProfileManager::create_profile_directories(&uuid_dir, &data_dir, false, false).unwrap();
+    let profile = BrowserProfile {
+      id,
+      name: name.into(),
+      browser: "wayfern".into(),
+      version: "1.0.0".into(),
+      release_type: "stable".into(),
+      host_os: Some("windows".into()),
+      created_at: Some(1),
+      updated_at: Some(1),
+      ..Default::default()
+    };
+    mgr.save_profile(&profile).unwrap();
+    (id, profile)
+  }
+
+  /// PR-06: rename (metadata) + local delete without AppHandle.
+  #[test]
+  #[serial_test::serial]
+  fn smoke_rename_and_delete_profile() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let (id, mut profile) = seed_profile("Before Rename");
+    profile.name = "After Rename".into();
+    profile.updated_at = Some(2);
+    mgr.save_profile(&profile).unwrap();
+
+    let found = mgr
+      .list_profiles()
+      .unwrap()
+      .into_iter()
+      .find(|p| p.id == id)
+      .expect("renamed profile");
+    assert_eq!(found.name, "After Rename");
+
+    mgr
+      .delete_profile_local_only(&id.to_string())
+      .expect("local delete");
+    assert!(
+      mgr
+        .list_profiles()
+        .unwrap()
+        .iter()
+        .all(|p| p.id != id),
+      "deleted profile must not list"
+    );
+    assert!(!mgr.get_profiles_dir().join(id.to_string()).exists());
+  }
+
+  /// PR-07: clone_profile copies metadata and clears fingerprint linkage.
+  #[test]
+  #[serial_test::serial]
+  fn smoke_clone_profile() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let (id, mut profile) = seed_profile("Clone Source");
+    profile.tags = vec!["a".into()];
+    profile.proxy_id = Some("px-1".into());
+    profile.wayfern_config = Some(crate::browser::wayfern_manager::WayfernConfig {
+      fingerprint: Some(r#"{"canvas":"seed"}"#.into()),
+      os: Some("windows".into()),
+      ..Default::default()
+    });
+    mgr.save_profile(&profile).unwrap();
+
+    let cloned = mgr
+      .clone_profile(&id.to_string(), Some("Clone Dest".into()))
+      .expect("clone");
+    assert_ne!(cloned.id, id);
+    assert_eq!(cloned.name, "Clone Dest");
+    assert_eq!(cloned.proxy_id.as_deref(), Some("px-1"));
+    assert_eq!(cloned.tags, vec!["a".to_string()]);
+    assert!(
+      cloned
+        .wayfern_config
+        .as_ref()
+        .and_then(|c| c.fingerprint.as_ref())
+        .is_none(),
+      "clone must clear fingerprint for unlink"
+    );
+    assert!(
+      mgr
+        .list_profiles()
+        .unwrap()
+        .iter()
+        .any(|p| p.id == cloned.id)
+    );
+  }
+
+  /// VN-03: assign / clear vpn_id (mutually exclusive with proxy in product path).
+  #[test]
+  #[serial_test::serial]
+  fn smoke_assign_vpn_id_to_profile_metadata() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let (id, mut profile) = seed_profile("VPN Assign");
+    profile.vpn_id = Some("vpn-smoke-1".into());
+    profile.proxy_id = None;
+    profile.updated_at = Some(2);
+    mgr.save_profile(&profile).unwrap();
+
+    let found = mgr
+      .list_profiles()
+      .unwrap()
+      .into_iter()
+      .find(|p| p.id == id)
+      .expect("listed");
+    assert_eq!(found.vpn_id.as_deref(), Some("vpn-smoke-1"));
+    assert!(found.proxy_id.is_none());
+
+    profile.vpn_id = None;
+    profile.updated_at = Some(3);
+    mgr.save_profile(&profile).unwrap();
+    let cleared = mgr
+      .list_profiles()
+      .unwrap()
+      .into_iter()
+      .find(|p| p.id == id)
+      .expect("listed");
+    assert!(cleared.vpn_id.is_none());
+  }
+
+  /// EX-03: assign extension group via ProfileManager API.
+  #[test]
+  #[serial_test::serial]
+  fn smoke_assign_extension_group_to_profile() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let (id, _) = seed_profile("Ext Group Assign");
+    let updated = mgr
+      .update_profile_extension_group(&id.to_string(), Some("eg-1".into()))
+      .expect("assign");
+    assert_eq!(updated.extension_group_id.as_deref(), Some("eg-1"));
+
+    let cleared = mgr
+      .update_profile_extension_group(&id.to_string(), None)
+      .expect("clear");
+    assert!(cleared.extension_group_id.is_none());
+  }
+
+  /// SY-05: enable sync mode flags on profile metadata.
+  #[test]
+  #[serial_test::serial]
+  fn smoke_enable_sync_mode_on_profile() {
+    let temp = TempDir::new().unwrap();
+    let _guard = crate::settings::app_dirs::set_test_data_dir(temp.path().to_path_buf());
+    let mgr = ProfileManager::instance();
+
+    let (id, mut profile) = seed_profile("Sync Mode");
+    assert!(!profile.is_sync_enabled());
+
+    profile.sync_mode = crate::profile::types::SyncMode::Regular;
+    mgr.save_profile(&profile).unwrap();
+    let regular = mgr
+      .list_profiles()
+      .unwrap()
+      .into_iter()
+      .find(|p| p.id == id)
+      .expect("listed");
+    assert!(regular.is_sync_enabled());
+    assert!(!regular.is_encrypted_sync());
+
+    profile.sync_mode = crate::profile::types::SyncMode::Encrypted;
+    mgr.save_profile(&profile).unwrap();
+    let enc = mgr
+      .list_profiles()
+      .unwrap()
+      .into_iter()
+      .find(|p| p.id == id)
+      .expect("listed");
+    assert!(enc.is_sync_enabled());
+    assert!(enc.is_encrypted_sync());
+  }
 }
 

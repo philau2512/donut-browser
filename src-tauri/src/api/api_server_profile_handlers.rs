@@ -98,18 +98,39 @@ async fn request_logging_middleware(request: axum::extract::Request, next: Next)
   response
 }
 
-/// Chokepoint for the future per-hour automation request limit. The limit
-/// (`requests_per_hour`, default 100) is already plumbed through entitlements;
-/// this middleware is intentionally inert today — it resolves the limit but
-/// never blocks. To enforce, count authenticated requests per rolling hour and
-/// return `StatusCode::TOO_MANY_REQUESTS` once the limit (when > 0) is exceeded.
+/// The authenticated automation endpoints share one rolling quota with MCP.
+/// The rate limiter itself resolves the account identity from cloud auth.
 async fn rate_limit_middleware(
   request: axum::extract::Request,
   next: Next,
-) -> Result<Response, StatusCode> {
-  let _requests_per_hour = crate::api::cloud_auth::CLOUD_AUTH.requests_per_hour().await;
-  // TODO(rate-limit): enforce `_requests_per_hour` for automation routes.
-  Ok(next.run(request).await)
+) -> Result<Response, Response> {
+  let path = request.uri().path();
+  let is_automation_request = path == "/v1/profiles/batch/run"
+    || path == "/v1/profiles/batch/stop"
+    || (path.starts_with("/v1/profiles/")
+      && (path.ends_with("/run") || path.ends_with("/open-url") || path.ends_with("/kill")));
+
+  if !is_automation_request {
+    return Ok(next.run(request).await);
+  }
+
+  match crate::automation_rate_limiter::check_automation_rate_limit().await {
+    crate::automation_rate_limiter::RateLimitOutcome::Limited { retry_after_secs } => {
+      log::warn!(
+        "[api] Rejected {}: automation rate limit exceeded; retry in {}s",
+        request.uri().path(),
+        retry_after_secs
+      );
+      let response = Response::builder()
+        .status(StatusCode::TOO_MANY_REQUESTS)
+        .header("retry-after", retry_after_secs.to_string())
+        .body(axum::body::Body::from("automation request rate limit exceeded"))
+        .expect("rate-limit response is valid");
+      Err(response)
+    }
+    crate::automation_rate_limiter::RateLimitOutcome::Unlimited
+    | crate::automation_rate_limiter::RateLimitOutcome::Allowed { .. } => Ok(next.run(request).await),
+  }
 }
 
 // Global API server instance
@@ -149,11 +170,52 @@ pub async fn get_api_server_status() -> Result<Option<u16>, String> {
 }
 
 /// Serialize a browser config (camoufox/wayfern) to JSON for an API response.
-/// Viewing a profile's fingerprint is available to every API caller; only
-/// editing it (via `update_profile`) and launching/killing profiles
-/// programmatically require an active paid plan.
+/// Same-host fingerprint view/edit is free. Cross-OS OS spoofing and
+/// programmatic launch/kill still require an active paid plan.
 fn config_to_api_value<T: serde::Serialize>(config: Option<&T>) -> Option<serde_json::Value> {
   serde_json::to_value(config?).ok()
+}
+
+/// Map shared manager errors to HTTP status codes. Structured `{"code": ...}`
+/// strings classify exactly; plain-text messages match known phrases only.
+fn manager_error_response(err: impl std::fmt::Display) -> (StatusCode, String) {
+  let msg = err.to_string();
+
+  if let Ok(value) = serde_json::from_str::<serde_json::Value>(&msg) {
+    if let Some(code) = value.get("code").and_then(|c| c.as_str()) {
+      let status = if code.ends_with("_NOT_FOUND") {
+        StatusCode::NOT_FOUND
+      } else if code == "INTERNAL_ERROR" {
+        StatusCode::INTERNAL_SERVER_ERROR
+      } else if code.ends_with("_REQUIRES_PRO") || code.ends_with("_PAYMENT_REQUIRED") {
+        StatusCode::PAYMENT_REQUIRED
+      } else {
+        StatusCode::BAD_REQUEST
+      };
+      return (status, msg);
+    }
+  }
+
+  let lower = msg.to_lowercase();
+  let status = if lower.contains("not found") {
+    StatusCode::NOT_FOUND
+  } else if lower.contains("already exists")
+    || lower.contains("cannot set both")
+    || lower.contains("cannot edit")
+    || lower.contains("cannot delete")
+    || lower.contains("cannot open url")
+    || lower.contains("invalid browser")
+    || lower.contains("invalid profile id")
+    || lower.contains("unsupported browser")
+    || lower.contains("not supported on your platform")
+    || lower.contains("is not downloaded")
+    || lower.contains("terms and conditions")
+  {
+    StatusCode::BAD_REQUEST
+  } else {
+    StatusCode::INTERNAL_SERVER_ERROR
+  };
+  (status, msg)
 }
 
 // API Handlers - Profiles
@@ -192,6 +254,7 @@ async fn get_profiles() -> Result<Json<ApiProfilesResponse>, StatusCode> {
           is_running: profile.process_id.is_some(), // Simple check based on process_id
           proxy_bypass_rules: profile.proxy_bypass_rules.clone(),
           vpn_id: profile.vpn_id.clone(),
+          clear_on_close: profile.clear_on_close,
         })
         .collect();
 
@@ -246,6 +309,7 @@ async fn get_profile(
             is_running: profile.process_id.is_some(), // Simple check based on process_id
             proxy_bypass_rules: profile.proxy_bypass_rules.clone(),
             vpn_id: profile.vpn_id.clone(),
+            clear_on_close: profile.clear_on_close,
           },
         }))
       } else {
@@ -378,6 +442,7 @@ async fn create_profile(
       false,
       None,
       request.launch_hook.clone(),
+      false,
     )
     .await
   {
@@ -420,6 +485,7 @@ async fn create_profile(
           is_running: false,
           proxy_bypass_rules: profile.proxy_bypass_rules,
           vpn_id: profile.vpn_id,
+          clear_on_close: profile.clear_on_close,
         },
       }))
     }

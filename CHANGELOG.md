@@ -1,6 +1,325 @@
 # Changelog
 
 
+## v0.29.6 (2026-08-24)
+
+### Refactoring
+
+- cleanup
+
+### Documentation
+
+- readme
+- switch to svg
+
+### Maintenance
+
+- chore: linting
+- chore: version bump
+- chore: linting
+- test: integration cleanup
+- chore: switch to gitdebt
+- chore: update flake.nix for v0.29.5 [skip ci] (#563)
+
+
+## v0.29.5 (2026-08-16)
+
+### Features
+
+- extension export via api
+
+### Refactoring
+
+- better proxy clipboard autofill
+- improve ephemeral ux
+- store logs and window state inside portable build
+
+### Maintenance
+
+- chore: version bump
+- chore: update flake.nix for v0.29.4 [skip ci] (#561)
+
+
+## v0.29.4 (2026-08-15)
+
+### Refactoring
+
+- cleanup
+
+### Documentation
+
+- update CHANGELOG.md and README.md for v0.29.3 [skip ci] (#556)
+
+### Maintenance
+
+- chore: version bump
+- ci(deps): bump the github-actions group with 4 updates (#559)
+- chore: update flake.nix for v0.29.3 [skip ci] (#557)
+
+
+## v0.29.3 (2026-08-12)
+
+### Refactoring
+
+- minor improvement
+
+### Maintenance
+
+- chore: update pnpm
+- chore: version bump
+- chore: update flake.nix for v0.29.2 [skip ci] (#552)
+
+
+## v0.29.2 (2026-08-10)
+
+### Refactoring
+
+- cleanup sync
+- profile imports
+
+### Maintenance
+
+- chore: linting
+- chore: version bump
+- chore: linting
+- chore: update flake.nix for v0.29.1 [skip ci] (#546)
+
+
+## v0.29.1 (2026-08-08)
+
+### Bug Fixes
+
+- prevent settings page from crashing on some systems
+
+### Refactoring
+
+- update logic and locks around vpn extensions
+
+### Maintenance
+
+- chore: linting
+- chore: update pnpm
+- chore: switch to ai-inference v3 and fail workflows on 410
+- chore: version bump
+- chore: update flake.nix for v0.29.0 [skip ci] (#542)
+
+
+## v0.29.0 (2026-08-08)
+
+### Features
+
+- prevent launch with inconsistent geodata
+- cookie bot
+- remote sessions
+- xray support
+- mass import via gui, api, and mcp
+- add Turkish (tr) language support
+
+### Bug Fixes
+
+- properly handle x-amz-meta-updated-at
+- improve UI interactions and page consistency
+
+### Refactoring
+
+- cleanup
+- cleanup
+- improve proxy lifetime management
+- cleanup
+- remote cleanup
+- cleanup cloud sync
+- cleanup
+- harden tests
+- block windows app update if the browser is running
+- ui refresh
+
+### Documentation
+
+- update CHANGELOG.md and README.md for v0.29.0 [skip ci] (#539)
+- contrib-readme-action has updated readme
+- contrib-readme-action has updated readme
+
+### Maintenance
+
+- chore: version bump
+- ci(deps): bump the github-actions group with 3 updates (#538)
+- chore: linting
+- chore: linting
+- chore: linting
+- chore: ci
+- chore: upload sidecars to cdn
+- chore: linting
+- ci(deps): bump the github-actions group with 4 updates
+- chore: linting
+- chore: disable e2e in ci
+- chore: linting
+- chore: linting
+- chore: ai compliance
+- chore: linting
+- ci(deps): bump the github-actions group across 1 directory with 3 updates (#514)
+- chore: linting
+- chore: linting
+- chore: add cross-platform webdriver tests
+- ci(deps): bump the github-actions group with 2 updates
+- chore: update flake.nix for v0.28.2 [skip ci] (#501)
+
+### Other
+
+- deps(deps): bump next from 16.2.10 to 16.2.11 (#515)
+- refactors: animations cleanup
+- restore settings redirect
+- fix group create translation key
+
+
+## v0.29.0 (2026-08-08)
+
+### Features
+
+- prevent launch with inconsistent geodata
+- cookie bot
+- remote sessions
+- xray support
+- mass import via gui, api, and mcp
+- add Turkish (tr) language support
+
+### Bug Fixes
+
+- properly handle x-amz-meta-updated-at
+- improve UI interactions and page consistency
+
+### Refactoring
+
+- cleanup
+- cleanup
+- improve proxy lifetime management
+- cleanup
+- remote cleanup
+- cleanup cloud sync
+- cleanup
+- harden tests
+- block windows app update if the browser is running
+- ui refresh
+
+### Documentation
+
+- contrib-readme-action has updated readme
+- contrib-readme-action has updated readme
+
+### Maintenance
+
+- ci(deps): bump the github-actions group with 3 updates (#538)
+- chore: linting
+- chore: linting
+- chore: linting
+- chore: ci
+- chore: upload sidecars to cdn
+- chore: linting
+- ci(deps): bump the github-actions group with 4 updates
+- chore: linting
+- chore: disable e2e in ci
+- chore: linting
+- chore: linting
+- chore: ai compliance
+- chore: linting
+- ci(deps): bump the github-actions group across 1 directory with 3 updates (#514)
+- chore: linting
+- chore: linting
+- chore: add cross-platform webdriver tests
+- ci(deps): bump the github-actions group with 2 updates
+- chore: update flake.nix for v0.28.2 [skip ci] (#501)
+
+### Other
+
+- deps(deps): bump next from 16.2.10 to 16.2.11 (#515)
+- refactors: animations cleanup
+- restore settings redirect
+- fix group create translation key
+
+
+## v0.28.2 (2026-07-12)
+
+### Features
+
+- sha256 checksum for self-updates
+- progress bar for extraction
+
+### Bug Fixes
+
+- properly handle location spoofing for socks5 proxies
+
+### Refactoring
+
+- api cleanup
+
+### Maintenance
+
+- chore: version bump
+- chore: linting
+- ci(deps): bump the github-actions group with 2 updates
+- chore: update flake.nix for v0.28.1 [skip ci] (#493)
+
+
+## v0.28.1 (2026-07-09)
+
+### Refactoring
+
+- do not use system proxy on windows
+
+### Maintenance
+
+- chore: version bump
+- chore: update flake.nix for v0.28.0 [skip ci] (#490)
+
+
+## v0.28.0 (2026-07-08)
+
+### Features
+
+- ipv6 support for wireguard
+- per-profile window color with id-derived default
+- emit extension sync-status events
+
+### Bug Fixes
+
+- background status/update loop and window-color command
+- sync engine correctness and manifest traversal guard
+- replace create-profile Back button with Close
+- don't start window drag on interactive controls
+- self-reap proxy worker off-runtime and redact upstream creds in logs
+- resolve VPN SOCKS5 domain CONNECT requests through the tunnel
+- persist imported session cookies so logins survive relaunch
+
+### Refactoring
+
+- handle newer wayfern versions
+- fully deprecate camoufox
+- cleanup
+- better handling of unstable connection during asset downloads
+- backend-authoritative team scope and config/input hardening
+
+### Documentation
+
+- readme
+- agents
+
+### Maintenance
+
+- chore: version bump
+- chore: rename macos artifacts in ci
+- chore: lint
+- chore: copy
+- chore: linux ci
+- chore: update dependencies
+- chore: migrate biome config and exclude build dirs
+- ci(deps): bump the github-actions group with 6 updates
+- ci(deps): bump anomalyco/opencode/github in the github-actions group (#480)
+- chore: update flake.nix for v0.27.1 [skip ci] (#464)
+
+### Other
+
+- security: restrict secret files to owner-only (0600)
+
+
 ## v0.27.1 (2026-06-24)
 
 ### Features

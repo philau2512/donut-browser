@@ -11,6 +11,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="group toaster"
       closeButton
+      // Keep toasts fixed in place — empty swipe directions disables drag/swipe dismiss.
+      swipeDirections={[]}
       style={
         {
           "--normal-bg": "var(--card)",

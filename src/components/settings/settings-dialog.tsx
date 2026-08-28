@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { DnsBlocklistDialog } from "@/components/vpn";
 import { useCloudAuth } from "@/hooks/use-cloud-auth";
 import { useCommercialTrial } from "@/hooks/use-commercial-trial";
@@ -99,6 +100,15 @@ export function SettingsDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [isSettingDefault, setIsSettingDefault] = useState(false);
   const [isClearingCache, setIsClearingCache] = useState(false);
+  const [consistencyWarningEnabled, setConsistencyWarningEnabled] = useState(
+    () => {
+      try {
+        return localStorage.getItem("consistency-warn-disabled") !== "1";
+      } catch {
+        return true;
+      }
+    },
+  );
   const [permissions, setPermissions] = useState<PermissionInfo[]>([]);
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
   const [requestingPermission, setRequestingPermission] =
@@ -640,6 +650,35 @@ export function SettingsDialog({
             )}
 
             {/* Integrations Section */}
+
+            <div className="space-y-3 rounded-lg border border-border p-4">
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-medium">
+                    {t("settings.privacy.consistencyWarning")}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    {t("settings.privacy.consistencyWarningDescription")}
+                  </span>
+                </div>
+                <Switch
+                  aria-label={t("settings.privacy.consistencyWarning")}
+                  checked={consistencyWarningEnabled}
+                  onCheckedChange={(v: boolean) => {
+                    setConsistencyWarningEnabled(v === true);
+                    try {
+                      if (v === true) {
+                        localStorage.removeItem("consistency-warn-disabled");
+                      } else {
+                        localStorage.setItem("consistency-warn-disabled", "1");
+                      }
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                />
+              </div>
+            </div>
             <div className="space-y-4">
               <Label className="text-base font-medium">
                 {t("settings.integrations.title")}
