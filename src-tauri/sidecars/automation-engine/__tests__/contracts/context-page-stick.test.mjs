@@ -1,5 +1,5 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
 import { runFlow } from "../../engine.mjs";
 import { Logger } from "../../lib/logger.mjs";
 import { handlers } from "../../nodes/index.mjs";

@@ -9,6 +9,27 @@ pub struct ProxySettings {
   pub port: u16,
   pub username: Option<String>,
   pub password: Option<String>,
+  #[serde(default, skip_serializing_if = "Option::is_none")]
+  pub vless_uri: Option<String>,
+}
+
+impl ProxySettings {
+  pub fn new(
+    proxy_type: String,
+    host: String,
+    port: u16,
+    username: Option<String>,
+    password: Option<String>,
+  ) -> Self {
+    Self {
+      proxy_type,
+      host,
+      port,
+      username,
+      password,
+      vless_uri: None,
+    }
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

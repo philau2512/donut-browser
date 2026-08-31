@@ -1,7 +1,9 @@
 function findMatchingEndIf(flow, startNodeId) {
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
   const getNextNodeId = (fromId) => {
-    const edge = flow.edges.find((e) => e.from === fromId && (e.sourceHandle ?? "success") === "success");
+    const edge = flow.edges.find(
+      (e) => e.from === fromId && (e.sourceHandle ?? "success") === "success",
+    );
     return edge ? edge.to : null;
   };
 
@@ -28,7 +30,10 @@ function findMatchingEndIf(flow, startNodeId) {
 export async function ifCondition(node, page, ctx) {
   const { leftValue, operator, rightValue } = node.params ?? {};
 
-  ctx.logger.info(node.id, `ifCondition → "${leftValue}" ${operator} "${rightValue}"`);
+  ctx.logger.info(
+    node.id,
+    `ifCondition → "${leftValue}" ${operator} "${rightValue}"`,
+  );
 
   let result = false;
 
@@ -56,7 +61,9 @@ export async function ifCondition(node, page, ctx) {
 
   // Check if there are explicit true/false branches wired
   const hasExplicitBranch = ctx.flow?.edges?.some(
-    (e) => e.from === node.id && (e.sourceHandle === "true" || e.sourceHandle === "false")
+    (e) =>
+      e.from === node.id &&
+      (e.sourceHandle === "true" || e.sourceHandle === "false"),
   );
 
   if (hasExplicitBranch) {
@@ -65,14 +72,22 @@ export async function ifCondition(node, page, ctx) {
   }
 
   if (result) {
-    ctx.logger.info(node.id, `ifCondition (block true) → proceeding to block body`);
+    ctx.logger.info(
+      node.id,
+      `ifCondition (block true) → proceeding to block body`,
+    );
     return "success";
   } else {
     const matchingEndIfId = findMatchingEndIf(ctx.flow, node.id);
     if (!matchingEndIfId) {
-      throw new Error(`ifCondition: matching endIf node not found for ifCondition ${node.id}`);
+      throw new Error(
+        `ifCondition: matching endIf node not found for ifCondition ${node.id}`,
+      );
     }
-    ctx.logger.info(node.id, `ifCondition (block false) → jumping to endIf: ${matchingEndIfId}`);
+    ctx.logger.info(
+      node.id,
+      `ifCondition (block false) → jumping to endIf: ${matchingEndIfId}`,
+    );
     return { type: "jumpToNode", targetNodeId: matchingEndIfId };
   }
 }
@@ -102,7 +117,10 @@ export async function loopFor(node, page, ctx) {
   ctx.vars[varName] = state.index;
   state.index += 1;
 
-  ctx.logger.info(node.id, `loopFor → loop (iteration ${state.index}/${times}, ${varName}=${ctx.vars[varName]})`);
+  ctx.logger.info(
+    node.id,
+    `loopFor → loop (iteration ${state.index}/${times}, ${varName}=${ctx.vars[varName]})`,
+  );
   return "loop";
 }
 
@@ -119,14 +137,20 @@ export async function loopElements(node, page, ctx) {
       const elements = await page.locator(selector).all();
       state = { elements, index: 0 };
       ctx.vars[stateKey] = state;
-      ctx.logger.info(node.id, `loopElements → found ${elements.length} elements matching "${selector}"`);
+      ctx.logger.info(
+        node.id,
+        `loopElements → found ${elements.length} elements matching "${selector}"`,
+      );
     }
 
     // Check if loop is done
     if (state.index >= state.elements.length) {
       // Clean up state and exit
       delete ctx.vars[stateKey];
-      ctx.logger.info(node.id, `loopElements → done (${state.elements.length} elements)`);
+      ctx.logger.info(
+        node.id,
+        `loopElements → done (${state.elements.length} elements)`,
+      );
       return "done";
     }
 
@@ -136,7 +160,10 @@ export async function loopElements(node, page, ctx) {
     ctx.vars[elementVar] = state.index;
     state.index += 1;
 
-    ctx.logger.info(node.id, `loopElements → loop (element ${state.index}/${state.elements.length}, ${elementVar}=${ctx.vars[elementVar]})`);
+    ctx.logger.info(
+      node.id,
+      `loopElements → loop (element ${state.index}/${state.elements.length}, ${elementVar}=${ctx.vars[elementVar]})`,
+    );
     return "loop";
   } catch (err) {
     // Clean up state on error to prevent stale state in next run
@@ -153,7 +180,10 @@ export async function evalJs(node, page, ctx) {
     throw new Error("evalJs: code is required");
   }
 
-  ctx.logger.info(node.id, `evalJs → executing${saveToVar ? ` (save to ${saveToVar})` : ""}`);
+  ctx.logger.info(
+    node.id,
+    `evalJs → executing${saveToVar ? ` (save to ${saveToVar})` : ""}`,
+  );
 
   const result = await page.evaluate(code);
 

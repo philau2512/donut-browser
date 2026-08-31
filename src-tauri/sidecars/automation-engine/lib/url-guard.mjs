@@ -14,7 +14,10 @@ const DEFAULT_ALLOWED_SCHEMES = ["http:", "https:"];
  * @returns {URL} the parsed URL when allowed
  * @throws {Error} when the URL is unparsable or its scheme is not allowed
  */
-export function assertNavigableUrl(rawUrl, allowedSchemes = DEFAULT_ALLOWED_SCHEMES) {
+export function assertNavigableUrl(
+  rawUrl,
+  allowedSchemes = DEFAULT_ALLOWED_SCHEMES,
+) {
   if (typeof rawUrl !== "string" || rawUrl.trim() === "") {
     throw new Error("openUrl: url must be a non-empty string");
   }
@@ -49,7 +52,10 @@ export function assertNavigableUrl(rawUrl, allowedSchemes = DEFAULT_ALLOWED_SCHE
  * @param {string[]} [allowedSchemes]
  * @returns {boolean}
  */
-export function isAllowedUrlScheme(rawUrl, allowedSchemes = DEFAULT_ALLOWED_SCHEMES) {
+export function isAllowedUrlScheme(
+  rawUrl,
+  allowedSchemes = DEFAULT_ALLOWED_SCHEMES,
+) {
   try {
     assertNavigableUrl(rawUrl, allowedSchemes);
     return true;

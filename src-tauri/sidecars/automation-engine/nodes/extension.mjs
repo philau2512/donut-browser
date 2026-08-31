@@ -30,7 +30,9 @@ export async function switchExtensionPopup(node, page, ctx) {
     ctx.logger.info(node.id, "switchExtensionPopup → main page");
     // Find the first non-extension page
     const allPages = page.context().pages();
-    const mainPage = allPages.find((p) => !p.url().startsWith("chrome-extension://")) || allPages[0];
+    const mainPage =
+      allPages.find((p) => !p.url().startsWith("chrome-extension://")) ||
+      allPages[0];
     if (!mainPage) {
       throw new Error("switchExtensionPopup: no main page found");
     }
@@ -42,23 +44,34 @@ export async function switchExtensionPopup(node, page, ctx) {
 
   // mode === "popup"
   if (typeof selector !== "string" || selector.trim() === "") {
-    throw new Error("switchExtensionPopup: selector is required for popup mode");
+    throw new Error(
+      "switchExtensionPopup: selector is required for popup mode",
+    );
   }
 
-  ctx.logger.info(node.id, `switchExtensionPopup → popup (selector: ${selector})`);
+  ctx.logger.info(
+    node.id,
+    `switchExtensionPopup → popup (selector: ${selector})`,
+  );
 
   const allPages = page.context().pages();
-  const popupPage = allPages.find((p) => p.url().startsWith("chrome-extension://"));
+  const popupPage = allPages.find((p) =>
+    p.url().startsWith("chrome-extension://"),
+  );
 
   if (!popupPage) {
-    throw new Error("switchExtensionPopup: no extension popup page found in context");
+    throw new Error(
+      "switchExtensionPopup: no extension popup page found in context",
+    );
   }
 
   // Validate popup is ready by waiting for selector
   try {
     await popupPage.waitForSelector(selector, { timeout: t });
   } catch (err) {
-    throw new Error(`switchExtensionPopup: popup did not contain selector "${selector}" within ${t}ms`);
+    throw new Error(
+      `switchExtensionPopup: popup did not contain selector "${selector}" within ${t}ms`,
+    );
   }
 
   ctx.page = popupPage;

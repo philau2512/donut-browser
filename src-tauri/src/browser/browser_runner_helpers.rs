@@ -183,6 +183,7 @@ async fn resolve_launch_proxy(
               port: dynamic_proxy.port,
               username: dynamic_proxy.username,
               password: dynamic_proxy.password,
+              vless_uri: None,
             }));
           }
         }

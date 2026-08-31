@@ -14,23 +14,23 @@
 //   manager.flush()   — persist all dirty state
 //   manager.getReport()  — snapshot for Phase 4
 
-import { loadResourceItems, selectCandidates } from "./resource-loader.mjs";
-import {
-  applyLease,
-  applySuccess,
-  applyFail,
-  applyRelease,
-  tickCooldown,
-} from "./item-state-machine.mjs";
-import {
-  loadPersistedState,
-  savePersistedState,
-  mergePersistedState,
-} from "./resource-persistence.mjs";
-import { ResourceEventEmitter } from "./resource-event-emitter.mjs";
+import { watch } from "node:fs";
 import { appendFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { watch } from "node:fs";
+import {
+  applyFail,
+  applyLease,
+  applyRelease,
+  applySuccess,
+  tickCooldown,
+} from "./item-state-machine.mjs";
+import { ResourceEventEmitter } from "./resource-event-emitter.mjs";
+import { loadResourceItems, selectCandidates } from "./resource-loader.mjs";
+import {
+  loadPersistedState,
+  mergePersistedState,
+  savePersistedState,
+} from "./resource-persistence.mjs";
 
 export class ResourceManager {
   constructor() {
@@ -127,10 +127,16 @@ export class ResourceManager {
       this._items.set(def.id, itemMap);
 
       // 1. Setup Periodic File Watcher for reloadPeriodically
-      if (def.source?.kind === "file" && def.source?.path && def.fileBehavior?.reloadPeriodically) {
-        const filePath = def.source.path.startsWith("/") || /^[A-Za-z]:[/\\]/.test(def.source.path)
-          ? def.source.path
-          : join(this._flowDir, def.source.path);
+      if (
+        def.source?.kind === "file" &&
+        def.source?.path &&
+        def.fileBehavior?.reloadPeriodically
+      ) {
+        const filePath =
+          def.source.path.startsWith("/") ||
+          /^[A-Za-z]:[/\\]/.test(def.source.path)
+            ? def.source.path
+            : join(this._flowDir, def.source.path);
 
         try {
           let debounceTimeout = null;
@@ -211,7 +217,12 @@ export class ResourceManager {
 
     let changed = false;
     for (const item of items.values()) {
-      if (item.status === "exhausted" || item.status === "disabled" || item.successUsage > 0 || item.failUsage > 0) {
+      if (
+        item.status === "exhausted" ||
+        item.status === "disabled" ||
+        item.successUsage > 0 ||
+        item.failUsage > 0
+      ) {
         item.status = "available";
         item.successUsage = 0;
         item.failUsage = 0;
@@ -248,7 +259,9 @@ export class ResourceManager {
     if (!def) return null;
 
     if (def._loadError) {
-      throw new Error(`ResourceManager: failed to load resource '${resourceName}': ${def._loadError}`);
+      throw new Error(
+        `ResourceManager: failed to load resource '${resourceName}': ${def._loadError}`,
+      );
     }
 
     // output-only resources cannot be allocated as input.
@@ -315,11 +328,12 @@ export class ResourceManager {
       this._dirty.add(def.id);
 
       const eventType =
-        def.limits.maxSuccessUsage > 0 && item.successUsage >= def.limits.maxSuccessUsage
+        def.limits.maxSuccessUsage > 0 &&
+        item.successUsage >= def.limits.maxSuccessUsage
           ? "resource-exhausted"
           : item.status === "cooldown"
-          ? "resource-cooldown"
-          : "resource-success";
+            ? "resource-cooldown"
+            : "resource-success";
 
       this.events.emit(eventType, {
         resourceId: def.id,
@@ -347,8 +361,8 @@ export class ResourceManager {
         def.limits.maxFailUsage > 0 && item.failUsage >= def.limits.maxFailUsage
           ? "resource-disabled"
           : item.status === "cooldown"
-          ? "resource-cooldown"
-          : "resource-fail";
+            ? "resource-cooldown"
+            : "resource-fail";
 
       this.events.emit(eventType, {
         resourceId: def.id,
@@ -396,17 +410,30 @@ export class ResourceManager {
    * @param {"append-line" | "overwrite" | "append-jsonl"} mode
    * @returns {Promise<void>}
    */
-  async writeOutput(profileId, runId, resourceName, data, mode = "append-line") {
+  async writeOutput(
+    profileId,
+    runId,
+    resourceName,
+    data,
+    mode = "append-line",
+  ) {
     const def = this._getDefByName(resourceName);
-    if (!def) throw new Error(`ResourceManager: unknown resource '${resourceName}'`);
+    if (!def)
+      throw new Error(`ResourceManager: unknown resource '${resourceName}'`);
     if (def._loadError) {
-      throw new Error(`ResourceManager: failed to load resource '${resourceName}': ${def._loadError}`);
+      throw new Error(
+        `ResourceManager: failed to load resource '${resourceName}': ${def._loadError}`,
+      );
     }
     if (def.direction === "input") {
-      throw new Error(`ResourceManager: resource '${resourceName}' is input-only and cannot be written`);
+      throw new Error(
+        `ResourceManager: resource '${resourceName}' is input-only and cannot be written`,
+      );
     }
     if (!def.fileBehavior?.writeFile || !def.source?.path) {
-      throw new Error(`ResourceManager: resource '${resourceName}' has no writable file path`);
+      throw new Error(
+        `ResourceManager: resource '${resourceName}' has no writable file path`,
+      );
     }
 
     this.events.emit("resource-write-start", {
@@ -419,22 +446,34 @@ export class ResourceManager {
 
     // Serialize writes by chaining on the existing queue promise.
     const prev = this._writeQueues.get(def.id) ?? Promise.resolve();
-    const next = prev.then(() => this._doWrite(def, profileId, runId, data, mode));
-    this._writeQueues.set(def.id, next.catch(() => {})); // keep queue alive on error
+    const next = prev.then(() =>
+      this._doWrite(def, profileId, runId, data, mode),
+    );
+    this._writeQueues.set(
+      def.id,
+      next.catch(() => {}),
+    ); // keep queue alive on error
     return next;
   }
 
   async _doWrite(def, profileId, runId, data, mode) {
-    const filePath = def.source.path.startsWith("/") || /^[A-Za-z]:[/\\]/.test(def.source.path)
-      ? def.source.path
-      : join(this._flowDir, def.source.path);
+    const filePath =
+      def.source.path.startsWith("/") || /^[A-Za-z]:[/\\]/.test(def.source.path)
+        ? def.source.path
+        : join(this._flowDir, def.source.path);
 
     try {
       await mkdir(filePath.replace(/[/\\][^/\\]+$/, ""), { recursive: true });
 
       let payload;
       if (mode === "append-jsonl") {
-        payload = JSON.stringify({ ts: new Date().toISOString(), profileId, runId, data }) + "\n";
+        payload =
+          JSON.stringify({
+            ts: new Date().toISOString(),
+            profileId,
+            runId,
+            data,
+          }) + "\n";
       } else if (mode === "overwrite") {
         // Overwrite handled via appendFile is intentionally not supported here;
         // caller should use writeFile directly for overwrite semantics.

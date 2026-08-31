@@ -129,7 +129,8 @@ export const commandCoverage = {
       "read_profile_cookies",
       "get_profile_cookie_stats",
       "copy_profile_cookies",
-      "import_cookies_from_file",
+      "analyze_pasted_cookies",
+      "import_pasted_cookies",
       "export_profile_cookies",
       "set_profile_password",
       "change_profile_password",
@@ -212,6 +213,7 @@ export const commandCoverage = {
     commands: [
       "get_sync_settings",
       "save_sync_settings",
+      "check_sync_server_connection",
       "cloud_auth::restart_sync_service",
       "set_profile_sync_mode",
       "cancel_profile_sync",

@@ -4,8 +4,6 @@ import { parse as parseCsv } from "csv-parse/sync";
 import { stringify as stringifyCsv } from "csv-stringify/sync";
 import { assertNavigableUrl } from "../lib/url-guard.mjs";
 
-
-
 /** screenshot: capture a page image */
 export async function screenshot(node, page, ctx) {
   const { path: p, fullPage } = node.params ?? {};
@@ -51,7 +49,7 @@ export async function setVariable(node, _page, ctx) {
   }
 
   const op = operator || "=";
-  
+
   if (op === "=") {
     ctx.logger.info(node.id, `setVariable → ${name} = "${value}"`);
     ctx.vars[name] = value;
@@ -65,13 +63,26 @@ export async function setVariable(node, _page, ctx) {
     const operand = Number(value) || 0;
     let result = 0;
     switch (op) {
-      case "+": result = current + operand; break;
-      case "-": result = current - operand; break;
-      case "*": result = current * operand; break;
-      case "/": result = operand !== 0 ? current / operand : 0; break;
-      default: result = operand; break;
+      case "+":
+        result = current + operand;
+        break;
+      case "-":
+        result = current - operand;
+        break;
+      case "*":
+        result = current * operand;
+        break;
+      case "/":
+        result = operand !== 0 ? current / operand : 0;
+        break;
+      default:
+        result = operand;
+        break;
     }
-    ctx.logger.info(node.id, `setVariable → ${name} ${op} ${operand} = ${result}`);
+    ctx.logger.info(
+      node.id,
+      `setVariable → ${name} ${op} ${operand} = ${result}`,
+    );
     ctx.vars[name] = String(result);
   }
 }
@@ -98,7 +109,10 @@ export async function readCsv(node, _page, ctx) {
   });
 
   ctx.vars[saveToVar] = JSON.stringify(records);
-  ctx.logger.info(node.id, `readCsv → saved ${records.length} rows to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `readCsv → saved ${records.length} rows to ${saveToVar}`,
+  );
 }
 
 /** writeCsv: write data (JSON array) to CSV file */
@@ -164,7 +178,10 @@ export async function downloadFile(node, _page, ctx) {
 
     const buffer = Buffer.from(await response.arrayBuffer());
     await writeFile(resolved, buffer);
-    ctx.logger.info(node.id, `downloadFile → downloaded ${buffer.length} bytes`);
+    ctx.logger.info(
+      node.id,
+      `downloadFile → downloaded ${buffer.length} bytes`,
+    );
   } finally {
     clearTimeout(timeoutId);
   }

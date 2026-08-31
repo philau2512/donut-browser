@@ -1,13 +1,14 @@
 // Resources module barrel — Phase 2.
-export { ResourceManager } from "./resource-manager.mjs";
-export { ResourceEventEmitter } from "./resource-event-emitter.mjs";
-export { deriveItemId } from "./resource-persistence.mjs";
-export { loadResourceItems, selectCandidates } from "./resource-loader.mjs";
+
 export {
-  canAllocate,
-  applyLease,
-  applySuccess,
   applyFail,
+  applyLease,
   applyRelease,
+  applySuccess,
+  canAllocate,
   tickCooldown,
 } from "./item-state-machine.mjs";
+export { ResourceEventEmitter } from "./resource-event-emitter.mjs";
+export { loadResourceItems, selectCandidates } from "./resource-loader.mjs";
+export { ResourceManager } from "./resource-manager.mjs";
+export { deriveItemId } from "./resource-persistence.mjs";

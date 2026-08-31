@@ -1,20 +1,26 @@
 // Unit tests for the automation engine — run with `node --test`.
 // No real browser: nodes are exercised against a mock page that records calls.
 
-import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-
-import { interpolateString, interpolateParams } from "../lib/interpolate.mjs";
-import { validateFlow, FlowValidationError } from "../lib/validate.mjs";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { runFlow, topoOrder } from "../engine.mjs";
+import { interpolateParams, interpolateString } from "../lib/interpolate.mjs";
 import { createRedactor, Logger } from "../lib/logger.mjs";
+import {
+  containArtifactPath,
+  sanitizeFilenameFragment,
+} from "../lib/safe-path.mjs";
 import { assertNavigableUrl, isAllowedUrlScheme } from "../lib/url-guard.mjs";
-import { containArtifactPath, sanitizeFilenameFragment } from "../lib/safe-path.mjs";
-import { topoOrder, runFlow } from "../engine.mjs";
+import { FlowValidationError, validateFlow } from "../lib/validate.mjs";
 
-const ENGINE_PATH = join(dirname(fileURLToPath(import.meta.url)), "..", "engine.mjs");
+const ENGINE_PATH = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "engine.mjs",
+);
 
 /** Spawn `node engine.mjs --validate`, pipe `input` to stdin, resolve {code,stderr}. */
 function runValidate(input) {
@@ -76,7 +82,10 @@ test("interpolate profile flow vars (uppercase keys)", () => {
     interpolateString("{{PROFILE_ID}} @ {{CDP_PORT}}", vars),
     "p1 @ 9222",
   );
-  assert.equal(interpolateString("ip={{PROXY_IP}} cc={{IP_COUNTRY}}", vars), "ip=1.2.3.4 cc=US");
+  assert.equal(
+    interpolateString("ip={{PROXY_IP}} cc={{IP_COUNTRY}}", vars),
+    "ip=1.2.3.4 cc=US",
+  );
 });
 
 // ---- validate (closed schema #7b) -----------------------------------------
@@ -86,7 +95,12 @@ const goodFlow = {
   name: "t",
   nodes: [
     { id: "n1", type: "openUrl", params: { url: "https://example.com" } },
-    { id: "n2", type: "click", params: { selector: "#go" }, continueOnError: true },
+    {
+      id: "n2",
+      type: "click",
+      params: { selector: "#go" },
+      continueOnError: true,
+    },
   ],
   edges: [{ from: "n1", to: "n2" }],
 };
@@ -168,7 +182,12 @@ test("url-guard allows http/https", () => {
 });
 
 test("url-guard rejects dangerous schemes", () => {
-  for (const u of ["file:///x", "javascript:alert(1)", "chrome://settings", "data:text/html,x"]) {
+  for (const u of [
+    "file:///x",
+    "javascript:alert(1)",
+    "chrome://settings",
+    "data:text/html,x",
+  ]) {
     assert.equal(isAllowedUrlScheme(u), false, `should reject ${u}`);
   }
 });
@@ -255,7 +274,10 @@ test("topoOrder follows edges from root", () => {
       { from: "b", to: "c" },
     ],
   };
-  assert.deepEqual(topoOrder(flow).map((n) => n.id), ["a", "b", "c"]);
+  assert.deepEqual(
+    topoOrder(flow).map((n) => n.id),
+    ["a", "b", "c"],
+  );
 });
 
 function mockPage() {
@@ -339,7 +361,13 @@ test("runFlow stops on error when continueOnError=false", async () => {
     throw new Error("nav boom");
   };
   const { logger, lines } = collectLogger();
-  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  const failed = await runFlow({
+    flow,
+    page,
+    vars: {},
+    artifactsDir: "/tmp",
+    logger,
+  });
   assert.equal(failed, true);
   // n2 must NOT have run
   assert.ok(!lines.some((l) => l.nodeId === "n2" && l.msg.includes("after")));
@@ -350,7 +378,12 @@ test("runFlow continues past error when continueOnError=true", async () => {
     version: 1,
     name: "t",
     nodes: [
-      { id: "n1", type: "openUrl", params: { url: "https://example.com" }, continueOnError: true },
+      {
+        id: "n1",
+        type: "openUrl",
+        params: { url: "https://example.com" },
+        continueOnError: true,
+      },
       { id: "n2", type: "log", params: { message: "after" } },
     ],
     edges: [{ from: "n1", to: "n2" }],
@@ -360,7 +393,13 @@ test("runFlow continues past error when continueOnError=true", async () => {
     throw new Error("nav boom");
   };
   const { logger, lines } = collectLogger();
-  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  const failed = await runFlow({
+    flow,
+    page,
+    vars: {},
+    artifactsDir: "/tmp",
+    logger,
+  });
   assert.equal(failed, false);
   assert.ok(lines.some((l) => l.level === "warn"));
   assert.ok(lines.some((l) => l.nodeId === "n2" && l.msg.includes("after")));
@@ -370,7 +409,13 @@ test("type node never logs the typed text (#12)", async () => {
   const flow = {
     version: 1,
     name: "t",
-    nodes: [{ id: "n1", type: "type", params: { selector: "#pw", text: "{{MY_PASSWORD}}" } }],
+    nodes: [
+      {
+        id: "n1",
+        type: "type",
+        params: { selector: "#pw", text: "{{MY_PASSWORD}}" },
+      },
+    ],
     edges: [],
   };
   const page = mockPage();
@@ -404,10 +449,20 @@ test("runFlow follows success branch when node succeeds", async () => {
   };
   const page = mockPage();
   const { logger, lines } = collectLogger();
-  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  const failed = await runFlow({
+    flow,
+    page,
+    vars: {},
+    artifactsDir: "/tmp",
+    logger,
+  });
   assert.equal(failed, false);
-  assert.ok(lines.some((l) => l.nodeId === "n2" && l.msg.includes("success_path")));
-  assert.ok(!lines.some((l) => l.nodeId === "n3" && l.msg.includes("fail_path")));
+  assert.ok(
+    lines.some((l) => l.nodeId === "n2" && l.msg.includes("success_path")),
+  );
+  assert.ok(
+    !lines.some((l) => l.nodeId === "n3" && l.msg.includes("fail_path")),
+  );
 });
 
 test("runFlow follows fail branch when node fails", async () => {
@@ -429,26 +484,38 @@ test("runFlow follows fail branch when node fails", async () => {
     throw new Error("fail on purpose");
   };
   const { logger, lines } = collectLogger();
-  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  const failed = await runFlow({
+    flow,
+    page,
+    vars: {},
+    artifactsDir: "/tmp",
+    logger,
+  });
   assert.equal(failed, false);
-  assert.ok(!lines.some((l) => l.nodeId === "n2" && l.msg.includes("success_path")));
-  assert.ok(lines.some((l) => l.nodeId === "n3" && l.msg.includes("fail_path")));
+  assert.ok(
+    !lines.some((l) => l.nodeId === "n2" && l.msg.includes("success_path")),
+  );
+  assert.ok(
+    lines.some((l) => l.nodeId === "n3" && l.msg.includes("fail_path")),
+  );
 });
 
 test("runFlow terminates and reports error on infinite loop", async () => {
   const flow = {
     version: 1,
     name: "t",
-    nodes: [
-      { id: "n1", type: "log", params: { message: "loop" } },
-    ],
-    edges: [
-      { from: "n1", to: "n1", sourceHandle: "success" },
-    ],
+    nodes: [{ id: "n1", type: "log", params: { message: "loop" } }],
+    edges: [{ from: "n1", to: "n1", sourceHandle: "success" }],
   };
   const page = mockPage();
   const { logger, lines } = collectLogger();
-  const failed = await runFlow({ flow, page, vars: {}, artifactsDir: "/tmp", logger });
+  const failed = await runFlow({
+    flow,
+    page,
+    vars: {},
+    artifactsDir: "/tmp",
+    logger,
+  });
   assert.equal(failed, true);
   assert.ok(lines.some((l) => l.msg.includes("maximum step execution limit")));
 });

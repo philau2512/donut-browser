@@ -151,6 +151,7 @@ fn parse_proxy_override(
     port,
     username: user.filter(|s| !s.is_empty()),
     password: pass.filter(|s| !s.is_empty()),
+    vless_uri: None,
   })
 }
 

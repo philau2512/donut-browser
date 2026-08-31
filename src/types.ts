@@ -87,6 +87,24 @@ export interface SyncSettings {
 }
 
 /**
+ * Result of `check_sync_server_connection`. Files upload straight to the
+ * storage host named in the presigned URL rather than through the sync server,
+ * so a healthy server is not evidence that sync works: `storage_reachable`
+ * false means every transfer will fail at connect.
+ *
+ * `null` means "not known", which is not the same as false — a server that
+ * predates `/readyz`, or a cloud deployment that withholds its storage host,
+ * discloses nothing to probe.
+ */
+export interface SyncServerCheck {
+  server_reachable: boolean;
+  storage_ready: boolean | null;
+  storage_endpoint: string | null;
+  storage_reachable: boolean | null;
+  storage_error: string | null;
+}
+
+/**
  * Capability/limit set derived from the plan by the backend. Features are gated
  * on these flags instead of a single "is paid?" check, so a plan like the future
  * "starter" tier (cross-OS fingerprints + cloud backup, no automation) is just
@@ -820,6 +838,53 @@ export interface CookieCopyResult {
   errors: string[];
 }
 
+// Cookie paste types. Unlike the copy types above these are serialized with
+// `rename_all = "camelCase"`, so the field names differ from the Rust structs.
+export type CookieIssueSeverity = "error" | "warning" | "info";
+
+export interface CookieIssue {
+  code: string;
+  severity: CookieIssueSeverity;
+  source: string | null;
+  params: Record<string, string>;
+}
+
+export type CookiePasteFormat = "json" | "netscape" | "nameValue";
+
+export type CookieWriteMode = "merge" | "replaceMatchingSites";
+
+/** Carries no `value`: the value is the credential and never leaves Rust. */
+export interface PastedCookiePreview {
+  name: string;
+  domain: string;
+  path: string;
+  expires: number;
+  isSecure: boolean;
+  isHttpOnly: boolean;
+  sameSite: number;
+}
+
+export interface CookieAnalysis {
+  format: CookiePasteFormat | null;
+  cookies: PastedCookiePreview[];
+  issues: CookieIssue[];
+  siteRequired: boolean;
+  expiredCount: number;
+  /** `null` when the store cannot be read, which is not the same as zero. */
+  replaceDeleteCount: number | null;
+  clearsOnClose: boolean;
+  /** A `{"code":…}` string for `translateBackendError`, or `null` to proceed. */
+  blockedBy: string | null;
+}
+
+export interface CookiePasteImportResult {
+  added: number;
+  overwritten: number;
+  deleted: number;
+  skipped: number;
+  issues: CookieIssue[];
+}
+
 // Proxy import/export types
 export interface ProxyExportData {
   version: string;
@@ -992,3 +1057,16 @@ export const AUTOMATION_VARIABLES = [
 ] as const;
 
 export type AutomationVariable = (typeof AUTOMATION_VARIABLES)[number];
+
+/**
+ * What happened when the user asked Donut to become the default browser.
+ *
+ * macOS and Linux let a program make the change itself, so the answer there is
+ * always "set". Windows reserves the final choice for its own settings page:
+ * the app registers itself, Windows Settings opens, and the user finishes the
+ * job. Treating that case as plain success is how the button used to report a
+ * change that had not happened.
+ */
+export type SetDefaultBrowserOutcome =
+  | { status: "set" }
+  | { status: "awaitingSystemSettings" };

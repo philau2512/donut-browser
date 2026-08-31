@@ -1,8 +1,8 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { NODE_SCHEMAS } from "../../lib/validate.mjs";
 import { handlers, NODE_TYPES } from "../../nodes/index.mjs";

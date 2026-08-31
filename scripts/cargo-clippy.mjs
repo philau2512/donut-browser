@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
-import { resolve, dirname } from "node:path";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const isFix = args.includes("--fix");

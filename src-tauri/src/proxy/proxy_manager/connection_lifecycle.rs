@@ -52,6 +52,7 @@ impl ProxyManager {
                 port: existing.local_port,
                 username: None,
                 password: None,
+                vless_uri: None,
               });
             }
             // Need to add this PID to the mapping - we'll do that after starting
@@ -92,6 +93,7 @@ impl ProxyManager {
               port: existing.local_port,
               username: None,
               password: None,
+              vless_uri: None,
             });
           }
           // Profile ID changed - we'll create a new proxy but don't stop the old one
@@ -245,6 +247,7 @@ impl ProxyManager {
       port: proxy_info.local_port,
       username: None,
       password: None,
+      vless_uri: None,
     })
   }
 

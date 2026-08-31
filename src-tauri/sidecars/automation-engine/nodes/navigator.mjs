@@ -6,7 +6,8 @@ const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** openUrl: navigate the page to a URL, with optional retry on failure */
 export async function openUrl(node, page, ctx) {
-  const { url, timeout, waitUntil, retryOnFail, maxRetry, retrySleep } = node.params ?? {};
+  const { url, timeout, waitUntil, retryOnFail, maxRetry, retrySleep } =
+    node.params ?? {};
   const parsed = assertNavigableUrl(url, ctx.allowedSchemes);
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   const gotoOpts = { timeout: t, waitUntil: waitUntil ?? "load" };
@@ -18,18 +19,25 @@ export async function openUrl(node, page, ctx) {
   }
 
   const attempts = Number.isFinite(maxRetry) && maxRetry > 0 ? maxRetry : 3;
-  const sleepMs = Number.isFinite(retrySleep) && retrySleep >= 0 ? retrySleep : 1000;
+  const sleepMs =
+    Number.isFinite(retrySleep) && retrySleep >= 0 ? retrySleep : 1000;
 
   let lastError;
   for (let i = 0; i <= attempts; i++) {
     try {
-      ctx.logger.info(node.id, `openUrl → ${parsed.href}${i > 0 ? ` (retry ${i}/${attempts})` : ""}`);
+      ctx.logger.info(
+        node.id,
+        `openUrl → ${parsed.href}${i > 0 ? ` (retry ${i}/${attempts})` : ""}`,
+      );
       await page.goto(parsed.href, gotoOpts);
       return;
     } catch (err) {
       lastError = err;
       if (i < attempts) {
-        ctx.logger.warn(node.id, `openUrl failed (attempt ${i + 1}/${attempts + 1}), retrying in ${sleepMs}ms — ${err.message}`);
+        ctx.logger.warn(
+          node.id,
+          `openUrl failed (attempt ${i + 1}/${attempts + 1}), retrying in ${sleepMs}ms — ${err.message}`,
+        );
         if (sleepMs > 0) await new Promise((r) => setTimeout(r, sleepMs));
       }
     }
@@ -44,17 +52,16 @@ export async function scroll(node, page, ctx) {
   const root = getLocatorRoot(ctx);
   if (selector) {
     ctx.logger.info(node.id, `scroll → into view: ${selector}`);
-    const el = await root.waitForSelector(selector, { timeout: DEFAULT_TIMEOUT_MS });
+    const el = await root.waitForSelector(selector, {
+      timeout: DEFAULT_TIMEOUT_MS,
+    });
     await el.scrollIntoViewIfNeeded();
     return;
   }
   const dx = Number.isFinite(x) ? x : 0;
   const dy = Number.isFinite(y) ? y : 0;
   ctx.logger.info(node.id, `scroll → by (${dx}, ${dy})`);
-  await page.evaluate(
-    ([sx, sy]) => window.scrollBy(sx, sy),
-    [dx, dy],
-  );
+  await page.evaluate(([sx, sy]) => window.scrollBy(sx, sy), [dx, dy]);
 }
 
 /** wait: wait for a selector or fixed time */
@@ -63,8 +70,14 @@ export async function wait(node, page, ctx) {
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   if (selector) {
     const root = getLocatorRoot(ctx);
-    ctx.logger.info(node.id, `wait → selector: ${selector} (state=${state ?? "visible"})`);
-    await root.waitForSelector(selector, { timeout: t, state: state ?? "visible" });
+    ctx.logger.info(
+      node.id,
+      `wait → selector: ${selector} (state=${state ?? "visible"})`,
+    );
+    await root.waitForSelector(selector, {
+      timeout: t,
+      state: state ?? "visible",
+    });
     return;
   }
   ctx.logger.info(node.id, `wait → ${t}ms`);
@@ -116,10 +129,12 @@ async function pickSwitchTabPage(allPages, params) {
 
   // If matchBy is present, use new logic. Otherwise, fall back to old logic.
   const urlNeedle = matchBy === "url" ? matchValue : (urlFilter ?? urlPattern);
-  const urlMatchMode = matchBy === "url" ? (matchMode ?? "contain") : (urlMode ?? "contain");
+  const urlMatchMode =
+    matchBy === "url" ? (matchMode ?? "contain") : (urlMode ?? "contain");
 
   const titleNeedle = matchBy === "title" ? matchValue : titleFilter;
-  const titleMatchMode = matchBy === "title" ? (matchMode ?? "contain") : (titleMode ?? "contain");
+  const titleMatchMode =
+    matchBy === "title" ? (matchMode ?? "contain") : (titleMode ?? "contain");
 
   let candidates = allPages;
   if (urlNeedle) {
@@ -137,9 +152,10 @@ async function pickSwitchTabPage(allPages, params) {
     candidates = next;
   }
 
-  let idx = matchBy === "index" ? parseInt(matchValue, 10) : resolveTabIndex(params);
+  let idx =
+    matchBy === "index" ? parseInt(matchValue, 10) : resolveTabIndex(params);
   if (isNaN(idx)) idx = null;
-  
+
   if (idx != null) {
     if (candidates.length === 0) {
       const clamped = Math.max(0, Math.min(idx, allPages.length - 1));
@@ -213,7 +229,9 @@ export async function closeTab(node, page, ctx) {
       await remaining[0].bringToFront();
     }
   } else {
-    throw new Error("closeTab: no pages remaining in context (all tabs closed)");
+    throw new Error(
+      "closeTab: no pages remaining in context (all tabs closed)",
+    );
   }
 }
 

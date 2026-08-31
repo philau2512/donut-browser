@@ -155,6 +155,7 @@ mod tests {
       port: 8080,
       username: None,
       password: None,
+      vless_uri: None,
     };
 
     assert_eq!(proxy.proxy_type, "http");
@@ -168,6 +169,7 @@ mod tests {
       port: 1080,
       username: None,
       password: None,
+      vless_uri: None,
     };
 
     assert_eq!(socks_proxy.proxy_type, "socks5");
@@ -304,6 +306,7 @@ mod tests {
       port: 8080,
       username: None,
       password: None,
+      vless_uri: None,
     };
 
     // Test that it can be serialized (implements Serialize)

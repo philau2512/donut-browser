@@ -58,7 +58,11 @@ async function readFingerprint(page) {
     platform: navigator.platform,
     userAgent: navigator.userAgent,
     hardwareConcurrency: navigator.hardwareConcurrency,
-    screen: { width: screen.width, height: screen.height, depth: screen.colorDepth },
+    screen: {
+      width: screen.width,
+      height: screen.height,
+      depth: screen.colorDepth,
+    },
     webglVendor: (() => {
       try {
         const gl = document.createElement("canvas").getContext("webgl");
@@ -85,7 +89,7 @@ async function main() {
   if (!cdpPort) {
     console.error(
       "Missing --cdp-port. Launch a Wayfern profile first, then pass its remote-debugging-port.\n" +
-        "  node spike.mjs --cdp-port 9222 [--probe-url https://abrahamjuliot.github.io/creepjs/]"
+        "  node spike.mjs --cdp-port 9222 [--probe-url https://abrahamjuliot.github.io/creepjs/]",
     );
     process.exit(2);
   }
@@ -105,7 +109,10 @@ async function main() {
   const contexts = browser.contexts();
   log("contexts()", `${contexts.length} context(s) — expect >= 1, NOT empty`);
   if (contexts.length === 0) {
-    log("VERDICT", "FAIL #6 — no contexts; connectOverCDP did not attach to launch context");
+    log(
+      "VERDICT",
+      "FAIL #6 — no contexts; connectOverCDP did not attach to launch context",
+    );
     await browser.close();
     process.exit(1);
   }
@@ -116,52 +123,94 @@ async function main() {
 
   // Reuse an existing page if present (engine does the same — never blind newPage).
   const launchPage = launchPages[0] ?? (await ctx.newPage());
-  await launchPage.goto("https://example.com", { waitUntil: "load", timeout: 30000 });
+  await launchPage.goto("https://example.com", {
+    waitUntil: "load",
+    timeout: 30000,
+  });
   const title = await launchPage.title();
   log("launch page title", JSON.stringify(title));
   const launchFp = await readFingerprint(launchPage);
   log("launch fingerprint", JSON.stringify(launchFp));
 
   // --- Gate #7: fingerprint must NOT leak on a NEW page ---
-  log("#7 new-page check", "opening context.newPage() to test fingerprint spoofing ...");
+  log(
+    "#7 new-page check",
+    "opening context.newPage() to test fingerprint spoofing ...",
+  );
   const newPage = await ctx.newPage();
-  await newPage.goto("https://example.com", { waitUntil: "load", timeout: 30000 });
+  await newPage.goto("https://example.com", {
+    waitUntil: "load",
+    timeout: 30000,
+  });
   const newFp = await readFingerprint(newPage);
   log("new-page fingerprint", JSON.stringify(newFp));
 
   const leaked = [];
-  for (const key of ["timezone", "platform", "userAgent", "hardwareConcurrency", "webglRenderer"]) {
+  for (const key of [
+    "timezone",
+    "platform",
+    "userAgent",
+    "hardwareConcurrency",
+    "webglRenderer",
+  ]) {
     if (JSON.stringify(launchFp[key]) !== JSON.stringify(newFp[key])) {
-      leaked.push(`${key}: launch=${JSON.stringify(launchFp[key])} new=${JSON.stringify(newFp[key])}`);
+      leaked.push(
+        `${key}: launch=${JSON.stringify(launchFp[key])} new=${JSON.stringify(newFp[key])}`,
+      );
     }
   }
   if (leaked.length > 0) {
-    log("#7 VERDICT", "MISMATCH — new page differs from launch page. Wayfern may NOT spoof new targets:");
+    log(
+      "#7 VERDICT",
+      "MISMATCH — new page differs from launch page. Wayfern may NOT spoof new targets:",
+    );
     for (const l of leaked) log("  diff", l);
-    log("#7 ACTION", "Engine Phase 2 must reuse launch page OR re-trigger setFingerprint per new page.");
+    log(
+      "#7 ACTION",
+      "Engine Phase 2 must reuse launch page OR re-trigger setFingerprint per new page.",
+    );
   } else {
-    log("#7 VERDICT", "OK — new page fingerprint matches launch page (spoof applies to new targets).");
+    log(
+      "#7 VERDICT",
+      "OK — new page fingerprint matches launch page (spoof applies to new targets).",
+    );
   }
 
   // Optional: external probe site for a human eyeball check.
   if (probeUrl) {
     await newPage.goto(probeUrl, { waitUntil: "load", timeout: 60000 });
-    log("#7 probe", `opened ${probeUrl} — inspect manually that values match the PROFILE, not the host`);
+    log(
+      "#7 probe",
+      `opened ${probeUrl} — inspect manually that values match the PROFILE, not the host`,
+    );
   }
 
   // --- Gate #15: RAM hint ---
   const rss = process.memoryUsage().rss;
-  log("#15 spike RSS", `${(rss / 1024 / 1024).toFixed(1)} MB (Node+playwright-core driver only)`);
-  log("#15 note", "Add Chromium + local proxy RSS (Task Manager) per profile; size concurrency for 8GB.");
+  log(
+    "#15 spike RSS",
+    `${(rss / 1024 / 1024).toFixed(1)} MB (Node+playwright-core driver only)`,
+  );
+  log(
+    "#15 note",
+    "Add Chromium + local proxy RSS (Task Manager) per profile; size concurrency for 8GB.",
+  );
 
   // Disconnect — do NOT close the browser (orchestrator owns lifecycle).
   await browser.close(); // close() here only severs the CDP connection; the Wayfern process keeps running.
-  log("disconnect", "CDP connection closed; Wayfern process should still be alive.");
+  log(
+    "disconnect",
+    "CDP connection closed; Wayfern process should still be alive.",
+  );
 
   console.log("\n[spike] Record in docs/automation-flow-schema.md:");
-  console.log("  - connectOverCDP PASS/FAIL (contexts non-empty, pages reachable)");
+  console.log(
+    "  - connectOverCDP PASS/FAIL (contexts non-empty, pages reachable)",
+  );
   console.log("  - #7 fingerprint verdict (OK / engine must reuse-or-respoof)");
-  console.log("  - node_modules size (du -sh node_modules) — confirm NO chromium-* binary");
+  console.log(
+    "  - node_modules size (du -sh node_modules) — confirm NO chromium-* binary",
+  );
   console.log("  - per-profile RSS → safe concurrency default for 8GB");
 }
 

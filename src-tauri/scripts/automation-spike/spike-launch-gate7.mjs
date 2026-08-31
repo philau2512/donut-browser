@@ -7,10 +7,10 @@
  */
 
 import { spawn } from "node:child_process";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import net from "node:net";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
-import net from "node:net";
 
 const WAYFERN_DISABLE_FEATURES =
   "DialMediaRouteProvider,DnsOverHttps,AsyncDns,Prefetch,PrefetchProxy,SpeculationRulesPrefetchFuture,NoStatePrefetch";
@@ -164,7 +164,12 @@ async function applyFingerprintToTargets(port, params, knownUrls, filterUrl) {
 
 async function applyFingerprintToUrl(port, params, knownUrls, urlNeedle) {
   for (let attempt = 0; attempt < 10; attempt++) {
-    const n = await applyFingerprintToTargets(port, params, knownUrls, urlNeedle);
+    const n = await applyFingerprintToTargets(
+      port,
+      params,
+      knownUrls,
+      urlNeedle,
+    );
     if (n > 0) return n;
     await new Promise((r) => setTimeout(r, 400));
   }
@@ -190,7 +195,11 @@ async function readFingerprintCdp(port, urlNeedle) {
       continue;
     }
     try {
-      const result = await sendCdp(target.webSocketDebuggerUrl, "Wayfern.getFingerprint", {});
+      const result = await sendCdp(
+        target.webSocketDebuggerUrl,
+        "Wayfern.getFingerprint",
+        {},
+      );
       const fp = result.fingerprint ?? result;
       return mapFingerprintProbe(fp);
     } catch (e) {
@@ -208,7 +217,9 @@ async function waitAfterSetFingerprint(page, ms = 2000) {
 
 /** Runtime navigator probe — only safe on tabs that did not just receive setFingerprint. */
 async function readFingerprintRuntime(page) {
-  await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {});
+  await page
+    .waitForLoadState("domcontentloaded", { timeout: 15000 })
+    .catch(() => {});
   return page.evaluate(() => ({
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     platform: navigator.platform,
@@ -246,7 +257,12 @@ async function runGate7(port, fingerprintParams, knownUrls) {
   await launchPage.goto(LAUNCH_PROBE, { waitUntil: "commit", timeout: 30000 });
 
   log("launch page", "apply setFingerprint on stable data: target");
-  const appliedLaunch = await applyFingerprintToUrl(port, fingerprintParams, knownUrls, "fp-probe-launch");
+  const appliedLaunch = await applyFingerprintToUrl(
+    port,
+    fingerprintParams,
+    knownUrls,
+    "fp-probe-launch",
+  );
   if (appliedLaunch === 0) {
     await browser.close();
     throw new Error("FAIL — setFingerprint on launch probe page");
@@ -260,7 +276,10 @@ async function runGate7(port, fingerprintParams, knownUrls) {
   const newPage = await ctx.newPage();
   await newPage.goto(NEW_PROBE, { waitUntil: "commit", timeout: 30000 });
   await waitAfterSetFingerprint(newPage, 800);
-  log("new page", "reading fingerprint via Wayfern.getFingerprint (no re-apply)");
+  log(
+    "new page",
+    "reading fingerprint via Wayfern.getFingerprint (no re-apply)",
+  );
   const newFp = await readFingerprintCdp(port, "fp-probe-new");
   log("new-page fingerprint", JSON.stringify(newFp));
 
@@ -268,13 +287,24 @@ async function runGate7(port, fingerprintParams, knownUrls) {
     const newRuntime = await readFingerprintRuntime(newPage);
     log("new-page runtime", JSON.stringify(newRuntime));
     const runtimeLeaked = [];
-    for (const key of ["timezone", "platform", "userAgent", "hardwareConcurrency", "webglRenderer"]) {
+    for (const key of [
+      "timezone",
+      "platform",
+      "userAgent",
+      "hardwareConcurrency",
+      "webglRenderer",
+    ]) {
       if (JSON.stringify(launchFp[key]) !== JSON.stringify(newRuntime[key])) {
-        runtimeLeaked.push(`${key}: cdp=${JSON.stringify(launchFp[key])} runtime=${JSON.stringify(newRuntime[key])}`);
+        runtimeLeaked.push(
+          `${key}: cdp=${JSON.stringify(launchFp[key])} runtime=${JSON.stringify(newRuntime[key])}`,
+        );
       }
     }
     if (runtimeLeaked.length > 0) {
-      log("#7 RUNTIME", "MISMATCH — new tab navigator differs from launch CDP fingerprint:");
+      log(
+        "#7 RUNTIME",
+        "MISMATCH — new tab navigator differs from launch CDP fingerprint:",
+      );
       for (const l of runtimeLeaked) log("  diff", l);
     } else {
       log("#7 RUNTIME", "OK — new tab navigator matches launch fingerprint");
@@ -284,9 +314,17 @@ async function runGate7(port, fingerprintParams, knownUrls) {
   }
 
   const leaked = [];
-  for (const key of ["timezone", "platform", "userAgent", "hardwareConcurrency", "webglRenderer"]) {
+  for (const key of [
+    "timezone",
+    "platform",
+    "userAgent",
+    "hardwareConcurrency",
+    "webglRenderer",
+  ]) {
     if (JSON.stringify(launchFp[key]) !== JSON.stringify(newFp[key])) {
-      leaked.push(`${key}: launch=${JSON.stringify(launchFp[key])} new=${JSON.stringify(newFp[key])}`);
+      leaked.push(
+        `${key}: launch=${JSON.stringify(launchFp[key])} new=${JSON.stringify(newFp[key])}`,
+      );
     }
   }
 
@@ -316,7 +354,13 @@ async function main() {
   }
 
   const version = meta.version;
-  const chromeExe = join(DONUT_DEV, "binaries", "wayfern", version, "chrome.exe");
+  const chromeExe = join(
+    DONUT_DEV,
+    "binaries",
+    "wayfern",
+    version,
+    "chrome.exe",
+  );
   if (!existsSync(chromeExe)) {
     console.error(`Wayfern binary missing: ${chromeExe}`);
     process.exit(2);
@@ -324,8 +368,14 @@ async function main() {
 
   const profilePath = join(DONUT_DEV, "profiles", profileId, "profile");
   const port = await findFreePort();
-  const fingerprintParams = prepareFingerprintParams(meta.wayfern_config.fingerprint);
-  const args = buildLaunchArgs({ profilePath, port, fingerprint: fingerprintParams });
+  const fingerprintParams = prepareFingerprintParams(
+    meta.wayfern_config.fingerprint,
+  );
+  const args = buildLaunchArgs({
+    profilePath,
+    port,
+    fingerprint: fingerprintParams,
+  });
 
   log("launch", `${chromeExe} (port ${port}, profile ${meta.name})`);
   const child = spawn(chromeExe, args, {
@@ -364,7 +414,15 @@ async function main() {
     gateResult = { ok: false, leaked: [e.message] };
   }
 
-  log("SUMMARY", JSON.stringify({ port, profileId, profileName: meta.name, gate7: gateResult.ok }));
+  log(
+    "SUMMARY",
+    JSON.stringify({
+      port,
+      profileId,
+      profileName: meta.name,
+      gate7: gateResult.ok,
+    }),
+  );
   cleanup();
   process.exit(gateResult.ok ? 0 : 1);
 }

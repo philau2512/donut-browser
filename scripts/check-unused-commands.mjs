@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 // Commands that are intentionally not used in the frontend
 // but are used via MCP server or other programmatic APIs
@@ -37,17 +37,20 @@ const mcpOnlyCommands = [
   "set_feature_flag",
 ];
 
-const verbose = process.argv.includes('--verbose') || process.argv.includes('-v');
+const verbose =
+  process.argv.includes("--verbose") || process.argv.includes("-v");
 
 function extractTauriCommands(libRsPath) {
-  const content = fs.readFileSync(libRsPath, 'utf-8');
+  const content = fs.readFileSync(libRsPath, "utf-8");
   const startIdx = content.indexOf("tauri::generate_handler![");
   if (startIdx === -1) {
     throw new Error("Could not find tauri::generate_handler![ in lib.rs");
   }
   const endIdx = content.indexOf("])", startIdx);
   if (endIdx === -1) {
-    throw new Error("Could not find closing ]) for generate_handler! in lib.rs");
+    throw new Error(
+      "Could not find closing ]) for generate_handler! in lib.rs",
+    );
   }
   const handlerContent = content.substring(startIdx + 25, endIdx);
   const lines = handlerContent.split("\n");
@@ -88,7 +91,7 @@ function getFrontendFiles(dir) {
       files = files.concat(getFrontendFiles(filePath));
     } else {
       const ext = path.extname(filePath);
-      if (['.ts', '.tsx', '.js', '.jsx'].includes(ext)) {
+      if ([".ts", ".tsx", ".js", ".jsx"].includes(ext)) {
         files.push(filePath);
       }
     }
@@ -97,14 +100,21 @@ function getFrontendFiles(dir) {
 }
 
 function isCommandUsed(fileContents, command) {
-  const invokeRegex = new RegExp(`invoke\\s*(?:<[^>]*>)?\\s*\\(\\s*['"\`]${command}['"\`]`, 'g');
+  const invokeRegex = new RegExp(
+    `invoke\\s*(?:<[^>]*>)?\\s*\\(\\s*['"\`]${command}['"\`]`,
+    "g",
+  );
   for (const content of fileContents) {
     // Reset regex index
     invokeRegex.lastIndex = 0;
     if (invokeRegex.test(content)) {
       return true;
     }
-    if (content.includes(`"${command}"`) || content.includes(`'${command}'`) || content.includes(`\`${command}\``)) {
+    if (
+      content.includes(`"${command}"`) ||
+      content.includes(`'${command}'`) ||
+      content.includes(`\`${command}\``)
+    ) {
       return true;
     }
     const invokePos = content.indexOf("invoke");
@@ -130,16 +140,20 @@ function isCommandUsed(fileContents, command) {
 function main() {
   console.log("🔍 Checking for unused Tauri commands...");
   try {
-    const libRunRsPath = path.resolve('src-tauri/src/lib_run.rs');
-    const srcDir = path.resolve('src');
+    const libRunRsPath = path.resolve("src-tauri/src/lib_run.rs");
+    const srcDir = path.resolve("src");
 
     const commands = extractTauriCommands(libRunRsPath);
-    console.log(`Found ${commands.length} registered Tauri commands in lib_run.rs`);
+    console.log(
+      `Found ${commands.length} registered Tauri commands in lib_run.rs`,
+    );
 
     const frontendFiles = getFrontendFiles(srcDir);
     console.log(`Scanning ${frontendFiles.length} frontend files in src/...`);
 
-    const fileContents = frontendFiles.map(file => fs.readFileSync(file, 'utf-8'));
+    const fileContents = frontendFiles.map((file) =>
+      fs.readFileSync(file, "utf-8"),
+    );
 
     const unusedCommands = [];
     const usedCommands = [];
@@ -171,11 +185,19 @@ function main() {
     console.log(`  ❌ Unused/mismatched commands: ${unusedCommands.length}`);
 
     if (unusedCommands.length > 0) {
-      console.error(`\n🚨 Error: Found ${unusedCommands.length} unused/mismatched Tauri commands:`);
-      console.error(unusedCommands.map(cmd => `  - ${cmd}`).join("\n"));
-      console.error("\nThese commands are registered in `tauri::generate_handler!` in `lib.rs` but not used in frontend code.");
-      console.error("If they are only used by the MCP server, add them to `mcpOnlyCommands` whitelist in `scripts/check-unused-commands.mjs`.");
-      console.error("Otherwise, remove them from `lib.rs` or implement their frontend usage.");
+      console.error(
+        `\n🚨 Error: Found ${unusedCommands.length} unused/mismatched Tauri commands:`,
+      );
+      console.error(unusedCommands.map((cmd) => `  - ${cmd}`).join("\n"));
+      console.error(
+        "\nThese commands are registered in `tauri::generate_handler!` in `lib.rs` but not used in frontend code.",
+      );
+      console.error(
+        "If they are only used by the MCP server, add them to `mcpOnlyCommands` whitelist in `scripts/check-unused-commands.mjs`.",
+      );
+      console.error(
+        "Otherwise, remove them from `lib.rs` or implement their frontend usage.",
+      );
       process.exit(1);
     }
 

@@ -1,5 +1,5 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
 import { handlers } from "../../nodes/index.mjs";
 
 test("newTab: context.newPage + goto updates ctx.page", async () => {

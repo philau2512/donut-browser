@@ -1,6 +1,8 @@
 use super::client::SyncClient;
 use super::encryption;
-use super::manifest::{compute_diff, generate_manifest, get_cache_path, HashCache, SyncManifest};
+use super::manifest::{
+  compute_diff_with_bias, generate_manifest, get_cache_path, HashCache, SyncManifest,
+};
 use super::types::*;
 use crate::events;
 use crate::profile::types::{BrowserProfile, SyncMode};
@@ -19,6 +21,22 @@ use tokio::sync::{Mutex as TokioMutex, Semaphore};
 /// entity's user-edit timestamp in unix seconds. Used to resolve sync conflicts
 /// (last-write-wins) from a HEAD request without downloading the object body.
 const UPDATED_AT_META_KEY: &str = "updated-at";
+
+/// What one profile reconcile actually did.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProfileSyncOutcome {
+  /// The local directory and the remote copy now agree.
+  Completed,
+  /// Nothing was transferred, and the reason is not an error. A caller waiting
+  /// on the remote copy has NOT got it and must try again.
+  Skipped(&'static str),
+}
+
+impl ProfileSyncOutcome {
+  pub fn is_completed(&self) -> bool {
+    matches!(self, Self::Completed)
+  }
+}
 
 lazy_static::lazy_static! {
   static ref SYNC_CANCEL_FLAGS: StdMutex<HashMap<String, Arc<AtomicBool>>> =

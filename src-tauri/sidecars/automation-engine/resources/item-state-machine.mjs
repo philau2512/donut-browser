@@ -38,13 +38,19 @@
  */
 
 /** @param {ResourceItemState} item */
-export function canAllocate(item, maxSimultaneousUse, maxSuccessUsage, maxFailUsage) {
+export function canAllocate(
+  item,
+  maxSimultaneousUse,
+  maxSuccessUsage,
+  maxFailUsage,
+) {
   if (item.status === "exhausted" || item.status === "disabled") return false;
   if (maxSuccessUsage > 0 && item.successUsage >= maxSuccessUsage) return false;
   if (maxFailUsage > 0 && item.failUsage >= maxFailUsage) return false;
   if (item.leases.length >= maxSimultaneousUse) return false;
   if (item.status === "cooldown") {
-    if (item.lockUntil && Date.now() < parseInt(item.lockUntil, 10)) return false;
+    if (item.lockUntil && Date.now() < parseInt(item.lockUntil, 10))
+      return false;
     // Cooldown elapsed — recheck quota before marking available.
   }
   return true;
@@ -77,7 +83,10 @@ export function applySuccess(item, profileId, runId, limits) {
   item.successUsage += 1;
   item.lastUsedAt = new Date().toISOString();
 
-  if (limits.maxSuccessUsage > 0 && item.successUsage >= limits.maxSuccessUsage) {
+  if (
+    limits.maxSuccessUsage > 0 &&
+    item.successUsage >= limits.maxSuccessUsage
+  ) {
     // Quota reached — exhausted immediately (quota > cooldown precedence).
     item.status = "exhausted";
     item.lockUntil = undefined;
@@ -134,10 +143,14 @@ export function applyRelease(item, profileId, runId, intervalBetweenUsageMs) {
  */
 export function tickCooldown(item, limits) {
   if (item.status !== "cooldown") return false;
-  if (!item.lockUntil || Date.now() < parseInt(item.lockUntil, 10)) return false;
+  if (!item.lockUntil || Date.now() < parseInt(item.lockUntil, 10))
+    return false;
 
   // Cooldown elapsed — defensive quota recheck.
-  if (limits.maxSuccessUsage > 0 && item.successUsage >= limits.maxSuccessUsage) {
+  if (
+    limits.maxSuccessUsage > 0 &&
+    item.successUsage >= limits.maxSuccessUsage
+  ) {
     item.status = "exhausted";
   } else if (limits.maxFailUsage > 0 && item.failUsage >= limits.maxFailUsage) {
     item.status = "disabled";

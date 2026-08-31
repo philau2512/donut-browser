@@ -11,8 +11,8 @@
  * Usage: node scripts/sync-test-harness.mjs
  */
 
-import { spawn, execSync } from "child_process";
-import { createWriteStream, existsSync, mkdirSync, chmodSync } from "fs";
+import { execSync, spawn } from "child_process";
+import { chmodSync, createWriteStream, existsSync, mkdirSync } from "fs";
 import { mkdir, rm, writeFile } from "fs/promises";
 import http from "http";
 import https from "https";
@@ -136,7 +136,14 @@ async function startMinio(minioBin) {
 
   const proc = spawn(
     minioBin,
-    ["server", dataDir, "--address", `:${MINIO_PORT}`, "--console-address", `:${MINIO_CONSOLE_PORT}`],
+    [
+      "server",
+      dataDir,
+      "--address",
+      `:${MINIO_PORT}`,
+      "--console-address",
+      `:${MINIO_CONSOLE_PORT}`,
+    ],
     {
       env: {
         ...process.env,
@@ -144,7 +151,7 @@ async function startMinio(minioBin) {
         MINIO_ROOT_PASSWORD: "minioadmin",
       },
       stdio: ["ignore", "pipe", "pipe"],
-    }
+    },
   );
 
   processes.push(proc);
@@ -165,7 +172,10 @@ async function startMinio(minioBin) {
     error(`MinIO error: ${err.message}`);
   });
 
-  await waitForHealth(`http://localhost:${MINIO_PORT}/minio/health/live`, 30000);
+  await waitForHealth(
+    `http://localhost:${MINIO_PORT}/minio/health/live`,
+    30000,
+  );
   log("MinIO is ready");
 
   return proc;
@@ -262,15 +272,19 @@ async function runTests() {
   log("Running Rust sync e2e tests...");
 
   return new Promise((resolve) => {
-    const proc = spawn("cargo", ["test", "--test", "sync_e2e", "--", "--test-threads=1"], {
-      cwd: path.join(ROOT_DIR, "src-tauri"),
-      env: {
-        ...process.env,
-        SYNC_SERVER_URL: `http://localhost:${SYNC_PORT}`,
-        SYNC_TOKEN,
+    const proc = spawn(
+      "cargo",
+      ["test", "--test", "sync_e2e", "--", "--test-threads=1"],
+      {
+        cwd: path.join(ROOT_DIR, "src-tauri"),
+        env: {
+          ...process.env,
+          SYNC_SERVER_URL: `http://localhost:${SYNC_PORT}`,
+          SYNC_TOKEN,
+        },
+        stdio: "inherit",
       },
-      stdio: "inherit",
-    });
+    );
 
     proc.on("close", (code) => {
       resolve(code || 0);
@@ -328,4 +342,3 @@ async function main() {
 }
 
 main();
-

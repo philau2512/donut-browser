@@ -19,6 +19,10 @@ export type BackendErrorCode =
   | "INVALID_LAUNCH_HOOK_URL"
   | "COOKIE_DB_LOCKED"
   | "COOKIE_DB_UNAVAILABLE"
+  | "COOKIE_IMPORT_BROWSER_RUNNING"
+  | "COOKIE_IMPORT_PROFILE_PROTECTED"
+  | "COOKIE_IMPORT_REMOTE_SESSION"
+  | "COOKIE_IMPORT_NO_COOKIES"
   | "SELF_HOSTED_REQUIRES_LOGOUT"
   | "PROXY_NOT_FOUND"
   | "GROUP_NOT_FOUND"
@@ -48,6 +52,8 @@ export type BackendErrorCode =
   | "PROXY_SIDECAR_VERSION_MISMATCH"
   | "UPDATE_CHECKSUMS_UNAVAILABLE"
   | "UPDATE_CHECKSUM_MISMATCH"
+  | "BROWSER_CHECKSUM_UNAVAILABLE"
+  | "BROWSER_CHECKSUM_MISMATCH"
   | "UPDATE_PROFILES_RUNNING"
   | "UPDATE_PREPARATION_FAILED"
   | "PROFILE_NAME_EXISTS"
@@ -222,6 +228,14 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.cookieDbLocked");
     case "COOKIE_DB_UNAVAILABLE":
       return t("backendErrors.cookieDbUnavailable");
+    case "COOKIE_IMPORT_BROWSER_RUNNING":
+      return t("backendErrors.cookieImportBrowserRunning");
+    case "COOKIE_IMPORT_PROFILE_PROTECTED":
+      return t("backendErrors.cookieImportProfileProtected");
+    case "COOKIE_IMPORT_REMOTE_SESSION":
+      return t("backendErrors.cookieImportRemoteSession");
+    case "COOKIE_IMPORT_NO_COOKIES":
+      return t("backendErrors.cookieImportNoCookies");
     case "SELF_HOSTED_REQUIRES_LOGOUT":
       return t("backendErrors.selfHostedRequiresLogout");
     case "PROXY_NOT_FOUND":
@@ -286,6 +300,16 @@ export function translateBackendError(t: TFunction, err: unknown): string {
     case "UPDATE_CHECKSUM_MISMATCH":
       return t("backendErrors.updateChecksumMismatch", {
         file: parsed.params?.file ?? "",
+      });
+    case "BROWSER_CHECKSUM_UNAVAILABLE":
+      return t("backendErrors.browserChecksumUnavailable", {
+        browser: parsed.params?.browser ?? "",
+        version: parsed.params?.version ?? "",
+      });
+    case "BROWSER_CHECKSUM_MISMATCH":
+      return t("backendErrors.browserChecksumMismatch", {
+        browser: parsed.params?.browser ?? "",
+        version: parsed.params?.version ?? "",
       });
     case "UPDATE_PROFILES_RUNNING":
       return t("backendErrors.updateProfilesRunning");

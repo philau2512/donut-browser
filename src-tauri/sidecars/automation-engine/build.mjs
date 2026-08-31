@@ -14,7 +14,7 @@
 // live Wayfern on each target OS. This script only builds; it prints the
 // verification command to run manually.
 
-import { execSync, execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,7 +35,9 @@ function rustHostTarget() {
 
 const TARGET = process.env.TARGET || rustHostTarget();
 const isWindows = TARGET.includes("windows");
-const outName = isWindows ? `${BASE_NAME}-${TARGET}.exe` : `${BASE_NAME}-${TARGET}`;
+const outName = isWindows
+  ? `${BASE_NAME}-${TARGET}.exe`
+  : `${BASE_NAME}-${TARGET}`;
 const outPath = join(DEST_DIR, outName);
 
 function hasBun() {
@@ -50,7 +52,13 @@ function hasBun() {
 function buildWithBun() {
   mkdirSync(DEST_DIR, { recursive: true });
   // bun bundles engine.mjs + playwright-core into a standalone executable.
-  const args = ["build", join(ENGINE_DIR, "engine.mjs"), "--compile", "--outfile", outPath];
+  const args = [
+    "build",
+    join(ENGINE_DIR, "engine.mjs"),
+    "--compile",
+    "--outfile",
+    outPath,
+  ];
   console.log(`[automation-engine] bun ${args.join(" ")}`);
   execFileSync("bun", args, { cwd: ENGINE_DIR, stdio: "inherit" });
 }
@@ -77,7 +85,9 @@ function printSeaFallback() {
 
 function main() {
   if (TARGET === "unknown") {
-    console.warn("[automation-engine] could not determine target triple (rustc missing).");
+    console.warn(
+      "[automation-engine] could not determine target triple (rustc missing).",
+    );
   }
   if (hasBun()) {
     buildWithBun();
@@ -88,7 +98,9 @@ function main() {
           "Wayfern and confirm connectOverCDP + fingerprint safety before trusting it.",
       );
     } else {
-      console.error("[automation-engine] bun build reported success but output missing.");
+      console.error(
+        "[automation-engine] bun build reported success but output missing.",
+      );
       process.exit(1);
     }
   } else {

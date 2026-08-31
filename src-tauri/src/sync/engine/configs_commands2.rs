@@ -497,6 +497,40 @@ pub async fn rollover_encryption_for_all_entities(
   Ok(())
 }
 
+/// Pull a profile back down after a remote session wrote to it.
+///
+/// Not `trigger_sync_for_profile` with a different name. Two things differ, and
+/// both of them are the reason the session's work used to be destroyed:
+///
+/// - The diff is biased to the remote copy. The host has just written the
+///   authoritative profile; local mtimes may nonetheless be newer, and under the
+///   ordinary rule that uploads the stale copy and deletes the host's files.
+/// - The outcome is reported. Every skip inside `sync_profile` returns success,
+///   so the caller could otherwise mark the profile current without a byte
+///   having moved.
+pub async fn pull_profile_after_remote_session(
+  app_handle: &tauri::AppHandle,
+  profile_id: &str,
+) -> Result<ProfileSyncOutcome, String> {
+  let engine = SyncEngine::create_from_settings(app_handle)
+    .await
+    .map_err(|e| format!("Failed to create sync engine: {e}"))?;
+
+  let profile_uuid =
+    uuid::Uuid::parse_str(profile_id).map_err(|_| format!("Invalid profile ID: {profile_id}"))?;
+  let profile = ProfileManager::instance()
+    .list_profiles()
+    .map_err(|e| format!("Failed to list profiles: {e}"))?
+    .into_iter()
+    .find(|p| p.id == profile_uuid)
+    .ok_or_else(|| format!("Profile with ID '{profile_id}' not found"))?;
+
+  engine
+    .sync_profile_with_bias(app_handle, &profile, crate::sync::manifest::DiffBias::PreferRemote)
+    .await
+    .map_err(|e| format!("Sync failed: {e}"))
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;

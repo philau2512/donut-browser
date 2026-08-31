@@ -66,7 +66,11 @@ export class ResourceEventEmitter {
     const specific = this._listeners.get(type) ?? [];
     const wildcard = this._listeners.get("*") ?? [];
     for (const handler of [...specific, ...wildcard]) {
-      try { handler(event); } catch { /* listener errors must not crash the engine */ }
+      try {
+        handler(event);
+      } catch {
+        /* listener errors must not crash the engine */
+      }
     }
   }
 }

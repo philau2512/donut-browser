@@ -14,7 +14,10 @@ export async function getText(node, page, ctx) {
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
 
-  ctx.logger.info(node.id, `getText → selector: ${selector}, save to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `getText → selector: ${selector}, save to ${saveToVar}`,
+  );
   const element = await page.waitForSelector(selector, { timeout: t });
 
   // Get direct text only (not nested descendants)
@@ -24,7 +27,8 @@ export async function getText(node, page, ctx) {
     // Get only direct text nodes
     let text = "";
     for (const node of el.childNodes) {
-      if (node.nodeType === 3) { // TEXT_NODE
+      if (node.nodeType === 3) {
+        // TEXT_NODE
         text += node.textContent;
       }
     }
@@ -32,7 +36,10 @@ export async function getText(node, page, ctx) {
   }, selector);
 
   ctx.vars[saveToVar] = textContent;
-  ctx.logger.info(node.id, `getText → saved ${textContent.length} chars to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `getText → saved ${textContent.length} chars to ${saveToVar}`,
+  );
 }
 
 /** getAttributeValue: read HTML attribute value */
@@ -49,16 +56,24 @@ export async function getAttributeValue(node, page, ctx) {
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
 
-  ctx.logger.info(node.id, `getAttributeValue → selector: ${selector}, attr: ${attribute}`);
+  ctx.logger.info(
+    node.id,
+    `getAttributeValue → selector: ${selector}, attr: ${attribute}`,
+  );
   const element = await page.waitForSelector(selector, { timeout: t });
 
   const value = await element.getAttribute(attribute);
   if (value === null) {
-    throw new Error(`getAttributeValue: attribute "${attribute}" not found on element`);
+    throw new Error(
+      `getAttributeValue: attribute "${attribute}" not found on element`,
+    );
   }
 
   ctx.vars[saveToVar] = value;
-  ctx.logger.info(node.id, `getAttributeValue → saved "${value}" to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `getAttributeValue → saved "${value}" to ${saveToVar}`,
+  );
 }
 
 /** getValue: read value from input/textarea/select */
@@ -72,13 +87,18 @@ export async function getValue(node, page, ctx) {
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
 
-  ctx.logger.info(node.id, `getValue → selector: ${selector}, save to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `getValue → selector: ${selector}, save to ${saveToVar}`,
+  );
   const element = await page.waitForSelector(selector, { timeout: t });
 
   // Check element type
-  const tagName = await element.evaluate(el => el.tagName.toLowerCase());
+  const tagName = await element.evaluate((el) => el.tagName.toLowerCase());
   if (!["input", "textarea", "select"].includes(tagName)) {
-    throw new Error(`getValue: element is ${tagName}, not form input (input/textarea/select)`);
+    throw new Error(
+      `getValue: element is ${tagName}, not form input (input/textarea/select)`,
+    );
   }
 
   const value = await element.inputValue();
@@ -95,7 +115,10 @@ export async function elementExists(node, page, ctx) {
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   const vis = visibility ?? "visible"; // default: visible
 
-  ctx.logger.info(node.id, `elementExists → selector: ${selector}, visibility: ${vis}`);
+  ctx.logger.info(
+    node.id,
+    `elementExists → selector: ${selector}, visibility: ${vis}`,
+  );
 
   const count = await page.locator(selector).count();
 
@@ -125,7 +148,9 @@ export async function elementExists(node, page, ctx) {
     return result;
   }
 
-  throw new Error(`elementExists: invalid visibility value "${vis}" (expected: visible|hidden|any)`);
+  throw new Error(
+    `elementExists: invalid visibility value "${vis}" (expected: visible|hidden|any)`,
+  );
 }
 
 /** extractionInText: extract substring via regex, save full match (groups[0]) */
@@ -141,7 +166,10 @@ export async function extractionInText(node, page, ctx) {
     throw new Error("extractionInText: saveToVar is required");
   }
 
-  ctx.logger.info(node.id, `extractionInText → regex: ${regex}, flags: ${flags ?? "(none)"}`);
+  ctx.logger.info(
+    node.id,
+    `extractionInText → regex: ${regex}, flags: ${flags ?? "(none)"}`,
+  );
 
   let regexObj;
   try {
@@ -160,12 +188,23 @@ export async function extractionInText(node, page, ctx) {
   // Save full match (groups[0]), not capture groups
   const fullMatch = match[0];
   ctx.vars[saveToVar] = fullMatch;
-  ctx.logger.info(node.id, `extractionInText → saved "${fullMatch}" to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `extractionInText → saved "${fullMatch}" to ${saveToVar}`,
+  );
 }
 
 /** random: generate random value (email, fullName, randomLetters, password, firstName, lastName, number) */
 export async function random(node, page, ctx) {
-  const { type, saveToVar, domain, quantity, length: len, min, max } = node.params ?? {};
+  const {
+    type,
+    saveToVar,
+    domain,
+    quantity,
+    length: len,
+    min,
+    max,
+  } = node.params ?? {};
   if (typeof type !== "string" || type.trim() === "") {
     throw new Error("random: type is required");
   }
@@ -191,7 +230,9 @@ export async function random(node, page, ctx) {
       break;
     case "randomLetters": {
       if (!Number.isFinite(quantity) || quantity < 1) {
-        throw new Error("random: randomLetters type requires quantity param (>= 1)");
+        throw new Error(
+          "random: randomLetters type requires quantity param (>= 1)",
+        );
       }
       const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
       for (let i = 0; i < quantity; i++) {
@@ -203,7 +244,8 @@ export async function random(node, page, ctx) {
       if (!Number.isFinite(len) || len < 1) {
         throw new Error("random: password type requires length param (>= 1)");
       }
-      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+      const chars =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
       for (let i = 0; i < len; i++) {
         value += chars.charAt(Math.floor(Math.random() * chars.length));
       }
@@ -226,9 +268,14 @@ export async function random(node, page, ctx) {
       break;
     }
     default:
-      throw new Error(`random: unknown type "${type}" (expected: email|fullName|randomLetters|password|firstName|lastName|number)`);
+      throw new Error(
+        `random: unknown type "${type}" (expected: email|fullName|randomLetters|password|firstName|lastName|number)`,
+      );
   }
 
   ctx.vars[saveToVar] = value;
-  ctx.logger.info(node.id, `random → generated "${type}" value to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `random → generated "${type}" value to ${saveToVar}`,
+  );
 }

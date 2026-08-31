@@ -1,13 +1,23 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
-import { handlers } from "../../nodes/index.mjs";
+import { test } from "node:test";
 import { matchFilter, resolveTabIndex } from "../../lib/tab-match.mjs";
+import { handlers } from "../../nodes/index.mjs";
 
 test("matchFilter contain and equal", () => {
-  assert.equal(matchFilter("https://www.facebook.com/", "facebook", "contain"), true);
-  assert.equal(matchFilter("https://www.facebook.com/", "twitter", "contain"), false);
   assert.equal(
-    matchFilter("https://www.facebook.com/", "https://www.facebook.com/", "equal"),
+    matchFilter("https://www.facebook.com/", "facebook", "contain"),
+    true,
+  );
+  assert.equal(
+    matchFilter("https://www.facebook.com/", "twitter", "contain"),
+    false,
+  );
+  assert.equal(
+    matchFilter(
+      "https://www.facebook.com/",
+      "https://www.facebook.com/",
+      "equal",
+    ),
     true,
   );
 });
@@ -59,8 +69,16 @@ test("switchTab: tabIndex 1 + url contain selects second matching page", async (
 
 test("switchTab: title contain filter", async () => {
   const pages = [
-    { url: () => "https://a/", title: async () => "Shop", bringToFront: async () => {} },
-    { url: () => "https://b/", title: async () => "Facebook Home", bringToFront: async () => {} },
+    {
+      url: () => "https://a/",
+      title: async () => "Shop",
+      bringToFront: async () => {},
+    },
+    {
+      url: () => "https://b/",
+      title: async () => "Facebook Home",
+      bringToFront: async () => {},
+    },
   ];
   const context = { pages: () => pages };
   const launch = { context: () => context };

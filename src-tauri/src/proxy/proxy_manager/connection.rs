@@ -449,6 +449,7 @@ impl ProxyManager {
         port: exported.port,
         username: exported.username,
         password: exported.password,
+        vless_uri: None,
       };
 
       match self.create_stored_proxy(app_handle, exported.name.clone(), proxy_settings, false) {
@@ -491,6 +492,7 @@ impl ProxyManager {
         port: parsed.port,
         username: parsed.username,
         password: parsed.password,
+        vless_uri: None,
       };
 
       match self.create_stored_proxy(app_handle, proxy_name.clone(), proxy_settings, false) {

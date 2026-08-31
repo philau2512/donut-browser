@@ -33,6 +33,7 @@ mod tests2 {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      browser_pid_start_time: None,
       dns_allowlist_mode: false,
     };
 
@@ -196,6 +197,7 @@ mod tests2 {
       port: 8080,
       username: None,
       password: None,
+      vless_uri: None,
     });
     assert_eq!(url, "http://1.2.3.4:8080");
 
@@ -206,6 +208,7 @@ mod tests2 {
       port: 1080,
       username: Some("user".to_string()),
       password: Some("p@ss".to_string()),
+      vless_uri: None,
     });
     assert_eq!(url, "socks5://user:p%40ss@proxy.example.com:1080");
 
@@ -216,6 +219,7 @@ mod tests2 {
       port: 3128,
       username: Some("justuser".to_string()),
       password: None,
+      vless_uri: None,
     });
     assert_eq!(url, "http://justuser@host.io:3128");
   }
@@ -291,6 +295,7 @@ mod tests2 {
         port: 80,
         username: None,
         password: None,
+        vless_uri: None,
       },
       sync_enabled: false,
       last_sync: None,
@@ -356,6 +361,7 @@ mod tests2 {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      browser_pid_start_time: None,
       dns_allowlist_mode: false,
     };
     save_proxy_config(&config).unwrap();
@@ -606,6 +612,7 @@ mod tests2 {
       port: 8080,
       username: Some("u".into()),
       password: Some("p".into()),
+      vless_uri: None,
     };
     let mut proxy = StoredProxy::new("Smoke Proxy".into(), settings);
     // Force deterministic flags for the smoke (avoid sync side-effects in CI).
@@ -646,6 +653,7 @@ mod tests2 {
       port: 1080,
       username: None,
       password: None,
+      vless_uri: None,
     });
     fs::write(
       &file_path,
@@ -700,6 +708,7 @@ mod tests2 {
       port: 8080,
       username: Some("u".into()),
       password: Some("p".into()),
+      vless_uri: None,
     };
     let mut proxy = StoredProxy::new("Export Me".into(), settings);
     proxy.sync_enabled = false;

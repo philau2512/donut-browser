@@ -33,7 +33,9 @@ export async function profileSuccess(node, _page, ctx) {
   const runId = vars?.RUN_ID ?? vars?.run_id ?? "unknown";
 
   // Resolve message template with current vars.
-  const resolvedMessage = message ? interpolateString(String(message), vars) : "";
+  const resolvedMessage = message
+    ? interpolateString(String(message), vars)
+    : "";
 
   // Report success to ResourceManager — updates successUsage for all active leases.
   if (resourceManager) {
@@ -43,18 +45,22 @@ export async function profileSuccess(node, _page, ctx) {
   }
 
   // Collect optional resource stats snapshot for the report event.
-  const resourceStats = includeResourceStats && resourceManager
-    ? resourceManager.getReport()
-    : undefined;
+  const resourceStats =
+    includeResourceStats && resourceManager
+      ? resourceManager.getReport()
+      : undefined;
 
   // Emit structured profile-success event (Phase 4 report bridge picks this up).
-  logger.info(null, JSON.stringify({
-    __eventType: "profile-success",
-    profileId,
-    runId,
-    message: resolvedMessage,
-    ...(resourceStats ? { resourceStats } : {}),
-  }));
+  logger.info(
+    null,
+    JSON.stringify({
+      __eventType: "profile-success",
+      profileId,
+      runId,
+      message: resolvedMessage,
+      ...(resourceStats ? { resourceStats } : {}),
+    }),
+  );
 
   return stopFlow ? "done" : "success";
 }
@@ -78,15 +84,15 @@ export async function profileFail(node, _page, ctx) {
   const runId = vars?.RUN_ID ?? vars?.run_id ?? "unknown";
 
   // Resolve message template.
-  const resolvedMessage = message ? interpolateString(String(message), vars) : "";
+  const resolvedMessage = message
+    ? interpolateString(String(message), vars)
+    : "";
   const resolvedReasonCode = reasonCode
     ? interpolateString(String(reasonCode), vars)
     : "";
 
   // Capture last error from context if available and requested.
-  const lastError = includeLastError
-    ? (ctx.__lastError ?? null)
-    : null;
+  const lastError = includeLastError ? (ctx.__lastError ?? null) : null;
 
   // Report fail to ResourceManager — updates failUsage for all active leases.
   if (resourceManager) {
@@ -94,21 +100,25 @@ export async function profileFail(node, _page, ctx) {
     await resourceManager.flush().catch(() => {});
   }
 
-  const resourceStats = includeResourceStats && resourceManager
-    ? resourceManager.getReport()
-    : undefined;
+  const resourceStats =
+    includeResourceStats && resourceManager
+      ? resourceManager.getReport()
+      : undefined;
 
   // "explicit_fail_node" distinguishes this from an unhandled runtime_error.
-  logger.info(null, JSON.stringify({
-    __eventType: "profile-fail",
-    failSource: "explicit_fail_node",
-    profileId,
-    runId,
-    message: resolvedMessage,
-    reasonCode: resolvedReasonCode || undefined,
-    lastError: lastError || undefined,
-    ...(resourceStats ? { resourceStats } : {}),
-  }));
+  logger.info(
+    null,
+    JSON.stringify({
+      __eventType: "profile-fail",
+      failSource: "explicit_fail_node",
+      profileId,
+      runId,
+      message: resolvedMessage,
+      reasonCode: resolvedReasonCode || undefined,
+      lastError: lastError || undefined,
+      ...(resourceStats ? { resourceStats } : {}),
+    }),
+  );
 
   return stopFlow ? "done" : "fail";
 }

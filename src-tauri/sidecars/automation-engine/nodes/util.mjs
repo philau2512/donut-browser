@@ -1,7 +1,10 @@
 // Utility nodes: screenshot, log, delay.
 // ctx = { logger, vars, artifactsDir, allowedSchemes }
 
-import { containArtifactPath, sanitizeFilenameFragment } from "../lib/safe-path.mjs";
+import {
+  containArtifactPath,
+  sanitizeFilenameFragment,
+} from "../lib/safe-path.mjs";
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 
@@ -20,7 +23,8 @@ export async function screenshot(node, page, ctx) {
 /** log: emit a message to the run log (already redacted by the logger). */
 export async function log(node, page, ctx) {
   const { message, level } = node.params ?? {};
-  const lvl = level === "warn" || level === "error" || level === "debug" ? level : "info";
+  const lvl =
+    level === "warn" || level === "error" || level === "debug" ? level : "info";
   ctx.logger.emit(lvl, node.id, String(message ?? ""));
 }
 

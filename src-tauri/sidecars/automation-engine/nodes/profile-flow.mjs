@@ -26,7 +26,8 @@ async function postJson(path, body) {
     throw new Error(`${path}: invalid JSON response (${res.status})`);
   }
   if (!res.ok) {
-    const msg = typeof data.error === "string" ? data.error : text || res.statusText;
+    const msg =
+      typeof data.error === "string" ? data.error : text || res.statusText;
     throw new Error(`${path} failed: ${msg}`);
   }
   return data;
@@ -57,7 +58,9 @@ export async function openProfile(node, _page, ctx) {
     if (runProfileId) {
       profileId = runProfileId;
     } else {
-      throw new Error("openProfile: profileId is required when running standalone");
+      throw new Error(
+        "openProfile: profileId is required when running standalone",
+      );
     }
   } else if (profileId.includes("{{PROFILE_ID}}")) {
     profileId = profileId.replace("{{PROFILE_ID}}", runProfileId || "");
@@ -65,14 +68,18 @@ export async function openProfile(node, _page, ctx) {
 
   const cdpPortRaw = process.env.AUTOMATION_RUN_CDP_PORT;
   const cdpPort =
-    cdpPortRaw != null && cdpPortRaw !== "" ? Number.parseInt(String(cdpPortRaw), 10) : undefined;
+    cdpPortRaw != null && cdpPortRaw !== ""
+      ? Number.parseInt(String(cdpPortRaw), 10)
+      : undefined;
 
   let automationConfig;
   if (typeof automation === "string" && automation.trim() !== "") {
     try {
       automationConfig = JSON.parse(automation);
     } catch (e) {
-      throw new Error(`openProfile: automation is not valid JSON — ${e.message}`);
+      throw new Error(
+        `openProfile: automation is not valid JSON — ${e.message}`,
+      );
     }
   }
 
@@ -98,7 +105,10 @@ export async function closeProfile(node, _page, ctx) {
   if (typeof profileId !== "string" || profileId.trim() === "") {
     throw new Error("closeProfile: profileId is required");
   }
-  const mode = typeof cleanupMode === "string" && cleanupMode.trim() !== "" ? cleanupMode : "cookies";
+  const mode =
+    typeof cleanupMode === "string" && cleanupMode.trim() !== ""
+      ? cleanupMode
+      : "cookies";
 
   ctx.logger.info(node.id, `closeProfile → ${profileId.trim()} (${mode})`);
   await postJson("/close-profile", {

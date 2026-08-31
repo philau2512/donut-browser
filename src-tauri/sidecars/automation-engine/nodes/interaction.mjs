@@ -58,7 +58,10 @@ export async function dragAndDrop(node, _page, ctx) {
   }
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   const root = getLocatorRoot(ctx);
-  ctx.logger.info(node.id, `dragAndDrop → ${sourceSelector} to ${targetSelector}`);
+  ctx.logger.info(
+    node.id,
+    `dragAndDrop → ${sourceSelector} to ${targetSelector}`,
+  );
   await root.dragAndDrop(sourceSelector, targetSelector, { timeout: t });
 }
 

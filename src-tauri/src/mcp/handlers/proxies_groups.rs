@@ -331,6 +331,7 @@ impl McpServer {
       port,
       username,
       password,
+      vless_uri: None,
     };
 
     let proxy = PROXY_MANAGER
@@ -417,6 +418,7 @@ impl McpServer {
         port,
         username,
         password,
+        vless_uri: None,
       })
     } else {
       None

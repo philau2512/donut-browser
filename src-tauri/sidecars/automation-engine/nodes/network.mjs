@@ -2,8 +2,8 @@
 // http, setUserAgent, getUrl, convertingJson, imageSearch
 
 import { readFile } from "node:fs/promises";
-import { assertNavigableUrl } from "../lib/url-guard.mjs";
 import { containArtifactPath } from "../lib/safe-path.mjs";
+import { assertNavigableUrl } from "../lib/url-guard.mjs";
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 
@@ -102,7 +102,9 @@ export async function convertingJson(node, page, ctx) {
     throw new Error("convertingJson: input is required");
   }
   if (operation !== "parse" && operation !== "stringify") {
-    throw new Error(`convertingJson: operation must be "parse" or "stringify" (got: ${JSON.stringify(operation)})`);
+    throw new Error(
+      `convertingJson: operation must be "parse" or "stringify" (got: ${JSON.stringify(operation)})`,
+    );
   }
   if (typeof saveToVar !== "string" || saveToVar.trim() === "") {
     throw new Error("convertingJson: saveToVar is required");
@@ -118,9 +120,10 @@ export async function convertingJson(node, page, ctx) {
       throw new Error(`convertingJson: invalid JSON input — ${e.message}`);
     }
     // Store as JSON string if object/array so downstream interpolation works
-    ctx.vars[saveToVar] = typeof parsed === "object" && parsed !== null
-      ? JSON.stringify(parsed)
-      : String(parsed);
+    ctx.vars[saveToVar] =
+      typeof parsed === "object" && parsed !== null
+        ? JSON.stringify(parsed)
+        : String(parsed);
   } else {
     // stringify: treat input as the value to serialize
     ctx.vars[saveToVar] = JSON.stringify(input);
@@ -157,7 +160,10 @@ export async function imageSearch(node, page, ctx) {
   // Validate reference image path is inside artifactsDir
   const safeImagePath = containArtifactPath(ctx.artifactsDir, imagePath);
 
-  ctx.logger.info(node.id, `imageSearch → ref: ${safeImagePath}, threshold: ${matchThreshold}`);
+  ctx.logger.info(
+    node.id,
+    `imageSearch → ref: ${safeImagePath}, threshold: ${matchThreshold}`,
+  );
 
   // Lazy-load sharp to keep startup fast when imageSearch is not used
   let sharp;
@@ -177,7 +183,9 @@ export async function imageSearch(node, page, ctx) {
   try {
     refBuf = await readFile(safeImagePath);
   } catch (e) {
-    throw new Error(`imageSearch: cannot read reference image "${imagePath}" — ${e.message}`);
+    throw new Error(
+      `imageSearch: cannot read reference image "${imagePath}" — ${e.message}`,
+    );
   }
 
   // Decode both images to raw RGB (3 channels) for pixel comparison
@@ -195,8 +203,16 @@ export async function imageSearch(node, page, ctx) {
   const { width: rw, height: rh, channels: rc } = refInfo;
 
   if (rw > sw || rh > sh) {
-    ctx.vars[saveToVar] = JSON.stringify({ found: false, x: 0, y: 0, confidence: 0 });
-    ctx.logger.warn(node.id, "imageSearch → reference image larger than screenshot, no match possible");
+    ctx.vars[saveToVar] = JSON.stringify({
+      found: false,
+      x: 0,
+      y: 0,
+      confidence: 0,
+    });
+    ctx.logger.warn(
+      node.id,
+      "imageSearch → reference image larger than screenshot, no match possible",
+    );
     return;
   }
 
@@ -239,6 +255,10 @@ export async function imageSearch(node, page, ctx) {
     node.id,
     `imageSearch → found=${found} at (${bestX},${bestY}) confidence=${confidence.toFixed(4)}`,
   );
-  ctx.vars[saveToVar] = JSON.stringify({ found, x: bestX, y: bestY, confidence });
+  ctx.vars[saveToVar] = JSON.stringify({
+    found,
+    x: bestX,
+    y: bestY,
+    confidence,
+  });
 }
-

@@ -15,7 +15,8 @@
 export const VAR_TOKEN_RE = /\[\[([A-Za-z_][A-Za-z0-9_.]*)\]\]/g;
 
 /** Resource reference token: {{resource:name}} */
-export const RESOURCE_TOKEN_RE = /\{\{\s*resource\s*:\s*([A-Za-z0-9_-]+)\s*\}\}/g;
+export const RESOURCE_TOKEN_RE =
+  /\{\{\s*resource\s*:\s*([A-Za-z0-9_-]+)\s*\}\}/g;
 
 /**
  * Legacy variable token: {{name}} — anything that is NOT {{resource:...}}.
@@ -83,11 +84,13 @@ export function parseTokens(str, opts = {}) {
   // Collect legacy {{name}} tokens, skip positions already claimed by resource.
   if (allowLegacy) {
     const resourcePositions = new Set(
-      tokens.filter((t) => t.kind === "resource").flatMap((t) => {
-        const positions = [];
-        for (let i = t.start; i < t.end; i++) positions.push(i);
-        return positions;
-      }),
+      tokens
+        .filter((t) => t.kind === "resource")
+        .flatMap((t) => {
+          const positions = [];
+          for (let i = t.start; i < t.end; i++) positions.push(i);
+          return positions;
+        }),
     );
     const legacyRe = new RegExp(LEGACY_VAR_TOKEN_RE.source, "g");
     while ((m = legacyRe.exec(str)) !== null) {
@@ -152,14 +155,23 @@ export function extractLegacyVariableTokens(str) {
  * @param {{ variables: Set<string>, resources: Set<string> }} known
  * @returns {Array<{ kind: string, name: string, raw: string, reason: string }>}
  */
-export function validateTokens(str, { variables = new Set(), resources = new Set() } = {}) {
+export function validateTokens(
+  str,
+  { variables = new Set(), resources = new Set() } = {},
+) {
   const violations = [];
   for (const token of parseTokens(str)) {
     if (token.kind === "variable" && !variables.has(token.name)) {
-      violations.push({ ...token, reason: `Variable '${token.name}' is not defined in this flow` });
+      violations.push({
+        ...token,
+        reason: `Variable '${token.name}' is not defined in this flow`,
+      });
     }
     if (token.kind === "resource" && !resources.has(token.name)) {
-      violations.push({ ...token, reason: `Resource '${token.name}' is not defined in this flow` });
+      violations.push({
+        ...token,
+        reason: `Resource '${token.name}' is not defined in this flow`,
+      });
     }
     // Legacy tokens are always warned regardless of whether they resolve.
     if (token.kind === "legacy-variable") {

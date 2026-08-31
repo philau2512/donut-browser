@@ -156,6 +156,14 @@ For day-to-day feature work, use `pnpm test:quick` instead of `pnpm test`. It ru
 If `pnpm tauri dev` is running and causes file-lock conflicts, set a separate target dir:
 `$env:CARGO_TARGET_DIR = "target/test"; cd src-tauri; cargo nextest run --lib`
 
+`e2e/app/Cargo.lock` is generated, gitignored, and never edited by hand. `e2e/run.mjs` seeds it
+from `src-tauri/Cargo.lock` whenever that file is newer, so the harness always links the exact
+dependency versions Donut ships and a version bump or a Dependabot upgrade needs no second edit.
+
+After a behavior change, run the smallest affected subset below in addition to the standard
+format/lint/unit-test command. A code change is not verified until its affected native
+suite passes:
+
 ### Fast formatting and linting for specific files
 
 During development, you can format and lint only the files you have modified to save time instead of running it on the entire workspace:

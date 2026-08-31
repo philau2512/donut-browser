@@ -339,6 +339,7 @@ mod tests {
       port: 8080,
       username: Some("u".into()),
       password: Some("p".into()),
+      vless_uri: None,
     };
     assert_eq!(proxy_url(&http).as_deref(), Some("http://u:p@h:8080"));
 
@@ -350,6 +351,7 @@ mod tests {
       port: 8080,
       username: Some("user".into()),
       password: Some("ab/cd@ef".into()),
+      vless_uri: None,
     };
     assert_eq!(
       proxy_url(&reserved).as_deref(),
@@ -363,6 +365,7 @@ mod tests {
       port: 1080,
       username: Some("justuser".into()),
       password: None,
+      vless_uri: None,
     };
     assert_eq!(
       proxy_url(&user_only).as_deref(),
@@ -375,6 +378,7 @@ mod tests {
       port: 8080,
       username: None,
       password: None,
+      vless_uri: None,
     };
     assert_eq!(proxy_url(&ss), None);
   }

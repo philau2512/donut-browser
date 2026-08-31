@@ -6,7 +6,7 @@
 //   2. resolve the final path and prefix-check it against the canonical
 //      artifacts dir, rejecting any path that escapes it.
 
-import { resolve, sep, isAbsolute } from "node:path";
+import { isAbsolute, resolve, sep } from "node:path";
 
 /**
  * Sanitize a single filename fragment that may have come from an untrusted

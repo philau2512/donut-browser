@@ -32,13 +32,21 @@ function evaluateCondition(left, operator, right) {
     case "ends_with":
       return leftStr.endsWith(rightStr);
     case ">":
-      return !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum > rightNum;
+      return (
+        !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum > rightNum
+      );
     case ">=":
-      return !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum >= rightNum;
+      return (
+        !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum >= rightNum
+      );
     case "<":
-      return !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum < rightNum;
+      return (
+        !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum < rightNum
+      );
     case "<=":
-      return !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum <= rightNum;
+      return (
+        !Number.isNaN(leftNum) && !Number.isNaN(rightNum) && leftNum <= rightNum
+      );
     default:
       throw new Error(`while: unknown operator "${operator}"`);
   }
@@ -124,17 +132,23 @@ export async function runOtherScript(node, page, ctx) {
 
   // Guard: ctx.runSubFlow must be injected by engine (avoids circular import)
   if (typeof ctx.runSubFlow !== "function") {
-    throw new Error("runOtherScript: ctx.runSubFlow not available — engine did not inject it");
+    throw new Error(
+      "runOtherScript: ctx.runSubFlow not available — engine did not inject it",
+    );
   }
 
   // Depth guard — prevent infinite mutual recursion
   const depth = Number(ctx.vars.__script_depth ?? 0);
   if (depth >= MAX_SCRIPT_DEPTH) {
-    throw new Error(`runOtherScript: maximum script recursion depth (${MAX_SCRIPT_DEPTH}) reached`);
+    throw new Error(
+      `runOtherScript: maximum script recursion depth (${MAX_SCRIPT_DEPTH}) reached`,
+    );
   }
 
   if (!ctx.flowDir) {
-    throw new Error("runOtherScript: ctx.flowDir not set — engine must pass flowDir via context");
+    throw new Error(
+      "runOtherScript: ctx.flowDir not set — engine must pass flowDir via context",
+    );
   }
 
   // Resolve target script path (no path traversal: strip all separators)
@@ -142,7 +156,9 @@ export async function runOtherScript(node, page, ctx) {
   const targetPath = resolve(join(ctx.flowDir, `${safeName}.donutflow`));
   const expectedDir = resolve(ctx.flowDir);
   if (!targetPath.startsWith(expectedDir)) {
-    throw new Error(`runOtherScript: path traversal rejected for scriptName "${scriptName}"`);
+    throw new Error(
+      `runOtherScript: path traversal rejected for scriptName "${scriptName}"`,
+    );
   }
 
   ctx.logger.info(node.id, `runOtherScript → loading ${targetPath}`);
@@ -152,7 +168,9 @@ export async function runOtherScript(node, page, ctx) {
     const raw = await readFile(targetPath, "utf-8");
     subFlow = validateFlow(JSON.parse(raw));
   } catch (e) {
-    throw new Error(`runOtherScript: failed to load "${scriptName}" — ${e.message}`);
+    throw new Error(
+      `runOtherScript: failed to load "${scriptName}" — ${e.message}`,
+    );
   }
 
   // Merge extra vars if provided
@@ -216,7 +234,10 @@ export async function label(node, page, ctx) {
 /** moveToLabel: dynamic jump directive consumed by engine.mjs. */
 export async function moveToLabel(node, page, ctx) {
   const targetLabelNodeId = node.params?.targetLabelNodeId;
-  if (typeof targetLabelNodeId !== "string" || targetLabelNodeId.trim() === "") {
+  if (
+    typeof targetLabelNodeId !== "string" ||
+    targetLabelNodeId.trim() === ""
+  ) {
     throw new Error("moveToLabel: targetLabelNodeId is required");
   }
   const targetLabelName = node.params?.targetLabelName ?? targetLabelNodeId;
@@ -261,7 +282,9 @@ export async function callFunction(node, page, ctx) {
   const depth = Number(ctx.vars.__func_depth ?? 0);
   const MAX_FUNC_DEPTH = 50;
   if (depth >= MAX_FUNC_DEPTH) {
-    throw new Error(`callFunction: maximum function call recursion depth (${MAX_FUNC_DEPTH}) reached`);
+    throw new Error(
+      `callFunction: maximum function call recursion depth (${MAX_FUNC_DEPTH}) reached`,
+    );
   }
 
   ctx.logger.info(node.id, `callFunction → calling function "${functionName}"`);

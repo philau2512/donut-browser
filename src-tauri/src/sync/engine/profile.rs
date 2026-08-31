@@ -4,13 +4,35 @@ impl SyncEngine {
     app_handle: &tauri::AppHandle,
     profile: &BrowserProfile,
   ) -> SyncResult<()> {
+    self
+      .sync_profile_with_bias(app_handle, profile, crate::sync::manifest::DiffBias::Auto)
+      .await
+      .map(|_| ())
+  }
+
+  /// Reconcile a profile, stating which side wins and whether anything happened.
+  ///
+  /// The outcome matters to exactly one caller: the pull that follows a remote
+  /// session. Every skip below returns `Ok(())` from `sync_profile`, so a caller
+  /// that treated success as "the profile is now current" would clear the local
+  /// launch gate without having downloaded a single byte — and the user would
+  /// then open a stale profile over the session's work. `Skipped` says so.
+  pub async fn sync_profile_with_bias(
+    &self,
+    app_handle: &tauri::AppHandle,
+    profile: &BrowserProfile,
+    bias: crate::sync::manifest::DiffBias,
+  ) -> SyncResult<ProfileSyncOutcome> {
     if profile.is_cross_os() {
       log::info!(
         "Cross-OS profile: {} ({}) — syncing metadata only",
         profile.name,
         profile.id
       );
-      return self.sync_cross_os_metadata(app_handle, profile).await;
+      self.sync_cross_os_metadata(app_handle, profile).await?;
+      // The browser files are the thing a remote session changes, and a cross-OS
+      // profile syncs none of them here, so this is not a completed pull.
+      return Ok(ProfileSyncOutcome::Skipped("cross-OS profile"));
     }
 
     // Skip team profiles for self-hosted sync
@@ -20,7 +42,9 @@ impl SyncEngine {
         profile.name,
         profile.id
       );
-      return Ok(());
+      return Ok(ProfileSyncOutcome::Skipped(
+        "team profile, self-hosted sync",
+      ));
     }
 
     // Skip if profile is currently running locally
@@ -30,20 +54,21 @@ impl SyncEngine {
         profile.name,
         profile.id
       );
-      return Ok(());
+      return Ok(ProfileSyncOutcome::Skipped("profile is running locally"));
     }
 
-    // Skip if profile is locked by another team member
+    // Skip if profile is locked by another team member, or by one of this
+    // user's own remote sessions.
     if crate::profile::team_lock::TEAM_LOCK
       .is_locked_by_another(&profile.id.to_string())
       .await
     {
       log::info!(
-        "Skipping sync for profile locked by another team member: {} ({})",
+        "Skipping sync for profile locked by another holder: {} ({})",
         profile.name,
         profile.id
       );
-      return Ok(());
+      return Ok(ProfileSyncOutcome::Skipped("profile is locked elsewhere"));
     }
 
     // Derive encryption key if encrypted sync
@@ -142,7 +167,7 @@ impl SyncEngine {
       .await?;
 
     // Compute diff
-    let diff = compute_diff(&local_manifest, remote_manifest.as_ref());
+    let diff = compute_diff_with_bias(&local_manifest, remote_manifest.as_ref(), bias);
 
     if diff.is_empty() {
       log::info!("Profile {} is already in sync", profile_id);
@@ -154,7 +179,7 @@ impl SyncEngine {
           "status": "synced"
         }),
       );
-      return Ok(());
+      return Ok(ProfileSyncOutcome::Completed);
     }
 
     let upload_bytes: u64 = diff.files_to_upload.iter().map(|f| f.size).sum();
@@ -344,7 +369,7 @@ impl SyncEngine {
     );
 
     log::info!("Profile {} synced successfully", profile_id);
-    Ok(())
+    Ok(ProfileSyncOutcome::Completed)
   }
 
   async fn download_manifest(

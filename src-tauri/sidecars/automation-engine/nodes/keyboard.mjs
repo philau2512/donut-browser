@@ -39,7 +39,10 @@ export async function pressKey(node, page, ctx) {
     throw new Error("pressKey: key is required");
   }
 
-  ctx.logger.info(node.id, `pressKey → ${key}${selector ? ` on ${selector}` : ""}`);
+  ctx.logger.info(
+    node.id,
+    `pressKey → ${key}${selector ? ` on ${selector}` : ""}`,
+  );
 
   const pg = getPage(ctx);
   if (selector) {

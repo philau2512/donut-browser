@@ -334,6 +334,7 @@ impl ProxyManager {
       port: base_proxy.proxy_settings.port,
       username: Some(geo_username),
       password: base_proxy.proxy_settings.password.clone(),
+      vless_uri: None,
     };
 
     // Check if name already exists

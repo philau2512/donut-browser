@@ -215,13 +215,25 @@ export const NODE_SCHEMAS = {
   },
   random: {
     required: { type: "string", saveToVar: "string" },
-    optional: { domain: "string", quantity: "number", length: "number", min: "number", max: "number" },
+    optional: {
+      domain: "string",
+      quantity: "number",
+      length: "number",
+      min: "number",
+      max: "number",
+    },
   },
 
   // Phase 6: Network & Advanced
   http: {
     required: { url: "string" },
-    optional: { method: "string", headers: "string", body: "string", saveToVar: "string", timeout: "number" },
+    optional: {
+      method: "string",
+      headers: "string",
+      body: "string",
+      saveToVar: "string",
+      timeout: "number",
+    },
   },
   setUserAgent: {
     required: { userAgent: "string" },
@@ -335,7 +347,8 @@ export class FlowValidationError extends Error {
 }
 
 function checkType(value, expected) {
-  if (expected === "number") return typeof value === "number" && Number.isFinite(value);
+  if (expected === "number")
+    return typeof value === "number" && Number.isFinite(value);
   if (expected === "string") return typeof value === "string";
   if (expected === "boolean") return typeof value === "boolean";
   return false;
@@ -359,7 +372,11 @@ export function validateFlow(flow) {
   }
 
   // schemaVersion is optional; when present it must be 1 or 2.
-  if (flow.schemaVersion != null && flow.schemaVersion !== 1 && flow.schemaVersion !== 2) {
+  if (
+    flow.schemaVersion != null &&
+    flow.schemaVersion !== 1 &&
+    flow.schemaVersion !== 2
+  ) {
     throw new FlowValidationError(
       `Unsupported schemaVersion: ${JSON.stringify(flow.schemaVersion)} (expected 1 or 2)`,
     );
@@ -375,18 +392,24 @@ export function validateFlow(flow) {
     const isV2 = flow.schemaVersion === 2;
     if (isV2) {
       if (!Array.isArray(flow.variables)) {
-        throw new FlowValidationError("Flow.variables must be an array in schemaVersion 2");
+        throw new FlowValidationError(
+          "Flow.variables must be an array in schemaVersion 2",
+        );
       }
     } else {
       if (typeof flow.variables !== "object" || Array.isArray(flow.variables)) {
-        throw new FlowValidationError("Flow.variables must be an object when present");
+        throw new FlowValidationError(
+          "Flow.variables must be an object when present",
+        );
       }
     }
   }
 
   // resources is optional; when present must be an array (schema v2).
   if (flow.resources != null && !Array.isArray(flow.resources)) {
-    throw new FlowValidationError("Flow.resources must be an array when present");
+    throw new FlowValidationError(
+      "Flow.resources must be an array when present",
+    );
   }
   if (!Array.isArray(flow.nodes) || flow.nodes.length === 0) {
     throw new FlowValidationError("Flow.nodes must be a non-empty array");
@@ -404,41 +427,64 @@ export function validateFlow(flow) {
     if (!edge || typeof edge !== "object") {
       throw new FlowValidationError("Each edge must be an object");
     }
-    const extra = Object.keys(edge).filter((k) => k !== "from" && k !== "to" && k !== "sourceHandle");
+    const extra = Object.keys(edge).filter(
+      (k) => k !== "from" && k !== "to" && k !== "sourceHandle",
+    );
     if (extra.length > 0) {
-      throw new FlowValidationError(`Edge has unknown keys: ${extra.join(", ")}`);
+      throw new FlowValidationError(
+        `Edge has unknown keys: ${extra.join(", ")}`,
+      );
     }
     const allowedHandles = ["success", "fail", "true", "false", "loop", "done"];
     if (edge.sourceHandle != null && typeof edge.sourceHandle !== "string") {
-      throw new FlowValidationError(`Edge.sourceHandle must be a string: ${JSON.stringify(edge.sourceHandle)}`);
+      throw new FlowValidationError(
+        `Edge.sourceHandle must be a string: ${JSON.stringify(edge.sourceHandle)}`,
+      );
     }
-    if (edge.sourceHandle != null && !allowedHandles.includes(edge.sourceHandle)) {
-      throw new FlowValidationError(`Edge.sourceHandle must be one of [${allowedHandles.join(", ")}]: ${JSON.stringify(edge.sourceHandle)}`);
+    if (
+      edge.sourceHandle != null &&
+      !allowedHandles.includes(edge.sourceHandle)
+    ) {
+      throw new FlowValidationError(
+        `Edge.sourceHandle must be one of [${allowedHandles.join(", ")}]: ${JSON.stringify(edge.sourceHandle)}`,
+      );
     }
     if (!ids.has(edge.from)) {
-      throw new FlowValidationError(`Edge.from references unknown node: ${JSON.stringify(edge.from)}`);
+      throw new FlowValidationError(
+        `Edge.from references unknown node: ${JSON.stringify(edge.from)}`,
+      );
     }
     if (!ids.has(edge.to)) {
-      throw new FlowValidationError(`Edge.to references unknown node: ${JSON.stringify(edge.to)}`);
+      throw new FlowValidationError(
+        `Edge.to references unknown node: ${JSON.stringify(edge.to)}`,
+      );
     }
   }
 
   if (flow.functions != null) {
     if (!Array.isArray(flow.functions)) {
-      throw new FlowValidationError("Flow.functions must be an array when present");
+      throw new FlowValidationError(
+        "Flow.functions must be an array when present",
+      );
     }
     for (const fn of flow.functions) {
       if (!fn || typeof fn !== "object" || Array.isArray(fn)) {
         throw new FlowValidationError("Each function must be a JSON object");
       }
       if (typeof fn.name !== "string" || fn.name.length === 0) {
-        throw new FlowValidationError("Each function.name must be a non-empty string");
+        throw new FlowValidationError(
+          "Each function.name must be a non-empty string",
+        );
       }
       if (!Array.isArray(fn.nodes) || fn.nodes.length === 0) {
-        throw new FlowValidationError(`Function "${fn.name}" nodes must be a non-empty array`);
+        throw new FlowValidationError(
+          `Function "${fn.name}" nodes must be a non-empty array`,
+        );
       }
       if (!Array.isArray(fn.edges)) {
-        throw new FlowValidationError(`Function "${fn.name}" edges must be an array`);
+        throw new FlowValidationError(
+          `Function "${fn.name}" edges must be an array`,
+        );
       }
 
       const fnIds = new Set();
@@ -447,13 +493,19 @@ export function validateFlow(flow) {
       }
       for (const edge of fn.edges) {
         if (!edge || typeof edge !== "object") {
-          throw new FlowValidationError(`Each edge in function "${fn.name}" must be an object`);
+          throw new FlowValidationError(
+            `Each edge in function "${fn.name}" must be an object`,
+          );
         }
         if (!fnIds.has(edge.from)) {
-          throw new FlowValidationError(`Edge.from in function "${fn.name}" references unknown node: ${JSON.stringify(edge.from)}`);
+          throw new FlowValidationError(
+            `Edge.from in function "${fn.name}" references unknown node: ${JSON.stringify(edge.from)}`,
+          );
         }
         if (!fnIds.has(edge.to)) {
-          throw new FlowValidationError(`Edge.to in function "${fn.name}" references unknown node: ${JSON.stringify(edge.to)}`);
+          throw new FlowValidationError(
+            `Edge.to in function "${fn.name}" references unknown node: ${JSON.stringify(edge.to)}`,
+          );
         }
       }
       validateLabelTargets(fn.nodes, flow.isPartial);
@@ -478,37 +530,71 @@ function validateNode(node, ids) {
   }
   ids.add(node.id);
 
-  if (typeof node.type !== "string" || !ALLOWED_NODE_TYPES.includes(node.type)) {
+  if (
+    typeof node.type !== "string" ||
+    !ALLOWED_NODE_TYPES.includes(node.type)
+  ) {
     throw new FlowValidationError(
       `Node ${node.id}: unknown type ${JSON.stringify(node.type)} (allowed: ${ALLOWED_NODE_TYPES.join(", ")})`,
     );
   }
 
   // closed-schema key check: only id/type/params/continueOnError/comment/nodeId/sleepAfterFrom/sleepAfterTo/position allowed
-  const allowedNodeKeys = ["id", "type", "params", "continueOnError", "comment", "nodeId", "sleepAfterFrom", "sleepAfterTo", "position"];
-  const extraNodeKeys = Object.keys(node).filter((k) => !allowedNodeKeys.includes(k));
+  const allowedNodeKeys = [
+    "id",
+    "type",
+    "params",
+    "continueOnError",
+    "comment",
+    "nodeId",
+    "sleepAfterFrom",
+    "sleepAfterTo",
+    "position",
+  ];
+  const extraNodeKeys = Object.keys(node).filter(
+    (k) => !allowedNodeKeys.includes(k),
+  );
   if (extraNodeKeys.length > 0) {
-    throw new FlowValidationError(`Node ${node.id}: unknown keys ${extraNodeKeys.join(", ")}`);
+    throw new FlowValidationError(
+      `Node ${node.id}: unknown keys ${extraNodeKeys.join(", ")}`,
+    );
   }
 
   if (node.nodeId != null && typeof node.nodeId !== "string") {
     throw new FlowValidationError(`Node ${node.id}: nodeId must be a string`);
   }
 
-  if (node.continueOnError != null && typeof node.continueOnError !== "boolean") {
-    throw new FlowValidationError(`Node ${node.id}: continueOnError must be a boolean`);
+  if (
+    node.continueOnError != null &&
+    typeof node.continueOnError !== "boolean"
+  ) {
+    throw new FlowValidationError(
+      `Node ${node.id}: continueOnError must be a boolean`,
+    );
   }
 
   if (node.comment != null && typeof node.comment !== "string") {
     throw new FlowValidationError(`Node ${node.id}: comment must be a string`);
   }
 
-  if (node.sleepAfterFrom != null && typeof node.sleepAfterFrom !== "number" && typeof node.sleepAfterFrom !== "string") {
-    throw new FlowValidationError(`Node ${node.id}: sleepAfterFrom must be a number or a string`);
+  if (
+    node.sleepAfterFrom != null &&
+    typeof node.sleepAfterFrom !== "number" &&
+    typeof node.sleepAfterFrom !== "string"
+  ) {
+    throw new FlowValidationError(
+      `Node ${node.id}: sleepAfterFrom must be a number or a string`,
+    );
   }
 
-  if (node.sleepAfterTo != null && typeof node.sleepAfterTo !== "number" && typeof node.sleepAfterTo !== "string") {
-    throw new FlowValidationError(`Node ${node.id}: sleepAfterTo must be a number or a string`);
+  if (
+    node.sleepAfterTo != null &&
+    typeof node.sleepAfterTo !== "number" &&
+    typeof node.sleepAfterTo !== "string"
+  ) {
+    throw new FlowValidationError(
+      `Node ${node.id}: sleepAfterTo must be a number or a string`,
+    );
   }
 
   const params = node.params ?? {};
@@ -520,33 +606,50 @@ function validateNode(node, ids) {
   // required present + correct type
   for (const [key, expected] of Object.entries(spec.required)) {
     if (!(key in params)) {
-      throw new FlowValidationError(`Node ${node.id} (${node.type}): missing required param '${key}'`);
+      throw new FlowValidationError(
+        `Node ${node.id} (${node.type}): missing required param '${key}'`,
+      );
     }
     if (!checkType(params[key], expected)) {
-      throw new FlowValidationError(`Node ${node.id} (${node.type}): param '${key}' must be ${expected}`);
+      throw new FlowValidationError(
+        `Node ${node.id} (${node.type}): param '${key}' must be ${expected}`,
+      );
     }
   }
   // no unknown params (closed schema)
-  const known = new Set([...Object.keys(spec.required), ...Object.keys(spec.optional)]);
+  const known = new Set([
+    ...Object.keys(spec.required),
+    ...Object.keys(spec.optional),
+  ]);
   for (const key of Object.keys(params)) {
     if (key === "color") {
       if (typeof params[key] !== "string") {
-        throw new FlowValidationError(`Node ${node.id} (${node.type}): param 'color' must be string`);
+        throw new FlowValidationError(
+          `Node ${node.id} (${node.type}): param 'color' must be string`,
+        );
       }
       continue;
     }
     if (!known.has(key)) {
-      throw new FlowValidationError(`Node ${node.id} (${node.type}): unknown param '${key}'`);
+      throw new FlowValidationError(
+        `Node ${node.id} (${node.type}): unknown param '${key}'`,
+      );
     }
     const expected = spec.required[key] ?? spec.optional[key];
     if (!checkType(params[key], expected)) {
-      throw new FlowValidationError(`Node ${node.id} (${node.type}): param '${key}' must be ${expected}`);
+      throw new FlowValidationError(
+        `Node ${node.id} (${node.type}): param '${key}' must be ${expected}`,
+      );
     }
   }
 
   // Static scheme check for openUrl literals (templated urls re-checked at runtime
   // by url-guard after interpolation — this catches obvious hostile literals early).
-  if (node.type === "openUrl" && typeof params.url === "string" && !params.url.includes("{{")) {
+  if (
+    node.type === "openUrl" &&
+    typeof params.url === "string" &&
+    !params.url.includes("{{")
+  ) {
     if (!isAllowedUrlScheme(params.url)) {
       throw new FlowValidationError(
         `Node ${node.id} (openUrl): url scheme not allowed: ${JSON.stringify(params.url)}`,
@@ -557,7 +660,9 @@ function validateNode(node, ids) {
 
 function validateLabelTargets(nodes, isPartial = false) {
   if (isPartial) return;
-  const labels = new Set(nodes.filter((node) => node.type === "label").map((node) => node.id));
+  const labels = new Set(
+    nodes.filter((node) => node.type === "label").map((node) => node.id),
+  );
   for (const node of nodes) {
     if (node.type !== "moveToLabel") continue;
     const target = node.params?.targetLabelNodeId;
@@ -592,7 +697,8 @@ function detectCycle(nodes, edges) {
     color.set(id, GRAY);
     for (const next of adj.get(id)) {
       const c = color.get(next);
-      if (c === GRAY) throw new FlowValidationError(`Flow contains a cycle at node: ${next}`);
+      if (c === GRAY)
+        throw new FlowValidationError(`Flow contains a cycle at node: ${next}`);
       if (c === WHITE) visit(next);
     }
     color.set(id, BLACK);

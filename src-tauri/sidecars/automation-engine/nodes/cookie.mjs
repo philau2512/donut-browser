@@ -5,14 +5,20 @@ export async function getCookies(node, page, ctx) {
     throw new Error("getCookies: saveToVar is required");
   }
 
-  ctx.logger.info(node.id, `getCookies${domain ? ` → domain: ${domain}` : ""} → save to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `getCookies${domain ? ` → domain: ${domain}` : ""} → save to ${saveToVar}`,
+  );
 
   const urls = domain ? [domain] : undefined;
   const cookies = await page.context().cookies(urls);
   const cookieJson = JSON.stringify(cookies);
 
   ctx.vars[saveToVar] = cookieJson;
-  ctx.logger.info(node.id, `getCookies → saved ${cookies.length} cookies to ${saveToVar}`);
+  ctx.logger.info(
+    node.id,
+    `getCookies → saved ${cookies.length} cookies to ${saveToVar}`,
+  );
 }
 
 /** setCookies: set cookies from JSON string or variable */
@@ -44,7 +50,9 @@ export async function setCookies(node, page, ctx) {
     }
     for (const field of requiredFields) {
       if (!(field in cookie)) {
-        throw new Error(`setCookies: cookie[${i}] missing required field "${field}"`);
+        throw new Error(
+          `setCookies: cookie[${i}] missing required field "${field}"`,
+        );
       }
     }
   }

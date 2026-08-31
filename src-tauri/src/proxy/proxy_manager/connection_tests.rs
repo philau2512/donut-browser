@@ -70,6 +70,7 @@ mod tests {
       port: 8080,
       username: Some("user".to_string()),
       password: Some("pass".to_string()),
+      vless_uri: None,
     };
 
     assert!(
@@ -97,6 +98,7 @@ mod tests {
       port: 0,
       username: None,
       password: None,
+      vless_uri: None,
     };
 
     assert!(
@@ -252,6 +254,7 @@ mod tests {
       port: 8080,
       username: Some("user".to_string()),
       password: Some("pass".to_string()),
+      vless_uri: None,
     };
 
     // Test command arguments match expected format
@@ -690,6 +693,7 @@ mod tests {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      browser_pid_start_time: None,
       dns_allowlist_mode: false,
     };
     let dead_config = ProxyConfig {
@@ -704,6 +708,7 @@ mod tests {
       blocklist_file: None,
       local_protocol: None,
       browser_pid: None,
+      browser_pid_start_time: None,
       dns_allowlist_mode: false,
     };
 

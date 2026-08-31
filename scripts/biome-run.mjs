@@ -7,16 +7,18 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createRequire } from "node:module";
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 
 function resolveBiomeEntry() {
   try {
-    const pkgPath = require.resolve("@biomejs/biome/package.json", { paths: [rootDir] });
+    const pkgPath = require.resolve("@biomejs/biome/package.json", {
+      paths: [rootDir],
+    });
     const pkg = require(pkgPath);
     const rel = typeof pkg.bin === "string" ? pkg.bin : pkg.bin?.biome;
     if (rel) {

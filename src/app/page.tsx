@@ -1,6 +1,7 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useOnborda } from "onborda";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -57,12 +58,17 @@ import {
   type ProfileFilterCriteria,
 } from "@/lib/profile-filter";
 import {
+  matchesProfile,
+  type ProfileSearchContext,
+  parseProfileSearch,
+} from "@/lib/profile-search";
+import {
   matchesGroupDigit,
   matchesShortcut,
   SHORTCUTS,
   type ShortcutId,
 } from "@/lib/shortcuts";
-import type { BrowserProfile, SyncSettings } from "@/types";
+import type { BrowserProfile, ExtensionGroup, SyncSettings } from "@/types";
 
 // Import HomeDialogs
 import { HomeDialogs } from "./home-dialogs";
@@ -182,6 +188,35 @@ export default function Home() {
 
   const { vpnConfigs } = useVpnEvents();
 
+  // Extension groups feed both the table's Ext column and the search filter's
+  // `ext:` lookup, so the list is loaded here and handed down rather than
+  // fetched twice. Refreshed when the backend emits 'extensions-changed'
+  // (group rename/create/delete).
+  const [extensionGroups, setExtensionGroups] = useState<ExtensionGroup[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    let unlisten: (() => void) | undefined;
+    const load = async () => {
+      try {
+        const data = await invoke<ExtensionGroup[]>("list_extension_groups");
+        if (mounted) setExtensionGroups(data);
+      } catch (e) {
+        console.error("Failed to load extension groups:", e);
+      }
+    };
+    void load();
+    void listen("extensions-changed", () => {
+      void load();
+    }).then((u) => {
+      if (mounted) unlisten = u;
+      else u();
+    });
+    return () => {
+      mounted = false;
+      unlisten?.();
+    };
+  }, []);
   const { getProfileSyncInfo } = useSyncSessions();
   const [syncLeaderProfile, setSyncLeaderProfile] =
     useState<BrowserProfile | null>(null);
@@ -611,32 +646,50 @@ export default function Home() {
     // Reset group filters or reload groups if necessary
   }, []);
 
+  // A profile stores ids, and the query asks about names, so the matcher is
+  // handed the resolution up front. Built off the entity lists rather than off
+  // `profiles`, because the alternative — a .find() per row per term — is
+  // O(profiles x entities) on every single keystroke.
+  const searchContext = useMemo<ProfileSearchContext>(
+    () => ({
+      groupNames: new Map(groupsData.map((g) => [g.id, g.name])),
+      proxyNames: new Map(storedProxies.map((p) => [p.id, p.name])),
+      vpnNames: new Map(vpnConfigs.map((v) => [v.id, v.name])),
+      extensionGroupNames: new Map(extensionGroups.map((e) => [e.id, e.name])),
+      runningProfiles,
+    }),
+    [groupsData, storedProxies, vpnConfigs, extensionGroups, runningProfiles],
+  );
+
+  // Filter data by selected group and search query. The two are independent
+  // controls and both apply: the rail narrows to a group, the query narrows
+  // within whatever the rail left.
   const filteredProfiles = useMemo(() => {
-    let filtered = profiles;
+    // "__all__" is a virtual filter that shows every profile (including
+    // ungrouped ones). Any other value is a real group id; ungrouped profiles
+    // only show through "All".
+    const inGroup =
+      !selectedGroupId || selectedGroupId === "__all__"
+        ? profiles
+        : profiles.filter((profile) => profile.group_id === selectedGroupId);
 
-    if (!selectedGroupId || selectedGroupId === "__all__") {
-      filtered = profiles;
-    } else {
-      filtered = profiles.filter(
-        (profile) => profile.group_id === selectedGroupId,
-      );
-    }
+    const parsed = parseProfileSearch(searchQuery);
+    let matched = parsed.isEmpty
+      ? inGroup
+      : inGroup.filter((profile) =>
+          matchesProfile(profile, parsed, searchContext),
+        );
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((profile) => {
-        if (profile.name.toLowerCase().includes(query)) return true;
-        if (profile.note?.toLowerCase().includes(query)) return true;
-        if (profile.tags?.some((tag) => tag.toLowerCase().includes(query)))
-          return true;
-        return false;
-      });
-    }
-
-    filtered = applyProfileFilter(filtered, profileFilter, runningProfiles);
-
-    return filtered;
-  }, [profiles, selectedGroupId, searchQuery, profileFilter, runningProfiles]);
+    matched = applyProfileFilter(matched, profileFilter, runningProfiles);
+    return matched;
+  }, [
+    profiles,
+    selectedGroupId,
+    searchQuery,
+    searchContext,
+    profileFilter,
+    runningProfiles,
+  ]);
 
   const activeFilterCount = useMemo(
     () => countActiveProfileFilters(profileFilter),

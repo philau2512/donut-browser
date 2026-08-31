@@ -1,15 +1,72 @@
-import { openUrl, newTab, switchTab, closeTab, reloadPage, goBack, goForward, switchFrame, wait, scroll } from "./navigator.mjs";
-import { click, hover, dragAndDrop, clickDown, clickUp, type, moveAndClick } from "./interaction.mjs";
-import { typeText, sendTextToSelector, pressKey, clearInput } from "./keyboard.mjs";
-import { getCookies, setCookies, clearCookies } from "./cookie.mjs";
-import { ifCondition, loopFor, loopElements, evalJs } from "./logic.mjs";
-import { setVariable, readCsv, writeCsv, downloadFile, screenshot, log, delay } from "./data.mjs";
-import { getText, getAttributeValue, getValue, elementExists, extractionInText, random } from "./extraction.mjs";
-import { http, setUserAgent, getUrl, convertingJson, imageSearch } from "./network.mjs";
-import { whileLoop, stopLoop, runOtherScript, addLog, addComment, label, moveToLabel, ignoreErrorsStart, ignoreErrorsEnd, endIf, callFunction } from "./control-flow.mjs";
+import {
+  addComment,
+  addLog,
+  callFunction,
+  endIf,
+  ignoreErrorsEnd,
+  ignoreErrorsStart,
+  label,
+  moveToLabel,
+  runOtherScript,
+  stopLoop,
+  whileLoop,
+} from "./control-flow.mjs";
+import { clearCookies, getCookies, setCookies } from "./cookie.mjs";
+import {
+  delay,
+  downloadFile,
+  log,
+  readCsv,
+  screenshot,
+  setVariable,
+  writeCsv,
+} from "./data.mjs";
 import { switchExtensionPopup } from "./extension.mjs";
-import { openProfile, closeProfile } from "./profile-flow.mjs";
-import { profileSuccess, profileFail } from "./result.mjs";
+import {
+  elementExists,
+  extractionInText,
+  getAttributeValue,
+  getText,
+  getValue,
+  random,
+} from "./extraction.mjs";
+import {
+  click,
+  clickDown,
+  clickUp,
+  dragAndDrop,
+  hover,
+  moveAndClick,
+  type,
+} from "./interaction.mjs";
+import {
+  clearInput,
+  pressKey,
+  sendTextToSelector,
+  typeText,
+} from "./keyboard.mjs";
+import { evalJs, ifCondition, loopElements, loopFor } from "./logic.mjs";
+import {
+  closeTab,
+  goBack,
+  goForward,
+  newTab,
+  openUrl,
+  reloadPage,
+  scroll,
+  switchFrame,
+  switchTab,
+  wait,
+} from "./navigator.mjs";
+import {
+  convertingJson,
+  getUrl,
+  http,
+  imageSearch,
+  setUserAgent,
+} from "./network.mjs";
+import { closeProfile, openProfile } from "./profile-flow.mjs";
+import { profileFail, profileSuccess } from "./result.mjs";
 
 export const handlers = {
   // Navigator

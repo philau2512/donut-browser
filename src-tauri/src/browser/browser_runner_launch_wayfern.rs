@@ -52,6 +52,7 @@ impl BrowserRunner {
               port,
               username: None,
               password: None,
+              vless_uri: None,
             });
             log::info!("VPN worker started for Wayfern profile on port {}", port);
           }

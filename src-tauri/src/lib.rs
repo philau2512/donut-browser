@@ -18,6 +18,14 @@ pub(crate) fn backend_error(code: &str) -> String {
   serde_json::json!({ "code": code }).to_string()
 }
 
+pub(crate) fn backend_error_with_detail(code: &str, detail: impl std::fmt::Display) -> String {
+  serde_json::json!({
+    "code": code,
+    "params": { "detail": detail.to_string() }
+  })
+  .to_string()
+}
+
 pub(crate) fn vless_config_error(error: &crate::xray::XrayError) -> String {
   serde_json::json!({
     "code": "VLESS_CONFIG_INVALID",
@@ -43,6 +51,8 @@ pub mod proxy;
 pub mod settings;
 pub use proxy::{proxy_runner, proxy_server, proxy_storage, socks5_local, traffic_stats};
 mod automation_rate_limiter;
+pub mod checksum;
+pub mod cookie_paste;
 pub mod events;
 pub mod fingerprint_consistency;
 pub mod fs_secure;
@@ -55,7 +65,12 @@ pub mod xray_worker_runner;
 pub mod xray_worker_storage;
 
 pub mod automation;
+pub mod cloud_errors;
 pub mod commands;
+pub mod cookie_bot;
+pub mod remote_exit;
+pub mod remote_handoff;
+pub mod remote_session;
 
 // Background task modules (extracted from lib_setup.rs for domain separation)
 pub mod lib_setup_background_cleanup;
@@ -435,29 +450,57 @@ async fn copy_profile_cookies(
   Ok(results)
 }
 
+/// Push a profile's freshly written cookies to the cloud, if it syncs at all.
+fn queue_profile_cookie_sync(profile_id: &str) {
+  let Some(scheduler) = crate::sync::get_global_scheduler() else {
+    return;
+  };
+  let Ok(profiles) = profile::manager::ProfileManager::instance().list_profiles() else {
+    return;
+  };
+  let syncs = profiles
+    .iter()
+    .any(|p| p.id.to_string() == profile_id && p.is_sync_enabled());
+  if !syncs {
+    return;
+  }
+  let pid = profile_id.to_string();
+  tauri::async_runtime::spawn(async move {
+    scheduler.queue_profile_sync(pid).await;
+  });
+}
+
 #[tauri::command]
-async fn import_cookies_from_file(
+async fn analyze_pasted_cookies(
   app_handle: tauri::AppHandle,
   profile_id: String,
   content: String,
-) -> Result<cookie_manager::CookieImportResult, String> {
-  let result =
-    cookie_manager::CookieManager::import_cookies(&app_handle, &profile_id, &content).await?;
+  site: Option<String>,
+) -> Result<cookie_manager::CookiePasteAnalysis, String> {
+  cookie_manager::CookieManager::analyze_paste(&app_handle, &profile_id, &content, site.as_deref())
+    .await
+}
 
-  // Trigger sync for the profile if sync is enabled
-  if let Some(scheduler) = crate::sync::get_global_scheduler() {
-    let profile_manager = profile::manager::ProfileManager::instance();
-    if let Ok(profiles) = profile_manager.list_profiles() {
-      if let Some(profile) = profiles.iter().find(|p| p.id.to_string() == profile_id) {
-        if profile.is_sync_enabled() {
-          let pid = profile_id.clone();
-          tauri::async_runtime::spawn(async move {
-            scheduler.queue_profile_sync(pid).await;
-          });
-        }
-      }
-    }
-  }
+#[tauri::command]
+async fn import_pasted_cookies(
+  app_handle: tauri::AppHandle,
+  profile_id: String,
+  content: String,
+  site: Option<String>,
+  mode: cookie_manager::CookieWriteMode,
+  include_expired: bool,
+) -> Result<cookie_manager::CookiePasteImportResult, String> {
+  let result = cookie_manager::CookieManager::import_paste(
+    &app_handle,
+    &profile_id,
+    &content,
+    site.as_deref(),
+    mode,
+    include_expired,
+  )
+  .await?;
+
+  queue_profile_cookie_sync(&profile_id);
 
   Ok(result)
 }

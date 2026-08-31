@@ -9,8 +9,8 @@
 // Storage format: a single JSON file per resource definition, keyed by itemId.
 // File path: <artifactsDir>/resource-state/<resourceId>.json
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /** Derive a stable item identity hash from resourceId + sourcePath + lineValue. */
@@ -51,8 +51,12 @@ export async function loadPersistedState(stateDir, resourceId) {
           successUsage: Number(data.successUsage) || 0,
           failUsage: Number(data.failUsage) || 0,
           // Only restore terminal/quota states; available/leased/cooldown reset to available.
-          status: data.status === "exhausted" || data.status === "disabled" ? data.status : "available",
-          lastUsedAt: typeof data.lastUsedAt === "string" ? data.lastUsedAt : undefined,
+          status:
+            data.status === "exhausted" || data.status === "disabled"
+              ? data.status
+              : "available",
+          lastUsedAt:
+            typeof data.lastUsedAt === "string" ? data.lastUsedAt : undefined,
         });
       }
     }
@@ -78,11 +82,18 @@ export async function savePersistedState(stateDir, resourceId, items) {
       successUsage: item.successUsage,
       failUsage: item.failUsage,
       // Only persist terminal/quota-relevant statuses.
-      status: item.status === "exhausted" || item.status === "disabled" ? item.status : "available",
+      status:
+        item.status === "exhausted" || item.status === "disabled"
+          ? item.status
+          : "available",
       lastUsedAt: item.lastUsedAt,
     };
   }
-  await writeFile(statePath(stateDir, resourceId), JSON.stringify(obj, null, 2), "utf-8");
+  await writeFile(
+    statePath(stateDir, resourceId),
+    JSON.stringify(obj, null, 2),
+    "utf-8",
+  );
 }
 
 /**

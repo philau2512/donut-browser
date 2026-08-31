@@ -9,9 +9,7 @@
 // This itemId is the key for persistence and quota tracking across restarts.
 
 import { readFile } from "node:fs/promises";
-import {
-  canAllocate,
-} from "./item-state-machine.mjs";
+import { canAllocate } from "./item-state-machine.mjs";
 import { deriveItemId } from "./resource-persistence.mjs";
 
 /**
@@ -29,26 +27,38 @@ export async function loadResourceItems(definition, flowDir) {
 
   if (source.kind === "file") {
     if (!source.path || source.path.trim() === "") {
-      throw new Error(`ResourceLoader: file path is missing or empty for resource '${resourceId}'`);
+      throw new Error(
+        `ResourceLoader: file path is missing or empty for resource '${resourceId}'`,
+      );
     }
     if (definition.fileBehavior && definition.fileBehavior.readFile === false) {
       return [];
     }
-    const absPath = source.path.startsWith("/") || /^[A-Za-z]:[/\\]/.test(source.path)
-      ? source.path
-      : `${flowDir ?? "."}/${source.path}`;
+    const absPath =
+      source.path.startsWith("/") || /^[A-Za-z]:[/\\]/.test(source.path)
+        ? source.path
+        : `${flowDir ?? "."}/${source.path}`;
     sourcePath = absPath;
     try {
       const raw = await readFile(absPath, "utf-8");
-      lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      lines = raw
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
     } catch (err) {
-      throw new Error(`ResourceLoader: cannot read resource file '${absPath}': ${err.message}`);
+      throw new Error(
+        `ResourceLoader: cannot read resource file '${absPath}': ${err.message}`,
+      );
     }
   } else if (source.kind === "static") {
-    lines = (source.inlineItems ?? []).map((l) => String(l).trim()).filter(Boolean);
+    lines = (source.inlineItems ?? [])
+      .map((l) => String(l).trim())
+      .filter(Boolean);
     sourcePath = `static:${resourceId}`;
   } else {
-    throw new Error(`ResourceLoader: unsupported source kind '${source.kind}' for resource '${resourceId}'`);
+    throw new Error(
+      `ResourceLoader: unsupported source kind '${source.kind}' for resource '${resourceId}'`,
+    );
   }
 
   return lines.map((line) => {
@@ -77,7 +87,12 @@ export async function loadResourceItems(definition, flowDir) {
  */
 export function selectCandidates(candidates, mode, limits) {
   const eligible = candidates.filter((item) =>
-    canAllocate(item, limits.maxSimultaneousUse, limits.maxSuccessUsage, limits.maxFailUsage),
+    canAllocate(
+      item,
+      limits.maxSimultaneousUse,
+      limits.maxSuccessUsage,
+      limits.maxFailUsage,
+    ),
   );
 
   if (eligible.length === 0) return [];

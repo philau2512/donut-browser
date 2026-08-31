@@ -718,7 +718,7 @@ pub fn exit_reachability(profile: &BrowserProfile) -> crate::remote_exit::ExitRe
   use crate::remote_exit::{classify_proxy, classify_wireguard_endpoint, ExitReachability};
 
   if let Some(proxy_id) = profile.proxy_id.as_deref() {
-    let stored = crate::proxy_manager::PROXY_MANAGER
+    let stored = crate::proxy::proxy_manager::PROXY_MANAGER
       .get_stored_proxies()
       .into_iter()
       .find(|candidate| candidate.id == proxy_id);

@@ -48,18 +48,24 @@ export function interpolateString(str, vars, opts = {}) {
 
   // Pass 1: resolve canonical [[KEY]] / [[scope.KEY]] tokens.
   // For scoped tokens the lookup uses only the leaf name (after last dot).
-  let result = str.replace(new RegExp(VAR_TOKEN_RE.source, "g"), (match, full) => {
-    const name = full.includes(".") ? full.slice(full.lastIndexOf(".") + 1) : full;
-    const value = lookupVar(vars, name);
-    if (value !== undefined) return String(value ?? "");
-    if (opts.strict) throw new Error(`Unknown variable in template: ${full}`);
-    return match;
-  });
+  let result = str.replace(
+    new RegExp(VAR_TOKEN_RE.source, "g"),
+    (match, full) => {
+      const name = full.includes(".")
+        ? full.slice(full.lastIndexOf(".") + 1)
+        : full;
+      const value = lookupVar(vars, name);
+      if (value !== undefined) return String(value ?? "");
+      if (opts.strict) throw new Error(`Unknown variable in template: ${full}`);
+      return match;
+    },
+  );
 
   // Pass 2: resolve legacy {{KEY}} tokens — skip {{resource:...}} tokens.
   result = result.replace(PLACEHOLDER_RE, (match, key) => {
     // Guard: do not resolve resource references that slipped through.
-    if (key.startsWith("resource:") || key.startsWith("resource ")) return match;
+    if (key.startsWith("resource:") || key.startsWith("resource "))
+      return match;
     const value = lookupVar(vars, key);
     if (value !== undefined) return String(value ?? "");
     if (opts.strict) throw new Error(`Unknown variable in template: ${key}`);

@@ -24,17 +24,16 @@ export async function scroll(node, page, ctx) {
   const { x, y, selector } = node.params ?? {};
   if (selector) {
     ctx.logger.info(node.id, `scroll → into view: ${selector}`);
-    const el = await page.waitForSelector(selector, { timeout: DEFAULT_TIMEOUT_MS });
+    const el = await page.waitForSelector(selector, {
+      timeout: DEFAULT_TIMEOUT_MS,
+    });
     await el.scrollIntoViewIfNeeded();
     return;
   }
   const dx = Number.isFinite(x) ? x : 0;
   const dy = Number.isFinite(y) ? y : 0;
   ctx.logger.info(node.id, `scroll → by (${dx}, ${dy})`);
-  await page.evaluate(
-    ([sx, sy]) => window.scrollBy(sx, sy),
-    [dx, dy],
-  );
+  await page.evaluate(([sx, sy]) => window.scrollBy(sx, sy), [dx, dy]);
 }
 
 /** wait: wait for a selector to appear (or a fixed time if no selector). */
@@ -42,8 +41,14 @@ export async function wait(node, page, ctx) {
   const { selector, timeout, state } = node.params ?? {};
   const t = Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT_MS;
   if (selector) {
-    ctx.logger.info(node.id, `wait → selector: ${selector} (state=${state ?? "visible"})`);
-    await page.waitForSelector(selector, { timeout: t, state: state ?? "visible" });
+    ctx.logger.info(
+      node.id,
+      `wait → selector: ${selector} (state=${state ?? "visible"})`,
+    );
+    await page.waitForSelector(selector, {
+      timeout: t,
+      state: state ?? "visible",
+    });
     return;
   }
   ctx.logger.info(node.id, `wait → ${t}ms`);

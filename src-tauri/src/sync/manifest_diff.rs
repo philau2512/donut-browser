@@ -15,8 +15,36 @@ impl ManifestDiff {
   }
 }
 
+/// Which side a sync should believe when both have moved.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum DiffBias {
+  /// Newest `updated_at` wins. What an ordinary background sync uses.
+  #[default]
+  Auto,
+  /// Remote wins regardless of timestamps.
+  ///
+  /// Used for exactly one thing: the pull that follows a remote session. A
+  /// leased host has just written the authoritative copy of this profile, and
+  /// the local directory is whatever it was before the session started. If the
+  /// user launched locally in between, local mtimes are NEWER than the host's
+  /// push, so `Auto` would upload the stale copy and put every file the host
+  /// wrote into `files_to_delete_remote` — the whole session's work destroyed,
+  /// silently. There is no timestamp comparison that gets this right, because
+  /// the local clock genuinely is later; only the caller knows that the remote
+  /// copy is the one that matters.
+  PreferRemote,
+}
+
 /// Compute what needs to be synced between local and remote
 pub fn compute_diff(local: &SyncManifest, remote: Option<&SyncManifest>) -> ManifestDiff {
+  compute_diff_with_bias(local, remote, DiffBias::Auto)
+}
+
+pub fn compute_diff_with_bias(
+  local: &SyncManifest,
+  remote: Option<&SyncManifest>,
+  bias: DiffBias,
+) -> ManifestDiff {
   let mut diff = ManifestDiff::default();
 
   let Some(remote) = remote else {
@@ -48,11 +76,14 @@ pub fn compute_diff(local: &SyncManifest, remote: Option<&SyncManifest>) -> Mani
   let local_updated = local.updated_at_datetime();
   let remote_updated = remote.updated_at_datetime();
 
-  let local_is_newer = match (local_updated, remote_updated) {
-    (Some(l), Some(r)) => l > r,
-    (Some(_), None) => true,
-    (None, Some(_)) => false,
-    (None, None) => true, // Default to uploading
+  let local_is_newer = match bias {
+    DiffBias::PreferRemote => false,
+    DiffBias::Auto => match (local_updated, remote_updated) {
+      (Some(l), Some(r)) => l > r,
+      (Some(_), None) => true,
+      (None, Some(_)) => false,
+      (None, None) => true, // Default to uploading
+    },
   };
 
   if local_is_newer {

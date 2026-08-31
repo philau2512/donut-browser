@@ -1,24 +1,27 @@
 import { execSync } from "node:child_process";
-import { resolve, relative, dirname } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, "..");
 
 // Lấy danh sách file truyền vào
-const files = process.argv.slice(2).filter(f => !f.startsWith("-"));
+const files = process.argv.slice(2).filter((f) => !f.startsWith("-"));
 
 if (files.length === 0) {
   // Chạy chế độ mặc định (toàn bộ dự án)
   console.log("Formatting entire project...");
   try {
-    execSync("pnpm format:js && pnpm format:rust", { stdio: "inherit", cwd: rootDir });
+    execSync("pnpm format:js && pnpm format:rust", {
+      stdio: "inherit",
+      cwd: rootDir,
+    });
   } catch (err) {
     process.exit(1);
   }
 } else {
   // Chạy chế độ format từng file cụ thể
-  for (let file of files) {
+  for (const file of files) {
     // Chuẩn hóa path tương đối từ root
     const normalizedPath = file.replace(/\\/g, "/");
     const absolutePath = resolve(rootDir, normalizedPath);
@@ -29,8 +32,14 @@ if (files.length === 0) {
     try {
       if (relativePath.endsWith(".rs")) {
         // Rust file format
-        const rustFileRelative = relative(resolve(rootDir, "src-tauri"), absolutePath).replace(/\\/g, "/");
-        execSync(`cargo fmt -- ${rustFileRelative}`, { stdio: "inherit", cwd: resolve(rootDir, "src-tauri") });
+        const rustFileRelative = relative(
+          resolve(rootDir, "src-tauri"),
+          absolutePath,
+        ).replace(/\\/g, "/");
+        execSync(`cargo fmt -- ${rustFileRelative}`, {
+          stdio: "inherit",
+          cwd: resolve(rootDir, "src-tauri"),
+        });
       } else if (
         relativePath.endsWith(".ts") ||
         relativePath.endsWith(".tsx") ||
@@ -41,16 +50,25 @@ if (files.length === 0) {
       ) {
         if (relativePath.startsWith("donut-sync/")) {
           // Biome format cho donut-sync
-          const syncFileRelative = relative(resolve(rootDir, "donut-sync"), absolutePath).replace(/\\/g, "/");
-          execSync(`node scripts/biome-run.mjs --cwd donut-sync check --write --unsafe ${syncFileRelative}`, {
-            stdio: "inherit",
-            cwd: rootDir,
-          });
+          const syncFileRelative = relative(
+            resolve(rootDir, "donut-sync"),
+            absolutePath,
+          ).replace(/\\/g, "/");
+          execSync(
+            `node scripts/biome-run.mjs --cwd donut-sync check --write --unsafe ${syncFileRelative}`,
+            {
+              stdio: "inherit",
+              cwd: rootDir,
+            },
+          );
         } else {
-          execSync(`node scripts/biome-run.mjs check --write --unsafe ${relativePath}`, {
-            stdio: "inherit",
-            cwd: rootDir,
-          });
+          execSync(
+            `node scripts/biome-run.mjs check --write --unsafe ${relativePath}`,
+            {
+              stdio: "inherit",
+              cwd: rootDir,
+            },
+          );
         }
       } else {
         console.log(`Unsupported file type for formatting: ${relativePath}`);

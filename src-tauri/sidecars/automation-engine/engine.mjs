@@ -16,14 +16,13 @@
 //   2 = setup failure (bad args, flow invalid, CDP connect failed)
 
 import { readFile } from "node:fs/promises";
-import { pathToFileURL } from "node:url";
 import { dirname, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { chromium } from "playwright-core";
-
-import { validateFlow } from "./lib/validate.mjs";
-import { interpolateParams, interpolateString } from "./lib/interpolate.mjs";
-import { Logger, createRedactor } from "./lib/logger.mjs";
 import { getPage } from "./lib/execution-target.mjs";
+import { interpolateParams, interpolateString } from "./lib/interpolate.mjs";
+import { createRedactor, Logger } from "./lib/logger.mjs";
+import { validateFlow } from "./lib/validate.mjs";
 import { getHandler } from "./nodes/index.mjs";
 import { ResourceManager } from "./resources/index.mjs";
 
@@ -55,7 +54,8 @@ export function topoOrder(flow) {
   for (const e of flow.edges) incoming.set(e.to, (incoming.get(e.to) ?? 0) + 1);
 
   // Root = node with no incoming edge (first one in declaration order wins ties).
-  const root = flow.nodes.find((n) => (incoming.get(n.id) ?? 0) === 0) ?? flow.nodes[0];
+  const root =
+    flow.nodes.find((n) => (incoming.get(n.id) ?? 0) === 0) ?? flow.nodes[0];
 
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
   const nextOf = new Map();
@@ -98,18 +98,38 @@ async function resolvePage(browser, logger) {
       "Browser context has no open page — orchestrator must launch with an initial tab (refusing newPage() for fingerprint safety, red-team #7)",
     );
   }
-  logger.debug(null, `reusing launch page (contexts=${contexts.length}, pages=${pages.length})`);
+  logger.debug(
+    null,
+    `reusing launch page (contexts=${contexts.length}, pages=${pages.length})`,
+  );
   return pages[0];
 }
 
-export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, continueDefault, logger, flowDir, resourceManager }) {
+export async function runFlow({
+  flow,
+  page,
+  vars,
+  artifactsDir,
+  allowedSchemes,
+  continueDefault,
+  logger,
+  flowDir,
+  resourceManager,
+}) {
   if (vars) {
     vars.WAS_ERROR = "false";
     vars.LAST_ERROR = "";
   }
   // Inject runSubFlow so control-flow handlers can call sub-scripts without a
   // dynamic import back into engine.mjs (avoids circular-import overhead).
-  const runSubFlow = (args) => runFlow({ logger, flowDir, continueDefault: false, resourceManager, ...args });
+  const runSubFlow = (args) =>
+    runFlow({
+      logger,
+      flowDir,
+      continueDefault: false,
+      resourceManager,
+      ...args,
+    });
   const ctx = {
     logger,
     vars,
@@ -127,12 +147,12 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
 
   const byId = new Map(flow.nodes.map((n) => [n.id, n]));
   const labelIndex = new Map(
-    flow.nodes
-      .filter((n) => n.type === "label")
-      .map((n) => [n.id, n]),
+    flow.nodes.filter((n) => n.type === "label").map((n) => [n.id, n]),
   );
   const getNextNode = (fromId, outcome) => {
-    const edge = flow.edges.find((e) => e.from === fromId && (e.sourceHandle ?? "success") === outcome);
+    const edge = flow.edges.find(
+      (e) => e.from === fromId && (e.sourceHandle ?? "success") === outcome,
+    );
     return edge ? byId.get(edge.to) : null;
   };
 
@@ -140,19 +160,26 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
   for (const e of flow.edges) {
     incoming.set(e.to, (incoming.get(e.to) ?? 0) + 1);
   }
-  let cur = flow.nodes.find((n) => (incoming.get(n.id) ?? 0) === 0) ?? flow.nodes[0];
+  let cur =
+    flow.nodes.find((n) => (incoming.get(n.id) ?? 0) === 0) ?? flow.nodes[0];
 
   let steps = 0;
   const MAX_STEPS = 1000;
 
   while (cur) {
     if (steps++ >= MAX_STEPS) {
-      logger.error(null, `maximum step execution limit (${MAX_STEPS}) reached - stopping to prevent infinite loop`);
+      logger.error(
+        null,
+        `maximum step execution limit (${MAX_STEPS}) reached - stopping to prevent infinite loop`,
+      );
       failed = true;
       break;
     }
 
-    const interpolated = { ...cur, params: interpolateParams(cur.params ?? {}, vars) };
+    const interpolated = {
+      ...cur,
+      params: interpolateParams(cur.params ?? {}, vars),
+    };
     const handler = getHandler(cur.type);
     if (!handler) {
       logger.error(cur.id, `no handler for node type: ${cur.type}`);
@@ -175,23 +202,36 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
         const target = labelIndex.get(result.targetLabelNodeId);
         if (!target) {
           if (flow.isPartial) {
-            logger.info(stableNodeId, `moveToLabel: target label not found in active nodes list during partial/debug run, stopping execution gracefully.`);
+            logger.info(
+              stableNodeId,
+              `moveToLabel: target label not found in active nodes list during partial/debug run, stopping execution gracefully.`,
+            );
             cur = null;
             continue;
           }
-          throw new Error(`moveToLabel: target label not found: ${result.targetLabelNodeId}`);
+          throw new Error(
+            `moveToLabel: target label not found: ${result.targetLabelNodeId}`,
+          );
         }
         jumpTarget = target;
-        logger.info(stableNodeId, `jump → ${result.targetLabelName ?? result.targetLabelNodeId}`);
+        logger.info(
+          stableNodeId,
+          `jump → ${result.targetLabelName ?? result.targetLabelNodeId}`,
+        );
       } else if (result?.type === "jumpToNode") {
         const target = byId.get(result.targetNodeId);
         if (!target) {
-          throw new Error(`jumpToNode: target node not found: ${result.targetNodeId}`);
+          throw new Error(
+            `jumpToNode: target node not found: ${result.targetNodeId}`,
+          );
         }
         jumpTarget = target;
         logger.info(stableNodeId, `jump to node → ${result.targetNodeId}`);
       }
-      logger.info(stableNodeId, `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`);
+      logger.info(
+        stableNodeId,
+        `✓ ${cur.type}${typeof result === "string" ? ` → ${outcome}` : ""}`,
+      );
     } catch (err) {
       outcome = "fail";
       const msg = err instanceof Error ? err.message : String(err);
@@ -199,7 +239,10 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       if (ctx.ignoreErrors) {
         vars.WAS_ERROR = "true";
         vars.LAST_ERROR = msg;
-        logger.warn(stableNodeId, `ignoreErrors is active → capturing error and continuing`);
+        logger.warn(
+          stableNodeId,
+          `ignoreErrors is active → capturing error and continuing`,
+        );
       }
     }
     const duration = Date.now() - startTime;
@@ -212,13 +255,17 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       let to = 0;
 
       if (rawFrom != null) {
-        const interpolatedFrom = typeof rawFrom === "string" ? interpolateString(rawFrom, vars) : rawFrom;
+        const interpolatedFrom =
+          typeof rawFrom === "string"
+            ? interpolateString(rawFrom, vars)
+            : rawFrom;
         const parsedFrom = Number(interpolatedFrom);
         from = Number.isFinite(parsedFrom) ? Math.max(0, parsedFrom) : 0;
       }
 
       if (rawTo != null) {
-        const interpolatedTo = typeof rawTo === "string" ? interpolateString(rawTo, vars) : rawTo;
+        const interpolatedTo =
+          typeof rawTo === "string" ? interpolateString(rawTo, vars) : rawTo;
         const parsedTo = Number(interpolatedTo);
         to = Number.isFinite(parsedTo) ? Math.max(0, parsedTo) : 0;
       }
@@ -230,14 +277,21 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
         } else {
           const minVal = Math.min(from, to);
           const maxVal = Math.max(from, to);
-          sleepTarget = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+          sleepTarget =
+            Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
         }
         const sleepTime = sleepTarget - duration;
         if (sleepTime > 0) {
-          logger.info(stableNodeId, `sleep after node → sleeping ${sleepTime}ms (target: ${sleepTarget}ms, execution duration: ${duration}ms)`);
+          logger.info(
+            stableNodeId,
+            `sleep after node → sleeping ${sleepTime}ms (target: ${sleepTarget}ms, execution duration: ${duration}ms)`,
+          );
           await new Promise((resolve) => setTimeout(resolve, sleepTime));
         } else {
-          logger.debug(stableNodeId, `sleep after node → skipped (execution duration ${duration}ms exceeded target ${sleepTarget}ms)`);
+          logger.debug(
+            stableNodeId,
+            `sleep after node → skipped (execution duration ${duration}ms exceeded target ${sleepTarget}ms)`,
+          );
         }
       }
     }
@@ -254,7 +308,10 @@ export async function runFlow({ flow, page, vars, artifactsDir, allowedSchemes, 
       if (outcome === "fail") {
         const cont = cur.continueOnError ?? continueDefault ?? ctx.ignoreErrors;
         if (cont) {
-          logger.warn(cur.id, `continueOnError → skipping failed node, proceeding to success branch`);
+          logger.warn(
+            cur.id,
+            `continueOnError → skipping failed node, proceeding to success branch`,
+          );
           // Clean up loop state if this node was a loop node that failed
           const loopStateKey = `__loop_state_${cur.id}`;
           if (loopStateKey in vars) {
@@ -326,9 +383,18 @@ async function main() {
   }
 
   // Bare logger for setup-phase errors (no redaction needed pre-vars).
-  const bootLog = new Logger({ runId: args["run-id"] ?? "?", profileId: args["profile-id"] ?? "?" });
+  const bootLog = new Logger({
+    runId: args["run-id"] ?? "?",
+    profileId: args["profile-id"] ?? "?",
+  });
 
-  const required = ["flow", "cdp-port", "run-id", "profile-id", "artifacts-dir"];
+  const required = [
+    "flow",
+    "cdp-port",
+    "run-id",
+    "profile-id",
+    "artifacts-dir",
+  ];
   for (const k of required) {
     if (!args[k]) {
       bootLog.error(null, `missing required arg: --${k}`);
@@ -347,9 +413,13 @@ async function main() {
   }
 
   const allowedSchemes = args["allowed-schemes"]
-    ? String(args["allowed-schemes"]).split(",").map((s) => s.trim()).filter(Boolean)
+    ? String(args["allowed-schemes"])
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
     : undefined;
-  const continueDefault = args["continue-default"] === "true" || args["continue-default"] === true;
+  const continueDefault =
+    args["continue-default"] === "true" || args["continue-default"] === true;
 
   let flow;
   try {
@@ -361,7 +431,11 @@ async function main() {
   }
 
   const redact = createRedactor(vars);
-  const logger = new Logger({ runId: args["run-id"], profileId: args["profile-id"], redact });
+  const logger = new Logger({
+    runId: args["run-id"],
+    profileId: args["profile-id"],
+    redact,
+  });
 
   const cdpUrl = `http://127.0.0.1:${args["cdp-port"]}`;
   let browser;
@@ -371,7 +445,6 @@ async function main() {
     logger.error(null, `connectOverCDP(${cdpUrl}) failed: ${e.message}`);
     return EXIT_SETUP;
   }
-
 
   // Initialize ResourceManager if the flow defines resources (schema v2).
   const resourceManager = new ResourceManager();
@@ -395,7 +468,10 @@ async function main() {
 
   try {
     const page = await resolvePage(browser, logger);
-    logger.info(null, `flow "${flow.name}" started (${flow.nodes.length} nodes)`);
+    logger.info(
+      null,
+      `flow "${flow.name}" started (${flow.nodes.length} nodes)`,
+    );
     const failed = await runFlow({
       flow,
       page,
@@ -414,7 +490,11 @@ async function main() {
     return EXIT_SETUP;
   } finally {
     // Flush persisted resource state before disconnect.
-    try { await resourceManager.flush(); } catch { /* non-fatal */ }
+    try {
+      await resourceManager.flush();
+    } catch {
+      /* non-fatal */
+    }
     // Disconnect WITHOUT closing the browser — orchestrator owns lifecycle.
     try {
       await browser.close();
@@ -440,4 +520,4 @@ if (isMain) {
     });
 }
 
-export { EXIT_OK, EXIT_NODE_FAILED, EXIT_SETUP, parseArgs };
+export { EXIT_NODE_FAILED, EXIT_OK, EXIT_SETUP, parseArgs };

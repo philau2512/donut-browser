@@ -66,6 +66,7 @@ impl XrayWorkerConfig {
       port: self.local_port,
       username: Some(self.username.clone()),
       password: Some(self.password.clone()),
+      vless_uri: None,
     }
   }
 }
